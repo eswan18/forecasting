@@ -1,0 +1,41 @@
+id,text,category_id,year
+0,China lands ground forces on the island of Taiwan,2,2024
+1,Russia and Ukraine sign a truce to stop all combat operations and honor it until the end of the year,2,2024
+2,Nuclear weapons are used in an attack (not just tested) somewhere in the world.,2,2024
+3,Xi Jinping is still the premier of China at the end of 2024.,2,2024
+4,Narendra Modi is still the prime minister of India at the end of 2024.,2,2024
+5,Benjamin Netanyahu is still the prime minister of Israel at the end of 2024.,2,2024
+6,Vladimir Putin is still the president of Russia at the end of 2024.,2,2024
+7,Vlodymyr Zelenskyy is still the president of Ukraine at the end of 2024.,2,2024
+8,Pope Francis (Jorge Mario Bergoglio) is still the active pope at the end of 2024.,2,2024
+9,Donald Trump is elected president.,0,2024
+10,Joe Biden is re-elected president.,0,2024
+11,A Republican candidate who isn't Donald Trump is elected president.,0,2024
+12,A Democrat candidate who isn't Joe Biden is elected president.,0,2024
+13,At least one third-party US presidential candidate gets 3% or more of the popular vote.,0,2024
+14,The US president elect dies between the election and the end of 2024.,0,2024
+15,2024 elections give Democrats control of the Senate.,0,2024
+16,2024 elections give Democrats control of the House of Representatives.,0,2024
+17,At least one member of the US Supreme Court steps down or dies during 2024.,0,2024
+18,President Jimmy Carter is still alive at the end of 2024.,0,2024
+19,Donald Trump is convicted of a federal crime.,0,2024
+20,Joe Biden is impeached.,0,2024
+21,Mainstream news outlets report definitively that Taylor Swift and Travis Kelce have broken up.,3,2024
+22,Taylor Swift releases an album of composed primarily of entirely new music.,3,2024
+23,"LeBron James retires from or otherwise leaves the NBA, and does not change his mind before the end of the year.",3,2024
+24,"LeBron James and his son LeBron Jr (aka ""Bronny"") are under contract with the same NBA team at any point during 2024.",3,2024
+25,"Lionel Messi retires from or otherwise leaves the MLS, and does not change his mind before the end of the year.",3,2024
+26,The US wins the most gold medals of any country (or ties for first) in the Paris Olympics.,3,2024
+27,The US wins the gold medal in basketball at the Paris Olympics.,3,2024
+28,"One of the three championship favorites (Boston Celtics, Denver Nuggets, Milwaukee Bucks) wins the 2024 NBA title.",3,2024
+29,The S&P 500 closes the year higher than it began.,1,2024
+30,The Fed raises interest rates at least once in 2024 (even if they also decrease rates).,1,2024
+31,Sam Altman is still the CEO of OpenAI at the end of 2024.,1,2024
+32,"OpenAI releases (or allows a public preview of) a product branded ""GPT-5"" or ""ChatGPT-5"".",1,2024
+33,"Meta is ordered to divest a business unit, by federal court or commission.",1,2024
+34,"Amazon is ordered to divest a business unit, by federal court or commission.",1,2024
+35,"Alphabet is ordered to divest a business unit, by federal court or commission.",1,2024
+36,"The X/Twitter platform still exists at the end of the year: you can log in, share content, and view content.",1,2024
+37,Nvidia remains in the top 10 American companies by market cap at the end of 2024.,1,2024
+38,Tim Cook is still the CEO of Apple at the end of the year.,1,2024
+39,Andy Jassy is still the CEO of Amazon at the end of the year.,1,2024
