@@ -1,4 +1,4 @@
-id,prop_id,person_id,forecast
+id,prop_id,user_id,forecast
 0,0,0,0.26
 1,1,0,0.15
 2,2,0,0.0
