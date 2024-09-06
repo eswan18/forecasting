@@ -1,7 +1,7 @@
 'use client';
 
 import { MoreHorizontal } from "lucide-react";
-import { PropAndResolution, resolveProp } from "@/lib/db_actions";
+import { PropAndResolution, resolveProp, unresolveProp } from "@/lib/db_actions";
 import {
   Table,
   TableBody,
@@ -16,7 +16,6 @@ import {
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -39,7 +38,7 @@ export default function PropTable({ rows }: { rows: PropAndResolution[] }) {
               row.resolution === null ? '?'
                 : row.resolution ? 'Yes' : 'No'
             }</TableCell>
-            <TableCell className="text-center">{!row.resolution && <ActionDropdown propId={row.prop_id} />}</TableCell>
+            <TableCell className="text-center"><ActionDropdown propId={row.prop_id} resolution={row.resolution} /></TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -47,7 +46,25 @@ export default function PropTable({ rows }: { rows: PropAndResolution[] }) {
   )
 }
 
-function ActionDropdown({ propId }: { propId: number }) {
+interface ActionDropdownProps {
+  propId: number;
+  resolution: boolean | null;
+}
+
+function ActionDropdown({ propId, resolution }: ActionDropdownProps) {
+  const actions = !!resolution ? [{
+    'label': 'Unresolve',
+    'onClick': async () => { unresolveProp({ propId }) },
+  }] : [
+    {
+      label: 'Resolve to Yes',
+      onClick: async () => { resolveProp({ propId, resolution: true }) },
+    },
+    {
+      label: 'Resolve to No',
+      onClick: async () => { resolveProp({ propId, resolution: false }) },
+    },
+  ]
   return (
     <>
       <DropdownMenu>
@@ -59,16 +76,11 @@ function ActionDropdown({ propId }: { propId: number }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={async () => { resolveProp({ propId, resolution: true }) }}
-          >
-            Resolve to Yes
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={async () => { resolveProp({ propId, resolution: false }) }}
-          >
-            Resolve to No
-          </DropdownMenuItem>
+          {actions.map(({ label, onClick }, i) => (
+            <DropdownMenuItem key={i} onClick={onClick}>
+              {label}
+            </DropdownMenuItem>
+          ))}
         </DropdownMenuContent>
       </DropdownMenu>
     </>

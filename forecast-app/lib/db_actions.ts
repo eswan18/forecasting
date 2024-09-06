@@ -101,3 +101,7 @@ export async function resolveProp({ propId, resolution }: { propId: number, reso
   console.log('here!!!');
   await db.insertInto('resolutions').values({ prop_id: propId, resolution }).execute();
 }
+
+export async function unresolveProp({ propId }: { propId: number }): Promise<void> {
+  await db.deleteFrom('resolutions').where('prop_id', '=', propId).execute();
+}
