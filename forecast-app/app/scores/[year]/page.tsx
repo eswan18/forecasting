@@ -6,7 +6,8 @@ export default async function Page({ params }: { params: { year: string } }) {
   const userScores = await getAvgScoreByUser({ year });
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="w-96">
+      <div className="w-96 flex flex-col">
+        <h1>{year} Scores</h1>
         <UserScoresChart userScores={userScores} />
       </div>
     </main>
