@@ -1,5 +1,4 @@
 import {
-  ColumnType,
   Generated,
   Insertable,
   Selectable,
@@ -14,6 +13,7 @@ export interface Database {
   props: PropsTable,
   forecasts: ForecastsTable,
   resolutions: ResolutionsTable,
+  v_forecasts: VForecastsView,
 }
 
 export interface UsersTable {
@@ -55,9 +55,23 @@ export type ForecastUpdate = Updateable<ForecastsTable>
 
 export interface ResolutionsTable {
   id: Generated<number>,
-  forecast_id: number,
+  prop_id: number,
   resolution: boolean,
 }
 export type Resolution = Selectable<ResolutionsTable>
 export type NewResolution = Insertable<ResolutionsTable>
 export type ResolutionUpdate = Updateable<ResolutionsTable>
+
+export interface VForecastsView {
+  user_id: number,
+  user_name: string,
+  category_id: number,
+  category_name: string,
+  prop_id: number,
+  prop_text: string,
+  year: number,
+  forecast: number,
+  resolution: boolean | null,
+  score: number | null,
+}
+export type VForecast = Selectable<VForecastsView>
