@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidatePath } from 'next/cache'
 import { User, VForecast } from '@/types/db_types';
 import { db } from './database';
 import { sql } from 'kysely';
@@ -94,14 +95,14 @@ export async function resolveProp({ propId, resolution }: { propId: number, reso
     .select('resolution')
     .executeTakeFirst();
   if (!!existingResolution) {
-    console.log(existingResolution);
     throw new Error(`Proposition ${propId} already has a resolution`);
   }
 
-  console.log('here!!!');
   await db.insertInto('resolutions').values({ prop_id: propId, resolution }).execute();
+  revalidatePath('/props');
 }
 
 export async function unresolveProp({ propId }: { propId: number }): Promise<void> {
   await db.deleteFrom('resolutions').where('prop_id', '=', propId).execute();
+  revalidatePath('/props');
 }
