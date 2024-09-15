@@ -14,24 +14,29 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { resolveProp, unresolveProp } from "@/lib/db_actions";
 
-export const columns: ColumnDef<PropAndResolution>[] = [
+export function getColumns(allowResolutionEdits: boolean): ColumnDef<PropAndResolution>[] {
+  return[
   {
-    accessorKey: 'prop_text',
-    header: 'Proposition',
-  },
-  {
-    accessorKey: 'resolution',
+    accessorKey: 'category_name',
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Resolution
+          Category
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
     },
+  },
+  {
+    accessorKey: 'prop_text',
+    header: 'Proposition',
+  },
+  {
+    accessorKey: 'resolution',
+    header: 'Resolution',
     meta: { align: 'center' },
     cell: ({ row }) => {
       const propId = row.original.prop_id;
@@ -40,7 +45,7 @@ export const columns: ColumnDef<PropAndResolution>[] = [
       return (
         <div className="flex flex-row items-center gap-1 justify-end px-4">
           <span>{resText}</span>
-          <ActionDropdown propId={propId} resolution={resolution} />
+          {allowResolutionEdits && <ActionDropdown propId={propId} resolution={resolution} />}
         </div>
       );
     },
@@ -54,6 +59,7 @@ export const columns: ColumnDef<PropAndResolution>[] = [
     }
   },
 ]
+}
 
 interface ActionDropdownProps {
   propId: number;

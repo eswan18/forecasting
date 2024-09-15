@@ -9,15 +9,24 @@ export async function getUsers(): Promise<User[]> {
   return await db.selectFrom('users').selectAll().execute();
 }
 
-export type PropAndResolution = { prop_id: number, prop_text: string, resolution: boolean | null };
+export type PropAndResolution = {
+  prop_id: number,
+  prop_text: string,
+  category_id: number,
+  category_name: string,
+  resolution: boolean | null,
+};
 
 export async function getPropsAndResolutions(): Promise<PropAndResolution[]> {
   return await db
     .selectFrom('props')
+    .innerJoin('categories', 'props.category_id', 'categories.id')
     .leftJoin('resolutions', 'props.id', 'resolutions.prop_id')
     .select([
       sql<number>`props.id`.as('prop_id'),
       sql<string>`props.text`.as('prop_text'),
+      'category_id',
+      sql<string>`categories.name`.as('category_name'),
       'resolutions.resolution',
     ])
     .execute();
@@ -26,11 +35,14 @@ export async function getPropsAndResolutions(): Promise<PropAndResolution[]> {
 export async function getPropsAndResolutionsByYear(year: number): Promise<PropAndResolution[]> {
   return await db
     .selectFrom('props')
+    .innerJoin('categories', 'props.category_id', 'categories.id')
     .leftJoin('resolutions', 'props.id', 'resolutions.prop_id')
     .where('year', '=', year)
     .select([
       sql<number>`props.id`.as('prop_id'),
       sql<string>`props.text`.as('prop_text'),
+      'category_id',
+      sql<string>`categories.name`.as('category_name'),
       'resolutions.resolution',
     ])
     .execute();

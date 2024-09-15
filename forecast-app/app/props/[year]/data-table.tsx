@@ -22,16 +22,19 @@ import {
 import { Input } from "@/components/ui/input";
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
+  getColumns: (allowResolutionEdits: boolean) => ColumnDef<TData, TValue>[]
   data: TData[]
+  allowResolutionEdits?: boolean
 }
 
 export function DataTable<TData, TValue>({
-  columns,
+  getColumns,
   data,
+  allowResolutionEdits = false,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const columns = getColumns(allowResolutionEdits);
   const table = useReactTable({
     data,
     columns,
