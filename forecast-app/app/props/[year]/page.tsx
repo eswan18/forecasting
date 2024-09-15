@@ -1,5 +1,7 @@
 import { getPropsAndResolutionsByYear } from "@/lib/db_actions"
-import PropTable from "./prop-table";
+import { DataTable } from "./data-table";
+import { columns } from "./columns";
+import PageHeading from "@/components/page-heading";
 
 export default async function Page({ params }: { params: { year: string } }) {
   const year = parseInt(params.year)
@@ -7,8 +9,8 @@ export default async function Page({ params }: { params: { year: string } }) {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <div className="w-96">
-        <h1>{year} Props</h1>
-        <PropTable rows={propsAndResolutions} />
+        <PageHeading title={`${year} Props`} />
+        <DataTable columns={columns} data={propsAndResolutions} />
       </div>
     </main>
   )
