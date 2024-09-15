@@ -7,7 +7,7 @@ export default async function Page({ params }: { params: { year: string } }) {
   const year = parseInt(params.year)
   const propsAndResolutions = await getPropsAndResolutionsByYear(year)
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <main className="flex flex-col items-center justify-between py-12 px-24">
       <div className="w-full max-w-lg">
         <PageHeading title={`${year} Props`} />
         <DataTable columns={columns} data={propsAndResolutions} />
