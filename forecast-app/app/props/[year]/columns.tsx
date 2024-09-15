@@ -37,10 +37,18 @@ export const columns: ColumnDef<PropAndResolution>[] = [
       const resolution = row.getValue("resolution");
       return resolution === null ? '?' : resolution ? 'Yes' : 'No'
     },
+    filterFn: ( row, columnId, filterValue ) => {
+      if (filterValue.length === 3 || filterValue.length === 0) return true;
+      switch (row.getValue("resolution")) {
+        case true: return filterValue.includes("Yes");
+        case false: return filterValue.includes("No");
+        case null: return filterValue.includes("?");
+      }
+    }
   },
   {
     header: 'Actions',
-    cell: ({ row }) => <ActionDropdown propId={row.getValue("prop_id")} resolution={row.getValue("resolution")} />,
+    cell: ({ row }) => <ActionDropdown propId={row.getValue("prop_text")} resolution={row.getValue("resolution")} />,
   },
 ]
 

@@ -41,11 +41,15 @@ export function DataTable<TData, TValue>({
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
     state: { sorting, columnFilters },
+    initialState: {
+      columnFilters: [{ 'id': 'resolution', 'value': [] }],
+    },
   })
 
   return (
-    <div className="rounded-md border">
-      <div className="flex items-center p-4">
+    <div className="rounded-md border w-full">
+      <div className="flex flex-col items-start p-4">
+        <label>Filter by prop text:</label>
         <Input
           placeholder="Search for a prop..."
           value={(table.getColumn("prop_text")?.getFilterValue() as string) ?? ""}
@@ -54,6 +58,26 @@ export function DataTable<TData, TValue>({
           }
           className="max-w-sm"
         />
+      </div>
+      <div className="flex flex-col items-start p-4">
+        <label>Filter by resolution:</label>
+        <div className="flex flex-row border border-input rounded-md w-full max-w-sm h-9 bg-transparent px-3 py-1 text-sm shadow-sm">
+          <ResolutionCheckboxFilter
+            filterValue={table.getColumn("resolution")?.getFilterValue() as ResolutionOption[] | undefined}
+            setFilterValue={(value) => table.getColumn("resolution")?.setFilterValue(value)}
+            resolution="Yes"
+          />
+          <ResolutionCheckboxFilter
+            filterValue={table.getColumn("resolution")?.getFilterValue() as ResolutionOption[] | undefined}
+            setFilterValue={(value) => table.getColumn("resolution")?.setFilterValue(value)}
+            resolution="No"
+          />
+          <ResolutionCheckboxFilter
+            filterValue={table.getColumn("resolution")?.getFilterValue() as ResolutionOption[] | undefined}
+            setFilterValue={(value) => table.getColumn("resolution")?.setFilterValue(value)}
+            resolution="?"
+          />
+        </div>
       </div>
       <Table>
         <TableHeader>
@@ -97,6 +121,28 @@ export function DataTable<TData, TValue>({
           )}
         </TableBody>
       </Table>
+    </div>
+  )
+}
+
+type ResolutionOption = "Yes" | "No" | "?";
+
+function ResolutionCheckboxFilter({ filterValue, setFilterValue, resolution }: { filterValue?: ResolutionOption[], setFilterValue: (value: ResolutionOption[]) => void, resolution: ResolutionOption }) {
+  return (
+    <div className="flex flex-row justify-start items-center gap-2 w-16 mx-4">
+      <Input
+        type="checkbox"
+        checked={filterValue?.includes(resolution) ?? false}
+        onChange={(event) => {
+          const prev = filterValue ?? []
+          setFilterValue(event.target.checked
+            ? [...prev, resolution]
+            : prev.filter((v) => v !== resolution)
+          )
+        }}
+        className="w-5 h-5 rounded-lg border-input"
+      />
+      <label>{resolution}</label>
     </div>
   )
 }
