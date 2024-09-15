@@ -47,7 +47,7 @@ export function DataTable<TData, TValue>({
   })
 
   return (
-    <div className="rounded-md border w-full">
+    <>
       <div className="flex flex-col items-start p-4">
         <label>Filter by prop text:</label>
         <Input
@@ -61,7 +61,7 @@ export function DataTable<TData, TValue>({
       </div>
       <div className="flex flex-col items-start p-4">
         <label>Filter by resolution:</label>
-        <div className="flex flex-row border border-input rounded-md w-full max-w-sm h-9 bg-transparent px-3 py-1 text-sm shadow-sm">
+        <div className="flex flex-row w-full h-9 py-1 text-sm">
           <ResolutionCheckboxFilter
             filterValue={table.getColumn("resolution")?.getFilterValue() as ResolutionOption[] | undefined}
             setFilterValue={(value) => table.getColumn("resolution")?.setFilterValue(value)}
@@ -79,49 +79,51 @@ export function DataTable<TData, TValue>({
           />
         </div>
       </div>
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                  </TableHead>
-                )
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} align={(cell.column.columnDef.meta as any)?.align}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+      <div className="rounded-md border w-full">
+        <Table>
+          <TableHeader className="bg-secondary">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                    </TableHead>
+                  )
+                })}
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </div>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id} align={(cell.column.columnDef.meta as any)?.align}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  No results.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </>
   )
 }
 
@@ -140,9 +142,9 @@ function ResolutionCheckboxFilter({ filterValue, setFilterValue, resolution }: {
             : prev.filter((v) => v !== resolution)
           )
         }}
-        className="w-5 h-5 rounded-lg border-input"
+        className="w-4 h-4 rounded-lg border-input"
       />
-      <label>{resolution}</label>
+      <label className="text-muted-foreground">{resolution}</label>
     </div>
   )
 }

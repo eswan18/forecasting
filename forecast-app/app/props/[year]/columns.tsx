@@ -32,12 +32,19 @@ export const columns: ColumnDef<PropAndResolution>[] = [
         </Button>
       )
     },
-    meta: {align: 'center'},
+    meta: { align: 'center' },
     cell: ({ row }) => {
-      const resolution = row.getValue("resolution");
-      return resolution === null ? '?' : resolution ? 'Yes' : 'No'
+      const propId = row.original.prop_id;
+      const resolution = row.original.resolution;
+      const resText = resolution === null ? '?' : resolution ? 'Yes' : 'No';
+      return (
+        <div className="flex flex-row items-center gap-1 justify-end px-4">
+          <span>{resText}</span>
+          <ActionDropdown propId={propId} resolution={resolution} />
+        </div>
+      );
     },
-    filterFn: ( row, columnId, filterValue ) => {
+    filterFn: (row, columnId, filterValue) => {
       if (filterValue.length === 3 || filterValue.length === 0) return true;
       switch (row.getValue("resolution")) {
         case true: return filterValue.includes("Yes");
@@ -45,10 +52,6 @@ export const columns: ColumnDef<PropAndResolution>[] = [
         case null: return filterValue.includes("?");
       }
     }
-  },
-  {
-    header: 'Actions',
-    cell: ({ row }) => <ActionDropdown propId={row.getValue("prop_text")} resolution={row.getValue("resolution")} />,
   },
 ]
 
@@ -58,7 +61,7 @@ interface ActionDropdownProps {
 }
 
 function ActionDropdown({ propId, resolution }: ActionDropdownProps) {
-  const actions = !!resolution ? [{
+  const actions = resolution !== null ? [{
     'label': 'Unresolve',
     'onClick': async () => { unresolveProp({ propId }) },
   }] : [
@@ -75,9 +78,9 @@ function ActionDropdown({ propId, resolution }: ActionDropdownProps) {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
+          <Button variant="ghost" size="icon" className="h-6 w-6 p-0">
             <span className="sr-only">Open menu</span>
-            <MoreHorizontal className="h-4 w-4" />
+            <MoreHorizontal className="h-5 w-5" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
