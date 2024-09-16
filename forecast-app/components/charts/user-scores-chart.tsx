@@ -8,18 +8,12 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
 } from "@/components/ui/chart";
 
 const chartConfig = {
-  user_name: {
-    label: "Name",
-    color: "hsl(var(--chart-1))",
-  },
   score: {
     label: "Score",
-    color: "hsl(var(--chart-2))",
+    color: "hsl(var(--foreground))",
   },
 } satisfies ChartConfig;
 
@@ -37,8 +31,7 @@ export default function UserScoresChart({ userScores }: { userScores: UserScore[
         />
         <XAxis dataKey="score" type="number" />
         <ChartTooltip content={<ChartTooltipContent />} />
-        <ChartLegend content={<ChartLegendContent />} />
-        <Bar dataKey="score" fill="var(--color-mobile)" radius={2} barSize={10}/>
+        <Bar dataKey="score" fill="hsl(var(--foreground))" radius={2} barSize={10}/>
       </BarChart>
     </ChartContainer>
   )
