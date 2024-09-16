@@ -24,14 +24,16 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export default function UserScoresChart({ userScores }: { userScores: UserScore[] }) {
+  userScores.sort((a, b) => a.score - b.score);
   return (
     <ChartContainer config={chartConfig} className="min-h-[600px] w-full">
-      <BarChart accessibilityLayer data={userScores} layout="vertical" barCategoryGap={30}>
+      <BarChart accessibilityLayer data={userScores} layout="vertical" barCategoryGap={30} margin={{left: 0}}>
         <YAxis
           type="category"
           dataKey="user_name"
           tickLine={false}
           axisLine={false}
+          width={140}
         />
         <XAxis dataKey="score" type="number" />
         <ChartTooltip content={<ChartTooltipContent />} />
