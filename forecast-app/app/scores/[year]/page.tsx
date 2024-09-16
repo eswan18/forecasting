@@ -39,18 +39,18 @@ export default async function Page({ params }: { params: { year: string } }) {
           ))}
         </Tabs>
         <div className="p-4 text-muted-foreground text-sm">
-          <h2 className="mb-2 text-base">Details on Brier Scores</h2>
-          <p className="my-1">
+          <h2 className="my-4 text-base">Details on Brier Scores</h2>
+          <p className="my-2">
             Brier scores are a common way of measuring forecasting success. Lower scores are better.
           </p>
-          <p className="my-1">
+          <p className="my-2">
             For every prediction, a <span className="font-bold">penalty</span> is calculated. This penalty is the square of the size of the &quot;miss&quot;.
           </p>
-          <p className="my-1">
+          <p className="my-2">
             For example, if an event was predicted with 90% confidence and came to happen, the miss was 0.1, and the penatly is 0.01 (=0.1<sup>2</sup>).
             If the event <span className="italic">didn&apos;t</span> happen, then the miss is 0.9 and the penalty is 0.81 (=0.9<sup>2</sup>).
           </p>
-          <p className="my-1">
+          <p className="my-2">
             A user&apos;s <span className="font-bold">total score</span> is the average of all their penalties.
           </p>
         </div>
