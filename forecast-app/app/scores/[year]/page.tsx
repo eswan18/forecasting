@@ -1,13 +1,9 @@
-import { getAvgScoreByUser, getAvgScoreByUserAndCategory, UserCategoryScore, UserScore } from "@/lib/db_actions";
-import UserScoresChart from "@/components/charts/user-scores-chart";
+import { getAvgScoreByUser, getAvgScoreByUserAndCategory, UserScore } from "@/lib/db_actions";
 import PageHeading from "@/components/page-heading";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 
-interface CategoryAndUserScores {
-  category: string;
-  userScores: UserScore[];
-}
+import { CategoryAndUserScores, ScoreCharts } from "./score-charts";
+
 
 export default async function Page({ params }: { params: { year: string } }) {
   const year = parseInt(params.year)
@@ -52,28 +48,5 @@ export default async function Page({ params }: { params: { year: string } }) {
         </div>
       </div>
     </main >
-  )
-}
-
-interface CategoryTabsListProps {
-  categories: CategoryAndUserScores[];
-}
-
-function ScoreCharts({ categories }: CategoryTabsListProps) {
-  return (
-    <Tabs defaultValue="Overall">
-      <TabsList className="mt-3 hidden lg:inline-flex">
-        {categories.map((category) => (
-          <TabsTrigger key={category.category} value={category.category}>{category.category}</TabsTrigger>
-        ))}
-      </TabsList>
-      {
-        categories.map((category, index) => (
-          <TabsContent key={category.category} value={category.category} className="h-[28rem] lg:h-[32rem]">
-            <UserScoresChart userScores={category.userScores} />
-          </TabsContent>
-        ))
-      }
-    </Tabs >
   )
 }
