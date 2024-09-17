@@ -1,45 +1,41 @@
-import { getAvgScoreByUser, getAvgScoreByUserAndCategory } from "@/lib/db_actions";
+import { getAvgScoreByUser, getAvgScoreByUserAndCategory, UserCategoryScore, UserScore } from "@/lib/db_actions";
 import UserScoresChart from "@/components/charts/user-scores-chart";
 import PageHeading from "@/components/page-heading";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 
+interface CategoryAndUserScores {
+  category: string;
+  userScores: UserScore[];
+}
+
 export default async function Page({ params }: { params: { year: string } }) {
   const year = parseInt(params.year)
   const userScores = await getAvgScoreByUser({ year });
   const userScoresByCategory = await getAvgScoreByUserAndCategory({ year });
-  const categories = Array.from(new Set(userScoresByCategory.map(({ category_name }) => category_name)));
-  const scoresByCategory = categories.map((category) => {
-    return userScoresByCategory.filter(({ category_name }) => category_name === category);
-  });
+  const overallCategory: CategoryAndUserScores = {
+    category: 'Overall',
+    userScores: userScores,
+  };
+  const categories: CategoryAndUserScores[] = [overallCategory];
+  const uniqCategoryNames = Array.from(new Set(userScoresByCategory.map(({ category_name }) => category_name)));
+  uniqCategoryNames.forEach((category) => {
+    const categoryScores: UserScore[] = userScoresByCategory.filter(({ category_name }) => category_name === category);
+    categories.push({ category, userScores: categoryScores });
+  })
   return (
-    <main className="flex flex-col items-center justify-between py-12 px-24">
+    <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-lg flex flex-col">
         <PageHeading title={`${year} Scores`} />
         <div className="p-2">
-          <p className="my-1 italic">
+          <p className="my-1 italic text-muted-foreground">
             The below scores should be considered very much subject to change; I resolved only the propositions that seemed most clear-cut.
             Check out the <Link href="/props/2024" className="underline">2024 Props</Link> page to see the full list of propositions and which ones that I&apos;ve resolved.
           </p>
         </div>
-        <Tabs defaultValue="Overall">
-          <TabsList className="mt-3">
-            <TabsTrigger value="Overall">Overall</TabsTrigger>
-            {categories.map((category) => (
-              <TabsTrigger key={category} value={category}>{category}</TabsTrigger>
-            ))}
-          </TabsList>
-          <TabsContent value="Overall">
-            <UserScoresChart userScores={userScores} />
-          </TabsContent>
-          {categories.map((category, index) => (
-            <TabsContent key={category} value={category}>
-              <UserScoresChart userScores={scoresByCategory[index]} />
-            </TabsContent>
-          ))}
-        </Tabs>
+        <ScoreCharts categories={categories} />
         <div className="p-4 text-muted-foreground text-sm">
-          <h2 className="my-4 text-base">Details on Brier Scores</h2>
+          <h2 className="my-4 text-lg">Details on Brier Scores</h2>
           <p className="my-2">
             Brier scores are a common way of measuring forecasting success. Lower scores are better.
           </p>
@@ -55,6 +51,29 @@ export default async function Page({ params }: { params: { year: string } }) {
           </p>
         </div>
       </div>
-    </main>
+    </main >
+  )
+}
+
+interface CategoryTabsListProps {
+  categories: CategoryAndUserScores[];
+}
+
+function ScoreCharts({ categories }: CategoryTabsListProps) {
+  return (
+    <Tabs defaultValue="Overall">
+      <TabsList className="mt-3 hidden lg:inline-flex">
+        {categories.map((category) => (
+          <TabsTrigger key={category.category} value={category.category}>{category.category}</TabsTrigger>
+        ))}
+      </TabsList>
+      {
+        categories.map((category, index) => (
+          <TabsContent key={category.category} value={category.category} className="h-[28rem] lg:h-[32rem]">
+            <UserScoresChart userScores={category.userScores} />
+          </TabsContent>
+        ))
+      }
+    </Tabs >
   )
 }
