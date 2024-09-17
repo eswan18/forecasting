@@ -2,7 +2,7 @@ import { getAvgScoreByUser, getAvgScoreByUserAndCategory, UserScore } from "@/li
 import PageHeading from "@/components/page-heading";
 import Link from "next/link";
 
-import { CategoryAndUserScores, ScoreCharts } from "./score-charts";
+import { CategoryAndUserScores, ScoreChartsCard } from "./score-charts-card";
 
 
 export default async function Page({ params }: { params: { year: string } }) {
@@ -29,7 +29,7 @@ export default async function Page({ params }: { params: { year: string } }) {
             Check out the <Link href="/props/2024" className="underline">2024 Props</Link> page to see the full list of propositions and which ones that I&apos;ve resolved.
           </p>
         </div>
-        <ScoreCharts categories={categories} />
+        <ScoreChartsCard categories={categories} />
         <div className="p-4 text-muted-foreground text-sm">
           <h2 className="my-4 text-lg">Details on Brier Scores</h2>
           <p className="my-2">
