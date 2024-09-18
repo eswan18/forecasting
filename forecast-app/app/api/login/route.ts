@@ -6,7 +6,7 @@ import { db } from '@/lib/database';
 import jwt from 'jsonwebtoken';
 import { serialize } from 'cookie';
 
-const JWT_SECRET = process.env.JWT_SECRET as string;
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function POST(req: NextRequest) {
   const { username, password } = await req.json();
@@ -37,7 +37,10 @@ export async function POST(req: NextRequest) {
   }
 
   // Create a JWT token
-  const token = jwt.sign({ userId: login.id }, JWT_SECRET, { expiresIn: '1h' });
+  if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET is not set.');
+  }
+  const token = jwt.sign({ loginId: login.id }, JWT_SECRET, { expiresIn: '1h' });
 
   // Set the token in an HTTP-only cookie
   const cookie = serialize('token', token, {

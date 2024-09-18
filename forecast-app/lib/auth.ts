@@ -13,7 +13,7 @@ export async function getUserFromRequest(req: NextRequest): Promise<User | null>
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
+    const decoded = jwt.verify(token, JWT_SECRET) as { loginId: number };
     const user: User | undefined = await db
       .selectFrom('logins')
       .innerJoin('users', 'logins.id', 'users.id')
