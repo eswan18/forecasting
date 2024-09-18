@@ -1,22 +1,45 @@
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuIndicator,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  NavigationMenuViewport,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu"
+
 import ThemeToggle from './theme-toggle';
 import { UserStatus } from './user-status';
+import Link from "next/link";
+import { Button } from "../ui/button";
 
 export default async function NavBar() {
   return (
-    <nav className="flex items-center justify-between p-4 bg-primary-foreground text-primary-background">
-      <h2 className="text-lg font-bold">Forecasting</h2>
-      <div className='flex flex-row gap-4 items-center justify-end'>
-        <ul className="flex space-x-4">
-          <li>
-            <a href="/scores/2024">Scores</a>
-          </li>
-          <li>
-            <a href="/props/2024">Props</a>
-          </li>
-        </ul>
+    <div className="w-full flex justify-between">
+      <NavigationMenu>
+        <Link href="/"><Button variant='ghost' className="text-primary underline">Forecasting</Button></Link>
+        <NavigationMenuList>
+
+          <NavigationMenuItem>
+            <Link href="/scores/2024">
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>Scores</NavigationMenuLink>
+            </Link>
+          </NavigationMenuItem>
+
+          <NavigationMenuItem>
+            <Link href="/props/2024">
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>Props</NavigationMenuLink>
+            </Link>
+          </NavigationMenuItem>
+
+        </NavigationMenuList>
+      </NavigationMenu>
+      <div className="flex flex-row justify-end gap-3">
         <UserStatus />
         <ThemeToggle />
       </div>
-    </nav>
+    </div>
   )
 }

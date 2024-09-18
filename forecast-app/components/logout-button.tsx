@@ -11,6 +11,7 @@ export default function LogoutButton() {
     await fetch('/api/logout', {
       method: 'POST',
     });
+    // Revalidate the user after logout.
     mutate();
     router.push('/login');
   };
