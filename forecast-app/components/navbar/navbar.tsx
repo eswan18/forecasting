@@ -17,9 +17,9 @@ import { Button } from "../ui/button";
 
 export default async function NavBar() {
   return (
-    <div className="w-full flex justify-between">
+    <div className="w-full flex justify-between my-1">
       <NavigationMenu>
-        <Link href="/"><Button variant='ghost' className="text-primary underline">Forecasting</Button></Link>
+        <Link href="/"><Button variant='ghost' className="hidden text-primary underline lg:inline">Forecasting</Button></Link>
         <NavigationMenuList>
 
           <NavigationMenuItem>

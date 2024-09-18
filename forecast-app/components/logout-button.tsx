@@ -2,6 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { LogOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function LogoutButton() {
   const router = useRouter();
@@ -16,5 +18,5 @@ export default function LogoutButton() {
     router.push('/login');
   };
 
-  return <button onClick={handleLogout}>Logout</button>;
+  return <Button variant="outline" onClick={handleLogout}>Logout <LogOut /></Button>;
 }
