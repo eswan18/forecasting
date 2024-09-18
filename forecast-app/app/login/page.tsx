@@ -4,17 +4,19 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import Link from 'next/link';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
   const [error, setError] = useState('');
+  const { mutate } = useCurrentUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +34,9 @@ export default function LoginPage() {
         return;
       }
 
-      router.push('/dashboard');
+      // Revalidate the user after login.
+      mutate();
+      router.push('/');
     } catch {
       setError('An error occurred.');
     }
