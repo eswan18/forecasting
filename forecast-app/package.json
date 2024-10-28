@@ -20,7 +20,7 @@
     "fs": "^0.0.1-security",
     "kysely": "^0.27.4",
     "lucide-react": "^0.438.0",
-    "next": "14.2.7",
+    "next": "^15.0.1",
     "next-themes": "^0.3.0",
     "pg": "^8.12.0",
     "react": "^18",
