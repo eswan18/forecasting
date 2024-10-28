@@ -5,14 +5,13 @@ import {
   Updateable,
 } from 'kysely';
 
-// Tables: users, categories, props, forecasts, resolutions
-
 export interface Database {
   users: UsersTable,
   categories: CategoriesTable,
   props: PropsTable,
   forecasts: ForecastsTable,
   resolutions: ResolutionsTable,
+  logins: LoginsTable,
   v_forecasts: VForecastsView,
 }
 
@@ -20,6 +19,7 @@ export interface UsersTable {
   id: Generated<number>,
   name: string,
   email: string,
+  login_id: number | null,
 }
 export type User = Selectable<UsersTable>
 export type NewUser = Insertable<UsersTable>
@@ -61,6 +61,15 @@ export interface ResolutionsTable {
 export type Resolution = Selectable<ResolutionsTable>
 export type NewResolution = Insertable<ResolutionsTable>
 export type ResolutionUpdate = Updateable<ResolutionsTable>
+
+export interface LoginsTable {
+  id: Generated<number>,
+  username: string,
+  password_hash: string,
+}
+export type Login = Selectable<LoginsTable>
+export type NewLogin = Insertable<LoginsTable>
+export type LoginUpdate = Updateable<LoginsTable>
 
 export interface VForecastsView {
   user_id: number,
