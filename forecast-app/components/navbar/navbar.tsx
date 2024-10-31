@@ -20,7 +20,7 @@ export default async function NavBar() {
     <div className="w-full flex justify-between px-2 mt-3">
       <NavigationMenu>
         <Link href="/">
-          <Button variant="ghost" size="lg" className="hidden lg:inline">
+          <Button variant="ghost" size="lg" className="hidden lg:inline font-bold">
             Forecasting
           </Button>
         </Link>

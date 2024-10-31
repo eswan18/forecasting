@@ -23,9 +23,10 @@ export function UserStatus() {
         ? (
           <>
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-end gap-2 text-sm">
-                <User2 size={22} className="pb-0.5" />
-                <span className="hidden lg:inline">{user.user.name}</span>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <User2 />
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuLabel className="lg:hidden">

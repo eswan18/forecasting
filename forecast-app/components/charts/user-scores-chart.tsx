@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
 import { UserScore } from "@/lib/db_actions";
@@ -17,7 +17,9 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export default function UserScoresChart({ userScores }: { userScores: UserScore[] }) {
+export default function UserScoresChart(
+  { userScores }: { userScores: UserScore[] },
+) {
   userScores.sort((a, b) => a.score - b.score);
   return (
     <ChartContainer config={chartConfig} className="w-full h-full">
@@ -36,8 +38,8 @@ export default function UserScoresChart({ userScores }: { userScores: UserScore[
         />
         <XAxis dataKey="score" type="number" />
         <ChartTooltip content={<ChartTooltipContent />} />
-        <Bar dataKey="score" fill="hsl(var(--foreground))" radius={2} />
+        <Bar dataKey="score" fill="hsl(var(--accent))" radius={2} />
       </BarChart>
     </ChartContainer>
-  )
+  );
 }
