@@ -84,7 +84,7 @@ function ActionDropdown({ propId, resolution }: ActionDropdownProps) {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-6 w-6 p-0">
+          <Button variant="outline" size="icon" className="h-6 w-6 p-0">
             <span className="sr-only">Open menu</span>
             <MoreHorizontal className="h-5 w-5" />
           </Button>

@@ -7,14 +7,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import LogoutButton from "@/components/logout-button";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { User2, UserCircle, UserRoundPen } from "lucide-react";
+import { LogOut, User2, UserRoundPen } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
+import { useLogout } from "@/hooks/useLogout";
 
 export function UserStatus() {
   const { user, loading, error } = useCurrentUser();
+  const logout = useLogout("/login");
   const loggedIn = user && !loading && !error;
   return (
     <div className="lg:w-48 flex justify-end items-end gap-2 pb-1">
@@ -28,11 +29,11 @@ export function UserStatus() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuLabel className="lg:hidden">
-                  Logged in as {user.name}
+                <DropdownMenuLabel>
+                  {user.name} {user.is_admin ? "(Admin)" : ""}
                 </DropdownMenuLabel>
-                <DropdownMenuItem>
-                  <LogoutButton />
+                <DropdownMenuItem onClick={logout}>
+                  <LogOut size={14} className="mr-2"/><span>Logout</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
