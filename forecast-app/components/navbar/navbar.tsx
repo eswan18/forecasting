@@ -6,12 +6,12 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-  NavigationMenuViewport,
   navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu"
+  NavigationMenuViewport,
+} from "@/components/ui/navigation-menu";
 
-import ThemeToggle from './theme-toggle';
-import { UserStatus } from './user-status';
+import ThemeToggle from "./theme-toggle";
+import { UserStatus } from "./user-status";
 import Link from "next/link";
 import { Button } from "../ui/button";
 
@@ -19,21 +19,29 @@ export default async function NavBar() {
   return (
     <div className="w-full flex justify-between px-2 mt-3">
       <NavigationMenu>
-        <Link href="/"><Button variant='ghost' size="lg" className="hidden lg:inline">Forecasting</Button></Link>
+        <Link href="/">
+          <Button variant="ghost" size="lg" className="hidden lg:inline">
+            Forecasting
+          </Button>
+        </Link>
         <NavigationMenuList>
-
           <NavigationMenuItem>
-            <Link href="/scores/2024">
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>Scores</NavigationMenuLink>
-            </Link>
+            <NavigationMenuLink
+              href="/scores/2024"
+              className={navigationMenuTriggerStyle()}
+            >
+              Scores
+            </NavigationMenuLink>
           </NavigationMenuItem>
 
           <NavigationMenuItem>
-            <Link href="/props/2024">
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>Props</NavigationMenuLink>
-            </Link>
+            <NavigationMenuLink
+              href="/props/2024"
+              className={navigationMenuTriggerStyle()}
+            >
+              Props
+            </NavigationMenuLink>
           </NavigationMenuItem>
-
         </NavigationMenuList>
       </NavigationMenu>
       <div className="flex flex-row justify-end gap-3">
@@ -41,5 +49,5 @@ export default async function NavBar() {
         <ThemeToggle />
       </div>
     </div>
-  )
+  );
 }
