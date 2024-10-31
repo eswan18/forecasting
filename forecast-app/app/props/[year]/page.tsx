@@ -15,7 +15,6 @@ export default async function Page(
         <DataTable
           getColumns={getColumns}
           data={propsAndResolutions}
-          allowResolutionEdits={false}
         />
       </div>
     </main>

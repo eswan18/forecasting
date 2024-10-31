@@ -5,12 +5,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import LogoutButton from "@/components/logout-button";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { User2 } from "lucide-react";
+import { User2, UserCircle, UserRoundPen } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
 
@@ -25,12 +24,12 @@ export function UserStatus() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon">
-                  <User2 />
+                  {user.is_admin ? <UserRoundPen /> : <User2 />}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuLabel className="lg:hidden">
-                  Logged in as {user.user.name}
+                  Logged in as {user.name}
                 </DropdownMenuLabel>
                 <DropdownMenuItem>
                   <LogoutButton />

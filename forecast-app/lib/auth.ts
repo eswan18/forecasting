@@ -17,7 +17,7 @@ export async function getUserFromRequest(req: NextRequest): Promise<User | null>
     const user: User | undefined = await db
       .selectFrom('logins')
       .innerJoin('users', 'logins.id', 'users.login_id')
-      .select(['users.id', 'users.name', 'users.email', 'users.login_id'])
+      .select(['users.id', 'users.name', 'users.email', 'users.login_id', 'users.is_admin'])
       .where('logins.id', '=', decoded.loginId)
       .executeTakeFirst();
     return user || null;

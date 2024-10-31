@@ -20,6 +20,7 @@ export interface UsersTable {
   name: string,
   email: string,
   login_id: number | null,
+  is_admin: boolean,
 }
 export type User = Selectable<UsersTable>
 export type NewUser = Insertable<UsersTable>

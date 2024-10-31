@@ -1,13 +1,14 @@
 'use client';
 
+import { User } from '@/types/db_types';
 import useSWR from 'swr';
 
 export function useCurrentUser() {
-  const { data, error, mutate } = useSWR('/api/user', fetcher);
+  const { data: user, error, mutate } = useSWR('/api/user', fetcher);
 
   return {
-    user: data,
-    loading: !error && !data,
+    user,
+    loading: !error && !user,
     error,
     mutate,
   };
@@ -20,5 +21,10 @@ async function fetcher(url: string) {
     throw new Error('Not authenticated');
   }
 
-  return res.json();
+  const payload = await res.json();
+  if ('user' in payload) {
+    return payload.user as User;
+  } else {
+    throw new Error('Invalid response from server');
+  }
 }
