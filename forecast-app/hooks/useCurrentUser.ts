@@ -2,9 +2,6 @@
 
 import useSWR from 'swr';
 
-import { User } from '@/types/db_types';
-import { useState, useEffect } from 'react';
-
 export function useCurrentUser() {
   const { data, error, mutate } = useSWR('/api/user', fetcher);
 

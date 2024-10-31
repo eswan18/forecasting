@@ -25,25 +25,3 @@ export async function getUserFromRequest(req: NextRequest): Promise<User | null>
     return null;
   }
 }
-
-/*export async function getCurrentUser() {
-  console.log('getCurrentUser');
-  const cookieStore = cookies();
-  const token = cookieStore.get('token')?.value;
-
-  if (!token) {
-    return null;
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { userId: number };
-    const user = await db
-      .selectFrom('users')
-      .selectAll()
-      .where('id', '=', decoded.userId)
-      .executeTakeFirst();
-    return user;
-  } catch {
-    return null;
-  }
-}*/
