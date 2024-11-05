@@ -11,8 +11,7 @@ It relies on you havig a defined `DATABASE_URL` in your `.env.local`.
 docker-compose --env-file .env.local -f local-pg-container.yaml up
 ```
 
-You'll also need to add a line to your `.env.local` so that the app knows to connect to the local db:
-
+Then you can override the `DATABASE_URL` for the app by setting it on startup:
 ```
-LOCAL_DATABASE_URL='postgresql://ethan:ethan@localhost:5432'
+DATABASE_URL='postgresql://ethan:ethan@localhost:5432/forecasting' npm run dev
 ```

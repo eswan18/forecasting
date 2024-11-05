@@ -22,8 +22,10 @@ services:
       POSTGRES_USER: abc
       POSTGRES_PASSWORD: def
       POSTGRES_DB: nonsense
+      LOCAL_DB_URI: "postgresql://ethan:ethan@host.docker.internal:5432/forecasting"
     depends_on:
       postgres:
         condition: service_healthy
     command: >
-      pg_dump --create "$DATABASE_URL" | psql "postgresql://ethan:ethan@host.docker.internal:5432/template1"
+      bash -c "pg_dump --no-owner --no-acl $DATABASE_URL | psql 'postgresql://ethan:ethan@host.docker.internal:5432/forecasting'"
+    
