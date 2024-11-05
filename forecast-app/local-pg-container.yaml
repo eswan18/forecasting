@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ethan
+      POSTGRES_PASSWORD: ethan
+      POSTGRES_DB: forecasting
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ethan -d forecasting"]
+      interval: 4s
+      timeout: 4s
+      retries: 5
+    ports:
+      - 5432:5432
+
+  cloner:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: abc
+      POSTGRES_PASSWORD: def
+      POSTGRES_DB: nonsense
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      pg_dump --create "$DATABASE_URL" | psql "postgresql://ethan:ethan@host.docker.internal:5432/template1"
