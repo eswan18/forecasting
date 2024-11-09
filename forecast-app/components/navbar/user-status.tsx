@@ -41,7 +41,7 @@ export function UserStatus() {
           </>
         )
         : loading
-        ? <span>Loading...</span>
+        ? <Button disabled variant="outline">Loading...</Button>
         : (
           <Link href="/login">
             <Button>Log in</Button>

@@ -15,7 +15,7 @@ export default function ThemeToggle() {
   }, []);
 
   if (!mounted) {
-    return null;
+    return <Button variant="outline" disabled size="icon"></Button>
   }
 
   return (
