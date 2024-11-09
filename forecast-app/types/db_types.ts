@@ -13,6 +13,7 @@ export interface Database {
   resolutions: ResolutionsTable,
   logins: LoginsTable,
   v_forecasts: VForecastsView,
+  v_users: VUsersView,
 }
 
 export interface UsersTable {
@@ -85,3 +86,12 @@ export interface VForecastsView {
   score: number | null,
 }
 export type VForecast = Selectable<VForecastsView>
+
+export interface VUsersView {
+  user_id: number,
+  email: string,
+  login_id: number | null,
+  is_admin: boolean,
+  username: string | null,
+}
+export type VUser = Selectable<VUsersView>

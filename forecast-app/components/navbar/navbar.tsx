@@ -10,8 +10,17 @@ import ThemeToggle from "./theme-toggle";
 import { UserStatus } from "./user-status";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { getUserFromCookies } from "@/lib/auth";
 
 export default async function NavBar() {
+  const user = await getUserFromCookies();
+  const links = [
+    { href: "/scores/2024", label: "Scores" },
+    { href: "/props/2024", label: "Props" },
+  ];
+  if (user?.is_admin) {
+    links.push({ href: "/users", label: "Users" });
+  }
   return (
     <div className="w-full flex justify-between px-2 mt-3">
       <NavigationMenu>
@@ -25,23 +34,16 @@ export default async function NavBar() {
           </Button>
         </Link>
         <NavigationMenuList>
-          <NavigationMenuItem>
-            <NavigationMenuLink
-              href="/scores/2024"
-              className={navigationMenuTriggerStyle()}
-            >
-              Scores
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-
-          <NavigationMenuItem>
-            <NavigationMenuLink
-              href="/props/2024"
-              className={navigationMenuTriggerStyle()}
-            >
-              Props
-            </NavigationMenuLink>
-          </NavigationMenuItem>
+          {links.map(({ href, label }) => (
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                href={href}
+                className={navigationMenuTriggerStyle()}
+              >
+                {label}
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+          ))}
         </NavigationMenuList>
       </NavigationMenu>
       <div className="flex flex-row justify-end gap-3">

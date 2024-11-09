@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,10 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 /// Log in a user.
 /// The server should return a JWT token in a cookie if the login is successful.
-export async function loginUser(username: string, password: string): Promise<void> {
+export async function loginUser(
+  username: string,
+  password: string,
+): Promise<void> {
   const res = await fetch("/api/login", {
     method: "POST",
     body: JSON.stringify({ username, password }),
@@ -27,18 +29,19 @@ export async function loginUser(username: string, password: string): Promise<voi
   }
 }
 
-export default function LoginFormCard({redirectURL}: {redirectURL?: string}) {
+export default function LoginFormCard(
+  { onLogin }: { onLogin?: () => void },
+) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const { mutate } = useCurrentUser();
-  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     loginUser(username, password).then(() => {
       mutate();
-      router.push(redirectURL || "/");
+      onLogin && onLogin();
     }).catch((error) => {
       setError(error.message);
     });

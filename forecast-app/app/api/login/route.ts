@@ -1,5 +1,6 @@
 /// Log in a user.
 
+import { revalidatePath } from 'next/cache'
 import { NextRequest, NextResponse } from 'next/server';
 import argon2 from 'argon2';
 import { db } from '@/lib/database';
