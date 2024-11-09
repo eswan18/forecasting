@@ -1,13 +1,9 @@
 import {
   NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuIndicator,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-  NavigationMenuViewport,
 } from "@/components/ui/navigation-menu";
 
 import ThemeToggle from "./theme-toggle";
@@ -20,7 +16,11 @@ export default async function NavBar() {
     <div className="w-full flex justify-between px-2 mt-3">
       <NavigationMenu>
         <Link href="/">
-          <Button variant="ghost" size="lg" className="hidden lg:inline font-bold">
+          <Button
+            variant="ghost"
+            size="lg"
+            className="hidden lg:inline font-bold"
+          >
             Forecasting
           </Button>
         </Link>
