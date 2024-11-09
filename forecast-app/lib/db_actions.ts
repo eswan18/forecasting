@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { User, VForecast } from '@/types/db_types';
 import { db } from './database';
 import { sql } from 'kysely';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { getUserFromCookies, getUserFromRequest } from './auth';
 
 export async function getUsers(): Promise<User[]> {
   return await db.selectFrom('users').selectAll().execute();
@@ -100,6 +102,12 @@ export async function getAvgScoreByUserAndCategory({ year }: { year?: number }):
 }
 
 export async function resolveProp({ propId, resolution }: { propId: number, resolution: boolean }): Promise<void> {
+  // Verify the user is an admin
+  const user = await getUserFromCookies();
+  if (!user || !user.is_admin) {
+    throw new Error('Unauthorized');
+  }
+
   // first check that this prop doesn't already have a resolution
   const existingResolution = await db
     .selectFrom('resolutions')
@@ -115,6 +123,12 @@ export async function resolveProp({ propId, resolution }: { propId: number, reso
 }
 
 export async function unresolveProp({ propId }: { propId: number }): Promise<void> {
+  // Verify the user is an admin
+  const user = await getUserFromCookies();
+  if (!user || !user.is_admin) {
+    throw new Error('Unauthorized');
+  }
+
   await db.deleteFrom('resolutions').where('prop_id', '=', propId).execute();
   revalidatePath('/props');
 }

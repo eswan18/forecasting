@@ -81,7 +81,11 @@ export default function RegisterFormCard() {
                 <FormItem>
                   <FormLabel>Username</FormLabel>
                   <FormControl>
-                    <Input placeholder="bobbytables" autoCapitalize="off" {...field} />
+                    <Input
+                      placeholder="bobbytables"
+                      autoCapitalize="off"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

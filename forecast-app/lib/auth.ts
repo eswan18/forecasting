@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { db } from '@/lib/database';
 import { sql } from 'kysely';
@@ -16,11 +17,21 @@ export interface UserWithUsername {
 
 export async function getUserFromRequest(req: NextRequest): Promise<UserWithUsername | null> {
   const token = req.cookies.get('token')?.value;
-
   if (!token) {
     return null;
   }
+  return await getUserFromToken(token);
+}
 
+export async function getUserFromCookies(): Promise<UserWithUsername | null> {
+  const token = (await cookies()).get('token')?.value;
+  if (!token) {
+    return null;
+  }
+  return await getUserFromToken(token);
+}
+
+export async function getUserFromToken(token: string): Promise<UserWithUsername | null> {
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { loginId: number };
     const user = await db
