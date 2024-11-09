@@ -24,8 +24,8 @@ export function UserStatus() {
           <>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon">
-                  {user.is_admin ? <UserRoundPen /> : <User2 />}
+                <Button variant="outline" className="gap-2">
+                  {user.is_admin ? <UserRoundPen /> : <User2 size={20} />} {user.username}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
@@ -33,7 +33,8 @@ export function UserStatus() {
                   {user.name} {user.is_admin ? "(Admin)" : ""}
                 </DropdownMenuLabel>
                 <DropdownMenuItem onClick={logout}>
-                  <LogOut size={14} className="mr-2"/><span>Logout</span>
+                  <LogOut size={14} className="mr-2" />
+                  <span>Logout</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

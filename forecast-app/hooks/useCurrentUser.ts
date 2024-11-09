@@ -1,6 +1,6 @@
 'use client';
 
-import { User } from '@/types/db_types';
+import { UserWithUsername } from '@/lib/auth';
 import useSWR from 'swr';
 
 export function useCurrentUser() {
@@ -23,7 +23,7 @@ async function fetcher(url: string) {
 
   const payload = await res.json();
   if ('user' in payload) {
-    return payload.user as User;
+    return payload.user as UserWithUsername;
   } else {
     throw new Error('Invalid response from server');
   }
