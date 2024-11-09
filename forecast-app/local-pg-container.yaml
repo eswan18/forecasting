@@ -10,7 +10,7 @@ services:
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ethan -d forecasting"]
-      interval: 4s
+      interval: 3s
       timeout: 4s
       retries: 5
     ports:

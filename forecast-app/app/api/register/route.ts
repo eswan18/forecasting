@@ -2,9 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import argon2 from 'argon2';
 import { db } from '@/lib/database';
 
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
+
+const REGISTER_SECRET = process.env.REGISTER_SECRET;
+
 /// Create a new user.
 export async function POST(req: NextRequest) {
-  const { username, password } = await req.json();
+  const { username, password, register_secret: registerSecret } = await req.json();
+  console.log('register_secret:', registerSecret);
+
+  // The "registerSecret" is a secret key that is required to register a new user.
+  if (registerSecret !== REGISTER_SECRET) {
+    return NextResponse.json(
+      { error: 'Incorrect register_secret.' },
+      { status: 401 }
+    );
+  }
 
   if (!username || !password) {
     return NextResponse.json(
