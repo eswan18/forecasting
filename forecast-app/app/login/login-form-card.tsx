@@ -58,6 +58,7 @@ export default function LoginFormCard({redirectURL}: {redirectURL?: string}) {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
+              autoCapitalize="off"
               placeholder="Enter your username"
             />
           </div>
