@@ -33,7 +33,7 @@ const formSchema = z.object({
     "Must contain only letters, hyphens, and spaces",
   ).min(2).max(30),
   email: z.string().email(),
-  registerSecret: z.string().min(5).max(8),
+  registrationSecret: z.string().min(5).max(8),
 });
 
 export default function RegisterFormCard() {
@@ -48,9 +48,8 @@ export default function RegisterFormCard() {
       const res = await fetch("/api/register", {
         method: "POST",
         body: JSON.stringify({
-          username: values.username,
-          password: values.password,
-          register_secret: values.registerSecret,
+          ...values,
+          registration_secret: values.registrationSecret,
         }),
         headers: { "Content-Type": "application/json" },
       });
@@ -143,7 +142,7 @@ export default function RegisterFormCard() {
             />
             <FormField
               control={form.control}
-              name="registerSecret"
+              name="registrationSecret"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Registration Secret</FormLabel>

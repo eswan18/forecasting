@@ -6,16 +6,17 @@ import { NewUser } from '@/types/db_types';
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
-const REGISTER_SECRET = process.env.REGISTER_SECRET;
+const REGISTRATION_SECRET = process.env.REGISTRATION_SECRET;
 
 /// Create a new user.
 export async function POST(req: NextRequest) {
-  const { username, password, name, email, register_secret: registerSecret } = await req.json();
+  const { username, password, name, email, registration_secret: registrationSecret } = await req.json();
 
-  // The "registerSecret" is a secret key that is required to register a new user.
-  if (registerSecret !== REGISTER_SECRET) {
+  console.log(username, password, name, email, registrationSecret);
+  // The "registrationSecret" is a secret key that is required to register a new user.
+  if (registrationSecret !== REGISTRATION_SECRET) {
     return NextResponse.json(
-      { error: 'Incorrect register_secret.' },
+      { error: 'Incorrect registration_secret.' },
       { status: 401 }
     );
   }
@@ -58,25 +59,24 @@ async function createLogin({ username, password }: { username: string, password:
   const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
 
   // Insert the new user into the database
-  const rows = await db
+  const { id } = await db
     .insertInto('logins')
     .values({
       username,
       password_hash: passwordHash,
     })
     .returning('id')
-    .execute();
-  const id = rows[0].id;
+    .executeTakeFirstOrThrow();
 
   return id;
 }
 
 async function createUser({ user }: { user: NewUser }) {
-  const rows = await db
+  console.log(user);
+  const { id } = await db
     .insertInto('users')
     .values(user)
     .returning('id')
-    .execute();
-  const id = rows[0].id;
+    .executeTakeFirstOrThrow();
   return id;
 }
