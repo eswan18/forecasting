@@ -13,6 +13,7 @@ import { AlertTriangle } from "lucide-react";
 export default function RegisterFormCard() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [registerSecret, setRegisterSecret] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -21,7 +22,11 @@ export default function RegisterFormCard() {
     try {
       const res = await fetch("/api/register", {
         method: "POST",
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+          username,
+          password,
+          register_secret: registerSecret,
+        }),
         headers: { "Content-Type": "application/json" },
       });
 
@@ -64,6 +69,17 @@ export default function RegisterFormCard() {
               onChange={(e) => setPassword(e.target.value)}
               required
               placeholder="Create a password"
+            />
+          </div>
+          <div>
+            <Label htmlFor="password">Secret (get this from Ethan)</Label>
+            <Input
+              id="register_secret"
+              type="password"
+              value={registerSecret}
+              onChange={(e) => setRegisterSecret(e.target.value)}
+              required
+              placeholder="something-very-secret"
             />
           </div>
           <Button type="submit" className="w-full">

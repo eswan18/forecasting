@@ -10,7 +10,6 @@ const REGISTER_SECRET = process.env.REGISTER_SECRET;
 /// Create a new user.
 export async function POST(req: NextRequest) {
   const { username, password, register_secret: registerSecret } = await req.json();
-  console.log('register_secret:', registerSecret);
 
   // The "registerSecret" is a secret key that is required to register a new user.
   if (registerSecret !== REGISTER_SECRET) {
@@ -36,6 +35,14 @@ export async function POST(req: NextRequest) {
 
   if (existingLogin) {
     return NextResponse.json({ error: 'Username already exists.' }, { status: 400 });
+  }
+
+  // Make sure the password is valid: at least 8 characters
+  if (password.length < 8) {
+    return NextResponse.json(
+      { error: 'Password must be at least 8 characters long.' },
+      { status: 400 }
+    );
   }
 
   // Hash the password using Argon2
