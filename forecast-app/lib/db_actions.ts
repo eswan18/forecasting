@@ -7,6 +7,10 @@ import { sql } from 'kysely';
 import { getUserFromCookies } from './auth';
 
 export async function getUsers(): Promise<VUser[]> {
+  const user = await getUserFromCookies();
+  if (!user?.is_admin) {
+    throw new Error('Unauthorized');
+  }
   return await db.selectFrom('v_users').selectAll().execute();
 }
 
@@ -19,7 +23,6 @@ export async function getLoginByUsername(username: string): Promise<Login | unde
 }
 
 export async function createLogin({ login }: { login: NewLogin }): Promise<number> {
-  // Insert the new user into the database
   const { id } = await db
     .insertInto('logins')
     .values(login)
