@@ -35,7 +35,7 @@ export default async function NavBar() {
         </Link>
         <NavigationMenuList>
           {links.map(({ href, label }) => (
-            <NavigationMenuItem>
+            <NavigationMenuItem key={href}>
               <NavigationMenuLink
                 href={href}
                 className={navigationMenuTriggerStyle()}
