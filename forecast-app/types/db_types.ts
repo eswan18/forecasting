@@ -88,10 +88,11 @@ export interface VForecastsView {
 export type VForecast = Selectable<VForecastsView>
 
 export interface VUsersView {
-  user_id: number,
+  id: number,
+  name: string,
   email: string,
-  login_id: number | null,
   is_admin: boolean,
+  login_id: number | null,
   username: string | null,
 }
 export type VUser = Selectable<VUsersView>

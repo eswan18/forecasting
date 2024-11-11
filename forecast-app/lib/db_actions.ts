@@ -1,13 +1,13 @@
 'use server';
 
 import { revalidatePath } from 'next/cache'
-import { User, VForecast } from '@/types/db_types';
+import { VForecast, VUser } from '@/types/db_types';
 import { db } from './database';
 import { sql } from 'kysely';
-import { getUserFromCookies } from './auth';
+import { getUserFromCookies, UserWithUsername } from './auth';
 
-export async function getUsers(): Promise<User[]> {
-  return await db.selectFrom('users').selectAll().execute();
+export async function getUsers(): Promise<VUser[]> {
+  return await db.selectFrom('v_users').selectAll().execute();
 }
 
 export type PropAndResolution = {
