@@ -65,6 +65,7 @@ async function createLogin({ username, password }: { username: string, password:
     .values({
       username,
       password_hash: passwordHash,
+      is_salted: true,
     })
     .returning('id')
     .executeTakeFirstOrThrow();

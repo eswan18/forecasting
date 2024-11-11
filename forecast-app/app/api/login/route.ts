@@ -31,7 +31,9 @@ export async function POST(req: NextRequest) {
   }
 
   // Verify the password
-  const isValid = await argon2.verify(login.password_hash, SALT + password);
+  // Legacy users didn't have salted passwords, so we check before salting.
+  const passwordToVerify = login.is_salted ? SALT + password : password;
+  const isValid = await argon2.verify(login.password_hash, passwordToVerify);
 
   if (!isValid) {
     return NextResponse.json({ error: 'Invalid username or password.' }, { status: 401 });

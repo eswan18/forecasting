@@ -68,6 +68,7 @@ export interface LoginsTable {
   id: Generated<number>,
   username: string,
   password_hash: string,
+  is_salted: boolean,
 }
 export type Login = Selectable<LoginsTable>
 export type NewLogin = Insertable<LoginsTable>
