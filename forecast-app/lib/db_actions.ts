@@ -3,7 +3,6 @@
 import { revalidatePath } from 'next/cache'
 import { VForecast, VUser, Login, NewUser, NewLogin, VProp } from '@/types/db_types';
 import { db } from './database';
-import { sql } from 'kysely';
 import { getUserFromCookies } from './auth';
 
 export async function getUsers(): Promise<VUser[]> {
