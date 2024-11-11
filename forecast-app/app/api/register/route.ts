@@ -7,6 +7,7 @@ import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
 const REGISTRATION_SECRET = process.env.REGISTRATION_SECRET;
+const SALT = process.env.ARGON2_SALT;
 
 /// Create a new user.
 export async function POST(req: NextRequest) {
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
 
 async function createLogin({ username, password }: { username: string, password: string }) {
   // Hash the password using Argon2
-  const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
+  const passwordHash = await argon2.hash(SALT + password, { type: argon2.argon2id });
 
   // Insert the new user into the database
   const { id } = await db

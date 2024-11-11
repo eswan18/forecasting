@@ -1,6 +1,5 @@
 /// Log in a user.
 
-import { revalidatePath } from 'next/cache'
 import { NextRequest, NextResponse } from 'next/server';
 import argon2 from 'argon2';
 import { db } from '@/lib/database';
@@ -8,6 +7,7 @@ import jwt from 'jsonwebtoken';
 import { serialize } from 'cookie';
 
 const JWT_SECRET = process.env.JWT_SECRET;
+const SALT = process.env.ARGON2_SALT;
 
 export async function POST(req: NextRequest) {
   const { username, password } = await req.json();
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Verify the password
-  const isValid = await argon2.verify(login.password_hash, password);
+  const isValid = await argon2.verify(login.password_hash, SALT + password);
 
   if (!isValid) {
     return NextResponse.json({ error: 'Invalid username or password.' }, { status: 401 });
