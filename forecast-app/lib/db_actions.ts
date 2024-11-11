@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { VForecast, VUser } from '@/types/db_types';
 import { db } from './database';
 import { sql } from 'kysely';
-import { getUserFromCookies, UserWithUsername } from './auth';
+import { getUserFromCookies } from './auth';
 
 export async function getUsers(): Promise<VUser[]> {
   return await db.selectFrom('v_users').selectAll().execute();

@@ -39,6 +39,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid username or password.' }, { status: 401 });
   }
 
+  ////////////////////////////////////////
+  // Temporary patch: fix unsalted users
+  ////////////////////////////////////////
+  if (!login.is_salted) {
+    const newPasswordHash = await argon2.hash(SALT + password, { type: argon2.argon2id });
+    await db
+      .updateTable('logins')
+      .set({'password_hash': newPasswordHash, is_salted: true})
+      .where('id', '=', login.id)
+      .execute();
+  }
+
   // Create a JWT token
   if (!JWT_SECRET) {
     throw new Error('JWT_SECRET is not set.');
