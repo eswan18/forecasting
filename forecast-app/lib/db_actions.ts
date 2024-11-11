@@ -1,13 +1,21 @@
 'use server';
 
 import { revalidatePath } from 'next/cache'
-import { VForecast, VUser } from '@/types/db_types';
+import { VForecast, VUser, Login } from '@/types/db_types';
 import { db } from './database';
 import { sql } from 'kysely';
 import { getUserFromCookies } from './auth';
 
 export async function getUsers(): Promise<VUser[]> {
   return await db.selectFrom('v_users').selectAll().execute();
+}
+
+export async function getLoginByUsername(username: string): Promise<Login | undefined> {
+  return await db
+    .selectFrom('logins')
+    .selectAll()
+    .where('username', '=', username)
+    .executeTakeFirst();
 }
 
 export type PropAndResolution = {

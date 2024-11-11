@@ -5,6 +5,7 @@ import argon2 from 'argon2';
 import { db } from '@/lib/database';
 import jwt from 'jsonwebtoken';
 import { serialize } from 'cookie';
+import { getLoginByUsername } from '@/lib/db_actions';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const SALT = process.env.ARGON2_SALT;
@@ -20,11 +21,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Fetch the user from the database
-  const login = await db
-    .selectFrom('logins')
-    .selectAll()
-    .where('username', '=', username)
-    .executeTakeFirst();
+  const login = await getLoginByUsername(username);
 
   if (!login) {
     return NextResponse.json({ error: 'Invalid username or password.' }, { status: 401 });
