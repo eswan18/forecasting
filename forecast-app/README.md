@@ -13,5 +13,5 @@ docker-compose --env-file .env.local -f local-pg-container.yaml up
 
 Then you can override the `DATABASE_URL` for the app by setting it on startup:
 ```
-DATABASE_URL='postgresql://ethan:ethan@localhost:5432/forecasting' npm run dev
+DATABASE_URL='postgresql://ethan:ethan@localhost:2345/forecasting' npm run dev
 ```
