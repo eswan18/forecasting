@@ -33,6 +33,12 @@ export function UserStatus() {
                 <DropdownMenuLabel>
                   {user.name} {user.is_admin ? "(Admin)" : ""}
                 </DropdownMenuLabel>
+                <Link href="/profile">
+                  <DropdownMenuItem className="px-4">
+                    <User2 size={14} className="mr-2" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                </Link>
                 <DropdownMenuItem onClick={logout} className="px-4">
                   <LogOut size={14} className="mr-2" />
                   <span>Logout</span>
@@ -42,12 +48,12 @@ export function UserStatus() {
           </>
         )
         : loading
-        ? <Button disabled variant="outline">Loading...</Button>
-        : (
-          <Link href="/login">
-            <Button>Log in</Button>
-          </Link>
-        )}
+          ? <Button disabled variant="outline">Loading...</Button>
+          : (
+            <Link href="/login">
+              <Button>Log in</Button>
+            </Link>
+          )}
     </div>
   );
 }
