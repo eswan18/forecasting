@@ -3,7 +3,7 @@
 import { ArrowUpDown } from "lucide-react";
 import { MoreHorizontal } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
-import { PropAndResolution } from "@/lib/db_actions";
+import { VProp } from "@/types/db_types";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,7 +16,7 @@ import { resolveProp, unresolveProp } from "@/lib/db_actions";
 
 export function getColumns(
   allowResolutionEdits: boolean,
-): ColumnDef<PropAndResolution>[] {
+): ColumnDef<VProp>[] {
   return [
     {
       accessorKey: "category_name",

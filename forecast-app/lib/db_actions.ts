@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache'
-import { VForecast, VUser, Login, NewUser, NewLogin } from '@/types/db_types';
+import { VForecast, VUser, Login, NewUser, NewLogin, VProp } from '@/types/db_types';
 import { db } from './database';
 import { sql } from 'kysely';
 import { getUserFromCookies } from './auth';
@@ -40,42 +40,19 @@ export async function createUser({ user }: { user: NewUser }) {
   return id;
 }
 
-export type PropAndResolution = {
-  prop_id: number,
-  prop_text: string,
-  category_id: number,
-  category_name: string,
-  resolution: boolean | null,
-};
 
-export async function getPropsAndResolutions(): Promise<PropAndResolution[]> {
+export async function getPropsAndResolutions(): Promise<VProp[]> {
   return await db
-    .selectFrom('props')
-    .innerJoin('categories', 'props.category_id', 'categories.id')
-    .leftJoin('resolutions', 'props.id', 'resolutions.prop_id')
-    .select([
-      sql<number>`props.id`.as('prop_id'),
-      sql<string>`props.text`.as('prop_text'),
-      'category_id',
-      sql<string>`categories.name`.as('category_name'),
-      'resolutions.resolution',
-    ])
+    .selectFrom('v_props')
+    .selectAll()
     .execute();
 }
 
-export async function getPropsAndResolutionsByYear(year: number): Promise<PropAndResolution[]> {
+export async function getPropsAndResolutionsByYear(year: number): Promise<VProp[]> {
   return await db
-    .selectFrom('props')
-    .innerJoin('categories', 'props.category_id', 'categories.id')
-    .leftJoin('resolutions', 'props.id', 'resolutions.prop_id')
+    .selectFrom('v_props')
+    .selectAll()
     .where('year', '=', year)
-    .select([
-      sql<number>`props.id`.as('prop_id'),
-      sql<string>`props.text`.as('prop_text'),
-      'category_id',
-      sql<string>`categories.name`.as('category_name'),
-      'resolutions.resolution',
-    ])
     .execute();
 }
 

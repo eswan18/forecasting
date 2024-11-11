@@ -12,6 +12,7 @@ export interface Database {
   forecasts: ForecastsTable,
   resolutions: ResolutionsTable,
   logins: LoginsTable,
+  v_props: VPropsView,
   v_forecasts: VForecastsView,
   v_users: VUsersView,
 }
@@ -73,6 +74,16 @@ export interface LoginsTable {
 export type Login = Selectable<LoginsTable>
 export type NewLogin = Insertable<LoginsTable>
 export type LoginUpdate = Updateable<LoginsTable>
+
+export interface VPropsView {
+  prop_id: number,
+  prop_text: string,
+  category_id: number,
+  category_name: string,
+  year: number,
+  resolution: boolean | null,
+}
+export type VProp = Selectable<VPropsView>
 
 export interface VForecastsView {
   user_id: number,
