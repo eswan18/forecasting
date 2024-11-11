@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache'
-import { VForecast, VUser, Login } from '@/types/db_types';
+import { VForecast, VUser, Login, NewUser, NewLogin } from '@/types/db_types';
 import { db } from './database';
 import { sql } from 'kysely';
 import { getUserFromCookies } from './auth';
@@ -16,6 +16,25 @@ export async function getLoginByUsername(username: string): Promise<Login | unde
     .selectAll()
     .where('username', '=', username)
     .executeTakeFirst();
+}
+
+export async function createLogin({ login }: { login: NewLogin }): Promise<number> {
+  // Insert the new user into the database
+  const { id } = await db
+    .insertInto('logins')
+    .values(login)
+    .returning('id')
+    .executeTakeFirstOrThrow();
+  return id;
+}
+
+export async function createUser({ user }: { user: NewUser }) {
+  const { id } = await db
+    .insertInto('users')
+    .values(user)
+    .returning('id')
+    .executeTakeFirstOrThrow();
+  return id;
 }
 
 export type PropAndResolution = {

@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import argon2 from 'argon2';
-import { db } from '@/lib/database';
-import { NewUser } from '@/types/db_types';
 
 import * as dotenv from 'dotenv';
+import { createLogin, createUser, getLoginByUsername } from '@/lib/db_actions';
 dotenv.config({ path: '.env.local' });
 
 const REGISTRATION_SECRET = process.env.REGISTRATION_SECRET;
@@ -13,7 +12,6 @@ const SALT = process.env.ARGON2_SALT;
 export async function POST(req: NextRequest) {
   const { username, password, name, email, registration_secret: registrationSecret } = await req.json();
 
-  console.log(username, password, name, email, registrationSecret);
   // The "registrationSecret" is a secret key that is required to register a new user.
   if (registrationSecret !== REGISTRATION_SECRET) {
     return NextResponse.json(
@@ -30,11 +28,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Check if the username already exists
-  const existingLogin = await db
-    .selectFrom('logins')
-    .select('id')
-    .where('username', '=', username)
-    .executeTakeFirst();
+  const existingLogin = await getLoginByUsername(username);
 
   if (existingLogin) {
     return NextResponse.json({ error: 'Username already exists.' }, { status: 400 });
@@ -48,37 +42,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const loginId = await createLogin({ username, password });
+  // Create the login
+  const passwordHash = await argon2.hash(SALT + password, { type: argon2.argon2id });
+  const login = { username, password_hash: passwordHash, is_salted: true };
+  const loginId = await createLogin({login});
+
   const user = { name, email, login_id: loginId, is_admin: false }
   await createUser({ user });
 
   return NextResponse.json({ message: 'User registered successfully.' }, { status: 201 });
-}
-
-async function createLogin({ username, password }: { username: string, password: string }) {
-  // Hash the password using Argon2
-  const passwordHash = await argon2.hash(SALT + password, { type: argon2.argon2id });
-
-  // Insert the new user into the database
-  const { id } = await db
-    .insertInto('logins')
-    .values({
-      username,
-      password_hash: passwordHash,
-      is_salted: true,
-    })
-    .returning('id')
-    .executeTakeFirstOrThrow();
-
-  return id;
-}
-
-async function createUser({ user }: { user: NewUser }) {
-  console.log(user);
-  const { id } = await db
-    .insertInto('users')
-    .values(user)
-    .returning('id')
-    .executeTakeFirstOrThrow();
-  return id;
 }
