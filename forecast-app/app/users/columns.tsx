@@ -9,12 +9,12 @@ export const columns: ColumnDef<VUser>[] = [
     header: "Login ID",
   },
   {
-    accessorKey: "username",
-    header: "Username",
-  },
-  {
     accessorKey: "id",
     header: "User ID",
+  },
+  {
+    accessorKey: "username",
+    header: "Username",
   },
   {
     accessorKey: "name",
@@ -24,6 +24,11 @@ export const columns: ColumnDef<VUser>[] = [
     accessorKey: "is_admin",
     header: "Admin",
     cell: ({ row }) => row.original.is_admin && "Y",
+  },
+  {
+    accessorKey: "is_salted",
+    header: "Salted",
+    cell: ({ row }) => row.original.is_salted && "Y",
   },
   {
     accessorKey: "email",

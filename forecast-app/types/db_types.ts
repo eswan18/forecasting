@@ -95,5 +95,6 @@ export interface VUsersView {
   is_admin: boolean,
   login_id: number | null,
   username: string | null,
+  is_salted: boolean | null,
 }
 export type VUser = Selectable<VUsersView>
