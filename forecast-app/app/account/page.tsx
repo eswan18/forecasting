@@ -1,6 +1,6 @@
 import PageHeading from "@/components/page-heading";
 import { AccountDetails } from "./user-profile";
-import { getUserFromCookies } from "@/lib/auth";
+import { getUserFromCookies } from "@/lib/get-user";
 
 export default async function Page() {
   const user = await getUserFromCookies();

@@ -2,7 +2,7 @@ import { DataTable } from "./data-table";
 import { columns } from "./columns";
 import PageHeading from "@/components/page-heading";
 import { getUsers } from "@/lib/db_actions";
-import { getUserFromCookies } from "@/lib/auth";
+import { getUserFromCookies } from "@/lib/get-user";
 
 export default async function Page() {
   const user = await getUserFromCookies();

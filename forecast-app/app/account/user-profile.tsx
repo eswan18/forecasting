@@ -21,6 +21,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { updateLoginPassword } from "@/lib/auth";
 
 export function AccountDetails() {
   const { user, loading, mutate } = useCurrentUser();
@@ -35,7 +36,7 @@ export function AccountDetails() {
       {user &&
         <>
           <UserDetailsSection initialUser={user} mutateUser={mutateUser} />
-          <LoginDetailsSection loginId={user.login_id || -999} initialUsername={user.username || ""} mutateUsername={mutateUsername} />
+          <LoginDetailsSection />
         </>
       }
     </div >
@@ -107,16 +108,7 @@ function UserDetailsSection(
   )
 }
 
-const usernameFormSchema = z.object({
-  username: z.string().regex(
-    /^[a-z0-9_]+$/,
-    "Must contain only lowercase letters, numbers, or underscores",
-  ).min(2).max(30),
-});
-
-function LoginDetailsSection(
-  { loginId, initialUsername, mutateUsername }: { loginId: number, initialUsername: string, mutateUsername: (username: string) => void }
-) {
+function LoginDetailsSection() {
   return (
     <div>
       <h2 className="text-xl mb-6">Login Details</h2>
@@ -131,27 +123,44 @@ function LoginDetailsSection(
               <DialogHeader className="mb-2">
                 <DialogTitle>Change Username</DialogTitle>
               </DialogHeader>
-              <UsernameForm />
+              <ChangeUsernameForm />
             </DialogContent>
           </Dialog>
         </div>
         <div className="grid grid-cols-3 gap-4">
           <AccountLabel>Password</AccountLabel>
-          <Button type="submit" className="col-start-2 col-span-2">Change Password</Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button type="submit" className="col-start-2 col-span-2">Change Password</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader className="mb-2">
+                <DialogTitle>Change Password</DialogTitle>
+              </DialogHeader>
+              <ChangePasswordForm />
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </div>
   )
 }
 
-function UsernameForm() {
+const changeUsernameFormSchema = z.object({
+  username: z.string().regex(
+    /^[a-z0-9_]+$/,
+    "Must contain only lowercase letters, numbers, or underscores",
+  ).min(2).max(30),
+});
+
+function ChangeUsernameForm() {
   const { user, mutate } = useCurrentUser();
   const [loading, setLoading] = useState(false);
-  const form = useForm<z.infer<typeof usernameFormSchema>>({
-    resolver: zodResolver(usernameFormSchema),
+  const form = useForm<z.infer<typeof changeUsernameFormSchema>>({
+    resolver: zodResolver(changeUsernameFormSchema),
     defaultValues: { username: user?.username || undefined },
   });
-  async function onSubmit(values: z.infer<typeof usernameFormSchema>) {
+  async function onSubmit(values: z.infer<typeof changeUsernameFormSchema>) {
     if (!form.formState.isDirty) {
       return;
     }
@@ -180,6 +189,70 @@ function UsernameForm() {
             :
             <Button type="submit" disabled={!form.formState.isDirty} className="w-32">Update</Button>
           }
+        </form>
+      </Form>
+    </>
+  )
+}
+
+const changePasswordFormSchema = z.object({
+  currentPassword: z.string(),// .min(8).max(30),
+  newPassword: z.string().min(8).max(30),
+});
+
+function ChangePasswordForm() {
+  const { user } = useCurrentUser();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const form = useForm<z.infer<typeof changePasswordFormSchema>>({
+    resolver: zodResolver(changePasswordFormSchema),
+  });
+  async function onSubmit(values: z.infer<typeof changePasswordFormSchema>) {
+    const loginId = user?.login_id;
+    if (!loginId) {
+      return
+    }
+    setLoading(true);
+    try {
+      await updateLoginPassword({ id: loginId, ...values });
+    } catch (e) {
+      console.log(e)
+      if (e instanceof Error) {
+        setError(e.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+  return (
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <FormField control={form.control} name="currentPassword" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Current Password</FormLabel>
+              <FormControl>
+                <Input type="password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+          <FormField control={form.control} name="newPassword" render={({ field }) => (
+            <FormItem>
+              <FormLabel>New Password</FormLabel>
+              <FormControl>
+                <Input type="password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+          {loading
+            ?
+            <div className="col-start-2 col-span-2 flex flex-row justify-center w-32"><LoaderCircle className="animate-spin" /></div>
+            :
+            <Button type="submit" className="w-32">Update</Button>
+          }
+          {error && <div className="col-start-2 col-span-2 text-red-500">{error}</div>}
         </form>
       </Form>
     </>

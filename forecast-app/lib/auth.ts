@@ -1,37 +1,25 @@
-import { NextRequest } from 'next/server';
-import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
+"use server";
+
+import argon2 from 'argon2';
 import { db } from '@/lib/database';
-import { VUser } from '@/types/db_types';
+const SALT = process.env.ARGON2_SALT;
 
-const JWT_SECRET = process.env.JWT_SECRET as string;
-
-export async function getUserFromRequest(req: NextRequest): Promise<VUser | null> {
-  const token = req.cookies.get('token')?.value;
-  if (!token) {
-    return null;
+export async function updateLoginPassword({ id, currentPassword, newPassword }: { id: number, currentPassword: string, newPassword: string }) {
+  // Validate the current password.
+  const login = await db
+    .selectFrom('logins')
+    .selectAll()
+    .where('id', '=', id)
+    .executeTakeFirstOrThrow();
+  const isValid = await argon2.verify(login.password_hash, SALT + currentPassword);
+  if (!isValid) {
+    throw new Error('Incorrect current password');
   }
-  return await getUserFromToken(token);
-}
-
-export async function getUserFromCookies(): Promise<VUser | null> {
-  const token = (await cookies()).get('token')?.value;
-  if (!token) {
-    return null;
-  }
-  return await getUserFromToken(token);
-}
-
-export async function getUserFromToken(token: string): Promise<VUser | null> {
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { loginId: number };
-    const user = await db
-      .selectFrom('v_users')
-      .selectAll()
-      .where('login_id', '=', decoded.loginId)
-      .executeTakeFirstOrThrow();
-    return user;
-  } catch {
-    return null;
-  }
+  // Update the password.
+  const newHash = await argon2.hash(SALT + newPassword, { type: argon2.argon2id });
+  await db
+    .updateTable('logins')
+    .set({ password_hash: newHash })
+    .where('id', '=', id)
+    .execute();
 }

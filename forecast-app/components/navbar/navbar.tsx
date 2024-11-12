@@ -10,7 +10,7 @@ import ThemeToggle from "./theme-toggle";
 import { UserStatus } from "./user-status";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { getUserFromCookies } from "@/lib/auth";
+import { getUserFromCookies } from "@/lib/get-user";
 
 export default async function NavBar() {
   const user = await getUserFromCookies();
