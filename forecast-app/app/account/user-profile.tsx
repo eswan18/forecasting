@@ -2,12 +2,15 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { VUser } from "@/types/db_types";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { updateUser } from "@/lib/db_actions";
+import { LoaderCircle } from "lucide-react";
+import { revalidatePath } from "next/cache";
 
 const userDetailsFormSchema = z.object({
   name: z.string().regex(
@@ -35,6 +38,7 @@ export function AccountDetails({ initialAccountDetails }: { initialAccountDetail
 }
 
 function UserDetailsForm({ initialUserDetails }: { initialUserDetails: VUser }) {
+  const [loading, setLoading] = useState(false);
   const form = useForm<z.infer<typeof userDetailsFormSchema>>({
     resolver: zodResolver(userDetailsFormSchema),
     defaultValues: initialUserDetails,
@@ -43,7 +47,9 @@ function UserDetailsForm({ initialUserDetails }: { initialUserDetails: VUser }) 
     if (!form.formState.isDirty) {
       return;
     }
-    updateUser({ id: initialUserDetails.id, user: values });
+    setLoading(true);
+    await updateUser({ id: initialUserDetails.id, user: values });
+    setLoading(false);
   }
   return (
     <div>
@@ -68,12 +74,19 @@ function UserDetailsForm({ initialUserDetails }: { initialUserDetails: VUser }) 
               <AccountFormMessage />
             </AccountFormItem>
           )} />
-          <div className="grid grid-cols-3">
-            <Button type="submit" disabled={!form.formState.isDirty} className="col-start-2 col-span-2">Update</Button>
-          </div>
+          {loading
+            ?
+            <div className="grid grid-cols-3 gap-4">
+              <div className="col-start-2 col-span-2 flex flex-row justify-center"><LoaderCircle className="animate-spin" /></div>
+            </div>
+            :
+            <div className="grid grid-cols-3 gap-4">
+              <Button type="submit" disabled={!form.formState.isDirty} className="col-start-2 col-span-2">Update</Button>
+            </div>
+          }
         </form>
       </Form>
-    </div>
+    </div >
   )
 }
 
