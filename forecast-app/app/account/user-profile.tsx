@@ -126,7 +126,7 @@ function LoginDetailsSection() {
               <DialogHeader className="mb-2">
                 <DialogTitle>Change Username</DialogTitle>
               </DialogHeader>
-              <ChangeUsernameForm onSuccess={() => setPasswordDialogOpen(false)} />
+              <ChangeUsernameForm onSuccess={() => setUsernameDialogOpen(false)} />
             </DialogContent>
           </Dialog>
         </div>
@@ -159,6 +159,7 @@ const changeUsernameFormSchema = z.object({
 function ChangeUsernameForm({ onSuccess }: { onSuccess: () => void }) {
   const { user, mutate } = useCurrentUser();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const form = useForm<z.infer<typeof changeUsernameFormSchema>>({
     resolver: zodResolver(changeUsernameFormSchema),
     defaultValues: { username: user?.username || undefined },
@@ -168,10 +169,28 @@ function ChangeUsernameForm({ onSuccess }: { onSuccess: () => void }) {
       return;
     }
     setLoading(true);
-    user && user.login_id && await updateLogin({ id: user?.login_id, login: values });
-    form.reset(values);
-    user && mutate({ ...user, username: values.username });
-    setLoading(false);
+    let success = true;
+    const loginId = user?.login_id;
+    if (!loginId) {
+      setError("User not found");
+      return
+    }
+    try {
+      await updateLogin({ id: loginId, login: values });
+    } catch (e) {
+      success = false;
+      console.log(e)
+      if (e instanceof Error) {
+        setError(e.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+    if (success) {
+      form.reset(values);
+      user && mutate({ ...user, username: values.username });
+      onSuccess();
+    }
   }
   return (
     <>
@@ -192,6 +211,7 @@ function ChangeUsernameForm({ onSuccess }: { onSuccess: () => void }) {
             :
             <Button type="submit" disabled={!form.formState.isDirty} className="w-32">Update</Button>
           }
+          {error && <div className="col-start-2 col-span-2 text-red-500">{error}</div>}
         </form>
       </Form>
     </>
