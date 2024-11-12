@@ -11,6 +11,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { updateLogin, updateUser } from "@/lib/db_actions";
 import { LoaderCircle } from "lucide-react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export function AccountDetails() {
   const { user, loading, mutate } = useCurrentUser();
@@ -24,8 +34,8 @@ export function AccountDetails() {
     <div className="mt-4 space-y-12">
       {user &&
         <>
-          <UserDetailsForm initialUser={user} mutateUser={mutateUser} />
-          <LoginDetailsForm loginId={user.login_id || -999} initialUsername={user.username || ""} mutateUsername={mutateUsername} />
+          <UserDetailsSection initialUser={user} mutateUser={mutateUser} />
+          <LoginDetailsSection loginId={user.login_id || -999} initialUsername={user.username || ""} mutateUsername={mutateUsername} />
         </>
       }
     </div >
@@ -40,7 +50,7 @@ const userDetailsFormSchema = z.object({
   email: z.string().email(),
 });
 
-function UserDetailsForm(
+function UserDetailsSection(
   { initialUser, mutateUser }: { initialUser: VUser, mutateUser: (updatedUser: UserUpdate) => void }
 ) {
   const [loading, setLoading] = useState(false);
@@ -97,34 +107,62 @@ function UserDetailsForm(
   )
 }
 
-const loginDetailsFormSchema = z.object({
+const usernameFormSchema = z.object({
   username: z.string().regex(
     /^[a-z0-9_]+$/,
     "Must contain only lowercase letters, numbers, or underscores",
   ).min(2).max(30),
 });
 
-function LoginDetailsForm(
+function LoginDetailsSection(
   { loginId, initialUsername, mutateUsername }: { loginId: number, initialUsername: string, mutateUsername: (username: string) => void }
 ) {
+  return (
+    <div>
+      <h2 className="text-xl mb-6">Login Details</h2>
+      <div className="space-y-6">
+        <div className="grid grid-cols-3 gap-4">
+          <AccountLabel>Username</AccountLabel>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button type="submit" className="col-start-2 col-span-2">Change Username</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Change Username</DialogTitle>
+              </DialogHeader>
+              <UsernameForm />
+            </DialogContent>
+          </Dialog>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <AccountLabel>Password</AccountLabel>
+          <Button type="submit" className="col-start-2 col-span-2">Change Password</Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function UsernameForm() {
+  const { user, mutate } = useCurrentUser();
   const [loading, setLoading] = useState(false);
-  const form = useForm<z.infer<typeof loginDetailsFormSchema>>({
-    resolver: zodResolver(loginDetailsFormSchema),
-    defaultValues: { username: initialUsername },
+  const form = useForm<z.infer<typeof usernameFormSchema>>({
+    resolver: zodResolver(usernameFormSchema),
+    defaultValues: { username: user?.username || undefined },
   });
-  async function onSubmit(values: z.infer<typeof loginDetailsFormSchema>) {
+  async function onSubmit(values: z.infer<typeof usernameFormSchema>) {
     if (!form.formState.isDirty) {
       return;
     }
     setLoading(true);
-    await updateLogin({ id: loginId, login: values });
+    user && user.login_id && await updateLogin({ id: user?.login_id, login: values });
     form.reset(values);
-    mutateUsername(values.username);
+    user && mutate({ ...user, username: values.username });
     setLoading(false);
   }
   return (
-    <div>
-      <h2 className="text-xl mb-6">Login Details</h2>
+    <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField control={form.control} name="username" render={({ field }) => (
@@ -148,7 +186,7 @@ function LoginDetailsForm(
           }
         </form>
       </Form>
-    </div>
+    </>
   )
 }
 
@@ -158,6 +196,10 @@ function AccountFormItem({ children }: { children: React.ReactNode }) {
 
 function AccountFormLabel({ children }: { children: React.ReactNode }) {
   return <FormLabel className="h-9 w-full py-1 flex flex-row items-center text-base justify-end">{children}</FormLabel>
+}
+
+function AccountLabel({ children }: { children: React.ReactNode }) {
+  return <Label className="h-9 w-full py-1 flex flex-row items-center text-base justify-end">{children}</Label>
 }
 
 function AccountFormInputControl({ children }: { children: React.ReactNode }) {
