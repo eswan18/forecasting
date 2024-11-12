@@ -8,9 +8,8 @@ import { Button } from "@/components/ui/button";
 import { UserUpdate, VUser } from "@/types/db_types";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { updateUser } from "@/lib/db_actions";
+import { updateLogin, updateUser } from "@/lib/db_actions";
 import { LoaderCircle } from "lucide-react";
-import { revalidatePath } from "next/cache";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 export function AccountDetails() {
@@ -26,7 +25,7 @@ export function AccountDetails() {
       {user &&
         <>
           <UserDetailsForm initialUser={user} mutateUser={mutateUser} />
-          <LoginDetailsForm initialUsername={user.username || ""} mutateUsername={mutateUsername} />
+          <LoginDetailsForm loginId={user.login_id || -999} initialUsername={user.username || ""} mutateUsername={mutateUsername} />
         </>
       }
     </div >
@@ -103,39 +102,50 @@ const loginDetailsFormSchema = z.object({
     /^[a-z0-9_]+$/,
     "Must contain only lowercase letters, numbers, or underscores",
   ).min(2).max(30),
-  password: z.string().min(8).max(30),
 });
 
 function LoginDetailsForm(
-  { initialUsername, mutateUsername }: { initialUsername: string, mutateUsername: (username: string) => void }
+  { loginId, initialUsername, mutateUsername }: { loginId: number, initialUsername: string, mutateUsername: (username: string) => void }
 ) {
+  const [loading, setLoading] = useState(false);
   const form = useForm<z.infer<typeof loginDetailsFormSchema>>({
-    resolver: zodResolver(userDetailsFormSchema),
-    defaultValues: { username: initialUsername, password: "**********" },
+    resolver: zodResolver(loginDetailsFormSchema),
+    defaultValues: { username: initialUsername },
   });
+  async function onSubmit(values: z.infer<typeof loginDetailsFormSchema>) {
+    if (!form.formState.isDirty) {
+      return;
+    }
+    setLoading(true);
+    await updateLogin({ id: loginId, login: values });
+    form.reset(values);
+    mutateUsername(values.username);
+    setLoading(false);
+  }
   return (
     <div>
       <h2 className="text-xl mb-6">Login Details</h2>
       <Form {...form}>
-        <form className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField control={form.control} name="username" render={({ field }) => (
             <AccountFormItem>
               <AccountFormLabel>Username</AccountFormLabel>
               <AccountFormInputControl>
-                <Input disabled {...field} />
+                <Input {...field} />
               </AccountFormInputControl>
               <AccountFormMessage />
             </AccountFormItem>
           )} />
-          <FormField control={form.control} name="password" render={({ field }) => (
-            <AccountFormItem>
-              <AccountFormLabel>Password</AccountFormLabel>
-              <AccountFormInputControl>
-                <Input type="password" disabled {...field} />
-              </AccountFormInputControl>
-              <AccountFormMessage />
-            </AccountFormItem>
-          )} />
+          {loading
+            ?
+            <div className="grid grid-cols-3 gap-4">
+              <div className="col-start-2 col-span-2 flex flex-row justify-center"><LoaderCircle className="animate-spin" /></div>
+            </div>
+            :
+            <div className="grid grid-cols-3 gap-4">
+              <Button type="submit" disabled={!form.formState.isDirty} className="col-start-2 col-span-2">Update</Button>
+            </div>
+          }
         </form>
       </Form>
     </div>

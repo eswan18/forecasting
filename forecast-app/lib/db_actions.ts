@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache'
-import { VForecast, VUser, Login, NewUser, NewLogin, VProp, UserUpdate } from '@/types/db_types';
+import { VForecast, VUser, Login, NewUser, NewLogin, VProp, UserUpdate, LoginUpdate } from '@/types/db_types';
 import { db } from './database';
 import { getUserFromCookies } from './auth';
 
@@ -28,6 +28,24 @@ export async function createLogin({ login }: { login: NewLogin }): Promise<numbe
     .returning('id')
     .executeTakeFirstOrThrow();
   return id;
+}
+
+export async function updateLogin({ id, login }: { id: number, login: LoginUpdate }) {
+  // Check that the user is who they say they are.
+  const currentUser = await getUserFromCookies();
+  if (!currentUser || currentUser.login_id !== id) {
+    throw new Error('Unauthorized');
+  }
+  // Users can only change their username and password.
+  // If they try to change anything else, throw an error.
+  if (Object.keys(login).some(key => !['username', 'password_hash'].includes(key))) {
+    throw new Error('Unauthorized');
+  }
+  await db
+    .updateTable('logins')
+    .set(login)
+    .where('id', '=', id)
+    .execute();
 }
 
 export async function createUser({ user }: { user: NewUser }) {
