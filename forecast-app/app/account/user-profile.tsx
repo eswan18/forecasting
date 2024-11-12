@@ -5,12 +5,33 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { VUser } from "@/types/db_types";
+import { UserUpdate, VUser } from "@/types/db_types";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { updateUser } from "@/lib/db_actions";
 import { LoaderCircle } from "lucide-react";
 import { revalidatePath } from "next/cache";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+
+export function AccountDetails() {
+  const { user, loading, mutate } = useCurrentUser();
+  async function mutateUser(updatedUser: UserUpdate) {
+    user && mutate({ ...user, ...updatedUser });
+  }
+  async function mutateUsername(username: string) {
+    user && mutate({ ...user, username });
+  }
+  return (
+    <div className="mt-4 space-y-12">
+      {user &&
+        <>
+          <UserDetailsForm initialUser={user} mutateUser={mutateUser} />
+          <LoginDetailsForm initialUsername={user.username || ""} mutateUsername={mutateUsername} />
+        </>
+      }
+    </div >
+  )
+}
 
 const userDetailsFormSchema = z.object({
   name: z.string().regex(
@@ -20,35 +41,22 @@ const userDetailsFormSchema = z.object({
   email: z.string().email(),
 });
 
-const loginDetailsFormSchema = z.object({
-  username: z.string().regex(
-    /^[a-z0-9_]+$/,
-    "Must contain only lowercase letters, numbers, or underscores",
-  ).min(2).max(30),
-  password: z.string().min(8).max(30),
-});
-
-export function AccountDetails({ initialAccountDetails }: { initialAccountDetails: VUser }) {
-  return (
-    <div className="mt-4 space-y-12">
-      <UserDetailsForm initialUserDetails={initialAccountDetails} />
-      <LoginDetailsForm initialUsername={initialAccountDetails.username || ""} />
-    </div >
-  )
-}
-
-function UserDetailsForm({ initialUserDetails }: { initialUserDetails: VUser }) {
+function UserDetailsForm(
+  { initialUser, mutateUser }: { initialUser: VUser, mutateUser: (updatedUser: UserUpdate) => void }
+) {
   const [loading, setLoading] = useState(false);
   const form = useForm<z.infer<typeof userDetailsFormSchema>>({
     resolver: zodResolver(userDetailsFormSchema),
-    defaultValues: initialUserDetails,
+    defaultValues: initialUser,
   });
   async function onSubmit(values: z.infer<typeof userDetailsFormSchema>) {
     if (!form.formState.isDirty) {
       return;
     }
     setLoading(true);
-    await updateUser({ id: initialUserDetails.id, user: values });
+    await updateUser({ id: initialUser.id, user: values });
+    form.reset(values);
+    mutateUser(values);
     setLoading(false);
   }
   return (
@@ -90,7 +98,17 @@ function UserDetailsForm({ initialUserDetails }: { initialUserDetails: VUser }) 
   )
 }
 
-function LoginDetailsForm({ initialUsername }: { initialUsername: string }) {
+const loginDetailsFormSchema = z.object({
+  username: z.string().regex(
+    /^[a-z0-9_]+$/,
+    "Must contain only lowercase letters, numbers, or underscores",
+  ).min(2).max(30),
+  password: z.string().min(8).max(30),
+});
+
+function LoginDetailsForm(
+  { initialUsername, mutateUsername }: { initialUsername: string, mutateUsername: (username: string) => void }
+) {
   const form = useForm<z.infer<typeof loginDetailsFormSchema>>({
     resolver: zodResolver(userDetailsFormSchema),
     defaultValues: { username: initialUsername, password: "**********" },

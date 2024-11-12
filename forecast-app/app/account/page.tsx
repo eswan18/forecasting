@@ -9,8 +9,8 @@ export default async function Page() {
       <div className="w-full max-w-lg flex flex-col">
         <PageHeading title="Account & Settings" />
         {user
-          ? <AccountDetails initialAccountDetails={user} />
-          : <div>You&apos;re not logged in!</div>}
+        ? <AccountDetails />
+        : <div>You&apos;re not logged in!</div>}
       </div>
     </main>
   );
