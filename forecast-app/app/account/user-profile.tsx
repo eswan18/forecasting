@@ -22,6 +22,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { updateLoginPassword } from "@/lib/auth";
+import { on } from "events";
 
 export function AccountDetails() {
   const { user, loading, mutate } = useCurrentUser();
@@ -109,13 +110,15 @@ function UserDetailsSection(
 }
 
 function LoginDetailsSection() {
+  const [usernameDialogOpen, setUsernameDialogOpen] = useState(false);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   return (
     <div>
       <h2 className="text-xl mb-6">Login Details</h2>
       <div className="space-y-6">
         <div className="grid grid-cols-3 gap-4">
           <AccountLabel>Username</AccountLabel>
-          <Dialog>
+          <Dialog open={usernameDialogOpen} onOpenChange={setUsernameDialogOpen}>
             <DialogTrigger asChild>
               <Button type="submit" className="col-start-2 col-span-2">Change Username</Button>
             </DialogTrigger>
@@ -123,13 +126,13 @@ function LoginDetailsSection() {
               <DialogHeader className="mb-2">
                 <DialogTitle>Change Username</DialogTitle>
               </DialogHeader>
-              <ChangeUsernameForm />
+              <ChangeUsernameForm onSuccess={() => setPasswordDialogOpen(false)} />
             </DialogContent>
           </Dialog>
         </div>
         <div className="grid grid-cols-3 gap-4">
           <AccountLabel>Password</AccountLabel>
-          <Dialog>
+          <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
             <DialogTrigger asChild>
               <Button type="submit" className="col-start-2 col-span-2">Change Password</Button>
             </DialogTrigger>
@@ -137,7 +140,7 @@ function LoginDetailsSection() {
               <DialogHeader className="mb-2">
                 <DialogTitle>Change Password</DialogTitle>
               </DialogHeader>
-              <ChangePasswordForm />
+              <ChangePasswordForm onSuccess={() => setPasswordDialogOpen(false)} />
             </DialogContent>
           </Dialog>
         </div>
@@ -153,7 +156,7 @@ const changeUsernameFormSchema = z.object({
   ).min(2).max(30),
 });
 
-function ChangeUsernameForm() {
+function ChangeUsernameForm({ onSuccess }: { onSuccess: () => void }) {
   const { user, mutate } = useCurrentUser();
   const [loading, setLoading] = useState(false);
   const form = useForm<z.infer<typeof changeUsernameFormSchema>>({
@@ -196,11 +199,11 @@ function ChangeUsernameForm() {
 }
 
 const changePasswordFormSchema = z.object({
-  currentPassword: z.string(),// .min(8).max(30),
+  currentPassword: z.string().min(8).max(30),
   newPassword: z.string().min(8).max(30),
 });
 
-function ChangePasswordForm() {
+function ChangePasswordForm({ onSuccess }: { onSuccess: () => void }) {
   const { user } = useCurrentUser();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -213,15 +216,20 @@ function ChangePasswordForm() {
       return
     }
     setLoading(true);
+    let success = true;
     try {
       await updateLoginPassword({ id: loginId, ...values });
     } catch (e) {
+      success = false;
       console.log(e)
       if (e instanceof Error) {
         setError(e.message);
       }
     } finally {
       setLoading(false);
+    }
+    if (success) {
+      onSuccess();
     }
   }
   return (
