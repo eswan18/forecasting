@@ -128,7 +128,7 @@ function LoginDetailsSection(
               <Button type="submit" className="col-start-2 col-span-2">Change Username</Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader>
+              <DialogHeader className="mb-2">
                 <DialogTitle>Change Username</DialogTitle>
               </DialogHeader>
               <UsernameForm />
@@ -166,23 +166,19 @@ function UsernameForm() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField control={form.control} name="username" render={({ field }) => (
-            <AccountFormItem>
-              <AccountFormLabel>Username</AccountFormLabel>
-              <AccountFormInputControl>
+            <FormItem>
+              <FormLabel>Username</FormLabel>
+              <FormControl>
                 <Input {...field} />
-              </AccountFormInputControl>
-              <AccountFormMessage />
-            </AccountFormItem>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )} />
           {loading
             ?
-            <div className="grid grid-cols-3 gap-4">
-              <div className="col-start-2 col-span-2 flex flex-row justify-center"><LoaderCircle className="animate-spin" /></div>
-            </div>
+            <div className="col-start-2 col-span-2 flex flex-row justify-center w-32"><LoaderCircle className="animate-spin" /></div>
             :
-            <div className="grid grid-cols-3 gap-4">
-              <Button type="submit" disabled={!form.formState.isDirty} className="col-start-2 col-span-2">Update</Button>
-            </div>
+            <Button type="submit" disabled={!form.formState.isDirty} className="w-32">Update</Button>
           }
         </form>
       </Form>
