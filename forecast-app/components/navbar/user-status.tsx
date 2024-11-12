@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { LogOut, User2, UserRoundPen } from "lucide-react";
+import { LogOut, Settings, User2, UserRoundPen } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { useLogout } from "@/hooks/useLogout";
@@ -33,6 +33,12 @@ export function UserStatus() {
                 <DropdownMenuLabel>
                   {user.name} {user.is_admin ? "(Admin)" : ""}
                 </DropdownMenuLabel>
+                <Link href="/account">
+                  <DropdownMenuItem className="px-4">
+                    <Settings size={14} className="mr-2" />
+                    <span>Account</span>
+                  </DropdownMenuItem>
+                </Link>
                 <DropdownMenuItem onClick={logout} className="px-4">
                   <LogOut size={14} className="mr-2" />
                   <span>Logout</span>
@@ -42,12 +48,12 @@ export function UserStatus() {
           </>
         )
         : loading
-        ? <Button disabled variant="outline">Loading...</Button>
-        : (
-          <Link href="/login">
-            <Button>Log in</Button>
-          </Link>
-        )}
+          ? <Button disabled variant="outline">Loading...</Button>
+          : (
+            <Link href="/login">
+              <Button>Log in</Button>
+            </Link>
+          )}
     </div>
   );
 }

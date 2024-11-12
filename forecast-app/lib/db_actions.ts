@@ -1,9 +1,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache'
-import { VForecast, VUser, Login, NewUser, NewLogin, VProp } from '@/types/db_types';
+import { VForecast, VUser, Login, NewUser, NewLogin, VProp, UserUpdate, LoginUpdate } from '@/types/db_types';
 import { db } from './database';
-import { getUserFromCookies } from './auth';
+import { getUserFromCookies } from './get-user';
 
 export async function getUsers(): Promise<VUser[]> {
   const user = await getUserFromCookies();
@@ -30,6 +30,25 @@ export async function createLogin({ login }: { login: NewLogin }): Promise<numbe
   return id;
 }
 
+export async function updateLogin({ id, login }: { id: number, login: LoginUpdate }) {
+  // Check that the user is who they say they are.
+  const currentUser = await getUserFromCookies();
+  if (!currentUser || currentUser.login_id !== id) {
+    throw new Error('Unauthorized');
+  }
+  // Users can only change their username with this function.
+  // If they try to change anything else, throw an error.
+  if (Object.keys(login).some(key => !['username'].includes(key))) {
+    throw new Error('Unauthorized');
+  }
+  await db
+    .updateTable('logins')
+    .set(login)
+    .where('id', '=', id)
+    .execute();
+}
+
+
 export async function createUser({ user }: { user: NewUser }) {
   const { id } = await db
     .insertInto('users')
@@ -39,6 +58,23 @@ export async function createUser({ user }: { user: NewUser }) {
   return id;
 }
 
+export async function updateUser({ id, user }: { id: number, user: UserUpdate }) {
+  // Check that the user is who they say they are.
+  const currentUser = await getUserFromCookies();
+  if (!currentUser || currentUser.id !== id) {
+    throw new Error('Unauthorized');
+  }
+  // Users can only change a couple of fields: name and email.
+  // If they try to change anything else, throw an error.
+  if (Object.keys(user).some(key => !['name', 'email'].includes(key))) {
+    throw new Error('Unauthorized');
+  }
+  await db
+    .updateTable('users')
+    .set(user)
+    .where('id', '=', id)
+    .execute();
+}
 
 export async function getPropsAndResolutions(): Promise<VProp[]> {
   return await db
