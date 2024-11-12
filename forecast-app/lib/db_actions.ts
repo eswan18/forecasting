@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache'
-import { VForecast, VUser, Login, NewUser, NewLogin, VProp } from '@/types/db_types';
+import { VForecast, VUser, Login, NewUser, NewLogin, VProp, UserUpdate } from '@/types/db_types';
 import { db } from './database';
 import { getUserFromCookies } from './auth';
 
@@ -39,6 +39,23 @@ export async function createUser({ user }: { user: NewUser }) {
   return id;
 }
 
+export async function updateUser({ id, user }: { id: number, user: UserUpdate }) {
+  // Check that the user is who they say they are.
+  const currentUser = await getUserFromCookies();
+  if (!currentUser || currentUser.id !== id) {
+    throw new Error('Unauthorized');
+  }
+  // Users can only change a couple of fields: name and email.
+  // If they try to change anything else, throw an error.
+  if (Object.keys(user).some(key => !['name', 'email'].includes(key))) {
+    throw new Error('Unauthorized');
+  }
+  await db
+    .updateTable('users')
+    .set(user)
+    .where('id', '=', id)
+    .execute();
+}
 
 export async function getPropsAndResolutions(): Promise<VProp[]> {
   return await db
