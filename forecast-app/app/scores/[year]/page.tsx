@@ -1,8 +1,6 @@
-import {
-  getCategories,
-  getForecasts,
-} from "@/lib/db_actions";
+import { getCategories, getForecasts } from "@/lib/db_actions";
 import PageHeading from "@/components/page-heading";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 
 import { ScoreChartsCard } from "./score-charts-card";
@@ -13,7 +11,7 @@ export default async function Page(
 ) {
   const user = await getUserFromCookies();
   if (!user) {
-    return <div>Unauthorized</div>;
+    redirect("/login");
   }
   const year = parseInt((await params).year);
   const categories = await getCategories();
