@@ -4,19 +4,11 @@ import { Bar, BarChart, XAxis, YAxis } from "recharts";
 import { CartesianGrid } from "recharts";
 
 import {
-  ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { VForecast } from "@/types/db_types";
-
-const chartConfig = {
-  /*score: {
-    label: "Score",
-    color: "hsl(var(--foreground))",
-  },*/
-} satisfies ChartConfig;
 
 // A scored forecast is a forecast but where resolution and score are non-null
 type ScoredForecast = VForecast & { resolution: boolean; score: number };
@@ -29,6 +21,7 @@ interface UserScore {
   scores: {
     [propText: string]: number;
   };
+  totalScore?: number;
 }
 
 export default function UserScoresChart(
@@ -56,6 +49,13 @@ export default function UserScoresChart(
       });
     }
   }
+  // Compute the total score for each user, and sort.
+  for (const userScore of userScores) {
+    const scores = Object.values(userScore.scores);
+    userScore.totalScore = scores.reduce((acc, score) => acc + score, 0) /
+      scores.length;
+  }
+  userScores.sort((a, b) => (a.totalScore || 0) - (b.totalScore || 0));
   const chartData = userScores.map((userScore) => ({
     name: userScore.name,
     ...userScore.scores, // This spreads all the score values as separate properties. Thanks GPT!
@@ -68,7 +68,7 @@ export default function UserScoresChart(
     color: `hsl(${(index * 360) / uniqPropTexts.length}, 50%, 50%)`,
   }));
   return (
-    <ChartContainer config={chartConfig} className="w-full h-full">
+    <ChartContainer config={{}} className="w-full h-full">
       <BarChart
         accessibilityLayer
         data={chartData}

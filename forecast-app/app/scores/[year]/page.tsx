@@ -6,10 +6,15 @@ import PageHeading from "@/components/page-heading";
 import Link from "next/link";
 
 import { ScoreChartsCard } from "./score-charts-card";
+import { getUserFromCookies } from "@/lib/get-user";
 
 export default async function Page(
   { params }: { params: Promise<{ year: string }> },
 ) {
+  const user = await getUserFromCookies();
+  if (!user) {
+    return <div>Unauthorized</div>;
+  }
   const year = parseInt((await params).year);
   const categories = await getCategories();
   const forecasts = await getForecasts();
