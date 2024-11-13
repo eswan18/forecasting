@@ -12,6 +12,7 @@ import {
 import UserScoresChart from "@/components/charts/user-scores-chart";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Category, VForecast } from "@/types/db_types";
+import OverallScoresChart from "@/components/charts/overall-scores-chart";
 
 interface ScoreChartsCardProps {
   categories: Category[];
@@ -27,7 +28,7 @@ export function ScoreChartsCard(
     defaultCategory.name,
   );
   return (
-    <Card className="w-full max-w-lg flex flex-col">
+    <Card className="w-full max-w-lg flex flex-col bg-background">
       <Tabs value={selectedTabValue} onValueChange={setSelectedTabValue}>
         <CardHeader title="Scores">
           {/* TabsList for larger screens */}
@@ -62,6 +63,7 @@ export function ScoreChartsCard(
           </div>
         </CardHeader>
         <CardContent>
+          <OverallScoresChart forecasts={forecasts} />
           {categories.map((category) => {
             const forecastsInScope = category.id === -1
               ? forecasts // This is the "Overall" category
