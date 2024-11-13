@@ -1,33 +1,18 @@
 import {
-  getAvgScoreByUser,
-  getAvgScoreByUserAndCategory,
-  UserScore,
+  getCategories,
+  getForecasts,
 } from "@/lib/db_actions";
 import PageHeading from "@/components/page-heading";
 import Link from "next/link";
 
-import { CategoryAndUserScores, ScoreChartsCard } from "./score-charts-card";
+import { ScoreChartsCard } from "./score-charts-card";
 
 export default async function Page(
   { params }: { params: Promise<{ year: string }> },
 ) {
   const year = parseInt((await params).year);
-  const userScores = await getAvgScoreByUser({ year });
-  const userScoresByCategory = await getAvgScoreByUserAndCategory({ year });
-  const overallCategory: CategoryAndUserScores = {
-    category: "Overall",
-    userScores: userScores,
-  };
-  const categories: CategoryAndUserScores[] = [overallCategory];
-  const uniqCategoryNames = Array.from(
-    new Set(userScoresByCategory.map(({ category_name }) => category_name)),
-  );
-  uniqCategoryNames.forEach((category) => {
-    const categoryScores: UserScore[] = userScoresByCategory.filter((
-      { category_name },
-    ) => category_name === category);
-    categories.push({ category, userScores: categoryScores });
-  });
+  const categories = await getCategories();
+  const forecasts = await getForecasts();
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-lg flex flex-col">
@@ -42,7 +27,7 @@ export default async function Page(
             I&apos;ve resolved.
           </p>
         </div>
-        <ScoreChartsCard categories={categories} />
+        <ScoreChartsCard forecasts={forecasts} categories={categories} />
         <div className="p-4 text-muted-foreground text-sm">
           <h2 className="my-4 text-lg">Details on Brier Scores</h2>
           <p className="my-2">

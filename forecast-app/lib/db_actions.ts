@@ -92,7 +92,19 @@ export async function getPropsAndResolutionsByYear(year: number): Promise<VProp[
 }
 
 export async function getForecasts(): Promise<VForecast[]> {
+  const currentUser = await getUserFromCookies();
+  if (!currentUser) {
+    throw new Error('Unauthorized');
+  }
   return await db.selectFrom('v_forecasts').selectAll().execute();
+}
+
+export async function getCategories(): Promise<{ id: number, name: string }[]> {
+  const currentUser = await getUserFromCookies();
+  if (!currentUser) {
+    throw new Error('Unauthorized');
+  }
+  return await db.selectFrom('categories').selectAll().execute();
 }
 
 export type UserScore = {
