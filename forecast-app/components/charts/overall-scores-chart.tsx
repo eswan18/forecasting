@@ -13,9 +13,7 @@ import { VForecast } from "@/types/db_types";
 // A scored forecast is a forecast but where resolution and score are non-null
 type ScoredForecast = VForecast & { resolution: boolean; score: number };
 
-// A user has a number of scores, one for each forecast they made.
-// thus a UserScore is a map from prop names to scores.
-
+// A user's total scores for each category.
 interface UserCategoryScore {
   name: string;
   scores: {
@@ -25,15 +23,13 @@ interface UserCategoryScore {
 }
 
 export default function OverallScoresChart(
-  { forecasts }: { forecasts: VForecast[] },
+  { forecasts, byCategory }: { forecasts: VForecast[]; byCategory: boolean },
 ) {
   // Keep only the forecasts that have a score.
   const scoredForecasts = forecasts.filter(
     (forecast): forecast is ScoredForecast =>
       forecast.resolution !== null && forecast.score !== null,
   );
-  // Sort so that the lowest scores are at the top.
-  scoredForecasts.sort((a, b) => a.score - b.score);
   // Group by user.
   const userCategoryScores: UserCategoryScore[] = [];
   const categoryIdToName = new Map<number, string>();
@@ -63,16 +59,36 @@ export default function OverallScoresChart(
       scores.length;
   }
   userCategoryScores.sort((a, b) => (a.totalScore || 0) - (b.totalScore || 0));
-  const chartData = userCategoryScores.map((userCategoryScore) => ({
-    name: userCategoryScore.name,
-    ...userCategoryScore.scores, // This spreads all the category score values as separate properties.
-  }));
+
+  let maximumScore = 0;
+  if (byCategory) {
+    maximumScore = Math.max(
+      ...userCategoryScores.map((userCategoryScore) =>
+        Math.max(...Object.values(userCategoryScore.scores))
+      ),
+    );
+  } else {
+    maximumScore =
+      userCategoryScores[userCategoryScores.length - 1].totalScore || 0;
+  }
+  const axisMaximum = Math.round(maximumScore * 1.1 * 10) / 10;
+
+  const chartData = byCategory
+    ? userCategoryScores.map((userCategoryScore) => ({
+      name: userCategoryScore.name,
+      ...userCategoryScore.scores, // This spreads all the category score values as separate properties.
+    }))
+    : userCategoryScores.map((userCategoryScore) => ({
+      name: userCategoryScore.name,
+      totalScore: userCategoryScore.totalScore,
+    }));
   const categoryIds = scoredForecasts.map((forecast) => forecast.category_id);
   const uniqCategoryIds = [...new Set(categoryIds)];
   const categoryIdsAndColors = uniqCategoryIds.map((categoryId, index) => ({
     categoryId,
     color: `hsl(var(--chart-${index + 1}))`,
   }));
+  console.log("max score", maximumScore);
   return (
     <ChartContainer config={{}} className="w-full h-[30rem]">
       <BarChart
@@ -87,20 +103,34 @@ export default function OverallScoresChart(
         />
         <CartesianGrid strokeDasharray="3 3" />
         <ChartTooltip content={<ChartTooltipContent />} />
-        <XAxis type="number" />
-        <Legend
-          verticalAlign="top"
-          align="center"
+        <XAxis
+          type="number"
+          domain={[0, axisMaximum]}
         />
-        {categoryIdsAndColors.map(({ categoryId, color }) => (
-          <Bar
-            key={categoryId}
-            dataKey={categoryId}
-            name={categoryIdToName.get(categoryId)}
-            fill={color}
-            radius={2}
+        {byCategory && (
+          <Legend
+            verticalAlign="top"
+            align="center"
           />
-        ))}
+        )}
+        {byCategory
+          ? categoryIdsAndColors.map(({ categoryId, color }) => (
+            <Bar
+              key={categoryId}
+              dataKey={categoryId}
+              name={categoryIdToName.get(categoryId)}
+              fill={color}
+              radius={2}
+            />
+          ))
+          : (
+            <Bar
+              dataKey="totalScore"
+              fill="hsl(var(--chart-1))"
+              name="Score"
+              radius={2}
+            />
+          )}
       </BarChart>
     </ChartContainer>
   );
