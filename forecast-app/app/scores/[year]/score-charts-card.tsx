@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
-import UserScoresChart from "@/components/charts/user-scores-chart";
+import ScoresChart from "@/components/charts/scores-chart";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Category, VForecast } from "@/types/db_types";
 import OverallScoresChart from "@/components/charts/overall-scores-chart";
@@ -33,7 +33,10 @@ export function ScoreChartsCard(
             {/* A bit of a hack -- we are using tabs here to display the content but using a select for the trigger */}
             <Select
               value={selectedTabValue}
-              onValueChange={setSelectedTabValue}
+              onValueChange={(value) => {
+                setSelectedTabValue(value);
+                setBreakdownTogglePressed(false);
+              }}
             >
               <div className="flex flex-row justify-center gap-4">
                 <SelectTrigger className="w-[50%]">
@@ -61,8 +64,11 @@ export function ScoreChartsCard(
           </div>
         </CardHeader>
         <CardContent>
-          <TabsContent value="Overall" className="h-[28rem] lg:h-[32rem]">
-            <OverallScoresChart forecasts={forecasts} byCategory={breakdownTogglePressed} />
+          <TabsContent value="Overall">
+            <OverallScoresChart
+              forecasts={forecasts}
+              byCategory={breakdownTogglePressed}
+            />
           </TabsContent>
           {categories.map((category) => {
             const forecastsInScope = category.id === -1
@@ -74,9 +80,11 @@ export function ScoreChartsCard(
               <TabsContent
                 key={category.name}
                 value={category.name}
-                className="h-[28rem] lg:h-[32rem]"
               >
-                <UserScoresChart forecasts={forecastsInScope} />
+                <ScoresChart
+                  forecasts={forecastsInScope}
+                  byProp={breakdownTogglePressed}
+                />
               </TabsContent>
             );
           })}

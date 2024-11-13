@@ -88,7 +88,6 @@ export default function OverallScoresChart(
     categoryId,
     color: `hsl(var(--chart-${index + 1}))`,
   }));
-  console.log("max score", maximumScore);
   return (
     <ChartContainer config={{}} className="w-full h-[30rem]">
       <BarChart
