@@ -1,8 +1,10 @@
 import {
   NavigationMenu,
+  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
+  NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 
@@ -16,40 +18,57 @@ export default async function NavBar() {
   const user = await getUserFromCookies();
   const userId = user?.id;
   const links = [
+    { href: `/forecasts/2024/user/${userId}`, label: "My Forecasts" },
     { href: "/scores/2024", label: "Scores" },
+  ];
+  const adminLinks = [
+    { href: "/users", label: "Users" },
     { href: "/props/2024", label: "Props" },
   ];
-  if (userId) {
-    links.push({ href: `/forecasts/2024/user/${userId}`, label: "My Forecasts" });
-  }
-  if (user?.is_admin) {
-    links.push({ href: "/users", label: "Users" });
-  }
   return (
     <div className="w-full flex justify-between px-2 mt-3">
-      <NavigationMenu>
+      <div className="flex flex-row justify-start">
         <Link href="/">
           <Button
             variant="ghost"
-            size="lg"
-            className="hidden lg:inline font-bold"
+            className={`font-bold md:mr-6 ${user && "hidden md:inline"}`}
           >
             Forecasting
           </Button>
         </Link>
-        <NavigationMenuList>
-          {links.map(({ href, label }) => (
-            <NavigationMenuItem key={href}>
-              <NavigationMenuLink
-                href={href}
-                className={navigationMenuTriggerStyle()}
-              >
-                {label}
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-          ))}
-        </NavigationMenuList>
-      </NavigationMenu>
+        <NavigationMenu>
+          <NavigationMenuList>
+            {user?.is_admin && (
+              <NavigationMenuItem>
+                <NavigationMenuTrigger>Admin Tools</NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  {adminLinks.map(({ href, label }) => (
+                    <Link key={href} href={href} passHref legacyBehavior>
+                      <NavigationMenuLink
+                        className={navigationMenuTriggerStyle()}
+                      >
+                        {label}
+                      </NavigationMenuLink>
+                    </Link>
+                  ))}
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+            )}
+            {user &&
+              links.map(({ href, label }) => (
+                <NavigationMenuItem key={href}>
+                  <Link href={href} passHref legacyBehavior>
+                    <NavigationMenuLink
+                      className={navigationMenuTriggerStyle()}
+                    >
+                      {label}
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+              ))}
+          </NavigationMenuList>
+        </NavigationMenu>
+      </div>
       <div className="flex flex-row justify-end gap-3">
         <UserStatus />
         <ThemeToggle />
