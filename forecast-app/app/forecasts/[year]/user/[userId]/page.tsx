@@ -5,18 +5,17 @@ import ForecastTable from "./forecast-table";
 import { forecastColumns } from "./forecast-columns";
 import { getUserFromCookies } from "@/lib/get-user";
 import { redirect } from "next/navigation";
-import { ScoredForecast } from "./forecast-columns";
 
 export default async function Page(
   { params }: { params: Promise<{ year: number; userId: number }> },
 ) {
-  const user = await getUserFromCookies();
-  if (!user) {
+  const authUser = await getUserFromCookies();
+  if (!authUser) {
     redirect("/login");
   }
   const { year, userId } = await params;
-  const userDetails = await getUserById(userId);
-  if (!userDetails) {
+  const requestedUser = await getUserById(userId);
+  if (!requestedUser) {
     notFound();
   }
   const forecasts = await getForecasts({ userId, year });
@@ -38,7 +37,7 @@ export default async function Page(
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-lg">
-        <PageHeading title={`Forecasts: ${user.name}, ${year}`} />
+        <PageHeading title={`Forecasts: ${requestedUser.name}, ${year}`} />
         <ForecastTable data={scoredForecasts} columns={forecastColumns} />
       </div>
     </main>
