@@ -52,13 +52,13 @@ export async function POST(req: NextRequest) {
   if (!JWT_SECRET) {
     throw new Error('JWT_SECRET is not set.');
   }
-  const token = jwt.sign({ loginId: login.id }, JWT_SECRET, { expiresIn: '1h' });
+  const token = jwt.sign({ loginId: login.id }, JWT_SECRET, { expiresIn: '3h' });
 
   // Set the token in an HTTP-only cookie
   const cookie = serialize('token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    maxAge: 3600,
+    maxAge: 108000, // 3 hours
     path: '/',
     sameSite: 'strict',
   });
