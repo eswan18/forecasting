@@ -14,10 +14,14 @@ import { getUserFromCookies } from "@/lib/get-user";
 
 export default async function NavBar() {
   const user = await getUserFromCookies();
+  const userId = user?.id;
   const links = [
     { href: "/scores/2024", label: "Scores" },
     { href: "/props/2024", label: "Props" },
   ];
+  if (userId) {
+    links.push({ href: `/forecasts/2024/user/${userId}`, label: "My Forecasts" });
+  }
   if (user?.is_admin) {
     links.push({ href: "/users", label: "Users" });
   }

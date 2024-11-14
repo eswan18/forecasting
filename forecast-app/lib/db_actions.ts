@@ -13,6 +13,18 @@ export async function getUsers(): Promise<VUser[]> {
   return await db.selectFrom('v_users').selectAll().execute();
 }
 
+export async function getUserById(id: number): Promise<VUser | undefined> {
+  const user = await getUserFromCookies();
+  if (!user) {
+    throw new Error('Unauthorized');
+  }
+  return await db
+    .selectFrom('v_users')
+    .selectAll()
+    .where('id', '=', id)
+    .executeTakeFirst();
+}
+
 export async function getLoginByUsername(username: string): Promise<Login | undefined> {
   return await db
     .selectFrom('logins')
@@ -91,12 +103,21 @@ export async function getPropsAndResolutionsByYear(year: number): Promise<VProp[
     .execute();
 }
 
-export async function getForecasts(): Promise<VForecast[]> {
+export async function getForecasts(
+  { userId, year }: { userId?: number, year?: number } = {}
+): Promise<VForecast[]> {
   const currentUser = await getUserFromCookies();
   if (!currentUser) {
     throw new Error('Unauthorized');
   }
-  return await db.selectFrom('v_forecasts').selectAll().execute();
+  let query = db.selectFrom('v_forecasts').selectAll();
+  if (userId !== undefined) {
+    query = query.where('user_id', '=', userId);
+  }
+  if (year !== undefined) {
+    query = query.where('year', '=', year);
+  }
+  return await query.execute();
 }
 
 export async function getCategories(): Promise<{ id: number, name: string }[]> {

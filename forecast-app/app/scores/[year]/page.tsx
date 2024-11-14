@@ -7,15 +7,15 @@ import { ScoreChartsCard } from "./score-charts-card";
 import { getUserFromCookies } from "@/lib/get-user";
 
 export default async function Page(
-  { params }: { params: Promise<{ year: string }> },
+  { params }: { params: Promise<{ year: number }> },
 ) {
   const user = await getUserFromCookies();
   if (!user) {
     redirect("/login");
   }
-  const year = parseInt((await params).year);
+  const { year } = await params;
   const categories = await getCategories();
-  const forecasts = await getForecasts();
+  const forecasts = await getForecasts({year});
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-lg flex flex-col">

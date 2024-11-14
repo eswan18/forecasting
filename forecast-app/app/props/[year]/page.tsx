@@ -4,9 +4,9 @@ import { getColumns } from "./columns";
 import PageHeading from "@/components/page-heading";
 
 export default async function Page(
-  { params }: { params: Promise<{ year: string }> },
+  { params }: { params: Promise<{ year: number }> },
 ) {
-  const year = parseInt((await params).year);
+  const { year } = await params;
   const propsAndResolutions = await getPropsAndResolutionsByYear(year);
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
