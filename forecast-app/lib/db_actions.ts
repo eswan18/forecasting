@@ -1,16 +1,34 @@
 'use server';
 
 import { revalidatePath } from 'next/cache'
-import { VForecast, VUser, Login, NewUser, NewLogin, VProp, UserUpdate, LoginUpdate } from '@/types/db_types';
+import { VForecast, VUser, Login, NewUser, NewLogin, VProp, UserUpdate, LoginUpdate, Database, UsersTable, VUsersView } from '@/types/db_types';
+import { Selectable } from 'kysely';
 import { db } from './database';
 import { getUserFromCookies } from './get-user';
+import { OrderByExpression } from 'kysely';
 
-export async function getUsers(): Promise<VUser[]> {
+type VUserSortClause = {
+  field: keyof VUsersView,
+  direction: 'asc' | 'desc',
+}
+
+type VUsersOrderByExpression = OrderByExpression<Database, 'v_users', keyof VUser>
+
+export async function getUsers(
+  { sort }: { sort?: readonly VUsersOrderByExpression[]} = {},
+): Promise<VUser[]> {
   const user = await getUserFromCookies();
-  if (!user?.is_admin) {
+  if (!user) {
     throw new Error('Unauthorized');
   }
-  return await db.selectFrom('v_users').selectAll().execute();
+  let query = db.selectFrom('v_users').selectAll();
+  if (sort) {
+    sort.forEach((sortExpr) => {
+      // @ts-ignore
+      query = query.orderBy(sortExpr);
+    });
+  }
+  return await query.execute();
 }
 
 export async function getUserById(id: number): Promise<VUser | undefined> {

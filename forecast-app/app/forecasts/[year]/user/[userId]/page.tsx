@@ -1,10 +1,12 @@
 import PageHeading from "@/components/page-heading";
-import { getForecasts, getUserById } from "@/lib/db_actions";
+import { getForecasts, getUserById, getUsers } from "@/lib/db_actions";
 import { notFound } from "next/navigation";
 import ForecastTable from "./forecast-table";
 import { forecastColumns } from "./forecast-columns";
 import { getUserFromCookies } from "@/lib/get-user";
 import { redirect } from "next/navigation";
+import UserYearSelector from "./user-year-selector";
+import { Allura } from "next/font/google";
 
 export default async function Page(
   { params }: { params: Promise<{ year: number; userId: number }> },
@@ -18,6 +20,7 @@ export default async function Page(
   if (!requestedUser) {
     notFound();
   }
+  const allUsers = await getUsers({ sort: ['name asc'] });
   const forecasts = await getForecasts({ userId, year });
   const scoredForecasts = forecasts.map((forecast) => {
     const resolution = forecast.resolution;
@@ -37,7 +40,14 @@ export default async function Page(
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-lg">
-        <PageHeading title={`Forecasts: ${requestedUser.name}, ${year}`} />
+        <PageHeading title={`Forecasts`}>
+          <UserYearSelector
+            users={allUsers}
+            selectedUserId={requestedUser.id}
+            years={[2024]}
+            selectedYear={2024}
+          />
+        </PageHeading>
         <ForecastTable data={scoredForecasts} columns={forecastColumns} />
       </div>
     </main>
