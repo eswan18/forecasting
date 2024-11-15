@@ -26,7 +26,7 @@ export async function getProps({year}: {year?: number | number[] }): Promise<VPr
   let query = db.selectFrom('v_props').selectAll();
   if (year) {
     const yearClause = Array.isArray(year) ? year : [year];
-    query = query.where('year', 'in', year);
+    query = query.where('year', 'in', yearClause);
   }
   return await query.execute();
 }
@@ -95,4 +95,9 @@ export async function unresolveProp({ propId }: { propId: number }): Promise<voi
 
   await db.deleteFrom('resolutions').where('prop_id', '=', propId).execute();
   revalidatePath('/props');
+}
+
+export async function getPropYears(): Promise<number[]> {
+  const rows = await db.selectFrom('v_props').select('year').distinct().execute();
+  return rows.map(row => row.year);
 }

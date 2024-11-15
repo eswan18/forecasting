@@ -1,5 +1,5 @@
 import PageHeading from "@/components/page-heading";
-import { getForecasts, getUserById, getUsers } from "@/lib/db_actions";
+import { getForecasts, getPropYears, getUserById, getUsers } from "@/lib/db_actions";
 import { notFound } from "next/navigation";
 import ForecastTable from "./forecast-table";
 import { forecastColumns } from "./forecast-columns";
@@ -20,6 +20,7 @@ export default async function Page(
     notFound();
   }
   const allUsers = await getUsers({ sort: 'name asc' });
+  const years = await getPropYears();
   const forecasts = await getForecasts({ userId, year });
   const scoredForecasts = forecasts.map((forecast) => {
     const resolution = forecast.resolution;
@@ -43,7 +44,7 @@ export default async function Page(
           <UserYearSelector
             users={allUsers}
             selectedUserId={requestedUser.id}
-            years={[2024]}
+            years={years}
             selectedYear={2024}
           />
         </PageHeading>

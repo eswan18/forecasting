@@ -51,7 +51,7 @@ export default function ForecastTable<TData, TValue>({
     <>
       <div className="flex flex-col justify-start px-1 gap-4">
         <div className="flex flex-col gap-3">
-          <Label>Filter by prop text:</Label>
+          <Label>Filter by proposition text:</Label>
           <Input
             placeholder="Search for a prop..."
             value={(table.getColumn("prop_text")?.getFilterValue() as string) ??
