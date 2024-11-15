@@ -20,7 +20,7 @@ export default async function Page(
   if (!requestedUser) {
     notFound();
   }
-  const allUsers = await getUsers({ sort: ['name asc'] });
+  const allUsers = await getUsers({ sort: 'name asc' });
   const forecasts = await getForecasts({ userId, year });
   const scoredForecasts = forecasts.map((forecast) => {
     const resolution = forecast.resolution;

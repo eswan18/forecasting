@@ -12,10 +12,10 @@ type VUserSortClause = {
   direction: 'asc' | 'desc',
 }
 
-type VUsersOrderByExpression = OrderByExpression<Database, 'v_users', keyof VUser>
+type VUsersOrderByExpression = OrderByExpression<Database, 'v_users', {}>
 
 export async function getUsers(
-  { sort }: { sort?: readonly VUsersOrderByExpression[]} = {},
+  { sort }: { sort?: VUsersOrderByExpression | ReadonlyArray<VUsersOrderByExpression> } = {},
 ): Promise<VUser[]> {
   const user = await getUserFromCookies();
   if (!user) {
@@ -23,10 +23,8 @@ export async function getUsers(
   }
   let query = db.selectFrom('v_users').selectAll();
   if (sort) {
-    sort.forEach((sortExpr) => {
-      // @ts-ignore
-      query = query.orderBy(sortExpr);
-    });
+    const sortClause = Array.isArray(sort) ? sort : [sort];
+    query = query.orderBy(sortClause);
   }
   return await query.execute();
 }
