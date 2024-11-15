@@ -6,7 +6,6 @@ import { forecastColumns } from "./forecast-columns";
 import { getUserFromCookies } from "@/lib/get-user";
 import { redirect } from "next/navigation";
 import UserYearSelector from "./user-year-selector";
-import { Allura } from "next/font/google";
 
 export default async function Page(
   { params }: { params: Promise<{ year: number; userId: number }> },
