@@ -42,15 +42,19 @@ export default async function NavBar() {
               <NavigationMenuItem>
                 <NavigationMenuTrigger>Admin Tools</NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  {adminLinks.map(({ href, label }) => (
-                    <Link key={href} href={href} passHref legacyBehavior>
-                      <NavigationMenuLink
-                        className={navigationMenuTriggerStyle()}
-                      >
-                        {label}
-                      </NavigationMenuLink>
-                    </Link>
-                  ))}
+                  <ul className="p-2">
+                    {adminLinks.map(({ href, label }) => (
+                      <li key={href}>
+                        <Link href={href} passHref legacyBehavior>
+                          <NavigationMenuLink
+                            className={`${navigationMenuTriggerStyle()} px-2`}
+                          >
+                            {label}
+                          </NavigationMenuLink>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
                 </NavigationMenuContent>
               </NavigationMenuItem>
             )}
