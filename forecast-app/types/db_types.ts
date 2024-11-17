@@ -12,10 +12,13 @@ export interface Database {
   forecasts: ForecastsTable,
   resolutions: ResolutionsTable,
   logins: LoginsTable,
+  suggested_props: SuggestedPropsTable,
   v_props: VPropsView,
   v_forecasts: VForecastsView,
   v_users: VUsersView,
 }
+
+// Tables
 
 export interface UsersTable {
   id: Generated<number>,
@@ -74,6 +77,17 @@ export interface LoginsTable {
 export type Login = Selectable<LoginsTable>
 export type NewLogin = Insertable<LoginsTable>
 export type LoginUpdate = Updateable<LoginsTable>
+
+export interface SuggestedPropsTable {
+  id: Generated<number>,
+  suggester_user_id: number,
+  prop: string,
+}
+export type SuggestedProp = Selectable<SuggestedPropsTable>
+export type NewSuggestedProp = Insertable<SuggestedPropsTable>
+export type SuggestedPropUpdate = Updateable<SuggestedPropsTable>
+
+// Views
 
 export interface VPropsView {
   prop_id: number,
