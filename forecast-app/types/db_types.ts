@@ -127,9 +127,11 @@ export type VUser = Selectable<VUsersView>
 
 export interface VSuggestedPropsView {
   id: number,
-  prop: string,
+  prop_text: string,
   user_id: number,
-  name: string,
-  email: string,
+  login_id: number | null,
+  user_name: string,
+  user_email: string,
+  user_username: string | null,
 }
 export type VSuggestedProp = Selectable<VSuggestedPropsView>

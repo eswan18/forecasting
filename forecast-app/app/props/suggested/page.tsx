@@ -7,10 +7,11 @@ export default async function SuggestedProps() {
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-lg">
         <PageHeading title="Suggested Props" />
-        <ul>
-          {suggestedProps.map((suggestedProp) => (
-            <li key={suggestedProp.id}>
-              User {suggestedProp.suggester_user_id}:  {suggestedProp.prop}
+        <ul className="flex flex-col gap-4">
+          {suggestedProps.map((prop) => (
+            <li key={prop.id} className="flex flex-col gap-0.5">
+              <div className="text-sm">{prop.user_username} ({prop.user_name})</div>
+              <div className="">{prop.prop_text}</div>
             </li>
           ))}
         </ul>

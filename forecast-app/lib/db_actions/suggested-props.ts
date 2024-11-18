@@ -9,7 +9,7 @@ export async function getSuggestedProps() {
   if (!user?.is_admin) {
     throw new Error('Unauthorized: only admins can view suggested props');
   }
-  return db.selectFrom('suggested_props').selectAll().execute();
+  return db.selectFrom('v_suggested_props').selectAll().execute();
 }
 
 export async function createSuggestedProp({ prop }: { prop: NewSuggestedProp }) {
