@@ -4,6 +4,14 @@ import { NewSuggestedProp } from '@/types/db_types';
 import { db } from '@/lib/database';
 import { getUserFromCookies } from '@/lib/get-user';
 
+export async function getSuggestedProps() {
+  const user = await getUserFromCookies();
+  if (!user?.is_admin) {
+    throw new Error('Unauthorized: only admins can view suggested props');
+  }
+  return db.selectFrom('suggested_props').selectAll().execute();
+}
+
 export async function createSuggestedProp({ prop }: { prop: NewSuggestedProp }) {
   const user = await getUserFromCookies();
   if (!user) {

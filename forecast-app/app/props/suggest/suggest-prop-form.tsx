@@ -41,6 +41,7 @@ export function SuggestPropForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
+    setError("");
     try {
       const prop = { prop: values.prop, suggester_user_id: user!.id };
       createSuggestedProp({ prop });
