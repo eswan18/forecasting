@@ -23,7 +23,7 @@ import { z } from "zod";
 import { createSuggestedProp } from "@/lib/db_actions";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 const formSchema = z.object({
-  prop: z.string().min(8).max(100),
+  prop: z.string().min(8).max(1000),
 });
 
 export function SuggestPropForm() {
