@@ -24,6 +24,7 @@ export default async function NavBar() {
   const adminLinks = [
     { href: "/users", label: "Users" },
     { href: "/props/2024", label: "Props" },
+    { href: "/props/suggested", label: "Suggested Props" },
   ];
   return (
     <div className="w-full flex justify-between px-2 mt-3">

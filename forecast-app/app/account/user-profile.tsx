@@ -7,7 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { UserUpdate, VUser } from "@/types/db_types";
 import { z } from "zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { updateLogin, updateUser } from "@/lib/db_actions";
 import { LoaderCircle } from "lucide-react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -15,14 +22,11 @@ import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { updateLoginPassword } from "@/lib/auth";
-import { on } from "events";
 
 export function AccountDetails() {
   const { user, loading, mutate } = useCurrentUser();
@@ -35,13 +39,14 @@ export function AccountDetails() {
   return (
     <div className="mt-4 space-y-12">
       {user &&
-        <>
-          <UserDetailsSection initialUser={user} mutateUser={mutateUser} />
-          <LoginDetailsSection />
-        </>
-      }
-    </div >
-  )
+        (
+          <>
+            <UserDetailsSection initialUser={user} mutateUser={mutateUser} />
+            <LoginDetailsSection />
+          </>
+        )}
+    </div>
+  );
 }
 
 const userDetailsFormSchema = z.object({
@@ -53,7 +58,10 @@ const userDetailsFormSchema = z.object({
 });
 
 function UserDetailsSection(
-  { initialUser, mutateUser }: { initialUser: VUser, mutateUser: (updatedUser: UserUpdate) => void }
+  { initialUser, mutateUser }: {
+    initialUser: VUser;
+    mutateUser: (updatedUser: UserUpdate) => void;
+  },
 ) {
   const [loading, setLoading] = useState(false);
   const form = useForm<z.infer<typeof userDetailsFormSchema>>({
@@ -75,38 +83,55 @@ function UserDetailsSection(
       <h2 className="text-xl mb-6">User Details</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField control={form.control} name="name" render={({ field }) => (
-            <AccountFormItem>
-              <AccountFormLabel>Name</AccountFormLabel>
-              <AccountFormInputControl>
-                <Input {...field} />
-              </AccountFormInputControl>
-              <AccountFormMessage />
-            </AccountFormItem>
-          )} />
-          <FormField control={form.control} name="email" render={({ field }) => (
-            <AccountFormItem>
-              <AccountFormLabel>Email</AccountFormLabel>
-              <AccountFormInputControl>
-                <Input {...field} />
-              </AccountFormInputControl>
-              <AccountFormMessage />
-            </AccountFormItem>
-          )} />
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <AccountFormItem>
+                <AccountFormLabel>Name</AccountFormLabel>
+                <AccountFormInputControl>
+                  <Input {...field} />
+                </AccountFormInputControl>
+                <AccountFormMessage />
+              </AccountFormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <AccountFormItem>
+                <AccountFormLabel>Email</AccountFormLabel>
+                <AccountFormInputControl>
+                  <Input {...field} />
+                </AccountFormInputControl>
+                <AccountFormMessage />
+              </AccountFormItem>
+            )}
+          />
           {loading
-            ?
-            <div className="grid grid-cols-3 gap-4">
-              <div className="col-start-2 col-span-2 flex flex-row justify-center"><LoaderCircle className="animate-spin" /></div>
-            </div>
-            :
-            <div className="grid grid-cols-3 gap-4">
-              <Button type="submit" disabled={!form.formState.isDirty} className="col-start-2 col-span-2">Update</Button>
-            </div>
-          }
+            ? (
+              <div className="grid grid-cols-3 gap-4">
+                <div className="col-start-2 col-span-2 flex flex-row justify-center">
+                  <LoaderCircle className="animate-spin" />
+                </div>
+              </div>
+            )
+            : (
+              <div className="grid grid-cols-3 gap-4">
+                <Button
+                  type="submit"
+                  disabled={!form.formState.isDirty}
+                  className="col-start-2 col-span-2"
+                >
+                  Update
+                </Button>
+              </div>
+            )}
         </form>
       </Form>
-    </div >
-  )
+    </div>
+  );
 }
 
 function LoginDetailsSection() {
@@ -118,35 +143,49 @@ function LoginDetailsSection() {
       <div className="space-y-6">
         <div className="grid grid-cols-3 gap-4">
           <AccountLabel>Username</AccountLabel>
-          <Dialog open={usernameDialogOpen} onOpenChange={setUsernameDialogOpen}>
+          <Dialog
+            open={usernameDialogOpen}
+            onOpenChange={setUsernameDialogOpen}
+          >
             <DialogTrigger asChild>
-              <Button type="submit" className="col-start-2 col-span-2">Change Username</Button>
+              <Button type="submit" className="col-start-2 col-span-2">
+                Change Username
+              </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader className="mb-2">
                 <DialogTitle>Change Username</DialogTitle>
               </DialogHeader>
-              <ChangeUsernameForm onSuccess={() => setUsernameDialogOpen(false)} />
+              <ChangeUsernameForm
+                onSuccess={() => setUsernameDialogOpen(false)}
+              />
             </DialogContent>
           </Dialog>
         </div>
         <div className="grid grid-cols-3 gap-4">
           <AccountLabel>Password</AccountLabel>
-          <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
+          <Dialog
+            open={passwordDialogOpen}
+            onOpenChange={setPasswordDialogOpen}
+          >
             <DialogTrigger asChild>
-              <Button type="submit" className="col-start-2 col-span-2">Change Password</Button>
+              <Button type="submit" className="col-start-2 col-span-2">
+                Change Password
+              </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader className="mb-2">
                 <DialogTitle>Change Password</DialogTitle>
               </DialogHeader>
-              <ChangePasswordForm onSuccess={() => setPasswordDialogOpen(false)} />
+              <ChangePasswordForm
+                onSuccess={() => setPasswordDialogOpen(false)}
+              />
             </DialogContent>
           </Dialog>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 const changeUsernameFormSchema = z.object({
@@ -173,13 +212,13 @@ function ChangeUsernameForm({ onSuccess }: { onSuccess: () => void }) {
     const loginId = user?.login_id;
     if (!loginId) {
       setError("User not found");
-      return
+      return;
     }
     try {
       await updateLogin({ id: loginId, login: values });
     } catch (e) {
       success = false;
-      console.log(e)
+      console.log(e);
       if (e instanceof Error) {
         setError(e.message);
       }
@@ -196,26 +235,41 @@ function ChangeUsernameForm({ onSuccess }: { onSuccess: () => void }) {
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField control={form.control} name="username" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )} />
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Username</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           {loading
-            ?
-            <div className="col-start-2 col-span-2 flex flex-row justify-center w-32"><LoaderCircle className="animate-spin" /></div>
-            :
-            <Button type="submit" disabled={!form.formState.isDirty} className="w-32">Update</Button>
-          }
-          {error && <div className="col-start-2 col-span-2 text-red-500">{error}</div>}
+            ? (
+              <div className="col-start-2 col-span-2 flex flex-row justify-center w-32">
+                <LoaderCircle className="animate-spin" />
+              </div>
+            )
+            : (
+              <Button
+                type="submit"
+                disabled={!form.formState.isDirty}
+                className="w-32"
+              >
+                Update
+              </Button>
+            )}
+          {error && (
+            <div className="col-start-2 col-span-2 text-red-500">{error}</div>
+          )}
         </form>
       </Form>
     </>
-  )
+  );
 }
 
 const changePasswordFormSchema = z.object({
@@ -233,7 +287,7 @@ function ChangePasswordForm({ onSuccess }: { onSuccess: () => void }) {
   async function onSubmit(values: z.infer<typeof changePasswordFormSchema>) {
     const loginId = user?.login_id;
     if (!loginId) {
-      return
+      return;
     }
     setLoading(true);
     let success = true;
@@ -241,7 +295,7 @@ function ChangePasswordForm({ onSuccess }: { onSuccess: () => void }) {
       await updateLoginPassword({ id: loginId, ...values });
     } catch (e) {
       success = false;
-      console.log(e)
+      console.log(e);
       if (e instanceof Error) {
         setError(e.message);
       }
@@ -256,53 +310,76 @@ function ChangePasswordForm({ onSuccess }: { onSuccess: () => void }) {
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField control={form.control} name="currentPassword" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Current Password</FormLabel>
-              <FormControl>
-                <Input type="password" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )} />
-          <FormField control={form.control} name="newPassword" render={({ field }) => (
-            <FormItem>
-              <FormLabel>New Password</FormLabel>
-              <FormControl>
-                <Input type="password" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )} />
+          <FormField
+            control={form.control}
+            name="currentPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Current Password</FormLabel>
+                <FormControl>
+                  <Input type="password" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="newPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>New Password</FormLabel>
+                <FormControl>
+                  <Input type="password" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           {loading
-            ?
-            <div className="col-start-2 col-span-2 flex flex-row justify-center w-32"><LoaderCircle className="animate-spin" /></div>
-            :
-            <Button type="submit" className="w-32">Update</Button>
-          }
-          {error && <div className="col-start-2 col-span-2 text-red-500">{error}</div>}
+            ? (
+              <div className="col-start-2 col-span-2 flex flex-row justify-center w-32">
+                <LoaderCircle className="animate-spin" />
+              </div>
+            )
+            : <Button type="submit" className="w-32">Update</Button>}
+          {error && (
+            <div className="col-start-2 col-span-2 text-red-500">{error}</div>
+          )}
         </form>
       </Form>
     </>
-  )
+  );
 }
 
 function AccountFormItem({ children }: { children: React.ReactNode }) {
-  return <FormItem className="grid grid-cols-3 gap-4 space-y-0 w-full">{children}</FormItem>
+  return (
+    <FormItem className="grid grid-cols-3 gap-4 space-y-0 w-full">
+      {children}
+    </FormItem>
+  );
 }
 
 function AccountFormLabel({ children }: { children: React.ReactNode }) {
-  return <FormLabel className="h-9 w-full py-1 flex flex-row items-center text-base justify-end">{children}</FormLabel>
+  return (
+    <FormLabel className="h-9 w-full py-1 flex flex-row items-center text-base justify-end">
+      {children}
+    </FormLabel>
+  );
 }
 
 function AccountLabel({ children }: { children: React.ReactNode }) {
-  return <Label className="h-9 w-full py-1 flex flex-row items-center text-base justify-end">{children}</Label>
+  return (
+    <Label className="h-9 w-full py-1 flex flex-row items-center text-base justify-end">
+      {children}
+    </Label>
+  );
 }
 
 function AccountFormInputControl({ children }: { children: React.ReactNode }) {
-  return <FormControl className="col-span-2">{children}</FormControl>
+  return <FormControl className="col-span-2">{children}</FormControl>;
 }
 
 function AccountFormMessage() {
-  return <FormMessage className="col-start-2 col-span-2" />
+  return <FormMessage className="col-start-2 col-span-2" />;
 }
