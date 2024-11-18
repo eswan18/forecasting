@@ -19,3 +19,20 @@ And launching a dev server will use the local database copy:
 ```bash
 npm run dev
 ```
+
+### Migrations
+
+#### Making a new migration
+
+Create a migration with a relatively descriptive name, which will be embedded in the filename. Use dashes instead of underscores or spaces.
+```bash
+npm exec kysely migrate make <migration-description>
+```
+
+#### Upgrading a database
+
+Obviously it's best to do this in the staging DB and make sure all is well before going to prod.
+
+```bash
+DATABASE_URL='...' npm exec kysely migrate up
+```
