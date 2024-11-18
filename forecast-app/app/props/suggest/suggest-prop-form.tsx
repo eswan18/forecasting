@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { redirect, useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -35,15 +34,15 @@ export function SuggestPropForm() {
     defaultValues: { prop: "" },
   });
   const { user } = useCurrentUser();
-  if (!user) {
-    redirect("/login");
-  }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!user) {
+      return
+    }
     setLoading(true);
     setError("");
     try {
-      const prop = { prop: values.prop, suggester_user_id: user!.id };
+      const prop = { prop: values.prop, suggester_user_id: user.id };
       createSuggestedProp({ prop });
       form.reset({ prop: "" });
       toast({
