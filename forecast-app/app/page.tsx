@@ -8,7 +8,7 @@ export default async function Home() {
         <PageHeading title="Welcome" />
         Quick Links:
         <ul className="list-disc px-4">
-          <li className="underline"><Link href="/props/2024">2024 Props</Link></li>
+          <li className="underline"><Link href="/props/suggest">Suggest a prop</Link></li>
           <li className="underline"><Link href="/scores/2024">2024 Scores</Link></li>
         </ul>
       </div>
