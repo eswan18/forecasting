@@ -16,6 +16,7 @@ export interface Database {
   v_props: VPropsView,
   v_forecasts: VForecastsView,
   v_users: VUsersView,
+  v_suggested_props: VSuggestedPropsView,
 }
 
 // Tables
@@ -123,3 +124,12 @@ export interface VUsersView {
   is_salted: boolean | null,
 }
 export type VUser = Selectable<VUsersView>
+
+export interface VSuggestedPropsView {
+  id: number,
+  prop: string,
+  user_id: number,
+  name: string,
+  email: string,
+}
+export type VSuggestedProp = Selectable<VSuggestedPropsView>
