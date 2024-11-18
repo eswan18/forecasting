@@ -24,6 +24,7 @@ export default async function NavBar() {
   const adminLinks = [
     { href: "/users", label: "Users" },
     { href: "/props/2024", label: "Props" },
+    { href: "/props/suggested", label: "Suggested Props" },
   ];
   return (
     <div className="w-full flex justify-between px-2 mt-3">
@@ -42,15 +43,19 @@ export default async function NavBar() {
               <NavigationMenuItem>
                 <NavigationMenuTrigger>Admin Tools</NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  {adminLinks.map(({ href, label }) => (
-                    <Link key={href} href={href} passHref legacyBehavior>
-                      <NavigationMenuLink
-                        className={navigationMenuTriggerStyle()}
-                      >
-                        {label}
-                      </NavigationMenuLink>
-                    </Link>
-                  ))}
+                  <ul className="p-2">
+                    {adminLinks.map(({ href, label }) => (
+                      <li key={href}>
+                        <Link href={href} passHref legacyBehavior>
+                          <NavigationMenuLink
+                            className={`${navigationMenuTriggerStyle()} px-2`}
+                          >
+                            {label}
+                          </NavigationMenuLink>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
                 </NavigationMenuContent>
               </NavigationMenuItem>
             )}
