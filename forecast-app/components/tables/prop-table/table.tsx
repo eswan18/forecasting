@@ -54,18 +54,19 @@ export function PropTable({
   return (
     <>
       <div className="flex flex-col justify-start px-1 gap-4">
-        <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-2 grid-rows-[auto_auto] grid-flow-col gap-x-4 gap-y-1">
           <Label>Filter by prop text:</Label>
           <Input
             placeholder="Search for a prop..."
-            value={(table.getColumn("prop_text")?.getFilterValue() as string) ??
+            value={(table.getColumn("prop_text")
+              ?.getFilterValue() as string) ??
               ""}
             onChange={(event) =>
-              table.getColumn("prop_text")?.setFilterValue(event.target.value)}
+              table.getColumn("prop_text")?.setFilterValue(
+                event.target.value,
+              )}
             className="max-w-sm"
           />
-        </div>
-        <div className="flex flex-col gap-3">
           <Label>Filter by resolution:</Label>
           <ResolutionFilter
             filterValue={table.getColumn("resolution")?.getFilterValue() as
