@@ -47,9 +47,16 @@ export function ScoreChartsCard(
                   pressed={breakdownTogglePressed}
                   onPressedChange={setBreakdownTogglePressed}
                 >
-                  {selectedTabValue === "Overall"
-                    ? "Breakdown by Category"
-                    : "Breakdown by Prop"}
+                  <span className="md:hidden">
+                    {selectedTabValue === "Overall"
+                      ? "By Category"
+                      : "By Prop"}
+                  </span>
+                  <span className="hidden md:inline">
+                    {selectedTabValue === "Overall"
+                      ? "Breakdown by Category"
+                      : "Breakdown by Prop"}
+                  </span>
                 </Toggle>
               </div>
               <SelectContent>

@@ -18,7 +18,7 @@ export default async function NavBar() {
   const user = await getUserFromCookies();
   const userId = user?.id;
   const links = [
-    { href: `/forecasts/2024/user/${userId}`, label: "My Forecasts" },
+    { href: `/forecasts/2024/user/${userId}`, label: "Forecasts" },
     { href: "/scores/2024", label: "Scores" },
   ];
   const adminLinks = [
@@ -40,27 +40,14 @@ export default async function NavBar() {
         <NavigationMenu>
           <NavigationMenuList>
             {user?.is_admin && (
-              <NavigationMenuItem>
-                <NavigationMenuTrigger>Admin Tools</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="p-2">
-                    {adminLinks.map(({ href, label }) => (
-                      <li key={href}>
-                        <Link href={href} passHref legacyBehavior>
-                          <NavigationMenuLink
-                            className={`${navigationMenuTriggerStyle()} px-2`}
-                          >
-                            {label}
-                          </NavigationMenuLink>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
+              <>
+                <DropdownNavbarItem itemText="Admin Links" links={adminLinks} />
+                <DropdownNavbarItem itemText="User Links" links={links} />
+              </>
             )}
             {user &&
-              links.map(({ href, label }) => (
+              !user.is_admin &&
+              (links.map(({ href, label }) => (
                 <NavigationMenuItem key={href}>
                   <Link href={href} passHref legacyBehavior>
                     <NavigationMenuLink
@@ -70,7 +57,7 @@ export default async function NavBar() {
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
-              ))}
+              )))}
           </NavigationMenuList>
         </NavigationMenu>
       </div>
@@ -79,5 +66,33 @@ export default async function NavBar() {
         <ThemeToggle />
       </div>
     </div>
+  );
+}
+
+async function DropdownNavbarItem(
+  { itemText, links }: {
+    itemText: string;
+    links: { href: string; label: string }[];
+  },
+) {
+  return (
+    <NavigationMenuItem>
+      <NavigationMenuTrigger>{itemText}</NavigationMenuTrigger>
+      <NavigationMenuContent>
+        <ul className="p-2 bg-background">
+          {links.map(({ href, label }) => (
+            <li key={href}>
+              <Link href={href} passHref legacyBehavior>
+                <NavigationMenuLink
+                  className={`${navigationMenuTriggerStyle()} w-64`}
+                >
+                  {label}
+                </NavigationMenuLink>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </NavigationMenuContent>
+    </NavigationMenuItem>
   );
 }
