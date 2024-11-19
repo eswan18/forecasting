@@ -51,7 +51,7 @@ export function getColumns(
         if (!allowResolutionEdits) return null;
         return (
           <ActionDropdown
-            propId={row.original.prop_id}
+            prop={row.original}
             resolution={row.original.resolution}
           />
         );
@@ -59,4 +59,3 @@ export function getColumns(
     },
   ];
 }
-

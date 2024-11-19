@@ -53,7 +53,7 @@ export async function getPropYears(): Promise<number[]> {
 export async function updateProp({ id, prop }: { id: number, prop: PropUpdate }) {
   // Check that the user is an admin.
   const currentUser = await getUserFromCookies();
-  if (!currentUser || currentUser.is_admin) {
+  if (!currentUser || !currentUser.is_admin) {
     throw new Error('Unauthorized: only admins can update props');
   }
   await db
@@ -61,4 +61,5 @@ export async function updateProp({ id, prop }: { id: number, prop: PropUpdate })
     .set(prop)
     .where('id', '=', id)
     .execute();
+  revalidatePath('/props');
 }
