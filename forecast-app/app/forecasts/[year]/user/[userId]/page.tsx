@@ -40,12 +40,12 @@ export default async function Page(
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-lg">
-        <PageHeading title={`Forecasts`}>
+        <PageHeading title="Forecasts">
           <UserYearSelector
             users={allUsers}
             selectedUserId={requestedUser.id}
             years={years}
-            selectedYear={2024}
+            selectedYear={year}
           />
         </PageHeading>
         <ForecastTable data={scoredForecasts} columns={forecastColumns} />

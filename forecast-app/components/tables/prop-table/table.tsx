@@ -22,22 +22,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { getColumns } from "./columns";
+import { VProp } from "@/types/db_types";
 
-interface DataTableProps<TData, TValue> {
-  getColumns: (allowResolutionEdits: boolean) => ColumnDef<TData, TValue>[];
-  data: TData[];
+interface PropTableProps {
+  data: VProp[];
+  allowEdits: boolean;
 }
 
-export function DataTable<TData, TValue>({
-  getColumns,
+export function PropTable<TData, TValue>({
   data,
-}: DataTableProps<TData, TValue>) {
+  allowEdits,
+}: PropTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const { user } = useCurrentUser();
-  const allowResolutionEdits = user?.is_admin ?? false;
-  const columns = getColumns(allowResolutionEdits);
+  const columns = getColumns(allowEdits);
   const table = useReactTable({
     data,
     columns,

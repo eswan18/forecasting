@@ -55,7 +55,7 @@ export default function UserYearSelector(
       <Select
         value={String(selectedYear.toString())}
         onValueChange={(year) => {
-          redirect(`/forecasts/${selectedYear}/user/${selectedUserId}`);
+          redirect(`/forecasts/${year}/user/${selectedUserId}`);
         }}
       >
         <SelectTrigger className="w-48">
