@@ -30,7 +30,7 @@ interface PropTableProps {
   allowEdits: boolean;
 }
 
-export function PropTable<TData, TValue>({
+export function PropTable({
   data,
   allowEdits,
 }: PropTableProps) {
@@ -67,37 +67,18 @@ export function PropTable<TData, TValue>({
         </div>
         <div className="flex flex-col gap-3">
           <Label>Filter by resolution:</Label>
-          <div className="flex flex-row w-full text-sm gap-6">
-            <ResolutionCheckboxFilter
-              filterValue={table.getColumn("resolution")?.getFilterValue() as
-                | ResolutionOption[]
-                | undefined}
-              setFilterValue={(value) =>
-                table.getColumn("resolution")?.setFilterValue(value)}
-              resolution="Yes"
-            />
-            <ResolutionCheckboxFilter
-              filterValue={table.getColumn("resolution")?.getFilterValue() as
-                | ResolutionOption[]
-                | undefined}
-              setFilterValue={(value) =>
-                table.getColumn("resolution")?.setFilterValue(value)}
-              resolution="No"
-            />
-            <ResolutionCheckboxFilter
-              filterValue={table.getColumn("resolution")?.getFilterValue() as
-                | ResolutionOption[]
-                | undefined}
-              setFilterValue={(value) =>
-                table.getColumn("resolution")?.setFilterValue(value)}
-              resolution="?"
-            />
-          </div>
+          <ResolutionFilter
+            filterValue={table.getColumn("resolution")?.getFilterValue() as
+              | ResolutionOption[]
+              | undefined}
+            setFilterValue={(value) =>
+              table.getColumn("resolution")?.setFilterValue(value)}
+          />
         </div>
       </div>
-      <div className="rounded-md border w-full mt-8">
+      <div className="w-full mt-8">
         <Table>
-          <TableHeader className="bg-secondary">
+          <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
@@ -125,6 +106,8 @@ export function PropTable<TData, TValue>({
                       <TableCell
                         key={cell.id}
                         align={(cell.column.columnDef.meta as any)?.align}
+                        className={(cell.column.columnDef.meta as any)
+                          ?.className}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
@@ -154,30 +137,45 @@ export function PropTable<TData, TValue>({
 
 type ResolutionOption = "Yes" | "No" | "?";
 
-function ResolutionCheckboxFilter(
-  { filterValue, setFilterValue, resolution }: {
-    filterValue?: ResolutionOption[];
+function ResolutionFilter(
+  { filterValue, setFilterValue }: {
+    filterValue: ResolutionOption[] | undefined;
     setFilterValue: (value: ResolutionOption[]) => void;
-    resolution: ResolutionOption;
   },
 ) {
+  const resolutions: ResolutionOption[] = ["Yes", "No", "?"];
+  const addResolutionToFilter = (resolution: ResolutionOption) => {
+    const prev = filterValue ?? [];
+    setFilterValue(
+      prev.includes(resolution)
+        ? prev.filter((v) => v !== resolution)
+        : [...prev, resolution],
+    );
+  };
+  const removeResolutionFromFilter = (resolution: ResolutionOption) => {
+    const prev = filterValue ?? [];
+    setFilterValue(prev.filter((v) => v !== resolution));
+  };
   return (
-    <div className="flex flex-row justify-start items-center gap-1.5">
-      <Checkbox
-        id={resolution}
-        checked={filterValue?.includes(resolution) ?? false}
-        onCheckedChange={(checked) => {
-          const prev = filterValue ?? [];
-          setFilterValue(
-            checked
-              ? [...prev, resolution]
-              : prev.filter((v) => v !== resolution),
-          );
-        }}
-      />
-      <Label htmlFor={resolution} className="text-muted-foreground">
-        {resolution}
-      </Label>
+    <div className="flex flex-row w-full text-sm gap-6">
+      {resolutions.map((resolution) => (
+        <div
+          key={resolution}
+          className="flex flex-row justify-start items-center gap-1.5"
+        >
+          <Checkbox
+            id={resolution}
+            checked={filterValue?.includes(resolution) ?? false}
+            onCheckedChange={(checked) =>
+              checked
+                ? addResolutionToFilter(resolution)
+                : removeResolutionFromFilter(resolution)}
+          />
+          <Label htmlFor={resolution} className="text-muted-foreground">
+            {resolution}
+          </Label>
+        </div>
+      ))}
     </div>
   );
 }
