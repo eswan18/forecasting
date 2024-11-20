@@ -5,7 +5,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 		.createTable('feature_flags')
 		.addColumn('id', 'serial', (col) => col.primaryKey())
 		.addColumn('name', 'text', (col) => col.notNull().unique())
-		.addColumn('user_id', 'integer', (col) => col.notNull().references('users.id'))
+		.addColumn('user_id', 'integer', (col) => col.references('users.id'))
 		.addColumn('enabled', 'boolean', (col) => col.notNull().defaultTo(false))
 		.execute()
 }

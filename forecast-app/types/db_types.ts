@@ -88,6 +88,16 @@ export type SuggestedProp = Selectable<SuggestedPropsTable>
 export type NewSuggestedProp = Insertable<SuggestedPropsTable>
 export type SuggestedPropUpdate = Updateable<SuggestedPropsTable>
 
+export interface FeatureFlagsTable {
+  id: Generated<number>,
+  name: string,
+  user_id: number | null,
+  enabled: boolean,
+}
+export type FeatureFlag = Selectable<FeatureFlagsTable>
+export type NewFeatureFlag = Insertable<FeatureFlagsTable>
+export type FeatureFlagUpdate = Updateable<FeatureFlagsTable>
+
 // Views
 
 export interface VPropsView {
