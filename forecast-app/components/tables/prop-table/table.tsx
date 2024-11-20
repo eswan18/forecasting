@@ -124,9 +124,10 @@ export function PropTable({
 }
 
 function CreateNewPropButton({ className }: { className?: string }) {
+  const [open, setOpen] = useState(false);
   className = cn("gap-2", className);
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="secondary" className={className}>
           <span>New prop</span>
@@ -137,7 +138,7 @@ function CreateNewPropButton({ className }: { className?: string }) {
         <DialogHeader>
           <DialogTitle>Create new prop</DialogTitle>
         </DialogHeader>
-        <CreateEditPropForm />
+        <CreateEditPropForm onSubmit={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );

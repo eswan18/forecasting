@@ -43,7 +43,7 @@ const formSchema = z.object({
  * If initialProp is provided, the form will be in edit mode, otherwise in create mode.
  */
 export function CreateEditPropForm(
-  { initialProp }: { initialProp?: VProp },
+  { initialProp, onSubmit }: { initialProp?: VProp; onSubmit?: () => void },
 ) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -69,7 +69,7 @@ export function CreateEditPropForm(
     });
   }, []);
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function handleSubmit(values: z.infer<typeof formSchema>) {
     setError("");
     setLoading(true);
     try {
@@ -110,6 +110,9 @@ export function CreateEditPropForm(
     } finally {
       setLoading(false);
     }
+    if (onSubmit) {
+      onSubmit();
+    }
   }
   if (loading) {
     return (
@@ -120,7 +123,7 @@ export function CreateEditPropForm(
   }
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
         <FormField
           control={form.control}
           name="text"
