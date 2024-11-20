@@ -2,7 +2,7 @@
 import { getUserFromCookies } from "../get-user";
 import { revalidatePath } from "next/cache";
 import { db } from '@/lib/database';
-import { VProp, PropUpdate } from "@/types/db_types";
+import { VProp, PropUpdate, NewProp } from "@/types/db_types";
 
 export async function getProps({ year }: { year?: number | number[] }): Promise<VProp[]> {
   let query = db.selectFrom('v_props').selectAll();
@@ -60,6 +60,19 @@ export async function updateProp({ id, prop }: { id: number, prop: PropUpdate })
     .updateTable('props')
     .set(prop)
     .where('id', '=', id)
+    .execute();
+  revalidatePath('/props');
+}
+
+export async function createProp({ prop }: { prop: NewProp }) {
+  // Check that the user is an admin.
+  const currentUser = await getUserFromCookies();
+  if (!currentUser || !currentUser.is_admin) {
+    throw new Error('Unauthorized: only admins can create props');
+  }
+  await db
+    .insertInto('props')
+    .values(prop)
     .execute();
   revalidatePath('/props');
 }

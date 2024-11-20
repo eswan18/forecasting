@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import {
-  ColumnDef,
   ColumnFiltersState,
   flexRender,
   getCoreRowModel,
@@ -19,11 +18,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { getColumns } from "./columns";
 import { VProp } from "@/types/db_types";
+import { Filters } from "./filters";
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { CreateEditPropForm } from "@/components/forms/create-edit-prop-form";
 
 interface PropTableProps {
   data: VProp[];
@@ -53,31 +61,10 @@ export function PropTable({
 
   return (
     <>
-      <div className="flex flex-col justify-start px-1 gap-4">
-        <div className="grid grid-cols-2 grid-rows-[auto_auto] grid-flow-col gap-x-4 gap-y-1">
-          <Label>Filter by prop text:</Label>
-          <Input
-            placeholder="Search for a prop..."
-            value={(table.getColumn("prop_text")
-              ?.getFilterValue() as string) ??
-              ""}
-            onChange={(event) =>
-              table.getColumn("prop_text")?.setFilterValue(
-                event.target.value,
-              )}
-            className="max-w-sm"
-          />
-          <Label>Filter by resolution:</Label>
-          <ResolutionFilter
-            filterValue={table.getColumn("resolution")?.getFilterValue() as
-              | ResolutionOption[]
-              | undefined}
-            setFilterValue={(value) =>
-              table.getColumn("resolution")?.setFilterValue(value)}
-          />
-        </div>
-      </div>
-      <div className="w-full mt-8">
+      <div className="w-full mt-6">
+        <h2 className="text-lg mb-2">Filters</h2>
+        <Filters table={table} className="mb-4" />
+        {allowEdits && <CreateNewPropButton className="mb-4 w-full" />}
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -136,47 +123,22 @@ export function PropTable({
   );
 }
 
-type ResolutionOption = "Yes" | "No" | "?";
-
-function ResolutionFilter(
-  { filterValue, setFilterValue }: {
-    filterValue: ResolutionOption[] | undefined;
-    setFilterValue: (value: ResolutionOption[]) => void;
-  },
-) {
-  const resolutions: ResolutionOption[] = ["Yes", "No", "?"];
-  const addResolutionToFilter = (resolution: ResolutionOption) => {
-    const prev = filterValue ?? [];
-    setFilterValue(
-      prev.includes(resolution)
-        ? prev.filter((v) => v !== resolution)
-        : [...prev, resolution],
-    );
-  };
-  const removeResolutionFromFilter = (resolution: ResolutionOption) => {
-    const prev = filterValue ?? [];
-    setFilterValue(prev.filter((v) => v !== resolution));
-  };
+function CreateNewPropButton({ className }: { className?: string }) {
+  className = cn("gap-2", className);
   return (
-    <div className="flex flex-row w-full text-sm gap-6">
-      {resolutions.map((resolution) => (
-        <div
-          key={resolution}
-          className="flex flex-row justify-start items-center gap-1.5"
-        >
-          <Checkbox
-            id={resolution}
-            checked={filterValue?.includes(resolution) ?? false}
-            onCheckedChange={(checked) =>
-              checked
-                ? addResolutionToFilter(resolution)
-                : removeResolutionFromFilter(resolution)}
-          />
-          <Label htmlFor={resolution} className="text-muted-foreground">
-            {resolution}
-          </Label>
-        </div>
-      ))}
-    </div>
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="secondary" className={className}>
+          <span>New prop</span>
+          <PlusCircle />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create new prop</DialogTitle>
+        </DialogHeader>
+        <CreateEditPropForm />
+      </DialogContent>
+    </Dialog>
   );
 }
