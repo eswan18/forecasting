@@ -1,6 +1,6 @@
-import { getCategories, getProps } from "@/lib/db_actions";
+import { getCategories, getForecasts, getProps } from "@/lib/db_actions";
 import { Category, VProp } from "@/types/db_types";
-import { RecordPropForm } from "./record-prop-form";
+import { RecordForecastForm } from "./record-forecast-form";
 import { getUserFromCookies } from "@/lib/get-user";
 import { redirect } from "next/navigation";
 import PageHeading from "@/components/page-heading";
@@ -13,7 +13,11 @@ export default async function RecordForecastsPage(
   const user = await getUserFromCookies();
   if (!user) redirect("/login");
   const { year } = await params;
-  const props = await getProps({ year });
+  let props = await getProps({ year });
+  const forecasts = await getForecasts({ year });
+  // Remove props that already have forecasts.
+  const propIdsWithForecasts = new Set(forecasts.map((f) => f.prop_id));
+  props = props.filter((prop) => !propIdsWithForecasts.has(prop.prop_id));
   const categories = await getCategories();
   // Group props by category in a map.
   const propsByCategoryId: Map<number, { category: Category; props: VProp[] }> =
@@ -75,7 +79,9 @@ function CategoryProps(
         {category.name}
       </h2>
       <div className="flex flex-col gap-8">
-        {props.map((prop) => <RecordPropForm prop={prop} key={prop.prop_id} />)}
+        {props.map((prop) => (
+          <RecordForecastForm prop={prop} key={prop.prop_id} />
+        ))}
       </div>
     </div>
   );
