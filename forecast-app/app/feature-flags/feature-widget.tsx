@@ -15,11 +15,11 @@ import { Edit } from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { DialogDescription } from "@radix-ui/react-dialog";
 import { createFeatureFlag, updateFeatureFlag } from "@/lib/db_actions";
 import { useToast } from "@/hooks/use-toast";
 
@@ -33,6 +33,7 @@ export function FeatureWidget({ featureName, flags }: FeatureWidgetProps) {
   const userValues = flags.filter((flag) => flag.user_id !== null);
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
+  userValues.sort((a, b) => a.user_id! - b.user_id!);
   return (
     <Card className="w-full">
       <CardHeader>
@@ -46,11 +47,17 @@ export function FeatureWidget({ featureName, flags }: FeatureWidgetProps) {
                 name="Default Value"
                 checked={defaultValue.enabled}
                 onCheckedChange={async (checked) => {
-                  await updateFeatureFlag({id: defaultValue.id, enabled: checked});
+                  await updateFeatureFlag({
+                    id: defaultValue.id,
+                    enabled: checked,
+                  });
                   toast({
                     title: "Feature flag updated",
-                    description: `The default value for "${featureName}" is now *${checked ? "on" : "off"}*`,
-                  })
+                    description:
+                      `The default value for "${featureName}" is now *${
+                        checked ? "on" : "off"
+                      }*`,
+                  });
                 }}
               />
             )
@@ -92,7 +99,10 @@ export function FeatureWidget({ featureName, flags }: FeatureWidgetProps) {
               </Button>
             </PopoverTrigger>
             <PopoverContent>
-              <UserLevelFlagsContainer flags={userValues} />
+              <UserLevelFlagsContainer
+                featureName={featureName}
+                flags={userValues}
+              />
             </PopoverContent>
           </Popover>
         </div>

@@ -18,13 +18,19 @@ export default async function FeatureFlagsPage() {
     }
     featureFlagsByName.get(featureFlag.name)!.push(featureFlag);
   }
+  const featureNames = Array.from(featureFlagsByName.keys());
+  featureNames.sort();
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-lg flex flex-col">
         <PageHeading title="Feature Flags" />
         <div className="flex flex-col gap-2">
-          {Array.from(featureFlagsByName).map(([name, flags]) => (
-            <FeatureWidget key={name} featureName={name} flags={flags} />
+          {featureNames.map((name) => (
+            <FeatureWidget
+              key={name}
+              featureName={name}
+              flags={featureFlagsByName.get(name)!}
+            />
           ))}
         </div>
       </div>
