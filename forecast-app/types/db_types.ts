@@ -13,10 +13,12 @@ export interface Database {
   resolutions: ResolutionsTable,
   logins: LoginsTable,
   suggested_props: SuggestedPropsTable,
+  feature_flags: FeatureFlagsTable,
   v_props: VPropsView,
   v_forecasts: VForecastsView,
   v_users: VUsersView,
   v_suggested_props: VSuggestedPropsView,
+  v_feature_flags: VFeatureFlagsView,
 }
 
 // Tables
@@ -145,3 +147,15 @@ export interface VSuggestedPropsView {
   user_username: string | null,
 }
 export type VSuggestedProp = Selectable<VSuggestedPropsView>
+
+export interface VFeatureFlagsView {
+  id: number,
+  name: string,
+  user_id: number | null,
+  enabled: boolean,
+  user_name: string | null,
+  user_email: string | null,
+  user_login_id: number | null,
+  user_is_admin: boolean | null,
+}
+export type VFeatureFlag = Selectable<VFeatureFlagsView>

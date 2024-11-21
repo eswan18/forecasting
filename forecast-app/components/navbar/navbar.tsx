@@ -13,16 +13,21 @@ import { UserStatus } from "./user-status";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { getUserFromCookies } from "@/lib/get-user";
+import { hasFeatureEnabled } from "@/lib/db_actions";
 
 export default async function NavBar() {
   const user = await getUserFromCookies();
   const userId = user?.id;
   const links = [
-    { href: `/forecasts/2024/user/${userId}`, label: "Forecasts" },
+    { href: `/forecasts/2024/user/${userId}`, label: "Forecasts from 2024" },
     { href: "/scores/2024", label: "Scores" },
   ];
+  if (userId && await hasFeatureEnabled({ featureName: "2025-forecasts", userId })) {
+    links.unshift({ href: `/forecasts/record/2025`, label: "Record 2025 Forecasts" });
+  }
   const adminLinks = [
     { href: "/users", label: "Users" },
+    { href: "/feature-flags", label: "Feature Flags" },
     { href: "/props/2024", label: "Props" },
     { href: "/props/suggested", label: "Suggested Props" },
   ];
