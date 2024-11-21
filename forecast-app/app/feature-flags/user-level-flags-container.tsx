@@ -11,7 +11,6 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -37,6 +36,7 @@ export function UserLevelFlagsContainer(
       description: `The feature flag is now *${enabled ? "on" : "off"}*`,
     });
   };
+  const userIdsWithFlags = flags.map((flag) => flag.user_id).filter((id) => id !== null);
   return (
     <div className="flex flex-col gap-2">
       {flags.map((flag, index) => (
@@ -65,6 +65,7 @@ export function UserLevelFlagsContainer(
           <AddUserFeatureFlagWidget
             featureName={featureName}
             onChoice={() => setDialogOpen(false)}
+            excludeUserIds={userIdsWithFlags}
           />
         </DialogContent>
       </Dialog>
@@ -73,25 +74,33 @@ export function UserLevelFlagsContainer(
 }
 
 function AddUserFeatureFlagWidget(
-  { featureName, onChoice }: {
+  { featureName, onChoice, excludeUserIds }: {
     featureName: string;
     onChoice?: () => void;
+    excludeUserIds?: number[];
   },
 ) {
   const [users, setUsers] = useState<VUser[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [selectedUser, setSelectedUser] = useState<VUser | null>(null);
   const { toast } = useToast();
   useEffect(() => {
-    getUsers().then(setUsers);
+    getUsers().then((users) => {
+      setUsers(users.filter((user) => !excludeUserIds?.includes(user.id)));
+    });
   }, []);
   const saveUserFlag = async (enabled: boolean) => {
-    const featureFlag = { name: featureName, user_id: selectedUserId, enabled };
+    if (!selectedUser) return;
+    const featureFlag = {
+      name: featureName,
+      user_id: selectedUser.id,
+      enabled,
+    };
     await createFeatureFlag({ featureFlag }).then(() => {
       toast({
         title: "User-level flag created",
         description: `The user-level flag for "${featureName}" is now *${
           enabled ? "on" : "off"
-        }* for user ${selectedUserId}`,
+        }* for user ${selectedUser.name}`,
       });
     });
     onChoice && onChoice();
@@ -99,8 +108,11 @@ function AddUserFeatureFlagWidget(
   return (
     <div className="flex flex-col gap-4 items-start">
       <Select
-        value={selectedUserId?.toString()}
-        onValueChange={(userId) => setSelectedUserId(parseInt(userId, 10))}
+        value={selectedUser?.id.toString()}
+        onValueChange={(userId) => {
+          const user = users.find((u) => u.id === parseInt(userId));
+          setSelectedUser(user || null);
+        }}
       >
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Select a user" />
