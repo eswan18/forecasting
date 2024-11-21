@@ -45,3 +45,16 @@ export async function createFeatureFlag({ featureFlag }: { featureFlag: NewFeatu
   revalidatePath('/feature-flags');
   return id;
 }
+
+export async function updateFeatureFlag({ id, enabled }: { id: number, enabled: boolean }) {
+  const user = await getUserFromCookies();
+  if (!user?.is_admin) {
+    throw new Error('Unauthorized: only admins can update feature flags');
+  }
+  await db
+    .updateTable('feature_flags')
+    .set('enabled', enabled)
+    .where('id', '=', id)
+    .execute();
+  revalidatePath('/feature-flags');
+}

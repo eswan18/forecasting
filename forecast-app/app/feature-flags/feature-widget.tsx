@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VFeatureFlag } from "@/types/db_types";
-import { OnOffIndicator } from "./on-off-indicator";
+import { FeatureToggle } from "./feature-toggle";
 import {
   Popover,
   PopoverContent,
@@ -20,7 +20,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { DialogDescription } from "@radix-ui/react-dialog";
-import { createFeatureFlag } from "@/lib/db_actions";
+import { createFeatureFlag, updateFeatureFlag } from "@/lib/db_actions";
+import { useToast } from "@/hooks/use-toast";
 
 interface FeatureWidgetProps {
   featureName: string;
@@ -30,6 +31,7 @@ interface FeatureWidgetProps {
 export function FeatureWidget({ featureName, flags }: FeatureWidgetProps) {
   const defaultValue = flags.find((flag) => flag.user_id === null);
   const userValues = flags.filter((flag) => flag.user_id !== null);
+  const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
   return (
     <Card className="w-full">
@@ -40,9 +42,16 @@ export function FeatureWidget({ featureName, flags }: FeatureWidgetProps) {
         <div className="flex flex-row justify-between items-end">
           {defaultValue !== undefined
             ? (
-              <OnOffIndicator
+              <FeatureToggle
                 name="Default Value"
-                onOff={defaultValue.enabled}
+                checked={defaultValue.enabled}
+                onCheckedChange={async (checked) => {
+                  await updateFeatureFlag({id: defaultValue.id, enabled: checked});
+                  toast({
+                    title: "Feature flag updated",
+                    description: `The default value for "${featureName}" is now *${checked ? "on" : "off"}*`,
+                  })
+                }}
               />
             )
             : (
