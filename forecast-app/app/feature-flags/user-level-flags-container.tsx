@@ -36,7 +36,9 @@ export function UserLevelFlagsContainer(
       description: `The feature flag is now *${enabled ? "on" : "off"}*`,
     });
   };
-  const userIdsWithFlags = flags.map((flag) => flag.user_id).filter((id) => id !== null);
+  const userIdsWithFlags = flags.map((flag) => flag.user_id).filter((id) =>
+    id !== null
+  );
   return (
     <div className="flex flex-col gap-2">
       {flags.map((flag, index) => (

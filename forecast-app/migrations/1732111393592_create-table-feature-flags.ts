@@ -8,8 +8,13 @@ export async function up(db: Kysely<any>): Promise<void> {
 		.addColumn('name', 'text', (col) => col.notNull())
 		.addColumn('user_id', 'integer', (col) => col.references('users.id'))
 		.addColumn('enabled', 'boolean', (col) => col.notNull().defaultTo(false))
+		.addUniqueConstraint(
+			'feature_name_user_id_unique',
+			['name', 'user_id'],
+			(builder) => builder.nullsNotDistinct()
+		)
 		.execute()
-	// Insert a feature flag for 2025 forecasts, disabled by default.
+	// Insert a default value for the 2025 forecasts feature, disabled.
 	await db.insertInto('feature_flags').values([
 		{ name: '2025-forecasts', user_id: null, enabled: false },
 	]).execute()
