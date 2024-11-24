@@ -3,6 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { VProp } from "@/types/db_types";
 import { ActionDropdown } from "./action-dropdown";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 export function getColumns(
   allowResolutionEdits: boolean,
@@ -14,12 +15,21 @@ export function getColumns(
       meta: { className: "min-w-[90%]" },
       cell: ({ row }) => {
         return (
-          <div className="flex flex-col justify-start items-start gap-1">
-            <div className="text-xs text-muted-foreground">
-              {row.original.category_name}
-            </div>
-            <div>{row.original.prop_text}</div>
-          </div>
+          <Popover>
+            <PopoverTrigger>
+              <div className="flex flex-col justify-start items-start gap-1">
+                <div className="text-xs text-muted-foreground">
+                  {row.original.category_name}
+                </div>
+                <div className="text-left">{row.original.prop_text}</div>
+              </div>
+            </PopoverTrigger>
+            <PopoverContent>
+              <p className="text-muted-foreground text-sm">{row.original.category_name}</p>
+              <p>{row.original.prop_text}</p>
+              <p className="text-muted-foreground text-sm italic">{row.original.prop_notes}</p>
+            </PopoverContent>
+          </Popover>
         );
       },
     },
