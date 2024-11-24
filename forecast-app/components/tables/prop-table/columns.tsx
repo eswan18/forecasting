@@ -3,7 +3,11 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { VProp } from "@/types/db_types";
 import { ActionDropdown } from "./action-dropdown";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export function getColumns(
   allowResolutionEdits: boolean,
@@ -25,9 +29,13 @@ export function getColumns(
               </div>
             </PopoverTrigger>
             <PopoverContent>
-              <p className="text-muted-foreground text-sm">{row.original.category_name}</p>
+              <p className="text-muted-foreground text-sm">
+                {row.original.category_name}
+              </p>
               <p>{row.original.prop_text}</p>
-              <p className="text-muted-foreground text-sm italic">{row.original.prop_notes}</p>
+              <p className="text-muted-foreground text-sm italic">
+                {row.original.prop_notes}
+              </p>
             </PopoverContent>
           </Popover>
         );

@@ -54,7 +54,12 @@ export function RecordForecastForm({ prop }: { prop: VProp }) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="grid grid-cols-6 grid-flow-col content-end gap-y-2 gap-x-1">
-          <span className="col-span-4 text-sm mr-2">{prop.prop_text}</span>
+          <div className="col-span-4 text-sm mr-2 flex flex-col">
+            <span>{prop.prop_text}</span>
+            <span className="text-muted-foreground italic">
+              {prop.prop_notes}
+            </span>
+          </div>
           <FormField
             control={form.control}
             name="forecast"
