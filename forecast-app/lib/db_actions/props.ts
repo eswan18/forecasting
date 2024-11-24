@@ -46,7 +46,7 @@ export async function unresolveProp({ propId }: { propId: number }): Promise<voi
 }
 
 export async function getPropYears(): Promise<number[]> {
-  const rows = await db.selectFrom('v_props').select('year').distinct().execute();
+  const rows = await db.selectFrom('v_props').select('year').distinct().orderBy('year', 'desc').execute();
   return rows.map(row => row.year);
 }
 
