@@ -1,8 +1,9 @@
 'use server';
 
-import { VForecast } from '@/types/db_types';
+import { NewForecast, VForecast } from '@/types/db_types';
 import { db } from '@/lib/database';
 import { getUserFromCookies } from '@/lib/get-user';
+import { revalidatePath } from 'next/cache';
 
 export async function getForecasts(
   { userId, year }: { userId?: number, year?: number } = {}
@@ -21,27 +22,12 @@ export async function getForecasts(
   return await query.execute();
 }
 
-type UserScore = {
-  user_id: number,
-  user_name: string,
-  score: number,
-};
-
-async function getAvgScoreByUser({ year }: { year?: number }): Promise<UserScore[]> {
-  let query = db
-    .selectFrom('v_forecasts')
-    .where('score', 'is not', null);
-  if (year) {
-    query = query.where('year', '=', year);
-  }
-
-  return await query
-    .groupBy(['user_id', 'user_name'])
-    .select(({ fn }) => [
-      'user_id',
-      'user_name',
-      fn.avg<number>('score').$notNull().as('score'),
-    ])
-    .orderBy('score', 'asc')
-    .execute();
+export async function createForecast({ forecast }: { forecast: NewForecast }): Promise<number> {
+  const { id } = await db
+    .insertInto('forecasts')
+    .values(forecast)
+    .returning('id')
+    .executeTakeFirstOrThrow();
+  revalidatePath('/forecasts');
+  return id;
 }
