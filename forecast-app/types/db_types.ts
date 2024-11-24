@@ -47,6 +47,7 @@ export interface PropsTable {
   text: string,
   category_id: number,
   year: number,
+  notes: string | null,
 }
 export type Prop = Selectable<PropsTable>
 export type NewProp = Insertable<PropsTable>
@@ -105,6 +106,7 @@ export type FeatureFlagUpdate = Updateable<FeatureFlagsTable>
 export interface VPropsView {
   prop_id: number,
   prop_text: string,
+  prop_notes: string | null,
   category_id: number,
   category_name: string,
   year: number,
@@ -119,6 +121,7 @@ export interface VForecastsView {
   category_name: string,
   prop_id: number,
   prop_text: string,
+  prop_notes: string | null,
   year: number,
   forecast: number,
   resolution: boolean | null,

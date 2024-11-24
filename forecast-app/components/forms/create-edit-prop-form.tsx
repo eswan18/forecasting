@@ -34,6 +34,10 @@ import {
 
 const formSchema = z.object({
   text: z.string().min(8).max(1000),
+  notes: z.preprocess(
+    (arg) => (arg === "" ? null : arg),
+    z.string().max(1000).nullable(),
+  ),
   category_id: z.coerce.number(),
   year: z.coerce.number(),
 });
@@ -54,6 +58,7 @@ export function CreateEditPropForm(
     resolver: zodResolver(formSchema),
     defaultValues: {
       text: initialProp?.prop_text,
+      notes: initialProp?.prop_notes || undefined,
       category_id: initialProp?.category_id,
       year: initialProp?.year,
     },
@@ -74,7 +79,6 @@ export function CreateEditPropForm(
     setLoading(true);
     try {
       if (initialProp) {
-        // If initialProp was set, we're editing an existing prop.
         await updateProp({
           id: initialProp.prop_id,
           prop: { ...values },
@@ -132,6 +136,23 @@ export function CreateEditPropForm(
               <FormLabel>Prop</FormLabel>
               <FormControl>
                 <Textarea {...field} className="text-sm min-h-20" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Notes</FormLabel>
+              <FormControl>
+                <Textarea
+                  {...field}
+                  value={field.value ?? undefined}
+                  className="text-sm min-h-20"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
