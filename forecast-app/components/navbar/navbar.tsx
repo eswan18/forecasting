@@ -14,23 +14,57 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { getUserFromCookies } from "@/lib/get-user";
 import { hasFeatureEnabled } from "@/lib/db_actions";
+import { VUser } from "@/types/db_types";
+
+type Link = {
+  href: string;
+  label: string;
+};
+
+type LinkGroup = {
+  label: string;
+  links: Link[];
+};
 
 export default async function NavBar() {
   const user = await getUserFromCookies();
   const userId = user?.id;
-  const links = [
-    { href: `/forecasts/2024/user/${userId}`, label: "Forecasts from 2024" },
-    { href: "/scores/2024", label: "Scores" },
-  ];
-  if (userId && await hasFeatureEnabled({ featureName: "2025-forecasts", userId })) {
-    links.unshift({ href: `/forecasts/record/2025`, label: "Record 2025 Forecasts" });
+  const links: (Link | LinkGroup)[] = [{
+    label: "Forecasts",
+    links: [
+      { href: `/forecasts/2024/user/${userId}`, label: "Previous Forecasts" },
+    ],
+  }, {
+    label: "Scores",
+    links: [{
+      href: "/scores/2024",
+      label: "2024 Scores",
+    }],
+  }];
+  if (
+    userId && await hasFeatureEnabled({ featureName: "2025-forecasts", userId })
+  ) {
+    const forecastLinks = links.find(({ label }) =>
+      label === "Forecasts"
+    ) as LinkGroup;
+    forecastLinks.links.unshift({
+      href: `/forecasts/record/2025`,
+      label: "Make Forecasts",
+    });
   }
-  const adminLinks = [
+  const adminLinks: Link[] = [
     { href: "/users", label: "Users" },
     { href: "/feature-flags", label: "Feature Flags" },
     { href: "/props/2024", label: "Props" },
     { href: "/props/suggested", label: "Suggested Props" },
   ];
+  if (user?.is_admin) {
+    links.unshift({ label: "Admin", links: adminLinks });
+  }
+  function isLink(link: Link | LinkGroup): link is Link {
+    return (link as Link).href !== undefined;
+  }
+
   return (
     <div className="w-full flex justify-between px-2 mt-3">
       <div className="flex flex-row justify-start">
@@ -44,25 +78,27 @@ export default async function NavBar() {
         </Link>
         <NavigationMenu>
           <NavigationMenuList>
-            {user?.is_admin && (
-              <>
-                <DropdownNavbarItem itemText="Admin Links" links={adminLinks} />
-                <DropdownNavbarItem itemText="User Links" links={links} />
-              </>
+            {user && links.map((link) =>
+              isLink(link)
+                ? (
+                  <NavigationMenuItem key={link.href}>
+                    <Link href={link.href} passHref legacyBehavior>
+                      <NavigationMenuLink
+                        className={navigationMenuTriggerStyle()}
+                      >
+                        {link.label}
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                )
+                : (
+                  <DropdownNavbarItem
+                    key={link.label}
+                    group={link}
+                    user={user}
+                  />
+                )
             )}
-            {user &&
-              !user.is_admin &&
-              (links.map(({ href, label }) => (
-                <NavigationMenuItem key={href}>
-                  <Link href={href} passHref legacyBehavior>
-                    <NavigationMenuLink
-                      className={navigationMenuTriggerStyle()}
-                    >
-                      {label}
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-              )))}
           </NavigationMenuList>
         </NavigationMenu>
       </div>
@@ -75,22 +111,17 @@ export default async function NavBar() {
 }
 
 async function DropdownNavbarItem(
-  { itemText, links }: {
-    itemText: string;
-    links: { href: string; label: string }[];
-  },
+  { group: { label, links }, user }: { group: LinkGroup; user?: VUser },
 ) {
   return (
     <NavigationMenuItem>
-      <NavigationMenuTrigger>{itemText}</NavigationMenuTrigger>
-      <NavigationMenuContent>
+      <NavigationMenuTrigger>{label}</NavigationMenuTrigger>
+      <NavigationMenuContent className={user?.is_admin ? "w-80" : "w-64"}>
         <ul className="p-2 bg-background">
           {links.map(({ href, label }) => (
             <li key={href}>
               <Link href={href} passHref legacyBehavior>
-                <NavigationMenuLink
-                  className={`${navigationMenuTriggerStyle()} w-64`}
-                >
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                   {label}
                 </NavigationMenuLink>
               </Link>
