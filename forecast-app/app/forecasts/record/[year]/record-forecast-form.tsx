@@ -70,9 +70,10 @@ export function RecordForecastForm({ prop }: { prop: VProp }) {
                 <FormControl>
                   <Input
                     type="number"
-                    step={0.1}
                     min={0}
                     max={1}
+                    inputMode="decimal"
+                    step="any"
                     {...field}
                     // Interesting, this makes the input uncontrolled and suppresses a
                     // warning, but doesn't seem to break the form's behavior.
