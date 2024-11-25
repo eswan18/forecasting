@@ -20,7 +20,9 @@ import { createForecast } from "@/lib/db_actions";
 import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
-  forecast: z.coerce.number().min(0).max(1),
+  forecast: z.coerce.number({ message: "You must choose a number" }).min(0).max(
+    1,
+  ),
 });
 
 export function RecordForecastForm({ prop }: { prop: VProp }) {
@@ -66,7 +68,16 @@ export function RecordForecastForm({ prop }: { prop: VProp }) {
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input type="number" step={0.1} min={0} max={1} {...field} />
+                  <Input
+                    type="number"
+                    step={0.1}
+                    min={0}
+                    max={1}
+                    {...field}
+                    // Interesting, this makes the input uncontrolled and suppresses a
+                    // warning, but doesn't seem to break the form's behavior.
+                    value={undefined}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
