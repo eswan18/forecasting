@@ -36,7 +36,7 @@ const formSchema = z.object({
   text: z.string().min(8).max(1000),
   notes: z.preprocess(
     (arg) => (arg === "" ? null : arg),
-    z.string().max(1000).nullable(),
+    z.string().max(1000).nullable().optional(),
   ),
   category_id: z.coerce.number(),
   year: z.coerce.number(),
