@@ -92,14 +92,24 @@ export default function LoginFormCard(
             </Alert>
           )}
         </form>
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?{" "}
-          <Link href="/register">
-            <Button variant="link">
-              Register
-            </Button>
-          </Link>
-        </p>
+        <div className="mt-4">
+          <p className="text-center text-sm text-muted-foreground">
+            Forgot your credentials?{" "}
+            <Link href="/reset-password">
+              <Button variant="link">
+                Reset password
+              </Button>
+            </Link>
+          </p>
+          <p className="text-center text-sm text-muted-foreground">
+            Don&apos;t have an account?{" "}
+            <Link href="/register">
+              <Button variant="link">
+                Register
+              </Button>
+            </Link>
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
