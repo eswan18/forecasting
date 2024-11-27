@@ -1,17 +1,15 @@
 "use server";
-/// Log in a user.
 
 import argon2 from 'argon2';
 import { db } from '@/lib/database';
 import jwt from 'jsonwebtoken';
-import { serialize } from 'cookie';
 import { getLoginByUsername } from '@/lib/db_actions';
 import { cookies } from 'next/headers'
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const SALT = process.env.ARGON2_SALT;
 
-export async function login({username, password}: {username: string, password: string}) {
+export async function login({ username, password }: { username: string, password: string }) {
   // Fetch the user from the database
   const login = await getLoginByUsername(username);
 
@@ -35,7 +33,7 @@ export async function login({username, password}: {username: string, password: s
     const newPasswordHash = await argon2.hash(SALT + password, { type: argon2.argon2id });
     await db
       .updateTable('logins')
-      .set({'password_hash': newPasswordHash, is_salted: true})
+      .set({ 'password_hash': newPasswordHash, is_salted: true })
       .where('id', '=', login.id)
       .execute();
   }

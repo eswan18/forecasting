@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { LoaderCircle } from "lucide-react";
-import { login } from "@/lib/login";
+import { login } from "@/lib/auth";
 
 const formSchema = z.object({
   username: z.string().regex(
