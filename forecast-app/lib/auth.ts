@@ -19,7 +19,39 @@ export async function updateLoginPassword({ id, currentPassword, newPassword }: 
   const newHash = await argon2.hash(SALT + newPassword, { type: argon2.argon2id });
   await db
     .updateTable('logins')
-    .set({ password_hash: newHash })
+    .set({ password_hash: newHash, is_salted: true })
     .where('id', '=', id)
+    .execute();
+}
+
+export async function updateLoginPasswordFromResetToken({ username, token, password }: { username: string, token: string, password: string }) {
+  // Get the login_id for the user.
+  const user = await db
+    .selectFrom('v_users')
+    .selectAll()
+    .where('username', '=', username)
+    .executeTakeFirst();
+  if (!user) throw new Error('Attempted password reset for non-existent user');
+  if (!user.login_id) throw new Error('Attempted password reset for user without login_id');
+  // Validate the token.
+  const tokenRecord = await db
+    .selectFrom('password_reset_tokens')
+    .selectAll()
+    .where('login_id', '=', user.login_id)
+    .where('token', '=', token)
+    .executeTakeFirst();
+  if (!tokenRecord) throw new Error('Attempted password reset with invalid token');
+  if (tokenRecord.expires_at < new Date()) throw new Error('Attempted password reset with expired token');
+  // Update the password.
+  const newHash = await argon2.hash(SALT + password, { type: argon2.argon2id });
+  await db
+    .updateTable('logins')
+    .set({ password_hash: newHash, is_salted: true })
+    .where('id', '=', user.login_id)
+    .execute();
+  // Delete the now-used token.
+  await db
+    .deleteFrom('password_reset_tokens')
+    .where('id', '=', tokenRecord.id)
     .execute();
 }
