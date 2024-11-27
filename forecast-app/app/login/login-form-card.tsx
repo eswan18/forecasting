@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { LoaderCircle } from "lucide-react";
+import { login } from "@/lib/login";
 
 const formSchema = z.object({
   username: z.string().regex(
@@ -41,14 +42,7 @@ export default function LoginFormCard(
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    await fetch("/api/login", {
-      method: "POST",
-      body: JSON.stringify({
-        username: values.username,
-        password: values.password,
-      }),
-      headers: { "Content-Type": "application/json" },
-    }).then(() => {
+    login({ username: values.username, password: values.password }).then(() => {
       mutate();
       onLogin && onLogin();
     }).catch((error) => {
