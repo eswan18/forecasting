@@ -5,6 +5,7 @@ import { db } from '@/lib/database';
 import { getLoginByUsername } from "./logins";
 import { headers } from 'next/headers'
 import { sendEmail } from "../email";
+import { updateLoginPassword, updateLoginPasswordFromResetToken } from "../auth";
 
 const PASSWORD_RESET_TOKEN_LIFESPAN_MINUTES = 15;
 
@@ -53,5 +54,15 @@ export async function initiatePasswordReset({ username }: { username: string }) 
     subject: 'Forecasting: Password Reset Link',
     text: `Click here to reset your password: ${link}`,
     html: `Click <a href="${link}">here</a> to reset your password.`,
+  });
+}
+
+export async function executePasswordReset({ username, token, password }: { username: string; token: string; password: string }) {
+  await updateLoginPasswordFromResetToken({ username, token, password }).then(() => {
+    console.log('Password reset successfully');
+  }).catch((error) => {
+    // Suppress details of errors to avoid leaking information.
+    console.error('Error resetting password:', error);
+    throw new Error('Error resetting password');
   });
 }
