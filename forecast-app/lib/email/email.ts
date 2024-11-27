@@ -12,6 +12,7 @@ export async function sendEmail({ to, subject, text, html }: { to: string, subje
   }
   const mailgun = new Mailgun(FormData);
   const mg = mailgun.client({ username: 'api', key: MAILGUN_API_KEY });
+  console.log('Sending email to:', to);
   mg.messages.create('forecastingmail.ethanswan.com', {
     from: "Forecasting <forecasting@forecastingmail.ethanswan.com>",
     to, subject, text, html,

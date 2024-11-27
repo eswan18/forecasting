@@ -18,6 +18,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { initiatePasswordReset } from "@/lib/db_actions";
+import { useToast } from "@/hooks/use-toast";
+import { LoaderCircle } from "lucide-react";
 
 const formSchema = z.object({
   username: z.string().regex(/^[a-z0-9_]+$/).min(2).max(30),
@@ -25,11 +28,25 @@ const formSchema = z.object({
 
 export default function RequestPasswordResetFormCard() {
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
+  const { toast } = useToast();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    setLoading(true);
+    initiatePasswordReset(values).then(() => {
+      setLoading(false);
+      toast({
+        title: "Password Reset Email Sent",
+        description:
+          "If this username exists and is associated with your email, you'll receive a password reset email. Be sure to check your spam folder.",
+      });
+    }).catch((e) => {
+      setLoading(false);
+      setError(e.message);
+    });
   }
 
   return (
@@ -57,9 +74,17 @@ export default function RequestPasswordResetFormCard() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
-              Send Reset Email
-            </Button>
+            {loading
+              ? (
+                <div className="w-full flex justify-center">
+                  <LoaderCircle className="animate-spin" />
+                </div>
+              )
+              : (
+                <Button type="submit" className="w-full">
+                  Send Reset Email
+                </Button>
+              )}
             {error && (
               <Alert
                 variant="destructive"

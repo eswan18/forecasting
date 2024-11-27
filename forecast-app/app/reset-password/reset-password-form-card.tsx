@@ -52,7 +52,7 @@ export default function ResetPasswordFormCard(
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>New Password</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="correct-horse-battery-staple"

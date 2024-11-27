@@ -5,3 +5,4 @@ export * from './logins';
 export * from './props';
 export * from './suggested-props';
 export * from './users';
+export * from './password-reset-tokens'
