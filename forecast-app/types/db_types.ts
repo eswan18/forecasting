@@ -14,11 +14,13 @@ export interface Database {
   logins: LoginsTable,
   suggested_props: SuggestedPropsTable,
   feature_flags: FeatureFlagsTable,
+  password_reset_tokens: PasswordResetTokensTable,
   v_props: VPropsView,
   v_forecasts: VForecastsView,
   v_users: VUsersView,
   v_suggested_props: VSuggestedPropsView,
   v_feature_flags: VFeatureFlagsView,
+  v_password_reset_tokens: VPasswordResetTokensView,
 }
 
 // Tables
@@ -101,16 +103,16 @@ export type FeatureFlag = Selectable<FeatureFlagsTable>
 export type NewFeatureFlag = Insertable<FeatureFlagsTable>
 export type FeatureFlagUpdate = Updateable<FeatureFlagsTable>
 
-export interface PasswordResetTable {
+export interface PasswordResetTokensTable {
   id: Generated<number>,
   login_id: number,
   token: string,
   initiated_at: Date,
   expires_at: Date,
 }
-export type PasswordReset = Selectable<PasswordResetTable>
-export type NewPasswordReset = Insertable<PasswordResetTable>
-export type PasswordResetUpdate = Updateable<PasswordResetTable>
+export type PasswordReset = Selectable<PasswordResetTokensTable>
+export type NewPasswordReset = Insertable<PasswordResetTokensTable>
+export type PasswordResetUpdate = Updateable<PasswordResetTokensTable>
 
 // Views
 
@@ -174,12 +176,15 @@ export interface VFeatureFlagsView {
 }
 export type VFeatureFlag = Selectable<VFeatureFlagsView>
 
-export interface VPasswordResets {
+export interface VPasswordResetTokensView {
   id: number,
   login_id: number,
   token: string,
   initiated_at: Date,
   expires_at: Date,
-  username: string,
+  username: string | null,
+  user_id: number | null,
+  name: string | null,
+  email: string | null,
 }
-export type VPasswordReset = Selectable<VPasswordResets>
+export type VPasswordResetToken = Selectable<VPasswordResetTokensView>
