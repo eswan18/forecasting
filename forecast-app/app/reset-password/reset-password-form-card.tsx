@@ -1,15 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import Link from "next/link";
-import { AlertTriangle } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { z } from "zod";
 import {
   Form,
   FormControl,
@@ -18,12 +14,17 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { AlertTriangle } from "lucide-react";
 
 const formSchema = z.object({
-  username: z.string().regex(/^[a-z0-9_]+$/).min(2).max(30),
+  password: z.string().min(8).max(30),
 });
 
-export default function RequestPasswordResetFormCard() {
+export default function ResetPasswordFormCard(
+  { username, token }: { username: string; token: string },
+) {
   const [error, setError] = useState("");
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -31,25 +32,32 @@ export default function RequestPasswordResetFormCard() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
   }
-
   return (
     <Card className="w-full max-w-md mx-4">
       <CardHeader>
-        <CardTitle className="text-xl">Request Password Reset</CardTitle>
+        <CardTitle className="text-xl">Reset Password</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <FormItem>
+              <FormLabel>Username</FormLabel>
+              <FormControl>
+                <Input disabled value={username} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
             <FormField
               control={form.control}
-              name="username"
+              name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Username</FormLabel>
+                  <FormLabel>Password</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="bobbytables"
+                      placeholder="correct-horse-battery-staple"
                       autoCapitalize="off"
+                      type="password"
                       {...field}
                     />
                   </FormControl>
@@ -58,7 +66,7 @@ export default function RequestPasswordResetFormCard() {
               )}
             />
             <Button type="submit" className="w-full">
-              Send Reset Email
+              Reset Password
             </Button>
             {error && (
               <Alert
@@ -74,13 +82,6 @@ export default function RequestPasswordResetFormCard() {
             )}
           </form>
         </Form>
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          <Link href="/login">
-            <Button variant="link">
-              Back to Login
-            </Button>
-          </Link>
-        </p>
       </CardContent>
     </Card>
   );
