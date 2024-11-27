@@ -5,8 +5,6 @@ export default async function ResetPasswordPage(
   { searchParams }: { searchParams: Promise<{ username?: string; token?: string }> },
 ) {
   const { username, token } = await searchParams;
-  console.log("username:", username);
-  console.log("token:", token);
   return (
     <div className="flex items-center justify-center mt-48">
       {(username && token)

@@ -45,7 +45,7 @@ export default function ResetPasswordFormCard(
         toast({
           title: "Password Reset",
           description: "Your password has been reset. You can now log in.",
-        })
+        });
         setTimeout(() => {
           router.push("/login");
         }, 2000);
