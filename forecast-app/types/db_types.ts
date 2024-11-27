@@ -101,6 +101,17 @@ export type FeatureFlag = Selectable<FeatureFlagsTable>
 export type NewFeatureFlag = Insertable<FeatureFlagsTable>
 export type FeatureFlagUpdate = Updateable<FeatureFlagsTable>
 
+export interface PasswordResetTable {
+  id: Generated<number>,
+  login_id: number,
+  token: string,
+  initiated_at: Date,
+  expires_at: Date,
+}
+export type PasswordReset = Selectable<PasswordResetTable>
+export type NewPasswordReset = Insertable<PasswordResetTable>
+export type PasswordResetUpdate = Updateable<PasswordResetTable>
+
 // Views
 
 export interface VPropsView {
@@ -162,3 +173,13 @@ export interface VFeatureFlagsView {
   user_is_admin: boolean | null,
 }
 export type VFeatureFlag = Selectable<VFeatureFlagsView>
+
+export interface VPasswordResets {
+  id: number,
+  login_id: number,
+  token: string,
+  initiated_at: Date,
+  expires_at: Date,
+  username: string,
+}
+export type VPasswordReset = Selectable<VPasswordResets>
