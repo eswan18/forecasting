@@ -15,8 +15,8 @@ import { useLogout } from "@/hooks/useLogout";
 
 export function UserStatus() {
   const { user, loading, error } = useCurrentUser();
-  const logout = useLogout("/login");
   const loggedIn = user && !loading && !error;
+  const logout = useLogout('/login');
   return (
     <div className="lg:w-48 flex justify-end items-end gap-2 pb-1">
       {loggedIn
@@ -48,12 +48,12 @@ export function UserStatus() {
           </>
         )
         : loading
-          ? <Button disabled variant="outline">Loading...</Button>
-          : (
-            <Link href="/login">
-              <Button>Log in</Button>
-            </Link>
-          )}
+        ? <Button disabled variant="outline">Loading...</Button>
+        : (
+          <Link href="/login">
+            <Button>Log in</Button>
+          </Link>
+        )}
     </div>
   );
 }
