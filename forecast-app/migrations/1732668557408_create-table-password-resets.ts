@@ -6,8 +6,8 @@ export async function up(db: Kysely<any>): Promise<void> {
 		.addColumn('id', 'serial', (col) => col.primaryKey())
 		.addColumn('login_id', 'integer', (col) => col.notNull().references('logins.id'))
 		.addColumn('token', 'text', (col) => col.notNull())
-		.addColumn('initiated_at', 'timestamp', (col) => col.notNull())
-		.addColumn('expires_at', 'timestamp', (col) => col.notNull())
+		.addColumn('initiated_at', 'timestamptz', (col) => col.notNull())
+		.addColumn('expires_at', 'timestamptz', (col) => col.notNull())
 		.execute()
 	// The v_password_reset_tokens view is password_reset_tokens joined with v_users.
 	await db.schema
