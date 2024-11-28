@@ -119,12 +119,12 @@ async function DropdownNavbarItem(
       <NavigationMenuContent className={user?.is_admin ? "w-80" : "w-64"}>
         <ul className="p-2 bg-background">
           {links.map(({ href, label }) => (
-            <li key={href}>
-              <Link href={href} passHref legacyBehavior>
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+            <li key={href} className="flex flex-col items-center">
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                <Link href={href} passHref legacyBehavior>
                   {label}
-                </NavigationMenuLink>
-              </Link>
+                </Link>
+              </NavigationMenuLink>
             </li>
           ))}
         </ul>
