@@ -18,7 +18,6 @@ export default async function RecordForecastsPage(
   // Remove props that already have forecasts.
   const propIdsWithForecasts = new Set(forecasts.map((f) => f.prop_id));
   props = props.filter((prop) => !propIdsWithForecasts.has(prop.prop_id));
-  const categories = await getCategories();
   // Group props by category in a map.
   const propsByCategoryId: Map<number, { category: Category; props: VProp[] }> =
     new Map();
@@ -31,36 +30,56 @@ export default async function RecordForecastsPage(
       propsByCategoryId.get(categoryId)!.props.push(prop);
     }
   });
+  const categories = (await getCategories()).filter((c) =>
+    propsByCategoryId.has(c.id)
+  );
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-lg">
         <PageHeading title={`Record Forecasts for ${year}`} />
-        <div className="flex flex-row justify-start w-full text-muted-foreground mb-3">
-          Jump to category...
-        </div>
-        <div className="flex flex-row flex-wrap justify-center w-full gap-1">
-          {categories.map((category) => (
-            <Link
-              href={`#category-${category.id}`}
-              key={category.id}
-            >
-              <Button variant="secondary">
-                {category.name}
-              </Button>
-            </Link>
-          ))}
-        </div>
+        {categories.length > 0 && (
+          <>
+            <div className="flex flex-row justify-start w-full text-muted-foreground mb-3">
+              Jump to category...
+            </div>
+            <div className="flex flex-row flex-wrap justify-center w-full gap-1">
+              {categories.map((category) => (
+                <Link
+                  href={`#category-${category.id}`}
+                  key={category.id}
+                >
+                  <Button variant="secondary">
+                    {category.name}
+                  </Button>
+                </Link>
+              ))}
+            </div>
+          </>
+        )}
         <div className="mt-8 flex flex-col gap-16">
-          {Array.from(
-            propsByCategoryId,
-            ([categoryId, { category, props }]) => (
-              <CategoryProps
-                key={categoryId}
-                category={category}
-                props={props}
-              />
-            ),
-          )}
+          {propsByCategoryId.size === 0
+            ? (
+              <div className="text-center">
+                <div className="text-lg text-muted-foreground mb-4">
+                  No props to forecast
+                </div>
+                <p className="text-muted-foreground">
+                  You have already forecasted all props for this year.
+                </p>
+              </div>
+            )
+            : (
+              Array.from(
+                propsByCategoryId,
+                ([categoryId, { category, props }]) => (
+                  <CategoryProps
+                    key={categoryId}
+                    category={category}
+                    props={props}
+                  />
+                ),
+              )
+            )}
         </div>
       </div>
     </main>
