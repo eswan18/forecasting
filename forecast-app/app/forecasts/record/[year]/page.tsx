@@ -1,8 +1,7 @@
 import { getCategories, getForecasts, getProps } from "@/lib/db_actions";
 import { Category, VProp } from "@/types/db_types";
 import { RecordForecastForm } from "./record-forecast-form";
-import { getUserFromCookies } from "@/lib/get-user";
-import { redirect } from "next/navigation";
+import { getUserFromCookies, loginAndRedirect } from "@/lib/get-user";
 import PageHeading from "@/components/page-heading";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -10,9 +9,11 @@ import { Button } from "@/components/ui/button";
 export default async function RecordForecastsPage(
   { params }: { params: Promise<{ year: number }> },
 ) {
-  const user = await getUserFromCookies();
-  if (!user) redirect("/login");
   const { year } = await params;
+
+  const user = await getUserFromCookies();
+  if (!user) await loginAndRedirect({ url: `/forecasts/record/${year}` });
+
   let props = await getProps({ year });
   const forecasts = await getForecasts({ year });
   // Remove props that already have forecasts.

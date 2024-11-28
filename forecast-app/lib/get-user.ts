@@ -4,6 +4,8 @@ import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { db } from '@/lib/database';
 import { VUser } from '@/types/db_types';
+import { redirect } from "next/navigation";
+import { headers } from 'next/headers'
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
@@ -27,4 +29,8 @@ export async function getUserFromToken(token: string): Promise<VUser | null> {
   } catch {
     return null;
   }
+}
+
+export async function loginAndRedirect({ url }: { url: string }): Promise<void> {
+  redirect(`/login?redirect=${encodeURIComponent(url)}`);
 }
