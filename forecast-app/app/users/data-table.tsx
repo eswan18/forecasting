@@ -22,15 +22,15 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { VUser } from "@/types/db_types";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { getColumns } from "./columns";
 
-interface DataTableProps {
-  columns: ColumnDef<VUser>[];
-  data: VUser[];
-}
-
-export function DataTable({ columns, data }: DataTableProps) {
+export function DataTable({ data }: { data: VUser[] }) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  // The columns object needs access to `mutateUser`, which can only be accessed in a client component.
+  const { mutate: mutateUser } = useCurrentUser();
+  const columns = getColumns({ mutateUser });
   const table = useReactTable({
     data,
     columns,
