@@ -14,9 +14,9 @@ import { Button } from "../ui/button";
 import { useLogout } from "@/hooks/useLogout";
 
 export function UserStatus() {
-  const { user, loading, error } = useCurrentUser();
-  const loggedIn = user && !loading && !error;
-  const logout = useLogout('/login');
+  const { user, isLoading, error } = useCurrentUser();
+  const loggedIn = user && !isLoading && !error;
+  const logout = useLogout("/login");
   return (
     <div className="lg:w-48 flex justify-end items-end gap-2 pb-1">
       {loggedIn
@@ -47,7 +47,7 @@ export function UserStatus() {
             </DropdownMenu>
           </>
         )
-        : loading
+        : isLoading
         ? <Button disabled variant="outline">Loading...</Button>
         : (
           <Link href="/login">

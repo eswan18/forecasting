@@ -89,7 +89,7 @@ function AddUserFeatureFlagWidget(
     getUsers().then((users) => {
       setUsers(users.filter((user) => !excludeUserIds?.includes(user.id)));
     });
-  }, []);
+  }, [excludeUserIds]);
   const saveUserFlag = async (enabled: boolean) => {
     if (!selectedUser) return;
     const featureFlag = {

@@ -5,6 +5,7 @@ import { db } from '@/lib/database';
 import jwt from 'jsonwebtoken';
 import { getLoginByUsername } from '@/lib/db_actions';
 import { cookies } from 'next/headers'
+import { revalidatePath } from 'next/cache';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const SALT = process.env.ARGON2_SALT;
@@ -52,4 +53,5 @@ export async function login({ username, password }: { username: string, password
     maxAge: 108000, // 3 hours
     path: '/',
   });
+  revalidatePath('/');
 }

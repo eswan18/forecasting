@@ -29,19 +29,18 @@ import {
 import { updateLoginPassword } from "@/lib/auth";
 
 export function AccountDetails() {
-  const { user, loading, mutate } = useCurrentUser();
+  const { user, isLoading, mutate } = useCurrentUser();
   async function mutateUser(updatedUser: UserUpdate) {
     user && mutate({ ...user, ...updatedUser });
-  }
-  async function mutateUsername(username: string) {
-    user && mutate({ ...user, username });
   }
   return (
     <div className="mt-4 space-y-12">
       {user &&
         (
           <>
-            <UserDetailsSection initialUser={user} mutateUser={mutateUser} />
+            {!isLoading && (
+              <UserDetailsSection initialUser={user} mutateUser={mutateUser} />
+            )}
             <LoginDetailsSection />
           </>
         )}

@@ -18,8 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
-import { LoaderCircle } from "lucide-react";
+import { AlertTriangle, LoaderCircle } from "lucide-react";
 
 import { z } from "zod";
 import { registerNewUser } from "@/lib/auth";

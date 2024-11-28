@@ -1,30 +1,14 @@
 'use client';
 
-import { VUser } from '@/types/db_types';
+import { getUserFromCookies } from '@/lib/get-user';
 import useSWR from 'swr';
 
 export function useCurrentUser() {
-  const { data: user, error, mutate } = useSWR('/api/user', fetcher);
-
+  const { data, isLoading, error, mutate } = useSWR('currentUser', getUserFromCookies);
   return {
-    user,
-    loading: !error && !user,
+    user: data,
+    isLoading,
     error,
     mutate,
   };
-}
-
-async function fetcher(url: string) {
-  const res = await fetch(url, { credentials: 'include' });
-
-  if (!res.ok) {
-    throw new Error('Not authenticated');
-  }
-
-  const payload = await res.json();
-  if ('user' in payload) {
-    return payload.user as VUser;
-  } else {
-    throw new Error('Invalid response from server');
-  }
 }
