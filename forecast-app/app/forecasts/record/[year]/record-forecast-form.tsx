@@ -57,7 +57,7 @@ export function RecordForecastForm({ prop }: { prop: VProp }) {
         <div className="grid grid-cols-6 grid-flow-col content-end gap-y-2 gap-x-1">
           <div className="col-span-4 text-sm mr-2 flex flex-col">
             <span>{prop.prop_text}</span>
-            <span className="text-muted-foreground italic">
+            <span className="text-muted-foreground italic break-words">
               {prop.prop_notes}
             </span>
           </div>
