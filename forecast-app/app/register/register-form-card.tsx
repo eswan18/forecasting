@@ -19,8 +19,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 
 import { z } from "zod";
+import { registerNewUser } from "@/lib/auth";
 
 const formSchema = z.object({
   username: z.string().regex(
@@ -38,32 +40,25 @@ const formSchema = z.object({
 
 export default function RegisterFormCard() {
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      const res = await fetch("/api/register", {
-        method: "POST",
-        body: JSON.stringify({
-          ...values,
-          registration_secret: values.registrationSecret,
-        }),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "An error occurred.");
-        return;
+    setLoading(true);
+    registerNewUser(values).catch((error) => {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An error occurred.");
       }
-
+    }).then(() => {
       router.push("/login");
-    } catch {
-      setError("An error occurred.");
-    }
+    }).finally(() => {
+      setLoading(false);
+    });
   }
 
   return (
@@ -164,9 +159,17 @@ export default function RegisterFormCard() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
-              Register
-            </Button>
+            {loading
+              ? (
+                <div className="w-full flex justify-center">
+                  <LoaderCircle className="animate-spin" />
+                </div>
+              )
+              : (
+                <Button type="submit" className="w-full">
+                  Register
+                </Button>
+              )}
             {error && (
               <Alert
                 variant="destructive"
