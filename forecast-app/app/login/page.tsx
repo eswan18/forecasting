@@ -5,13 +5,15 @@ import LoginFormCard from "./login-form-card";
 export default async function LoginPage(
   { searchParams }: { searchParams: Promise<{ redirect: string }> },
 ) {
-  const { redirect: redirectUrl } = await searchParams;
-  const decodedRedirectUrl = decodeURIComponent(redirectUrl);
+  const { redirect: redirectUrlParam } = await searchParams;
+  const redirectUrl = redirectUrlParam
+    ? decodeURIComponent(redirectUrlParam)
+    : "/";
 
   const revalidateOnLogin = async () => {
     "use server";
     revalidatePath("/");
-    redirect(decodedRedirectUrl);
+    redirect(redirectUrl);
   };
   return (
     <div className="flex items-center justify-center mt-48">
