@@ -1,13 +1,16 @@
 import PageHeading from "@/components/page-heading";
 import { getFeatureFlags } from "@/lib/db_actions";
 import { getUserFromCookies } from "@/lib/get-user";
-import { redirect } from "next/navigation";
 import { VFeatureFlag } from "@/types/db_types";
 import { FeatureWidget } from "./feature-widget";
+import { loginAndRedirect } from "@/lib/get-user";
 
 export default async function FeatureFlagsPage() {
   const user = await getUserFromCookies();
-  if (!user) redirect("/login");
+  if (!user) {
+    await loginAndRedirect({ url: "/feature-flags" })
+    return <></>; // will never reach this line because we redirect.
+  };
   if (!user.is_admin) throw new Error("Unauthorized");
   const featureFlags = await getFeatureFlags();
   // Group the feature flags by name.

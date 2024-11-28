@@ -8,6 +8,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { loginAndRedirect } from "@/lib/get-user";
 
 import { ScoreChartsCard } from "./score-charts-card";
 import { getUserFromCookies } from "@/lib/get-user";
@@ -16,10 +17,11 @@ export default async function Page(
   { params }: { params: Promise<{ year: number }> },
 ) {
   const user = await getUserFromCookies();
-  if (!user) {
-    redirect("/login");
-  }
   const { year } = await params;
+  if (!user) {
+    await loginAndRedirect({ url: `/scores/${year}` });
+    return <></>; // will never reach this line due to redirect.
+  }
   const categories = await getCategories();
   const forecasts = await getForecasts({ year });
   const linkToForecasts = `/forecasts/${year}/user/${user.id}`;

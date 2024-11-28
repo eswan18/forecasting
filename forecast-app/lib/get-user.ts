@@ -31,6 +31,6 @@ export async function getUserFromToken(token: string): Promise<VUser | null> {
   }
 }
 
-export async function loginAndRedirect({ url }: { url: string }): Promise<void> {
+export async function loginAndRedirect({ url }: { url: string }): Promise<never> {
   redirect(`/login?redirect=${encodeURIComponent(url)}`);
 }
