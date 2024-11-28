@@ -15,6 +15,7 @@ export default async function RecordForecastsPage(
   if (!user) await loginAndRedirect({ url: `/forecasts/record/${year}` });
 
   let props = await getProps({ year });
+  props.sort((a, b) => a.prop_id - b.prop_id);
   const forecasts = await getForecasts({ year });
   // Remove props that already have forecasts.
   const propIdsWithForecasts = new Set(forecasts.map((f) => f.prop_id));
@@ -33,7 +34,7 @@ export default async function RecordForecastsPage(
   });
   const categories = (await getCategories()).filter((c) =>
     propsByCategoryId.has(c.id)
-  );
+  ).sort((a, b) => a.name < b.name ? -1 : 1);
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-lg">
