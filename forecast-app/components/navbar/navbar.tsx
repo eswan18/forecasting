@@ -32,7 +32,7 @@ export default async function NavBar() {
   const links: (Link | LinkGroup)[] = [{
     label: "Forecasts",
     links: [
-      { href: `/forecasts/2024/user/${userId}`, label: "Previous Forecasts" },
+      { href: `/forecasts/2024/user/${userId}`, label: "2024 Forecasts" },
     ],
   }, {
     label: "Scores",
@@ -49,7 +49,7 @@ export default async function NavBar() {
     ) as LinkGroup;
     forecastLinks.links.unshift({
       href: `/forecasts/record/2025`,
-      label: "Make Forecasts",
+      label: "Make Forecasts for 2025",
     });
   }
   const adminLinks: Link[] = [
