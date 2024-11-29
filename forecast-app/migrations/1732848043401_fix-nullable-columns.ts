@@ -1,25 +1,7 @@
 import type { Kysely } from 'kysely'
 
 export async function up(db: Kysely<any>): Promise<void> {
-	// Columns to switch from nullable to non-nullable
-	// users:
-	// - name, character varying
-	// - is_admin, boolean
-	// logins:
-	// - is_salted, boolean
-	// categories:
-	// - name, character varying
-	// forecasts:
-	// - prop_id, integer
-	// - user_id, integer
-	// - forecast, double precision
-	// props:
-	// - category_id, integer
-	// - text, character varying
-	// - year, integer
-	// resolutions:
-	// - prop_id, integer
-	// - resolution, boolean
+	// Fix columns that were nullable but shouldn't have been.
 	await db.schema.alterTable('users')
 		.alterColumn('name', (ac) => ac.setNotNull())
 		.alterColumn('is_admin', (ac) => ac.setNotNull())
