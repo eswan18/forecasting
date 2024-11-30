@@ -1,4 +1,9 @@
-import { getCategories, getForecasts, getProps } from "@/lib/db_actions";
+import {
+  getCategories,
+  getForecasts,
+  getProps,
+  getUnforecastedProps,
+} from "@/lib/db_actions";
 import { Category, VProp } from "@/types/db_types";
 import { RecordForecastForm } from "@/components/forms/record-forecast-form";
 import { getUserFromCookies, loginAndRedirect } from "@/lib/get-user";
@@ -12,14 +17,13 @@ export default async function RecordForecastsPage(
   const { year } = await params;
 
   const user = await getUserFromCookies();
-  if (!user) await loginAndRedirect({ url: `/forecasts/record/${year}` });
+  if (!user) {
+    await loginAndRedirect({ url: `/forecasts/record/${year}` });
+    return <></>; // will never reach this line due to redirect.
+  }
 
-  let props = await getProps({ year });
+  let props = await getUnforecastedProps({ userId: user.id, year });
   props.sort((a, b) => a.prop_id - b.prop_id);
-  const forecasts = await getForecasts({ year });
-  // Remove props that already have forecasts.
-  const propIdsWithForecasts = new Set(forecasts.map((f) => f.prop_id));
-  props = props.filter((prop) => !propIdsWithForecasts.has(prop.prop_id));
   // Group props by category in a map.
   const propsByCategoryId: Map<number, { category: Category; props: VProp[] }> =
     new Map();

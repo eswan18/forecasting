@@ -1,6 +1,6 @@
 'use server';
 
-import { ForecastUpdate, NewForecast, VForecast } from '@/types/db_types';
+import { ForecastUpdate, NewForecast, VForecast, VProp } from '@/types/db_types';
 import { db } from '@/lib/database';
 import { getUserFromCookies } from '@/lib/get-user';
 import { revalidatePath } from 'next/cache';
@@ -65,4 +65,24 @@ export async function updateForecast({ id, forecast }: { id: number, forecast: F
     .where('id', '=', id)
     .execute();
   revalidatePath('/forecasts');
+}
+
+export async function getUnforecastedProps({ year, userId }: { year: number, userId: number }): Promise<VProp[]> {
+  // Make sure the user is who they say they.
+  const user = await getUserFromCookies();
+  if (!user || user.id !== userId) throw new Error('Unauthorized');
+  // Fetch props without a corresponding entry in the forecasts table for that user.
+  const propsForYear = await db.
+    selectFrom('v_props')
+    .selectAll()
+    .where('year', '=', year)
+    .where(({ not, exists, selectFrom }) => not(exists(
+      selectFrom('forecasts')
+        .select("id")
+        .where('user_id', '=', userId)
+        .whereRef('forecasts.prop_id', '=', 'v_props.prop_id')
+    )
+    ))
+    .execute();
+  return propsForYear;
 }
