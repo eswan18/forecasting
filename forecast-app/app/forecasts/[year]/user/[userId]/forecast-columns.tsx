@@ -35,7 +35,7 @@ export type ScoredForecast = {
 };
 
 export function useForecastColumns(
-  {editable, scored}: {editable: boolean, scored: boolean}
+  { editable, scored }: { editable: boolean; scored: boolean },
 ): ColumnDef<ScoredForecast>[] {
   const columns: ColumnDef<ScoredForecast>[] = [
     {
@@ -59,29 +59,6 @@ export function useForecastColumns(
       header: "Proposition",
     },
     {
-      accessorKey: "resolution",
-      header: "Res",
-      filterFn: (row, columnId, filterValue) => {
-        if (filterValue.length === 3 || filterValue.length === 0) return true;
-        switch (row.getValue("resolution")) {
-          case true:
-            return filterValue.includes("Yes");
-          case false:
-            return filterValue.includes("No");
-          case null:
-            return filterValue.includes("?");
-        }
-      },
-      cell: ({ row }) => {
-        const resolution = row.original.resolution;
-        return (
-          <div className="text-right">
-            {resolution === null ? "?" : resolution ? 1 : 0}
-          </div>
-        );
-      },
-    },
-    {
       accessorKey: "forecast",
       header: "Fcast",
       cell: ({ row }) => {
@@ -98,6 +75,31 @@ export function useForecastColumns(
     });
   }
   if (scored) {
+    columns.push(
+      {
+        accessorKey: "resolution",
+        header: "Res",
+        filterFn: (row, columnId, filterValue) => {
+          if (filterValue.length === 3 || filterValue.length === 0) return true;
+          switch (row.getValue("resolution")) {
+            case true:
+              return filterValue.includes("Yes");
+            case false:
+              return filterValue.includes("No");
+            case null:
+              return filterValue.includes("?");
+          }
+        },
+        cell: ({ row }) => {
+          const resolution = row.original.resolution;
+          return (
+            <div className="text-right">
+              {resolution === null ? "?" : resolution ? 1 : 0}
+            </div>
+          );
+        },
+      },
+    );
     columns.push(
       {
         accessorKey: "score",

@@ -30,10 +30,12 @@ interface DataTableProps {
   scored: boolean;
 }
 
-export default function ForecastTable({ data, editable, scored }: DataTableProps) {
+export default function ForecastTable(
+  { data, editable, scored }: DataTableProps,
+) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const columns = useForecastColumns({editable, scored});
+  const columns = useForecastColumns({ editable, scored });
   const table = useReactTable({
     data,
     columns,
@@ -61,18 +63,22 @@ export default function ForecastTable({ data, editable, scored }: DataTableProps
             className="max-w-sm"
           />
         </div>
-        <div className="flex flex-col gap-3">
-          <Label>Filter by resolution:</Label>
-          <div className="flex flex-row w-full text-sm gap-6">
-            <ResolutionFilter
-              filterValue={table.getColumn("resolution")?.getFilterValue() as
-                | ResolutionOption[]
-                | undefined}
-              setFilterValue={(value) =>
-                table.getColumn("resolution")?.setFilterValue(value)}
-            />
-          </div>
-        </div>
+        {scored &&
+          (
+            <div className="flex flex-col gap-3">
+              <Label>Filter by resolution:</Label>
+              <div className="flex flex-row w-full text-sm gap-6">
+                <ResolutionFilter
+                  filterValue={table.getColumn("resolution")
+                    ?.getFilterValue() as
+                      | ResolutionOption[]
+                      | undefined}
+                  setFilterValue={(value) =>
+                    table.getColumn("resolution")?.setFilterValue(value)}
+                />
+              </div>
+            </div>
+          )}
       </div>
       <div className="rounded-md border w-full mt-8">
         <Table>
