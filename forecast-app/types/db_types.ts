@@ -6,15 +6,16 @@ import {
 } from 'kysely';
 
 export interface Database {
-  users: UsersTable,
   categories: CategoriesTable,
-  props: PropsTable,
-  forecasts: ForecastsTable,
-  resolutions: ResolutionsTable,
-  logins: LoginsTable,
-  suggested_props: SuggestedPropsTable,
   feature_flags: FeatureFlagsTable,
+  forecasts: ForecastsTable,
+  invite_tokens: InviteTokensTable,
+  logins: LoginsTable,
   password_reset_tokens: PasswordResetTokensTable,
+  props: PropsTable,
+  resolutions: ResolutionsTable,
+  suggested_props: SuggestedPropsTable,
+  users: UsersTable,
   v_props: VPropsView,
   v_forecasts: VForecastsView,
   v_users: VUsersView,
@@ -113,6 +114,16 @@ export interface PasswordResetTokensTable {
 export type PasswordReset = Selectable<PasswordResetTokensTable>
 export type NewPasswordReset = Insertable<PasswordResetTokensTable>
 export type PasswordResetUpdate = Updateable<PasswordResetTokensTable>
+
+export interface InviteTokensTable {
+  id: Generated<number>,
+  token: string,
+  created_at: Date,
+  used_at: Date | null,
+}
+export type InviteToken = Selectable<InviteTokensTable>;
+export type NewInviteToken = Insertable<InviteTokensTable>;
+export type InviteTokenUpdate = Updateable<InviteTokensTable>;
 
 // Views
 
