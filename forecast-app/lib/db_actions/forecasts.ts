@@ -68,9 +68,10 @@ export async function updateForecast({ id, forecast }: { id: number, forecast: F
 }
 
 export async function getUnforecastedProps({ year, userId }: { year: number, userId: number }): Promise<VProp[]> {
-  // Make sure the user is who they say they.
+  // Make sure the user is who they say they, or an admin.
   const user = await getUserFromCookies();
-  if (!user || user.id !== userId) throw new Error('Unauthorized');
+  if (!user) throw new Error('Unauthorized');
+  if (user.id !== userId && !user.is_admin) throw new Error('Unauthorized')
   // Fetch props without a corresponding entry in the forecasts table for that user.
   const propsForYear = await db.
     selectFrom('v_props')

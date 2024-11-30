@@ -53,10 +53,11 @@ export default async function NavBar() {
     });
   }
   const adminLinks: Link[] = [
-    { href: "/users", label: "Users" },
-    { href: "/feature-flags", label: "Feature Flags" },
+    { href: "/admin/users", label: "Users" },
+    { href: "/admin/feature-flags", label: "Feature Flags" },
     { href: "/props/2024", label: "Props" },
-    { href: "/props/suggested", label: "Suggested Props" },
+    { href: "/admin/suggested-props", label: "Suggested Props" },
+    { href: "/admin/forecast-progress/2025", label: "2025 Forecast Progress" },
   ];
   if (user?.is_admin) {
     links.unshift({ label: "Admin", links: adminLinks });

@@ -8,6 +8,10 @@ export default async function Page(
   { params }: { params: Promise<{ year: number }> },
 ) {
   const { year } = await params;
+  // Check that year is a number.
+  if (isNaN(year)) {
+    throw new Error("Invalid year");
+  }
   const user = await getUserFromCookies();
   const allowEdits = user?.is_admin || false;
   const years = await getPropYears();

@@ -46,7 +46,13 @@ export default async function RecordForecastsPage(
         <p>Record new forecasts here.</p>
         <p>
           You can edit existing forecasts on the{" "}
-          <Link href={`/forecasts/${year}/user/${user.id}`} className="underline">{year.toString()} Forecast History</Link> page.
+          <Link
+            href={`/forecasts/${year}/user/${user.id}`}
+            className="underline"
+          >
+            {year.toString()} Forecast History
+          </Link>{" "}
+          page.
         </p>
         {categories.length > 0 && (
           <>
