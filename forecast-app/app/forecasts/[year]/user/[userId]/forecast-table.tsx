@@ -22,18 +22,20 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ScoredForecast, useForecastColumns } from "./forecast-columns";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+interface DataTableProps {
+  data: ScoredForecast[];
+  editable: boolean;
+  scored: boolean;
 }
 
-export default function ForecastTable<TData, TValue>({
-  columns,
-  data,
-}: DataTableProps<TData, TValue>) {
+export default function ForecastTable(
+  { data, editable, scored }: DataTableProps,
+) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const columns = useForecastColumns({ editable, scored });
   const table = useReactTable({
     data,
     columns,
@@ -61,18 +63,22 @@ export default function ForecastTable<TData, TValue>({
             className="max-w-sm"
           />
         </div>
-        <div className="flex flex-col gap-3">
-          <Label>Filter by resolution:</Label>
-          <div className="flex flex-row w-full text-sm gap-6">
-            <ResolutionFilter
-              filterValue={table.getColumn("resolution")?.getFilterValue() as
-                | ResolutionOption[]
-                | undefined}
-              setFilterValue={(value) =>
-                table.getColumn("resolution")?.setFilterValue(value)}
-            />
-          </div>
-        </div>
+        {scored &&
+          (
+            <div className="flex flex-col gap-3">
+              <Label>Filter by resolution:</Label>
+              <div className="flex flex-row w-full text-sm gap-6">
+                <ResolutionFilter
+                  filterValue={table.getColumn("resolution")
+                    ?.getFilterValue() as
+                      | ResolutionOption[]
+                      | undefined}
+                  setFilterValue={(value) =>
+                    table.getColumn("resolution")?.setFilterValue(value)}
+                />
+              </div>
+            </div>
+          )}
       </div>
       <div className="rounded-md border w-full mt-8">
         <Table>

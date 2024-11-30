@@ -1,6 +1,6 @@
 'use server';
 
-import { NewForecast, VForecast } from '@/types/db_types';
+import { ForecastUpdate, NewForecast, VForecast } from '@/types/db_types';
 import { db } from '@/lib/database';
 import { getUserFromCookies } from '@/lib/get-user';
 import { revalidatePath } from 'next/cache';
@@ -23,6 +23,11 @@ export async function getForecasts(
 }
 
 export async function createForecast({ forecast }: { forecast: NewForecast }): Promise<number> {
+  // Make sure the user is who they say they.
+  const user = await getUserFromCookies();
+  if (!user || user.id !== forecast.user_id) {
+    throw new Error('Unauthorized');
+  }
   const { id } = await db
     .insertInto('forecasts')
     .values(forecast)
@@ -30,4 +35,34 @@ export async function createForecast({ forecast }: { forecast: NewForecast }): P
     .executeTakeFirstOrThrow();
   revalidatePath('/forecasts');
   return id;
+}
+
+export async function updateForecast({ id, forecast }: { id: number, forecast: ForecastUpdate }): Promise<void> {
+  // Make sure the user is who they say they.
+  const user = await getUserFromCookies();
+  if (!user) throw new Error('Unauthorized');
+  // Don't let users change any column except the forecast.
+  if (Object.keys(forecast).length !== 1 || !('forecast' in forecast)) {
+    console.log(`Attempted update with invalid columns: ${Object.keys(forecast)}`);
+    throw new Error('Unauthorized');
+  }
+  // Only allow updates to forecasts for future years, and for the current user.
+  const existingForecast = await db
+    .selectFrom('v_forecasts')
+    .where('forecast_id', '=', id)
+    .select(['year', 'user_id'])
+    .executeTakeFirstOrThrow();
+  const thisYear = new Date().getFullYear();
+  if (existingForecast.year <= thisYear) {
+    throw new Error('Cannot update forecasts for the current year');
+  }
+  if (existingForecast.user_id !== user.id) {
+    throw new Error('Unauthorized');
+  }
+  await db
+    .updateTable('forecasts')
+    .set(forecast)
+    .where('id', '=', id)
+    .execute();
+  revalidatePath('/forecasts');
 }
