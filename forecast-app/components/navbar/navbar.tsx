@@ -41,9 +41,7 @@ export default async function NavBar() {
       label: "2024 Scores",
     }],
   }];
-  if (
-    userId && await hasFeatureEnabled({ featureName: "2025-forecasts", userId })
-  ) {
+  if (userId) {
     const forecastLinks = links.find(({ label }) =>
       label === "Forecasts"
     ) as LinkGroup;

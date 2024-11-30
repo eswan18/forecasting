@@ -18,11 +18,6 @@ export default async function Home() {
     userId: user.id,
     year: 2025,
   });
-  const canSee2025Forecasts = await hasFeatureEnabled({
-    featureName: "2025-forecasts",
-    userId: user.id,
-  });
-  console.log(unforecastedProps);
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-lg">
@@ -38,7 +33,7 @@ export default async function Home() {
             <Link href="/scores/2024">2024 Scores</Link>
           </li>
         </ul>
-        {canSee2025Forecasts && unforecastedProps.length > 0 && (
+        {unforecastedProps.length > 0 && (
           <div className="mt-5 text-lg">
             <p className="font-semibold">
               You have 2025 forecasts to do!
