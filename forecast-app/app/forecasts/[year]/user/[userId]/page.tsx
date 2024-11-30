@@ -1,8 +1,12 @@
 import PageHeading from "@/components/page-heading";
-import { getForecasts, getPropYears, getUserById, getUsers } from "@/lib/db_actions";
+import {
+  getForecasts,
+  getPropYears,
+  getUserById,
+  getUsers,
+} from "@/lib/db_actions";
 import { notFound } from "next/navigation";
 import ForecastTable from "./forecast-table";
-import { forecastColumns } from "./forecast-columns";
 import { getUserFromCookies } from "@/lib/get-user";
 import { redirect } from "next/navigation";
 import UserYearSelector from "./user-year-selector";
@@ -19,22 +23,22 @@ export default async function Page(
   if (!requestedUser) {
     notFound();
   }
-  const allUsers = await getUsers({ sort: 'name asc' });
+  const allUsers = await getUsers({ sort: "name asc" });
   const years = await getPropYears();
   const forecasts = await getForecasts({ userId, year });
+  const thisYear = new Date().getFullYear();
   const scoredForecasts = forecasts.map((forecast) => {
     const resolution = forecast.resolution;
-    if (resolution === null) {
-      return {
-        ...forecast,
-        penalty: null,
-      };
+    const editable = forecast.user_id === authUser.id && year > thisYear;
+    let penalty = null;
+    if (resolution !== null) {
+      const resolutionAsNumber = resolution ? 1 : 0;
+      penalty = Math.pow(forecast.forecast - resolutionAsNumber, 2) || null;
     }
-    const resolutionAsNumber = resolution ? 1 : 0;
-    const penalty = Math.pow(forecast.forecast - resolutionAsNumber, 2) || null;
     return {
       ...forecast,
       penalty,
+      editable,
     };
   });
   return (
@@ -48,7 +52,7 @@ export default async function Page(
             selectedYear={year}
           />
         </PageHeading>
-        <ForecastTable data={scoredForecasts} columns={forecastColumns} />
+        <ForecastTable data={scoredForecasts} editable={year > thisYear} />
       </div>
     </main>
   );

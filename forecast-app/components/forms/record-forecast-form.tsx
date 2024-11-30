@@ -11,7 +11,7 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { NewForecast, VProp } from "@/types/db_types";
+import { Forecast, NewForecast, VProp } from "@/types/db_types";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -24,10 +24,11 @@ const formSchema = z.object({
   ),
 });
 
-export function RecordForecastForm({ prop }: { prop: VProp }) {
+export function RecordForecastForm({ prop, initialForecast }: { prop: VProp, initialForecast?: Forecast }) {
   const { user } = useCurrentUser();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: { forecast: initialForecast?.forecast ?? 0 },
   });
   const { toast } = useToast();
 

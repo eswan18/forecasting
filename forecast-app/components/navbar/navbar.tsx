@@ -32,7 +32,7 @@ export default async function NavBar() {
   const links: (Link | LinkGroup)[] = [{
     label: "Forecasts",
     links: [
-      { href: `/forecasts/2024/user/${userId}`, label: "2024 Forecasts" },
+      { href: `/forecasts/2024/user/${userId}`, label: "Previous Forecasts" },
     ],
   }, {
     label: "Scores",

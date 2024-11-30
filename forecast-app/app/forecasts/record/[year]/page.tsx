@@ -1,6 +1,6 @@
 import { getCategories, getForecasts, getProps } from "@/lib/db_actions";
 import { Category, VProp } from "@/types/db_types";
-import { RecordForecastForm } from "./record-forecast-form";
+import { RecordForecastForm } from "@/components/forms/record-forecast-form";
 import { getUserFromCookies, loginAndRedirect } from "@/lib/get-user";
 import PageHeading from "@/components/page-heading";
 import Link from "next/link";
