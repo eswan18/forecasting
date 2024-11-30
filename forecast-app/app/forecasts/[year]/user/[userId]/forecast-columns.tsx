@@ -1,6 +1,6 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Edit } from "lucide-react";
 import {
@@ -9,13 +9,30 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { RecordForecastForm } from "@/components/forms/record-forecast-form";
+import { Forecast, Prop, VProp } from "@/types/db_types";
+import { useState } from "react";
 
 export type ScoredForecast = {
+  category_id: number;
   category_name: string;
+  prop_id: number;
   prop_text: string;
+  prop_notes: string | null;
   resolution: boolean | null;
+  user_id: number;
   forecast: number;
+  forecast_id: number;
   penalty: number | null;
+  year: number;
 };
 
 export function useForecastColumns(
@@ -69,9 +86,7 @@ export function useForecastColumns(
       accessorKey: "forecast",
       header: "Fcast",
       cell: ({ row }) => {
-        return (
-          <div className="text-right">{row.original.forecast}</div>
-        );
+        return <div className="text-right">{row.original.forecast}</div>;
       },
     },
   ];
@@ -80,15 +95,7 @@ export function useForecastColumns(
     columns.push({
       accessorKey: "edit",
       header: "Edit",
-      cell: ({ row }) => {
-        return (
-          <div className="text-right">
-            <Button size="icon" variant="ghost">
-              <Edit />
-            </Button>
-          </div>
-        );
-      },
+      cell: ({ row }) => <EditCell row={row} />,
     });
   } else {
     columns.push(
@@ -136,4 +143,50 @@ export function useForecastColumns(
     );
   }
   return columns;
+}
+
+function EditCell({ row }: { row: Row<ScoredForecast> }) {
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const forecast: Forecast = {
+    id: row.original.forecast_id,
+    prop_id: row.original.prop_id,
+    user_id: row.original.user_id,
+    forecast: row.original.forecast,
+  };
+  const prop: VProp = {
+    prop_id: row.original.prop_id,
+    prop_text: row.original.prop_text,
+    prop_notes: row.original.prop_notes,
+    category_id: row.original.category_id,
+    category_name: row.original.category_name,
+    year: row.original.year,
+    resolution: row.original.resolution,
+  };
+  return (
+    <div className="text-right">
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogTrigger asChild>
+          <Button size="icon" variant="ghost">
+            <Edit />
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Forecast</DialogTitle>
+          </DialogHeader>
+          <RecordForecastForm prop={prop} initialForecast={forecast} />
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                setDialogOpen(false);
+              }}
+            >
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }

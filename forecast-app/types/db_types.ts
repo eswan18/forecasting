@@ -136,7 +136,9 @@ export interface VForecastsView {
   prop_text: string,
   prop_notes: string | null,
   year: number,
+  forecast_id: number
   forecast: number,
+  resolution_id: number | null,
   resolution: boolean | null,
   score: number | null,
 }

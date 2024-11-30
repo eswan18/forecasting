@@ -11,11 +11,11 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Forecast, NewForecast, VProp } from "@/types/db_types";
+import { Forecast, ForecastUpdate, NewForecast, VProp } from "@/types/db_types";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { createForecast } from "@/lib/db_actions";
+import { createForecast, updateForecast } from "@/lib/db_actions";
 import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
@@ -24,7 +24,9 @@ const formSchema = z.object({
   ),
 });
 
-export function RecordForecastForm({ prop, initialForecast }: { prop: VProp, initialForecast?: Forecast }) {
+export function RecordForecastForm(
+  { prop, initialForecast }: { prop: VProp; initialForecast?: Forecast },
+) {
   const { user } = useCurrentUser();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -33,22 +35,42 @@ export function RecordForecastForm({ prop, initialForecast }: { prop: VProp, ini
   const { toast } = useToast();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const forecast: NewForecast = {
-      prop_id: prop.prop_id,
-      user_id: user!.id,
-      forecast: values.forecast,
-    };
-    try {
-      await createForecast({ forecast }).then(() => {
-        toast({ title: "Forecast recorded!" });
-      });
-    } catch (e) {
-      const msg = (e instanceof Error) ? e.message : "An error occurred";
-      toast({
-        title: "Error recording forecast",
-        description: msg,
-        variant: "destructive",
-      });
+    if (!initialForecast) {
+      // If there was no initial forecast, we're creating a new one.
+      const forecast: NewForecast = {
+        prop_id: prop.prop_id,
+        user_id: user!.id,
+        forecast: values.forecast,
+      };
+      try {
+        await createForecast({ forecast }).then(() => {
+          toast({ title: "Forecast recorded!" });
+        });
+      } catch (e) {
+        const msg = (e instanceof Error) ? e.message : "An error occurred";
+        toast({
+          title: "Error recording forecast",
+          description: msg,
+          variant: "destructive",
+        });
+      }
+    } else {
+      // If there was an initial forecast, we're updating it.
+      const forecast: ForecastUpdate = {
+        forecast: values.forecast,
+      };
+      try {
+        await updateForecast({ id: initialForecast.id, forecast }).then(() => {
+          toast({ title: "Forecast updated!" });
+        });
+      } catch (e) {
+        const msg = (e instanceof Error) ? e.message : "An error occurred";
+        toast({
+          title: "Error updating forecast",
+          description: msg,
+          variant: "destructive",
+        });
+      }
     }
   }
 
@@ -75,7 +97,7 @@ export function RecordForecastForm({ prop, initialForecast }: { prop: VProp, ini
                     inputMode="decimal"
                     step="any"
                     {...field}
-                    // Interesting, this makes the input uncontrolled and suppresses a
+                    // Interestingly, this makes the input uncontrolled and suppresses a
                     // warning, but doesn't seem to break the form's behavior.
                     value={undefined}
                   />
