@@ -40,24 +40,24 @@ export async function createForecast({ forecast }: { forecast: NewForecast }): P
 export async function updateForecast({ id, forecast }: { id: number, forecast: ForecastUpdate }): Promise<void> {
   // Make sure the user is who they say they.
   const user = await getUserFromCookies();
-  if (!user || user.id !== forecast.user_id) {
-    console.log(`Attempted update by user '${user?.id}' on forecast ${id} for user ${forecast.user_id}`);
-    throw new Error('Unauthorized');
-  }
+  if (!user) throw new Error('Unauthorized');
   // Don't let users change any column except the forecast.
   if (Object.keys(forecast).length !== 1 || !('forecast' in forecast)) {
     console.log(`Attempted update with invalid columns: ${Object.keys(forecast)}`);
     throw new Error('Unauthorized');
   }
-  // Don't let users update forecasts for the current year.
+  // Only allow updates to forecasts for future years, and for the current user.
   const existingForecast = await db
     .selectFrom('v_forecasts')
     .where('forecast_id', '=', id)
-    .select('year')
+    .select(['year', 'user_id'])
     .executeTakeFirstOrThrow();
   const thisYear = new Date().getFullYear();
   if (existingForecast.year <= thisYear) {
     throw new Error('Cannot update forecasts for the current year');
+  }
+  if (existingForecast.user_id !== user.id) {
+    throw new Error('Unauthorized');
   }
   await db
     .updateTable('forecasts')

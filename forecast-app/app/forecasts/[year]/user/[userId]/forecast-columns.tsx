@@ -18,7 +18,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { RecordForecastForm } from "@/components/forms/record-forecast-form";
-import { Forecast, Prop, VProp } from "@/types/db_types";
+import { Forecast, VProp } from "@/types/db_types";
 import { useState } from "react";
 
 export type ScoredForecast = {
@@ -176,15 +176,6 @@ function EditCell({ row }: { row: Row<ScoredForecast> }) {
             <DialogTitle>Edit Forecast</DialogTitle>
           </DialogHeader>
           <RecordForecastForm prop={prop} initialForecast={forecast} />
-          <DialogFooter>
-            <Button
-              onClick={() => {
-                setDialogOpen(false);
-              }}
-            >
-              Cancel
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
