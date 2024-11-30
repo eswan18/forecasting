@@ -43,9 +43,14 @@ export default async function RecordForecastsPage(
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-lg">
         <PageHeading title={`Record Forecasts for ${year}`} />
+        <p>Record new forecasts here.</p>
+        <p>
+          You can edit existing forecasts on the{" "}
+          <Link href={`/forecasts/${year}/user/${user.id}`} className="underline">{year.toString()} Forecast History</Link> page.
+        </p>
         {categories.length > 0 && (
           <>
-            <div className="flex flex-row justify-start w-full text-muted-foreground mb-3">
+            <div className="flex flex-row justify-start w-full text-muted-foreground my-3">
               Jump to category...
             </div>
             <div className="flex flex-row flex-wrap justify-center w-full gap-1">
