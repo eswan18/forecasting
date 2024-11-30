@@ -12,7 +12,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -36,7 +35,7 @@ export type ScoredForecast = {
 };
 
 export function useForecastColumns(
-  editable: boolean,
+  {editable, scored}: {editable: boolean, scored: boolean}
 ): ColumnDef<ScoredForecast>[] {
   const columns: ColumnDef<ScoredForecast>[] = [
     {
@@ -97,7 +96,8 @@ export function useForecastColumns(
       header: "Edit",
       cell: ({ row }) => <EditCell row={row} />,
     });
-  } else {
+  }
+  if (scored) {
     columns.push(
       {
         accessorKey: "score",

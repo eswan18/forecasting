@@ -29,7 +29,6 @@ export default async function Page(
   const thisYear = new Date().getFullYear();
   const scoredForecasts = forecasts.map((forecast) => {
     const resolution = forecast.resolution;
-    const editable = forecast.user_id === authUser.id && year > thisYear;
     let penalty = null;
     if (resolution !== null) {
       const resolutionAsNumber = resolution ? 1 : 0;
@@ -38,9 +37,10 @@ export default async function Page(
     return {
       ...forecast,
       penalty,
-      editable,
     };
   });
+  const editable = year > thisYear && authUser.id === requestedUser.id;
+  const scored = year <= thisYear;
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-lg">
@@ -52,7 +52,11 @@ export default async function Page(
             selectedYear={year}
           />
         </PageHeading>
-        <ForecastTable data={scoredForecasts} editable={year > thisYear} />
+        <ForecastTable
+          data={scoredForecasts}
+          editable={editable}
+          scored={scored}
+        />
       </div>
     </main>
   );

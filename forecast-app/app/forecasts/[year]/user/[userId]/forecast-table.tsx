@@ -27,12 +27,13 @@ import { ScoredForecast, useForecastColumns } from "./forecast-columns";
 interface DataTableProps {
   data: ScoredForecast[];
   editable: boolean;
+  scored: boolean;
 }
 
-export default function ForecastTable({ data, editable }: DataTableProps) {
+export default function ForecastTable({ data, editable, scored }: DataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const columns = useForecastColumns(editable);
+  const columns = useForecastColumns({editable, scored});
   const table = useReactTable({
     data,
     columns,
