@@ -1,9 +1,5 @@
 import PageHeading from "@/components/page-heading";
-import {
-  getForecasts,
-  getUnforecastedProps,
-  hasFeatureEnabled,
-} from "@/lib/db_actions";
+import { getUnforecastedProps } from "@/lib/db_actions";
 import { getUserFromCookies, loginAndRedirect } from "@/lib/get-user";
 import Link from "next/link";
 
