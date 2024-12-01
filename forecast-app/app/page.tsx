@@ -39,7 +39,7 @@ export default async function Home() {
               You have 2025 forecasts to do!
             </p>
             <p>
-              They're due by the end of the year.
+              They&apos;re due by the end of the year.
             </p>
             <p>
               <Link href={`/forecasts/record/2025`} className="underline">
