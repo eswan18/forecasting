@@ -79,7 +79,6 @@ export interface LoginsTable {
   id: Generated<number>,
   username: string,
   password_hash: string,
-  is_salted: boolean,
 }
 export type Login = Selectable<LoginsTable>
 export type NewLogin = Insertable<LoginsTable>
@@ -162,7 +161,6 @@ export interface VUsersView {
   is_admin: boolean,
   login_id: number | null,
   username: string | null,
-  is_salted: boolean | null,
 }
 export type VUser = Selectable<VUsersView>
 

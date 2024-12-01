@@ -19,7 +19,7 @@ export async function updateLoginPassword({ id, currentPassword, newPassword }: 
   const newHash = await argon2.hash(SALT + newPassword, { type: argon2.argon2id });
   await db
     .updateTable('logins')
-    .set({ password_hash: newHash, is_salted: true })
+    .set({ password_hash: newHash })
     .where('id', '=', id)
     .execute();
 }
@@ -46,7 +46,7 @@ export async function updateLoginPasswordFromResetToken({ username, token, passw
   const newHash = await argon2.hash(SALT + password, { type: argon2.argon2id });
   await db
     .updateTable('logins')
-    .set({ password_hash: newHash, is_salted: true })
+    .set({ password_hash: newHash })
     .where('id', '=', user.login_id)
     .execute();
   // Delete the now-used token.

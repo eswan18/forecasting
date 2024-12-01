@@ -5,7 +5,6 @@ import { createLogin, createUser, getLoginByUsername } from '@/lib/db_actions';
 import * as dotenv from 'dotenv';
 import { getUserFromCookies } from '../get-user';
 import { consumeInviteToken, inviteTokenIsValid } from '../db_actions/invite-tokens';
-import { request } from 'http';
 dotenv.config({ path: '.env.local' });
 
 const SALT = process.env.ARGON2_SALT;
@@ -48,7 +47,7 @@ export async function registerNewUser(
 
   // Create the login.
   const passwordHash = await argon2.hash(SALT + password, { type: argon2.argon2id });
-  const login = { username, password_hash: passwordHash, is_salted: true };
+  const login = { username, password_hash: passwordHash };
   const loginId = await createLogin({ login });
 
   // Create the user.
