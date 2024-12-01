@@ -2,10 +2,9 @@
 
 import { randomBytes } from "crypto";
 import { db } from '@/lib/database';
-import { getLoginByUsername } from "./logins";
 import { headers } from 'next/headers'
 import { sendEmail } from "../email";
-import { updateLoginPassword, updateLoginPasswordFromResetToken } from "../auth";
+import { updateLoginPasswordFromResetToken } from "../auth";
 
 const PASSWORD_RESET_TOKEN_LIFESPAN_MINUTES = 15;
 
