@@ -8,6 +8,7 @@ export default async function Page() {
   const user = await getUserFromCookies();
   const authorized = user?.is_admin;
   const users = authorized ? await getUsers() : [];
+  users.sort((a, b) => a.id - b.id);
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-lg">

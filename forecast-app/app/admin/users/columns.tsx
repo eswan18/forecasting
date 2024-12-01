@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { loginViaImpersonation } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
 
 export function getColumns(
   { mutateUser }: { mutateUser: () => void },
@@ -21,16 +22,11 @@ export function getColumns(
   return [
     {
       accessorKey: "login_id",
-      header: "Login ID",
+      header: "Login",
     },
     {
       accessorKey: "id",
-      header: "User ID",
-    },
-    {
-      accessorKey: "is_admin",
-      header: "Admin",
-      cell: ({ row }) => row.original.is_admin && "Y",
+      header: "User",
     },
     {
       accessorKey: "username",
@@ -48,7 +44,14 @@ export function getColumns(
         return (
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="ghost">{username}</Button>
+              <Button variant="ghost" className="flex-col gap-y-1 h-auto">
+                {username}
+                {row.original.is_admin && (
+                  <Badge variant="outline">
+                    Admin
+                  </Badge>
+                )}
+              </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
