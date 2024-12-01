@@ -28,6 +28,11 @@ export function getColumns(
       header: "User ID",
     },
     {
+      accessorKey: "is_admin",
+      header: "Admin",
+      cell: ({ row }) => row.original.is_admin && "Y",
+    },
+    {
       accessorKey: "username",
       header: "Username",
       cell: ({ row }) => {
@@ -65,16 +70,6 @@ export function getColumns(
     {
       accessorKey: "name",
       header: "Name",
-    },
-    {
-      accessorKey: "is_admin",
-      header: "Admin",
-      cell: ({ row }) => row.original.is_admin && "Y",
-    },
-    {
-      accessorKey: "is_salted",
-      header: "Salted",
-      cell: ({ row }) => row.original.is_salted && "Y",
     },
     {
       accessorKey: "email",
