@@ -34,10 +34,9 @@ const formSchema = z.object({
     "Must contain only letters, hyphens, and spaces",
   ).min(2).max(30),
   email: z.string().email(),
-  registrationSecret: z.string().min(5).max(8),
 });
 
-export default function RegisterFormCard() {
+export default function RegisterFormCard({inviteToken}: {inviteToken?: string}) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -47,14 +46,14 @@ export default function RegisterFormCard() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    registerNewUser(values).catch((error) => {
+    registerNewUser({...values, inviteToken}).then(() => {
+      router.push("/login");
+    }).catch((error) => {
       if (error instanceof Error) {
         setError(error.message);
       } else {
         setError("An error occurred.");
       }
-    }).then(() => {
-      router.push("/login");
     }).finally(() => {
       setLoading(false);
     });
@@ -134,26 +133,6 @@ export default function RegisterFormCard() {
                       {...field}
                     />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="registrationSecret"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Registration Secret</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="something-very-secret"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Get this from Ethan
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
