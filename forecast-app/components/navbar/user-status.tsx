@@ -41,7 +41,7 @@ export function UserStatus() {
                 </Link>
                 <DropdownMenuItem onClick={logout} className="px-4">
                   <LogOut size={14} className="mr-2" />
-                  <span>Logout</span>
+                  <span>Log out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

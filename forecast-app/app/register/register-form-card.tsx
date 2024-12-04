@@ -166,7 +166,7 @@ export default function RegisterFormCard({inviteToken}: {inviteToken?: string}) 
           Already have an account?{" "}
           <Link href="/login">
             <Button variant="link">
-              Login
+              Log in
             </Button>
           </Link>
         </p>
