@@ -3,10 +3,19 @@ import PageHeading from "@/components/page-heading";
 import { getUsers } from "@/lib/db_actions";
 import { getUserFromCookies } from "@/lib/get-user";
 import { InviteUserButton } from "./invite-user-button";
+import { InaccessiblePage } from "@/components/inaccessible-page";
 
 export default async function Page() {
   const user = await getUserFromCookies();
   const authorized = user?.is_admin;
+  if (!authorized) {
+    return (
+      <InaccessiblePage
+        title="No access"
+        message="Only admins can see this page."
+      />
+    );
+  }
   const users = authorized ? await getUsers() : [];
   users.sort((a, b) => a.id - b.id);
   return (

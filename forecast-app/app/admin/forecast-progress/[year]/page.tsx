@@ -2,19 +2,20 @@ import PageHeading from "@/components/page-heading";
 import { getForecasts, getUnforecastedProps, getUsers } from "@/lib/db_actions";
 import { getUserFromCookies } from "@/lib/get-user";
 import { VUser } from "@/types/db_types";
+import { InaccessiblePage } from "@/components/inaccessible-page";
 
 export default async function ForecastProgressPage(
   { params }: { params: Promise<{ year: number }> },
 ) {
   const { year } = await params;
   const user = await getUserFromCookies();
-  if (!user || !user.is_admin) {
+  const authorized = user?.is_admin;
+  if (!authorized) {
     return (
-      <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
-        <div className="w-full max-w-lg">
-          <h1>Unauthorized</h1>
-        </div>
-      </main>
+      <InaccessiblePage
+        title="No access"
+        message="Only admins can see this page."
+      />
     );
   }
   const users = await getUsers();
@@ -85,7 +86,9 @@ async function UserMetricsRow({ metrics }: { metrics: UserProgressMetrics }) {
       <td>{metrics.user.name}</td>
       <td className="text-right">{metrics.unforecasted}</td>
       <td className="text-right">{metrics.forecasted}</td>
-      <td className="text-right">{(metrics.percentComplete * 100).toFixed(0)}%</td>
+      <td className="text-right">
+        {(metrics.percentComplete * 100).toFixed(0)}%
+      </td>
     </tr>
   );
 }

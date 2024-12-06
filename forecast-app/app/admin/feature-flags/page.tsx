@@ -3,15 +3,18 @@ import { getFeatureFlags } from "@/lib/db_actions";
 import { getUserFromCookies } from "@/lib/get-user";
 import { VFeatureFlag } from "@/types/db_types";
 import { FeatureWidget } from "./feature-widget";
-import { loginAndRedirect } from "@/lib/get-user";
+import { InaccessiblePage } from "@/components/inaccessible-page";
 
 export default async function FeatureFlagsPage() {
   const user = await getUserFromCookies();
-  if (!user) {
-    await loginAndRedirect({ url: "/feature-flags" })
-    return <></>; // will never reach this line because we redirect.
-  };
-  if (!user.is_admin) throw new Error("Unauthorized");
+  if (!user?.is_admin) {
+    return (
+      <InaccessiblePage
+        title="No access"
+        message="Only admins can see this page."
+      />
+    );
+  }
   const featureFlags = await getFeatureFlags();
   // Group the feature flags by name.
   const featureFlagsByName = new Map<string, VFeatureFlag[]>();
