@@ -19,8 +19,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { initiatePasswordReset } from "@/lib/db_actions";
-import { useToast } from "@/hooks/use-toast";
 import { LoaderCircle } from "lucide-react";
+import { redirect, useRouter } from "next/navigation";
 
 const formSchema = z.object({
   username: z.string().regex(/^[a-z0-9_]+$/).min(2).max(30),
@@ -32,17 +32,13 @@ export default function RequestPasswordResetFormCard() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
-  const { toast } = useToast();
+  const router = useRouter();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     initiatePasswordReset(values).then(() => {
       setLoading(false);
-      toast({
-        title: "Password Reset Email Sent",
-        description:
-          "If this username exists and is associated with your email, you'll receive a password reset email. Be sure to check your spam folder.",
-      });
+      router.push("/reset-password/email-sent");
     }).catch((e) => {
       setLoading(false);
       setError(e.message);
