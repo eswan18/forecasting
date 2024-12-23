@@ -77,7 +77,7 @@ export default async function RecordForecastsPage(
           {propsByCategoryId.size === 0
             ? (
               <div className="text-center">
-                <div className="text-lg text-muted-foreground mb-4">
+                <div className="text-muted-foreground mb-4">
                   No props to forecast
                 </div>
                 <p className="text-muted-foreground">
@@ -108,13 +108,15 @@ function CategoryProps(
 ) {
   return (
     <div>
-      <h2
-        className="text-lg text-muted-foreground mb-4"
-        id={`category-${category.id}`}
-      >
-        {category.name}
-      </h2>
-      <div className="flex flex-col gap-8">
+      <div className="w-[33%] border-b-foreground border-b mb-4 px-1">
+        <h2
+          className="text-muted-foreground text-sm mb-1"
+          id={`category-${category.id}`}
+        >
+          {category.name}
+        </h2>
+      </div>
+      <div className="flex flex-col gap-4">
         {props.map((prop) => (
           <RecordForecastForm prop={prop} key={prop.prop_id} />
         ))}
