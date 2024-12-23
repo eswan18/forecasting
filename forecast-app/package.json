@@ -35,7 +35,7 @@
     "dotenv": "^16.4.5",
     "fs": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
-    "kysely": "^0.27.4",
+    "kysely": "^0.27.5",
     "lucide-react": "^0.462.0",
     "mailgun.js": "^10.2.4",
     "next": "^15.0.3",
@@ -60,7 +60,7 @@
     "@types/react-dom": "^18.3.1",
     "eslint": "^9.16.0",
     "eslint-config-next": "^15.0.3",
-    "kysely-ctl": "^0.9.0",
+    "kysely-ctl": "^0.10.1",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.15",
     "typescript": "^5.7.2"
