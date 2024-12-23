@@ -86,10 +86,10 @@ export function RecordForecastForm(
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="grid grid-cols-6 grid-flow-col content-end gap-y-2 gap-x-1">
           <div className="col-span-4 mr-2 flex flex-col">
-            <span>{prop.prop_text}</span>
+            <span className="text-sm">{prop.prop_text}</span>
             {prop.prop_notes &&
               (
-                <span className="text-muted-foreground italic break-words text-sm mt-1">
+                <span className="text-muted-foreground italic break-words text-xs mt-1">
                   {prop.prop_notes}
                 </span>
               )}

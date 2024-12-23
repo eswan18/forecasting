@@ -55,23 +55,23 @@ export default async function RecordForecastsPage(
           page.
         </p>
         {categories.length > 0 && (
-          <>
-            <div className="flex flex-row justify-start w-full text-muted-foreground my-3">
-              Jump to category...
+          <div className="flex flex-row my-3 items-center">
+            <div className="text-muted-foreground text-xs pr-2">
+              Jump to ...
             </div>
-            <div className="flex flex-row flex-wrap justify-center w-full gap-1">
+            <div className="flex flex-row flex-wrap justify-center">
               {categories.map((category) => (
                 <Link
                   href={`#category-${category.id}`}
                   key={category.id}
                 >
-                  <Button variant="secondary">
+                  <Button variant="ghost" size="sm">
                     {category.name}
                   </Button>
                 </Link>
               ))}
             </div>
-          </>
+          </div>
         )}
         <div className="mt-8 flex flex-col gap-16">
           {propsByCategoryId.size === 0
@@ -110,7 +110,7 @@ function CategoryProps(
     <div>
       <div className="w-[33%] border-b-foreground border-b mb-4 px-1">
         <h2
-          className="text-muted-foreground text-sm mb-1"
+          className="text-muted-foreground text-xs mb-1"
           id={`category-${category.id}`}
         >
           {category.name}
