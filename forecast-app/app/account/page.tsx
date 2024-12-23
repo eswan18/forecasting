@@ -1,5 +1,5 @@
 import PageHeading from "@/components/page-heading";
-import { AccountDetails } from "./user-profile";
+import { AccountDetails } from "./account-details";
 import { getUserFromCookies } from "@/lib/get-user";
 
 export default async function Page() {

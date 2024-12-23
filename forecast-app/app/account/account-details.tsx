@@ -79,7 +79,7 @@ function UserDetailsSection(
   }
   return (
     <div>
-      <h2 className="text-xl mb-6">User Details</h2>
+      <h2 className="text-lg text-muted-foreground mb-4">User Details</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
@@ -110,14 +110,14 @@ function UserDetailsSection(
           />
           {loading
             ? (
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-4 gap-4">
                 <div className="col-start-2 col-span-2 flex flex-row justify-center">
                   <LoaderCircle className="animate-spin" />
                 </div>
               </div>
             )
             : (
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-4 gap-4">
                 <Button
                   type="submit"
                   disabled={!form.formState.isDirty}
@@ -138,9 +138,9 @@ function LoginDetailsSection() {
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   return (
     <div>
-      <h2 className="text-xl mb-6">Login Details</h2>
+      <h2 className="text-lg text-muted-foreground mb-4">Login Details</h2>
       <div className="space-y-6">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <AccountLabel>Username</AccountLabel>
           <Dialog
             open={usernameDialogOpen}
@@ -161,7 +161,7 @@ function LoginDetailsSection() {
             </DialogContent>
           </Dialog>
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <AccountLabel>Password</AccountLabel>
           <Dialog
             open={passwordDialogOpen}
@@ -353,7 +353,7 @@ function ChangePasswordForm({ onSuccess }: { onSuccess: () => void }) {
 
 function AccountFormItem({ children }: { children: React.ReactNode }) {
   return (
-    <FormItem className="grid grid-cols-3 gap-4 space-y-0 w-full">
+    <FormItem className="grid grid-cols-4 gap-4 space-y-0 w-full">
       {children}
     </FormItem>
   );
