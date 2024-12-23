@@ -3,3 +3,8 @@
 
 DELETE FROM forecasts WHERE prop_id = 67;
 DELETE FROM props WHERE id = 67;
+
+-- The Kroger/Alberton's merger was rejected and Albertson's is already suing Kroger,
+-- so this is off the board.
+DELETE FROM forecasts WHERE prop_id = 64;
+DELETE FROM props WHERE id = 64;
