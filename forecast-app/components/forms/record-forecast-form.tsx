@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Form,
@@ -13,7 +14,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Forecast, ForecastUpdate, NewForecast, VProp } from "@/types/db_types";
 import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
+import { Check, LoaderCircle } from "lucide-react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { createForecast, updateForecast } from "@/lib/db_actions";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +29,7 @@ export function RecordForecastForm(
   { prop, initialForecast }: { prop: VProp; initialForecast?: Forecast },
 ) {
   const { user } = useCurrentUser();
+  const [loading, setLoading] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { forecast: initialForecast?.forecast ?? 0 },
@@ -35,6 +37,7 @@ export function RecordForecastForm(
   const { toast } = useToast();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    setLoading(true);
     if (!initialForecast) {
       // If there was no initial forecast, we're creating a new one.
       const forecast: NewForecast = {
@@ -53,6 +56,8 @@ export function RecordForecastForm(
           description: msg,
           variant: "destructive",
         });
+      } finally {
+        setLoading(false);
       }
     } else {
       // If there was an initial forecast, we're updating it.
@@ -70,6 +75,8 @@ export function RecordForecastForm(
           description: msg,
           variant: "destructive",
         });
+      } finally {
+        setLoading(false);
       }
     }
   }
@@ -106,14 +113,22 @@ export function RecordForecastForm(
               </FormItem>
             )}
           />
-          <Button
-            type="submit"
-            variant="outline"
-            size="icon"
-            disabled={form.formState.isDirty ? undefined : true}
-          >
-            <Check size={16} />
-          </Button>
+          {loading
+            ? (
+              <Button variant="outline" disabled size="icon">
+                <LoaderCircle className="animate-spin" />
+              </Button>
+            )
+            : (
+              <Button
+                type="submit"
+                variant="outline"
+                size="icon"
+                disabled={form.formState.isDirty ? undefined : true}
+              >
+                <Check size={16} />
+              </Button>
+            )}
         </div>
       </form>
     </Form>
