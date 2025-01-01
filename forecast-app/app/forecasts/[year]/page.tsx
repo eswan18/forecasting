@@ -4,6 +4,8 @@ import YearSelector from "./year-selector";
 import { getPropYears } from "@/lib/db_actions";
 import ControversyCard from "./cards/controversy-card";
 import SkeletonCard from "./cards/skeleton-card";
+import PropConsensusCard from "./cards/prop-consensus-card";
+import { Suspense } from "react";
 
 export default async function Page(
   { params }: { params: Promise<{ year: number }> },
@@ -25,10 +27,18 @@ export default async function Page(
           </PageHeading>
         </div>
         <div className="flex flex-row flex-wrap justify-center items-start gap-4 md:gap-12 mt-8">
-          <ControversyCard />
-          <ControversyCard />
-          <ControversyCard />
-          <SkeletonCard title="Controversy!" />
+          <Suspense fallback={<SkeletonCard title="Consensus Forecasts" />}>
+            <PropConsensusCard year={year} />
+          </Suspense>
+          <Suspense fallback={<SkeletonCard title="Controversial Props" />}>
+            <ControversyCard />
+          </Suspense>
+          <Suspense fallback={<SkeletonCard title="Controversial Props" />}>
+            <ControversyCard />
+          </Suspense>
+          <Suspense fallback={<SkeletonCard title="Controversial Props" />}>
+            <SkeletonCard title="Controversy!" />
+          </Suspense>
         </div>
       </div>
     </main>
