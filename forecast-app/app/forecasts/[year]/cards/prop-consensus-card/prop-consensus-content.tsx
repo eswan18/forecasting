@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Category, VForecast, VProp } from "@/types/db_types";
-import { useState } from "react";
+import { FC, useState } from "react";
 import { PropStatistics, propStatisticsForForecasts } from "./stats";
 import {
   ChartConfig,
@@ -21,6 +21,8 @@ import {
   Bar,
   CartesianGrid,
   ComposedChart,
+  Dot,
+  DotProps,
   Label,
   LabelList,
   Line,
@@ -29,6 +31,7 @@ import {
   YAxis,
   ZAxis,
 } from "recharts";
+import { Zain } from "next/font/google";
 
 export default function PropConsensusContent(
   { categories, forecasts, props }: {
@@ -62,7 +65,7 @@ export default function PropConsensusContent(
           </SelectItem>
         ))}
       </SelectContent>
-      <PropConsensusChart
+      <AllPropsConsensusChart
         props={propStatisticsForForecasts(forecastsInScope)}
       />
     </Select>
@@ -71,32 +74,53 @@ export default function PropConsensusContent(
 
 const chartConfig = {} satisfies ChartConfig;
 
-function PropConsensusChart({ props }: { props: Map<number, PropStatistics> }) {
+function AllPropsConsensusChart(
+  { props }: { props: Map<number, PropStatistics> },
+) {
   const data = Array.from(props.values());
   return (
-    <ChartContainer config={chartConfig} className="min-h-48 w-full">
+    <ChartContainer config={chartConfig} className="min-h-56 w-full p-4">
       <ComposedChart
         layout="vertical"
         data={data}
-        margin={{
-          top: 20,
-          right: 20,
-          bottom: 20,
-          left: 20,
-        }}
       >
         <CartesianGrid />
-        <XAxis type="number"></XAxis>
-        <YAxis dataKey="prop_id" type="category"/>
-        <ZAxis type="number" dataKey="min" name="score" />
-        <ZAxis type="number" dataKey="max" name="score" />
+        <XAxis type="number" axisLine={false} domain={[0, 1]} />
+        <YAxis dataKey="prop_id" type="category" hide={true} />
+        <ZAxis type="category" dataKey="prop_text" />
         <ChartTooltip content={<ChartTooltipContent />} />
-        <ChartLegend />
-        <Scatter dataKey="mean" fill="hsl(var(--foreground))">
-        </Scatter>
-        <Scatter dataKey="p25" fill="hsl(var(--muted-foreground))" />
-        <Scatter dataKey="p75" fill="hsl(var(--muted-foreground))" />
+        <Scatter
+          dataKey="mean"
+          shape={<RenderDot radius={5} fill="hsl(var(--foreground))" />}
+        />
+        <Scatter
+          dataKey="p25"
+          shape={<RenderDot radius={3} fill="hsl(var(--muted-foreground))" />}
+        />
+        <Scatter
+          dataKey="p75"
+          shape={<RenderDot radius={3} fill="hsl(var(--muted-foreground))" />}
+        />
+        <Scatter
+          dataKey="min"
+          shape={<RenderDot radius={2} fill="hsl(var(--muted-foreground))" />}
+        />
+        <Scatter
+          dataKey="max"
+          shape={<RenderDot radius={2} fill="hsl(var(--muted-foreground))" />}
+        />
       </ComposedChart>
     </ChartContainer>
   );
 }
+
+const RenderDot: FC<DotProps> = (
+  { cx, cy, radius, fill }: {
+    cx: number;
+    cy: number;
+    radius: number;
+    fill: string;
+  },
+) => {
+  return <Dot cx={cx} cy={cy} r={radius} fill={fill} />;
+};
