@@ -16,7 +16,7 @@ export default async function CertaintyCard({ year }: { year: number }) {
       <CardHeader>
         <CardTitle>Average Certainty</CardTitle>
         <CardDescription>
-          Who's confident?
+          Who&apos;s confident?
         </CardDescription>
       </CardHeader>
       <CardContent className="max-h-full">
