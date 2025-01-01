@@ -13,10 +13,10 @@ export async function sendEmail({ to, subject, text, html }: { to: string, subje
   const mailgun = new Mailgun(FormData);
   const mg = mailgun.client({ username: 'api', key: MAILGUN_API_KEY });
   console.log('Sending email to:', to);
-  mg.messages.create('forecastingmail.ethanswan.com', {
+  await mg.messages.create('forecastingmail.ethanswan.com', {
     from: "Forecasting <forecasting@forecastingmail.ethanswan.com>",
     to, subject, text, html,
   })
-    .then(msg => console.log(msg)) // logs response data
-    .catch(err => console.error(err)); // logs any error
+    .then(() => console.log(`Password reset email sent to ${to}`))
+    .catch(err => console.error(`Error sending email to ${to}:`, err));
 }

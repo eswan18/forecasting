@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/form";
 import { initiatePasswordReset } from "@/lib/db_actions";
 import { LoaderCircle } from "lucide-react";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   username: z.string().regex(/^[a-z0-9_]+$/).min(2).max(30),
@@ -36,6 +36,7 @@ export default function RequestPasswordResetFormCard() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
+    setError("");
     initiatePasswordReset(values).then(() => {
       setLoading(false);
       router.push("/reset-password/email-sent");

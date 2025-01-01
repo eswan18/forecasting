@@ -19,7 +19,7 @@ export async function initiatePasswordReset({ username }: { username: string }) 
   const user = await db.selectFrom('v_users').selectAll().where('username', '=', username).executeTakeFirst();
   // Return silently if the user doesn't exist to avoid leaking information.
   if (!user) {
-    console.log('Attempted password reset for non-existent user:', username);
+    console.log(`Attempted password reset for non-existent user "${username}". No email sent.`);
     return;
   }
   if (!user.login_id) {
@@ -29,14 +29,16 @@ export async function initiatePasswordReset({ username }: { username: string }) 
   // Create a random token.
   const token = randomBytes(32).toString("hex");
   const initatedTime = new Date();
-  console.log('initiatedTime:', initatedTime);
   const expirationTime = new Date(initatedTime.getTime() + PASSWORD_RESET_TOKEN_LIFESPAN_MINUTES * 60 * 1000);
+  const record = { login_id: user.login_id, token, initiated_at: initatedTime, expires_at: expirationTime };
   // Save the token to the database.
+  console.log(`Creating password reset token record: ${JSON.stringify(record)}`);
   await db
     .insertInto('password_reset_tokens')
-    .values({ login_id: user.login_id, token, initiated_at: initatedTime, expires_at: expirationTime })
+    .values(record)
     .returning('id')
     .executeTakeFirst();
+  console.log('Password reset token saved successfully');
 
 
   // Send an email with the reset link.
