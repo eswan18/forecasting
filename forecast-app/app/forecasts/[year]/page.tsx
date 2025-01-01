@@ -26,7 +26,7 @@ export default async function Page(
             />
           </PageHeading>
         </div>
-        <div className="flex flex-row flex-wrap justify-center items-start gap-4 md:gap-12 mt-8">
+        <div className="flex flex-row flex-wrap justify-center items-start gap-4 md:gap-12 mt-8 w-full">
           <Suspense
             fallback={
               <SkeletonCard
@@ -37,7 +37,8 @@ export default async function Page(
           >
             <PropConsensusCard year={year} />
           </Suspense>
-          <Suspense fallback={<SkeletonCard title="Controversial Props" />}>
+          {
+            /*<Suspense fallback={<SkeletonCard title="Controversial Props" />}>
             <ControversyCard />
           </Suspense>
           <Suspense fallback={<SkeletonCard title="Controversial Props" />}>
@@ -45,7 +46,8 @@ export default async function Page(
           </Suspense>
           <Suspense fallback={<SkeletonCard title="Controversial Props" />}>
             <SkeletonCard title="Controversy!" />
-          </Suspense>
+          </Suspense>*/
+          }
         </div>
       </div>
     </main>
