@@ -31,14 +31,14 @@ export async function createForecast({ forecast }: { forecast: NewForecast }): P
   // Only allow creating forecasts for future years.
   const thisYear = new Date().getUTCFullYear();
   console.log(thisYear);
-  /*const prop = await db
+  const prop = await db
     .selectFrom('props')
     .where('id', '=', forecast.prop_id)
     .select('year')
     .executeTakeFirstOrThrow();
   if (prop.year <= thisYear) {
     throw new Error('Cannot create forecasts for the current year');
-  }*/
+  }
   const { id } = await db
     .insertInto('forecasts')
     .values(forecast)
@@ -64,9 +64,9 @@ export async function updateForecast({ id, forecast }: { id: number, forecast: F
     .select(['year', 'user_id'])
     .executeTakeFirstOrThrow();
   const thisYear = new Date().getUTCFullYear();
-  /*if (existingForecast.year <= thisYear) {
+  if (existingForecast.year <= thisYear) {
     throw new Error('Cannot update forecasts for the current year');
-  }*/
+  }
   if (existingForecast.user_id !== user.id) {
     throw new Error('Unauthorized');
   }
