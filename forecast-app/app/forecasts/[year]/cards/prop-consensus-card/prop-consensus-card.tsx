@@ -2,6 +2,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -12,8 +13,10 @@ export default async function PropConsensusCard({ year }: { year: number }) {
   const forecasts = await getForecasts({ year });
   const props = await getProps({ year });
   const categories = await getCategories();
+  // wait one second.
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   return (
-    <Card className="w-72 h-96">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Consensus Forecasts</CardTitle>
         <CardDescription>

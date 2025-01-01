@@ -10,28 +10,16 @@ import {
 import { Category, VForecast, VProp } from "@/types/db_types";
 import { FC, useState } from "react";
 import { PropStatistics, propStatisticsForForecasts } from "./stats";
+import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 import {
-  ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import {
-  Bar,
   CartesianGrid,
   ComposedChart,
   Dot,
-  DotProps,
-  Label,
-  LabelList,
-  Line,
   Scatter,
   XAxis,
   YAxis,
-  ZAxis,
 } from "recharts";
-import { Zain } from "next/font/google";
+import { Tooltip } from "recharts";
 
 export default function PropConsensusContent(
   { categories, forecasts, props }: {
@@ -68,6 +56,11 @@ export default function PropConsensusContent(
       <AllPropsConsensusChart
         props={propStatisticsForForecasts(forecastsInScope)}
       />
+      <div className="w-full flex justify-center">
+        <p className="text-muted-foreground text-sm">
+          Hover over a point in the chart to see which prop it corresponds to.
+        </p>
+      </div>
     </Select>
   );
 }
@@ -78,17 +71,20 @@ function AllPropsConsensusChart(
   { props }: { props: Map<number, PropStatistics> },
 ) {
   const data = Array.from(props.values());
+  // Order by average.
+  data.sort((a, b) => a.mean - b.mean);
   return (
-    <ChartContainer config={chartConfig} className="min-h-56 w-full p-4">
+    <ChartContainer config={chartConfig} className="min-h-28 w-full">
       <ComposedChart
         layout="vertical"
         data={data}
+        accessibilityLayer
+        className="p-4"
       >
         <CartesianGrid />
         <XAxis type="number" axisLine={false} domain={[0, 1]} />
         <YAxis dataKey="prop_id" type="category" hide={true} />
-        <ZAxis type="category" dataKey="prop_text" />
-        <ChartTooltip content={<ChartTooltipContent />} />
+        <Tooltip content={<CustomTooltip />} />
         <Scatter
           dataKey="mean"
           shape={<RenderDot radius={5} fill="hsl(var(--foreground))" />}
@@ -103,21 +99,67 @@ function AllPropsConsensusChart(
         />
         <Scatter
           dataKey="min"
-          shape={<RenderDot radius={2} fill="hsl(var(--muted-foreground))" />}
+          shape={<RenderDot radius={1} fill="hsl(var(--muted-foreground))" />}
         />
         <Scatter
           dataKey="max"
-          shape={<RenderDot radius={2} fill="hsl(var(--muted-foreground))" />}
+          shape={<RenderDot radius={1} fill="hsl(var(--muted-foreground))" />}
         />
       </ComposedChart>
     </ChartContainer>
   );
 }
 
-const RenderDot: FC<DotProps> = (
+interface TooltipPayload {
+  chartType?: string;
+  color?: string;
+  dataKey: string;
+  formatter?: any;
+  hide: boolean;
+  name: string;
+  payload: PropStatistics;
+  type?: string;
+  unit?: string;
+  value: number;
+}
+
+const CustomTooltip = (
+  { active, payload, label }: {
+    active?: boolean;
+    payload?: TooltipPayload[];
+    label?: string;
+  },
+) => {
+  if (active && payload && payload.length) {
+    const stats = payload[0].payload;
+    return (
+      <div className="grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
+        <span className="font-semibold">{payload[0].payload.prop_text}</span>
+        <div className="grid grid-cols-2 w-full">
+          <p className="text-muted-foreground">Mean</p>
+          <p>{stats.mean.toFixed(2)}</p>
+          <p className="text-muted-foreground">P25</p>
+          <p>{stats.p25.toFixed(2)}</p>
+          <p className="text-muted-foreground">P75</p>
+          <p>{stats.p75.toFixed(2)}</p>
+          <p className="text-muted-foreground">Min</p>
+          <p>{stats.min.toFixed(2)}</p>
+          <p className="text-muted-foreground">Max</p>
+          <p>{stats.max.toFixed(2)}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+};
+
+const RenderDot: FC<
+  { cx?: number; cy?: number; radius: number; fill: string }
+> = (
   { cx, cy, radius, fill }: {
-    cx: number;
-    cy: number;
+    cx?: number;
+    cy?: number;
     radius: number;
     fill: string;
   },

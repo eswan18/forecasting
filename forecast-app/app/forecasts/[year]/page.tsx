@@ -27,7 +27,14 @@ export default async function Page(
           </PageHeading>
         </div>
         <div className="flex flex-row flex-wrap justify-center items-start gap-4 md:gap-12 mt-8">
-          <Suspense fallback={<SkeletonCard title="Consensus Forecasts" />}>
+          <Suspense
+            fallback={
+              <SkeletonCard
+                title="Consensus Forecasts"
+                className="w-full h-72 sm:h-[32rem]"
+              />
+            }
+          >
             <PropConsensusCard year={year} />
           </Suspense>
           <Suspense fallback={<SkeletonCard title="Controversial Props" />}>
