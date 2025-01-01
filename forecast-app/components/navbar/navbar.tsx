@@ -13,7 +13,6 @@ import { UserStatus } from "./user-status";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { getUserFromCookies } from "@/lib/get-user";
-import { hasFeatureEnabled } from "@/lib/db_actions";
 import { VUser } from "@/types/db_types";
 
 type Link = {
@@ -32,7 +31,8 @@ export default async function NavBar() {
   const links: (Link | LinkGroup)[] = [{
     label: "Forecasts",
     links: [
-      { href: `/forecasts/2024/user/${userId}`, label: "Forecast History" },
+      { href: `/forecasts/2024`, label: "2024 Forecast Overview" },
+      { href: `/forecasts/2025`, label: "2025 Forecast Overview" },
     ],
   }, {
     label: "Scores",
@@ -46,8 +46,8 @@ export default async function NavBar() {
       label === "Forecasts"
     ) as LinkGroup;
     forecastLinks.links.unshift({
-      href: `/forecasts/record/2025`,
-      label: "Make Forecasts for 2025",
+      href: `/forecasts/2025/user/${userId}`,
+      label: "Your Forecasts",
     });
   }
   const adminLinks: Link[] = [

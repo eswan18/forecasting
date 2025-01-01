@@ -3,6 +3,7 @@ import PageHeading from "@/components/page-heading";
 import YearSelector from "./year-selector";
 import { getPropYears } from "@/lib/db_actions";
 import ControversyCard from "./cards/controversy-card";
+import CertaintyCard from "./cards/certainty-card";
 import SkeletonCard from "./cards/skeleton-card";
 import PropConsensusCard from "./cards/prop-consensus-card";
 import { Suspense } from "react";
@@ -37,10 +38,11 @@ export default async function Page(
           >
             <PropConsensusCard year={year} />
           </Suspense>
-          {
-            /*<Suspense fallback={<SkeletonCard title="Controversial Props" />}>
-            <ControversyCard />
+          <Suspense fallback={<SkeletonCard title="Average Certainty" />}>
+            <CertaintyCard year={year}/>
           </Suspense>
+          {
+            /*
           <Suspense fallback={<SkeletonCard title="Controversial Props" />}>
             <ControversyCard />
           </Suspense>

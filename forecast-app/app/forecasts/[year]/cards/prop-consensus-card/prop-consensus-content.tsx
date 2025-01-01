@@ -15,6 +15,7 @@ import {
   CartesianGrid,
   ComposedChart,
   Dot,
+  Cross,
   Scatter,
   XAxis,
   YAxis,
@@ -87,23 +88,23 @@ function AllPropsConsensusChart(
         <Tooltip content={<CustomTooltip />} />
         <Scatter
           dataKey="mean"
-          shape={<RenderDot radius={5} fill="hsl(var(--foreground))" />}
+          shape={<RenderDot radius={5} fill="hsl(var(--primary))" />}
         />
         <Scatter
           dataKey="p25"
-          shape={<RenderDot radius={3} fill="hsl(var(--muted-foreground))" />}
+          shape={<RenderDot radius={3} fill="hsl(var(--foreground))" />}
         />
         <Scatter
           dataKey="p75"
-          shape={<RenderDot radius={3} fill="hsl(var(--muted-foreground))" />}
+          shape={<RenderDot radius={3} fill="hsl(var(--foreground))" />}
         />
         <Scatter
           dataKey="min"
-          shape={<RenderDot radius={1} fill="hsl(var(--muted-foreground))" />}
+          shape={<RenderDot radius={2} fill="hsl(var(--secondary))" />}
         />
         <Scatter
           dataKey="max"
-          shape={<RenderDot radius={1} fill="hsl(var(--muted-foreground))" />}
+          shape={<RenderDot radius={2} fill="hsl(var(--secondary))" />}
         />
       </ComposedChart>
     </ChartContainer>
