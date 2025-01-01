@@ -1,4 +1,11 @@
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default async function ControversyCard() {
   return (
@@ -15,5 +22,5 @@ export default async function ControversyCard() {
         <a href="/about">Learn more</a>
       </CardFooter>
     </Card>
-  )
+  );
 }

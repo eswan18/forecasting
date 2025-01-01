@@ -3,6 +3,7 @@ import PageHeading from "@/components/page-heading";
 import YearSelector from "./year-selector";
 import { getPropYears } from "@/lib/db_actions";
 import ControversyCard from "./cards/controversy-card";
+import SkeletonCard from "./cards/skeleton-card";
 
 export default async function Page(
   { params }: { params: Promise<{ year: number }> },
@@ -27,7 +28,7 @@ export default async function Page(
           <ControversyCard />
           <ControversyCard />
           <ControversyCard />
-          <ControversyCard />
+          <SkeletonCard title="Controversy!" />
         </div>
       </div>
     </main>
