@@ -6,9 +6,6 @@ import {
   TableBody,
   TableCaption,
   TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 
@@ -26,14 +23,14 @@ export default function CertaintyContent(
   return (
     <Table>
       <TableCaption>Certainty is computed as the distance from 0.5</TableCaption>
-      <ScrollArea className="h-56">
+      <ScrollArea className="h-56 px-1" type="auto">
         <TableBody>
           {certainties.map(({ userId, userName, avgCertainty }) => (
-            <TableRow key={userId}>
+            <TableRow key={userId} className="odd:bg-background">
               <TableCell className="text-muted-foreground text-xs">
                 {userName}
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-right text-xs">
                 {avgCertainty.toFixed(3)}
               </TableCell>
             </TableRow>
