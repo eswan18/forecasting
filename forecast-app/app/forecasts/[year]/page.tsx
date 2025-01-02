@@ -1,12 +1,14 @@
+import { Suspense } from "react";
 import { getUserFromCookies, loginAndRedirect } from "@/lib/get-user";
 import PageHeading from "@/components/page-heading";
 import YearSelector from "./year-selector";
 import { getPropYears } from "@/lib/db_actions";
-import CertaintyCard from "./cards/certainty-card";
-import SkeletonCard from "./cards/skeleton-card";
-import PropConsensusCard from "./cards/prop-consensus-card";
-import { Suspense } from "react";
-import BoldTakesCard from "./cards/bold-takes-card";
+import {
+  BoldTakesCard,
+  CertaintyCard,
+  PropConsensusCard,
+  SkeletonCard,
+} from "./cards";
 
 export default async function Page(
   { params }: { params: Promise<{ year: number }> },
@@ -45,7 +47,11 @@ export default async function Page(
           >
             <CertaintyCard year={year} />
           </Suspense>
-          <Suspense fallback={<SkeletonCard title="Boldest Takes" className="w-80 h-96"/>}>
+          <Suspense
+            fallback={
+              <SkeletonCard title="Boldest Takes" className="w-80 h-96" />
+            }
+          >
             <BoldTakesCard year={year} />
           </Suspense>
         </div>
