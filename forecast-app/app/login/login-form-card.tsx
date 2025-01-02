@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { LoaderCircle } from "lucide-react";
-import { login } from "@/lib/auth";
+import { login, LoginResponse } from "@/lib/auth";
 
 const formSchema = z.object({
   username: z.string().regex(
@@ -42,18 +42,23 @@ export default function LoginFormCard(
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    login({ username: values.username, password: values.password }).then(() => {
-      mutate();
-      onLogin && onLogin();
+    const response = await login({
+      username: values.username,
+      password: values.password,
     }).catch((error) => {
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError("An error occurred.");
-      }
-    }).finally(() => {
-      setLoading(false);
+      const message = error instanceof Error
+        ? error.message
+        : "An error occurred";
+      return { success: false, error: message } as LoginResponse;
     });
+    mutate();
+    if (!response.success) {
+      setError(response.error);
+    } else {
+      setError("");
+      onLogin && onLogin();
+    }
+    setLoading(false);
   }
   return (
     <Card className="w-full max-w-md mx-4">

@@ -16,7 +16,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { updateLogin, updateUser } from "@/lib/db_actions";
-import { LoaderCircle } from "lucide-react";
+import { AlertTriangle, LoaderCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { Label } from "@/components/ui/label";
 import {
@@ -207,28 +208,26 @@ function ChangeUsernameForm({ onSuccess }: { onSuccess: () => void }) {
       return;
     }
     setLoading(true);
-    let success = true;
     const loginId = user?.login_id;
     if (!loginId) {
       setError("User not found");
       return;
     }
-    try {
-      await updateLogin({ id: loginId, login: values });
-    } catch (e) {
-      success = false;
-      console.log(e);
-      if (e instanceof Error) {
-        setError(e.message);
-      }
-    } finally {
-      setLoading(false);
-    }
-    if (success) {
+    const response = await updateLogin({ id: loginId, login: values }).catch(
+      (e) => {
+        const error = e instanceof Error ? e.message : "An error occurred";
+        return { success: false, error };
+      },
+    );
+    if (!response.success) {
+      setError(response.error);
+    } else {
+      setError("");
       form.reset(values);
       user && mutate({ ...user, username: values.username });
       onSuccess();
     }
+    setLoading(false);
   }
   return (
     <>
@@ -289,21 +288,18 @@ function ChangePasswordForm({ onSuccess }: { onSuccess: () => void }) {
       return;
     }
     setLoading(true);
-    let success = true;
-    try {
-      await updateLoginPassword({ id: loginId, ...values });
-    } catch (e) {
-      success = false;
-      console.log(e);
-      if (e instanceof Error) {
-        setError(e.message);
-      }
-    } finally {
-      setLoading(false);
-    }
-    if (success) {
+    const response = await updateLoginPassword({ id: loginId, ...values })
+      .catch((e) => {
+        const error = e instanceof Error ? e.message : "An error occurred";
+        return { success: false, error };
+      });
+    if (!response.success) {
+      setError(response.error);
+    } else {
+      setError("");
       onSuccess();
     }
+    setLoading(false);
   }
   return (
     <>
@@ -343,7 +339,16 @@ function ChangePasswordForm({ onSuccess }: { onSuccess: () => void }) {
             )
             : <Button type="submit" className="w-32">Update</Button>}
           {error && (
-            <div className="col-start-2 col-span-2 text-red-500">{error}</div>
+            <Alert
+              variant="destructive"
+              className="m-4 w-auto flex flex-row justify-start items-center"
+            >
+              <AlertTriangle className="h-8 w-8 mr-4 inline" />
+              <div className="ml-4">
+                <AlertTitle>Update Password Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </div>
+            </Alert>
           )}
         </form>
       </Form>
