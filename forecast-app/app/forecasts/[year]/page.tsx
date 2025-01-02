@@ -2,11 +2,11 @@ import { getUserFromCookies, loginAndRedirect } from "@/lib/get-user";
 import PageHeading from "@/components/page-heading";
 import YearSelector from "./year-selector";
 import { getPropYears } from "@/lib/db_actions";
-import ControversyCard from "./cards/controversy-card";
 import CertaintyCard from "./cards/certainty-card";
 import SkeletonCard from "./cards/skeleton-card";
 import PropConsensusCard from "./cards/prop-consensus-card";
 import { Suspense } from "react";
+import BoldTakesCard from "./cards/bold-takes-card";
 
 export default async function Page(
   { params }: { params: Promise<{ year: number }> },
@@ -27,7 +27,7 @@ export default async function Page(
             />
           </PageHeading>
         </div>
-        <div className="flex flex-row flex-wrap justify-center items-start gap-4 md:gap-12 mt-8 w-full">
+        <div className="flex flex-row flex-wrap justify-center items-start gap-4 md:gap-8 mt-8 w-full">
           <Suspense
             fallback={
               <SkeletonCard
@@ -38,18 +38,16 @@ export default async function Page(
           >
             <PropConsensusCard year={year} />
           </Suspense>
-          <Suspense fallback={<SkeletonCard title="Average Certainty" />}>
-            <CertaintyCard year={year}/>
+          <Suspense
+            fallback={
+              <SkeletonCard title="Average Certainty" className="w-80 h-96" />
+            }
+          >
+            <CertaintyCard year={year} />
           </Suspense>
-          {
-            /*
-          <Suspense fallback={<SkeletonCard title="Controversial Props" />}>
-            <ControversyCard />
+          <Suspense fallback={<SkeletonCard title="Boldest Takes" className="w-80 h-96"/>}>
+            <BoldTakesCard year={year} />
           </Suspense>
-          <Suspense fallback={<SkeletonCard title="Controversial Props" />}>
-            <SkeletonCard title="Controversy!" />
-          </Suspense>*/
-          }
         </div>
       </div>
     </main>

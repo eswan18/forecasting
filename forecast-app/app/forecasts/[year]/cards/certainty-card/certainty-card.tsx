@@ -12,7 +12,7 @@ import { VForecast } from "@/types/db_types";
 export default async function CertaintyCard({ year }: { year: number }) {
   const forecasts = await getForecasts({ year });
   return (
-    <Card className="w-72 h-96">
+    <Card className="w-80 h-96">
       <CardHeader className="pb-1">
         <CardTitle>Average Certainty</CardTitle>
         <CardDescription>
