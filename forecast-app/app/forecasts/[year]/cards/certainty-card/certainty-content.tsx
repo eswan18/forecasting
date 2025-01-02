@@ -40,11 +40,8 @@ export default function CertaintyContent(
           {reversed ? "Least" : "Most"} certain <ArrowUpDown size={16} />
         </Button>
       </div>
-      <Table className="mt-1">
-        <TableCaption className="text-xs">
-          Certainty is computed as the distance from 0.5
-        </TableCaption>
-        <ScrollArea className="h-56 px-1" type="auto">
+      <ScrollArea className="h-[13rem] px-1" type="auto">
+        <Table className="mt-1">
           <TableBody>
             {certainties.map(({ userId, userName, avgCertainty }) => (
               <TableRow key={userId} className="odd:bg-background">
@@ -57,8 +54,13 @@ export default function CertaintyContent(
               </TableRow>
             ))}
           </TableBody>
-        </ScrollArea>
-      </Table>
+        </Table>
+      </ScrollArea>
+      <div className="w-full flex justify-center mt-2">
+        <p className="text-muted-foreground text-sm text-center">
+          Certainty is computed as the distance from 0.5
+        </p>
+      </div>
     </>
   );
 }

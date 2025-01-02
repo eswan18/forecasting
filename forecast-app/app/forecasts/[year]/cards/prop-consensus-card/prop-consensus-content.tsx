@@ -15,7 +15,6 @@ import {
   CartesianGrid,
   ComposedChart,
   Dot,
-  Cross,
   Scatter,
   XAxis,
   YAxis,
