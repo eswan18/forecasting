@@ -8,11 +8,9 @@ import {
   TableCell,
   TableRow,
 } from "@/components/ui/table";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Toggle } from "@/components/ui/toggle";
 import { ArrowUpDown } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 export interface AvgCertaintyForUser {
   userId: number;
@@ -33,9 +31,14 @@ export default function CertaintyContent(
   return (
     <>
       <div className="flex justify-end">
-        <Toggle size="sm" pressed={reversed} onPressedChange={setReversed}>
-          Reverse<ArrowUpDown />
-        </Toggle>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => setReversed(!reversed)}
+          className="gap-x-1.5"
+        >
+          {reversed ? "Least" : "Most"} certain <ArrowUpDown size={16} />
+        </Button>
       </div>
       <Table className="mt-1">
         <TableCaption className="text-xs">
