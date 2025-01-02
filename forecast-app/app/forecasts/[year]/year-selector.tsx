@@ -18,7 +18,7 @@ export default function UserYearSelector(
   },
 ) {
   return (
-    <div className="flex flex-row gap-2 mt-2">
+    <div className="-translate-y-1">
       <Select
         value={String(selectedYear.toString())}
         onValueChange={(year) => {

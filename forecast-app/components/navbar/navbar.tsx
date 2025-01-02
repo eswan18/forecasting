@@ -14,54 +14,83 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { getUserFromCookies } from "@/lib/get-user";
 import { VUser } from "@/types/db_types";
+import { ReactElement } from "react";
+import {
+  BarChart,
+  BarChartHorizontal,
+  Edit,
+  Flag,
+  Medal,
+  MessageCircle,
+  TrendingUpDown,
+  Users,
+} from "lucide-react";
 
-type Link = {
+type NavLink = {
   href: string;
   label: string;
+  icon?: ReactElement;
 };
 
-type LinkGroup = {
+type NavLinkGroup = {
   label: string;
-  links: Link[];
+  links: NavLink[];
 };
 
 export default async function NavBar() {
   const user = await getUserFromCookies();
   const userId = user?.id;
-  const links: (Link | LinkGroup)[] = [{
+  const links: (NavLink | NavLinkGroup)[] = [{
     label: "Forecasts",
     links: [
-      { href: `/forecasts/2024`, label: "2024 Forecast Overview" },
-      { href: `/forecasts/2025`, label: "2025 Forecast Overview" },
+      {
+        href: `/forecasts/2025`,
+        label: "2025 Forecast Stats",
+        icon: <BarChart size={16} />,
+      },
     ],
   }, {
     label: "Scores",
     links: [{
       href: "/scores/2024",
       label: "2024 Scores",
+      icon: <Medal size={16} />,
     }],
   }];
   if (userId) {
     const forecastLinks = links.find(({ label }) =>
       label === "Forecasts"
-    ) as LinkGroup;
+    ) as NavLinkGroup;
     forecastLinks.links.unshift({
       href: `/forecasts/2025/user/${userId}`,
-      label: "Your Forecasts",
+      label: "Your 2025 Forecasts",
+      icon: <TrendingUpDown size={14} />,
     });
   }
-  const adminLinks: Link[] = [
-    { href: "/admin/users", label: "Users" },
-    { href: "/admin/feature-flags", label: "Feature Flags" },
-    { href: "/props/2024", label: "Props" },
-    { href: "/admin/suggested-props", label: "Suggested Props" },
-    { href: "/admin/forecast-progress/2025", label: "2025 Forecast Progress" },
+  const adminLinks: NavLink[] = [
+    { href: "/admin/users", label: "Users", icon: <Users size={16} /> },
+    {
+      href: "/admin/feature-flags",
+      label: "Feature Flags",
+      icon: <Flag size={16} />,
+    },
+    { href: "/props/2025", label: "Add/Edit Props", icon: <Edit size={16} /> },
+    {
+      href: "/admin/suggested-props",
+      label: "View Suggested Props",
+      icon: <MessageCircle size={16} />,
+    },
+    {
+      href: "/admin/forecast-progress/2025",
+      label: "2025 Forecast Progress",
+      icon: <BarChartHorizontal size={16} />,
+    },
   ];
   if (user?.is_admin) {
     links.unshift({ label: "Admin", links: adminLinks });
   }
-  function isLink(link: Link | LinkGroup): link is Link {
-    return (link as Link).href !== undefined;
+  function isLink(link: NavLink | NavLinkGroup): link is NavLink {
+    return (link as NavLink).href !== undefined;
   }
 
   return (
@@ -110,17 +139,18 @@ export default async function NavBar() {
 }
 
 async function DropdownNavbarItem(
-  { group: { label, links }, user }: { group: LinkGroup; user?: VUser },
+  { group: { label, links }, user }: { group: NavLinkGroup; user?: VUser },
 ) {
   return (
     <NavigationMenuItem>
       <NavigationMenuTrigger>{label}</NavigationMenuTrigger>
       <NavigationMenuContent className={user?.is_admin ? "w-80" : "w-64"}>
         <ul className="p-2 bg-background">
-          {links.map(({ href, label }) => (
+          {links.map(({ href, label, icon }) => (
             <li key={href} className="flex flex-col items-center">
               <Link href={href} passHref legacyBehavior>
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  {icon && <span className="mr-2">{icon}</span>}
                   {label}
                 </NavigationMenuLink>
               </Link>
