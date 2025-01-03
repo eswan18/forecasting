@@ -119,13 +119,7 @@ export default async function NavBar() {
                     </Link>
                   </NavigationMenuItem>
                 )
-                : (
-                  <DropdownNavbarItem
-                    key={link.label}
-                    group={link}
-                    user={user}
-                  />
-                )
+                : <DropdownNavbarItem key={link.label} group={link} />
             )}
           </NavigationMenuList>
         </NavigationMenu>
@@ -139,18 +133,20 @@ export default async function NavBar() {
 }
 
 async function DropdownNavbarItem(
-  { group: { label, links }, user }: { group: NavLinkGroup; user?: VUser },
+  { group: { label, links } }: { group: NavLinkGroup; user?: VUser },
 ) {
   return (
     <NavigationMenuItem>
       <NavigationMenuTrigger>{label}</NavigationMenuTrigger>
-      <NavigationMenuContent className={user?.is_admin ? "w-80" : "w-64"}>
+      <NavigationMenuContent>
         <ul className="p-2 bg-background">
           {links.map(({ href, label, icon }) => (
             <li key={href} className="flex flex-col items-center">
               <Link href={href} passHref legacyBehavior>
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  {icon && <span className="mr-2">{icon}</span>}
+                <NavigationMenuLink
+                  className={`${navigationMenuTriggerStyle()} min-w-56`}
+                >
+                  {icon && <span className="mr-3">{icon}</span>}
                   {label}
                 </NavigationMenuLink>
               </Link>
