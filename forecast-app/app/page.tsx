@@ -1,5 +1,4 @@
 import PageHeading from "@/components/page-heading";
-import { getUnforecastedProps } from "@/lib/db_actions";
 import { getUserFromCookies, loginAndRedirect } from "@/lib/get-user";
 import Link from "next/link";
 
@@ -9,42 +8,38 @@ export default async function Home() {
     await loginAndRedirect({ url: `/` });
     return <></>; // will never reach this line due to redirect.
   }
-  // Does the user have 2025 props to forecast?
-  const unforecastedProps = await getUnforecastedProps({
-    userId: user.id,
-    year: 2025,
-  });
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-lg">
-        <PageHeading title="Welcome!" />
-        Quick Links:
-        <ul className="list-disc px-4">
-          <li className="underline">
-            <Link href={`/forecasts/2024/user/${user.id}`}>
-              Your 2024 Forecasts
-            </Link>
-          </li>
-          <li className="underline">
-            <Link href="/scores/2024">2024 Scores</Link>
-          </li>
-        </ul>
-        {unforecastedProps.length > 0 && (
-          <div className="mt-5 text-lg">
+        <PageHeading title="Your Dashboard" />
+        <div className="flex flex-col gap-y-3">
+          <h2 className="text-muted-foreground mb-3">News & Updates</h2>
+          <div>
             <p className="font-semibold">
-              You have 2025 forecasts to do!
+              2024 Scoring is finalized!
             </p>
-            <p>
-              They&apos;re due by the end of the year.
-            </p>
-            <p>
-              <Link href={`/forecasts/record/2025`} className="underline">
-                Click here
-              </Link>{" "}
-              to record them.
+            <p className="text-sm">
+              All propositions for 2024 have been resolved, and scores can be
+              found on the{" "}
+              <Link href="/scores/2024" className="underline">
+                2024 Scores page
+              </Link>
+              .
             </p>
           </div>
-        )}
+          <div>
+            <p className="font-semibold">
+              2025 Forecasts are locked in
+            </p>
+            <p className="text-sm">
+              Check out the{" "}
+              <Link href="/forecasts/2025" className="underline">
+                Forecast Stats page
+              </Link>{" "}
+              to see an overview of your fellow forecasters&apos; predictions.
+            </p>
+          </div>
+        </div>
       </div>
     </main>
   );
