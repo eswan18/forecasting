@@ -1,6 +1,5 @@
 import { getCategories, getForecasts } from "@/lib/db_actions";
 import PageHeading from "@/components/page-heading";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
   Accordion,
@@ -8,10 +7,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Suspense } from "react";
 import { loginAndRedirect } from "@/lib/get-user";
 
 import { ScoreChartsCard } from "./score-charts-card";
 import { getUserFromCookies } from "@/lib/get-user";
+import SkeletonCard from "./skeleton-card";
 
 export default async function Page(
   { params }: { params: Promise<{ year: number }> },
@@ -22,8 +23,6 @@ export default async function Page(
     await loginAndRedirect({ url: `/scores/${year}` });
     return <></>; // will never reach this line due to redirect.
   }
-  const categories = await getCategories();
-  const forecasts = await getForecasts({ year });
   const linkToForecasts = `/forecasts/${year}/user/${user.id}`;
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
@@ -74,8 +73,22 @@ export default async function Page(
             </AccordionContent>
           </AccordionItem>
         </Accordion>
-        <ScoreChartsCard forecasts={forecasts} categories={categories} />
+        <Suspense
+          fallback={
+            <SkeletonCard className="w-full max-w-lg flex flex-col bg-background h-[32rem]" />
+          }
+        >
+          <ScoreChartsCardSection year={year}/>
+        </Suspense>
       </div>
     </main>
+  );
+}
+
+async function ScoreChartsCardSection({year}: {year: number}) {
+  const categories = await getCategories();
+  const forecasts = await getForecasts({ year });
+  return (
+    <ScoreChartsCard forecasts={forecasts} categories={categories} />
   );
 }
