@@ -86,6 +86,7 @@ export default async function Page(
 }
 
 async function ScoreChartsCardSection({year}: {year: number}) {
+  // We break this out so that we can wrap it in a Suspense component.
   const categories = await getCategories();
   const forecasts = await getForecasts({ year });
   return (
