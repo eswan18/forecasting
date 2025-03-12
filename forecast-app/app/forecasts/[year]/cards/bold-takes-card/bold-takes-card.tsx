@@ -31,7 +31,7 @@ export default async function BoldTakesCard({ year }: { year: number }) {
                 className="flex flex-col justify-start items-center w-full text-xs"
               >
                 <span className="w-full">{forecast.prop_text}</span>
-                <div className="w-full grid grid-cols-[1fr,1fr,1fr] mt-1 text-right">
+                <div className="w-full grid grid-cols-[1fr_1fr_1fr] mt-1 text-right">
                   <div className="flex flex-col justify-start items-end gap-0.5">
                     <span className="text-muted-foreground">
                       {forecast.user_name}
