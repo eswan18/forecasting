@@ -22,7 +22,7 @@ export function getColumns(
   return [
     {
       accessorKey: "username",
-      header: () => <div className="text-center">Username</div>,
+      header: () => <div className="px-2">Username</div>,
       cell: ({ row }) => {
         const username = row.original.username;
         const name = row.original.name;
