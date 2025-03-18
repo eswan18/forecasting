@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import {
-  ColumnDef,
   ColumnFiltersState,
   flexRender,
   getCoreRowModel,
@@ -48,7 +47,7 @@ export function DataTable({ data }: { data: VUser[] }) {
   return (
     <div className="rounded-md border w-full mt-8">
       <Table>
-        <TableHeader className="bg-secondary">
+        <TableHeader className="bg-muted text-muted-foreground">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {

@@ -82,7 +82,7 @@ export default function ForecastTable(
       </div>
       <div className="rounded-md border w-full mt-8">
         <Table>
-          <TableHeader className="bg-secondary text-xs">
+          <TableHeader className="text-xs bg-muted text-muted-foreground">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {

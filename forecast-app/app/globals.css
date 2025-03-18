@@ -119,7 +119,7 @@
 
 @layer base {
   :root {
-    --background: oklch(1, 0, 0);
+    --background: oklch(100% 0 0);
     --foreground: oklch(21.03% 0.0059 285.89);
 
     --muted: oklch(62.46% 0.0059 285.89);
@@ -131,7 +131,7 @@
     --card: oklch(98% 0.0059 285.89);
     --card-foreground: oklch(21.03% 0.0059 285.89);
 
-    --border: hsl(223 15% 89.92%);
+    --border: oklch(77% 0.0059 285.89);
     --input: oklch(62.46% 0.0059 285.89);
 
     --primary: oklch(43.2% 0.2106 292.76);
