@@ -11,7 +11,7 @@ export function FeatureToggle(
 ) {
   return (
     <div className="flex flex-col gap-1 items-center">
-      {name && <span className="text-muted-foreground">{name}</span>}
+      {name && <span className="text-muted">{name}</span>}
       <div className="flex flex-row items-center gap-2">
         <Switch
           checked={checked}

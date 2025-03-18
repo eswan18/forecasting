@@ -44,7 +44,7 @@ export default function CertaintyContent(
           <TableBody>
             {certainties.map(({ userId, userName, avgCertainty }) => (
               <TableRow key={userId} className="odd:bg-background">
-                <TableCell className="text-muted-foreground text-xs">
+                <TableCell className="text-muted text-xs">
                   {userName}
                 </TableCell>
                 <TableCell className="text-right text-xs">
@@ -56,7 +56,7 @@ export default function CertaintyContent(
         </Table>
       </ScrollArea>
       <div className="w-full flex justify-center mt-2">
-        <p className="text-muted-foreground text-sm text-center">
+        <p className="text-muted text-sm text-center">
           Certainty is computed as the distance from 0.5
         </p>
       </div>

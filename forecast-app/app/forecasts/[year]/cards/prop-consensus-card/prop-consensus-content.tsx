@@ -57,7 +57,7 @@ export default function PropConsensusContent(
         props={propStatisticsForForecasts(forecastsInScope)}
       />
       <div className="w-full flex justify-center">
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted text-sm">
           Hover over a point in the chart to see which prop it corresponds to.
         </p>
       </div>
@@ -136,15 +136,15 @@ const CustomTooltip = (
       <div className="grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
         <span className="font-semibold">{payload[0].payload.prop_text}</span>
         <div className="grid grid-cols-2 w-full">
-          <p className="text-muted-foreground">Mean</p>
+          <p className="text-muted">Mean</p>
           <p>{stats.mean.toFixed(2)}</p>
-          <p className="text-muted-foreground">P25</p>
+          <p className="text-muted">P25</p>
           <p>{stats.p25.toFixed(2)}</p>
-          <p className="text-muted-foreground">P75</p>
+          <p className="text-muted">P75</p>
           <p>{stats.p75.toFixed(2)}</p>
-          <p className="text-muted-foreground">Min</p>
+          <p className="text-muted">Min</p>
           <p>{stats.min.toFixed(2)}</p>
-          <p className="text-muted-foreground">Max</p>
+          <p className="text-muted">Max</p>
           <p>{stats.max.toFixed(2)}</p>
         </div>
       </div>

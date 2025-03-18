@@ -162,7 +162,7 @@ export default function RegisterFormCard({inviteToken}: {inviteToken?: string}) 
             )}
           </form>
         </Form>
-        <p className="mt-4 text-center text-sm text-muted-foreground">
+        <p className="mt-4 text-center text-sm text-muted">
           Already have an account?{" "}
           <Link href="/login">
             <Button variant="link">

@@ -56,7 +56,7 @@ export default async function RecordForecastsPage(
         </p>
         {categories.length > 0 && (
           <div className="flex flex-row my-3 items-center">
-            <div className="text-muted-foreground text-xs pr-2">
+            <div className="text-muted text-xs pr-2">
               Jump to ...
             </div>
             <div className="flex flex-row flex-wrap justify-center">
@@ -77,10 +77,10 @@ export default async function RecordForecastsPage(
           {propsByCategoryId.size === 0
             ? (
               <div className="text-center">
-                <div className="text-muted-foreground mb-4">
+                <div className="text-muted mb-4">
                   No props to forecast
                 </div>
-                <p className="text-muted-foreground">
+                <p className="text-muted">
                   You have already forecasted all props for this year.
                 </p>
               </div>
@@ -110,7 +110,7 @@ function CategoryProps(
     <div>
       <div className="w-[33%] border-b-foreground border-b mb-4 px-1">
         <h2
-          className="text-muted-foreground text-xs mb-1"
+          className="text-muted text-xs mb-1"
           id={`category-${category.id}`}
         >
           {category.name}

@@ -125,7 +125,7 @@ function ResolutionCheckboxFilter(
           );
         }}
       />
-      <Label htmlFor={resolution} className="text-muted-foreground">
+      <Label htmlFor={resolution} className="text-muted">
         {resolution}
       </Label>
     </div>

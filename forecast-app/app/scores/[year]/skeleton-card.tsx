@@ -8,7 +8,7 @@ export default async function SkeletonCard(
     <Card className={className}>
       <CardContent className="h-full">
         <div className="flex justify-center items-center h-full">
-          <Loader2 className="w-24 h-24 animate-spin text-muted-foreground" />
+          <Loader2 className="w-24 h-24 animate-spin text-muted" />
         </div>
       </CardContent>
     </Card>
