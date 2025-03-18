@@ -109,7 +109,7 @@ export default function LoginFormCard(
                 </div>
               )
               : (
-                <Button variant="default" type="submit" className="w-full">
+                <Button type="submit" className="w-full">
                   Login
                 </Button>
               )}
