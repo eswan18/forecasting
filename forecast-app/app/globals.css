@@ -127,7 +127,7 @@
     --muted: oklch(62.46% 0.0059 285.89);
     --muted-foreground: oklch(95% 0.0059 285.89);
 
-    --popover: oklch(1, 0, 0);
+    --popover: oklch(100% 0 0);
     --popover-foreground: oklch(21.03% 0.0059 285.89);
 
     --card: oklch(98% 0.0059 285.89);
