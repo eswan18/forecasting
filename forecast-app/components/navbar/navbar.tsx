@@ -94,7 +94,7 @@ export default async function NavBar() {
   }
 
   return (
-    <div className="w-full flex justify-between px-2 mt-3">
+    <div className="w-full flex justify-between px-3 py-2">
       <div className="flex flex-row justify-start">
         <Link href="/">
           <Button

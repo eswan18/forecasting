@@ -21,65 +21,82 @@ export function getColumns(
 ): ColumnDef<VUser>[] {
   return [
     {
-      accessorKey: "login_id",
-      header: "Login",
-    },
-    {
-      accessorKey: "id",
-      header: "User",
-    },
-    {
       accessorKey: "username",
-      header: "Username",
+      header: () => <div className="text-center">Username</div>,
       cell: ({ row }) => {
         const username = row.original.username;
-        if (!username) return null;
-        const handleImpersonate = async () => {
-          await loginViaImpersonation(username).then(async () => {
-            mutateUser();
-          }).then(() => {
-            redirect("/");
-          });
-        };
+        const name = row.original.name;
+        const handleImpersonate = username
+          ? async () => {
+            await loginViaImpersonation(username).then(async () => {
+              mutateUser();
+            }).then(() => {
+              redirect("/");
+            });
+          }
+          : null;
+        // Admins have a little badge next to their name; everyone else has an "Impersonate" button.
+        const button = row.original.is_admin
+          ? (
+            <Badge variant="outline">
+              Admin
+            </Badge>
+          )
+          : handleImpersonate && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button size="sm" className="h-5 text-[0.6rem]">
+                  Impersonate
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Impersonate User?</DialogTitle>
+                  <DialogDescription>
+                    Impersonating this user will log you out of your current
+                    session. You will remain logged in as the impersonated user
+                    until logging out.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button onClick={handleImpersonate}>Impersonate</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          );
         return (
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="ghost" className="flex-col gap-y-1 h-auto">
-                {username}
-                {row.original.is_admin && (
-                  <Badge variant="outline">
-                    Admin
-                  </Badge>
-                )}
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Impersonate User?</DialogTitle>
-                <DialogDescription>
-                  Impersonating this user will log you out of your current
-                  session. You will remain logged in as the impersonated user
-                  until logging out.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button onClick={handleImpersonate}>Impersonate</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <div className="px-2">
+            <div className="flex flex-row gap-x-2 items-center text-lg">
+              {username
+                ? <p>{username}</p>
+                : <p className="text-muted">&lt;no username&gt;</p>}
+              {button}
+            </div>
+            <div className="text-sm text-muted">
+              {name}
+            </div>
+          </div>
         );
       },
     },
     {
-      accessorKey: "name",
-      header: "Name",
+      accessorKey: "login_id",
+      header: "Login",
+      cell: ({ row }) => (
+        <div className="text-muted">{row.original.login_id}</div>
+      ),
+    },
+    {
+      accessorKey: "id",
+      header: "User",
+      cell: ({ row }) => <div className="text-muted">{row.original.id}</div>,
     },
     {
       accessorKey: "email",
       header: "Email",
       cell: ({ row }) =>
         row.original.email && (
-          <div className="text-xs">{row.original.email}</div>
+          <div className="text-muted">{row.original.email}</div>
         ),
     },
   ];
