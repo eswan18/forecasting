@@ -1,4 +1,5 @@
-import { Check, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ArrowUpDown, Check, X } from "lucide-react";
 
 export type ScoredForecast = {
   category_id: number;
@@ -17,14 +18,14 @@ export type ScoredForecast = {
 interface ForecastTableProps {
   data: ScoredForecast[];
   editable: boolean;
-  scored: boolean;
 }
 
 export default function ForecastTable(
-  { data, editable, scored }: ForecastTableProps,
+  { data, editable }: ForecastTableProps,
 ) {
   return (
     <div className="w-full">
+      <ForecastTableHeader />
       <ul className="w-full flex flex-col">
         {data.map((row) => (
           <li key={row.forecast_id}>
@@ -32,6 +33,31 @@ export default function ForecastTable(
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+function ForecastTableHeader() {
+  return (
+    <div className="w-full grid grid-cols-[2fr_1fr] px-4 pb-1 border-b text-muted">
+      <div></div>
+      <div className="col-span-1 grid grid-cols-[4fr_4fr_3fr] gap-x-1 text-right">
+        <div className="w-full flex flex-row items-end justify-end">
+          <Button variant="ghost" className="h-6 p-0 flex flex-row gap-x-1 m-0">
+            Sort<ArrowUpDown size={20} />
+          </Button>
+        </div>
+        <div className="w-full flex flex-row items-end justify-end">
+          <Button variant="ghost" className="h-6 p-0 flex flex-row gap-x-1 m-0">
+            Sort<ArrowUpDown size={20} />
+          </Button>
+        </div>
+        <div className="w-full flex flex-row items-end justify-end">
+          <Button variant="ghost" className="h-6 p-0 flex flex-row gap-x-1 m-0">
+            Sort<ArrowUpDown size={20} className="m-0" />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -62,12 +88,12 @@ function ForecastTableRow(
     ? <p>{row.penalty.toFixed(2)}</p>
     : <p className="text-muted">?</p>;
   return (
-    <div className="w-full bg-card grid grid-cols-3 px-4 py-4 border">
-      <div className="col-span-2 flex flex-col gap-y-1">
+    <div className="w-full bg-card grid grid-cols-[2fr_1fr] px-4 py-4 border">
+      <div className="flex flex-col gap-y-1">
         <p>{row.prop_text}</p>
         <p className="text-muted text-sm">{row.category_name}</p>
       </div>
-      <div className="col-span-1 grid grid-cols-[4fr_4fr_3fr] gap-x-1 text-right">
+      <div className="grid grid-cols-[4fr_4fr_3fr] gap-x-1 text-right">
         <div className="w-full flex flex-row items-end justify-end text-lg font-bold">
           {row.forecast.toFixed(2)}
         </div>
