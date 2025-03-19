@@ -3,6 +3,7 @@
 import { Dispatch, SetStateAction, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowDown, ArrowUp, ArrowUpDown, Check, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export type ScoredForecast = {
   category_id: number;
@@ -108,18 +109,19 @@ function ForecastTableHeader(
     });
   };
   return (
-    <div className="w-full grid grid-cols-[2fr_1fr] px-4 pb-1 border-b text-muted-foreground">
+    <div className="w-full grid grid-cols-[1fr_1fr] sm:grid-cols-[2fr_1fr] px-4 pb-1 border-b text-muted-foreground">
       <div></div>
-      <div className="col-span-1 grid grid-cols-[4fr_4fr_3fr] gap-x-1 text-right">
-        <SortColumnHeader
-          onClick={() => handleSortClick("forecast")}
-          selection={sortStatus?.column === "forecast"
-            ? sortStatus.direction
-            : undefined}
-        />
+      <div className="col-span-1 grid grid-cols-[1fr_1fr_1fr] gap-x-1 text-right">
         <SortColumnHeader
           onClick={() => handleSortClick("resolution")}
           selection={sortStatus?.column === "resolution"
+            ? sortStatus.direction
+            : undefined}
+          className="justify-center sm:justify-end"
+        />
+        <SortColumnHeader
+          onClick={() => handleSortClick("forecast")}
+          selection={sortStatus?.column === "forecast"
             ? sortStatus.direction
             : undefined}
         />
@@ -135,19 +137,22 @@ function ForecastTableHeader(
 }
 
 function SortColumnHeader(
-  { onClick, selection }: {
+  { onClick, selection, className }: {
     onClick: () => void;
     selection: "asc" | "desc" | undefined;
+    className?: string;
   },
 ) {
+  className = cn("w-full flex flex-row items-end justify-end", className);
   return (
-    <div className="w-full flex flex-row items-end justify-end">
+    <div className={className}>
       <Button
         variant="ghost"
         className="h-6 p-0 flex flex-row gap-x-1 m-0"
         onClick={onClick}
       >
-        Sort{selection === undefined
+        <span className="hidden sm:inline">Sort</span>
+        {selection === undefined
           ? <ArrowUpDown size={20} />
           : selection === "asc"
           ? <ArrowUp size={20} />
@@ -183,23 +188,25 @@ function ForecastTableRow(
     ? <p>{row.penalty.toFixed(2)}</p>
     : <p className="text-muted-foreground">?</p>;
   return (
-    <div className="w-full bg-card grid grid-cols-[2fr_1fr] px-4 py-4 border">
+    <div className="w-full bg-card grid grid-cols-[1fr_1fr] sm:grid-cols-[2fr_1fr] px-4 py-4 border gap-x-1">
       <div className="flex flex-col gap-y-1">
         <p>{row.prop_text}</p>
         <p className="text-muted-foreground text-sm">{row.category_name}</p>
       </div>
-      <div className="grid grid-cols-[4fr_4fr_3fr] gap-x-1 text-right">
+      <div className="grid grid-cols-[1fr_1fr_1fr] gap-x-1 text-right">
+        <div className="w-full flex flex-row items-end justify-center sm:justify-end text-lg font-bold">
+          {resolution}
+        </div>
         <div className="w-full flex flex-row items-end justify-end text-lg font-bold">
           {row.forecast.toFixed(2)}
         </div>
         <div className="w-full flex flex-row items-end justify-end text-lg font-bold">
-          {resolution}
-        </div>
-        <div className="w-full flex flex-row items-end justify-end text-lg font-bold">
           {penaltyString}
         </div>
+        <p className="text-xs text-muted-foreground">
+          <span className="hidden sm:inline">Resolution</span>
+        </p>
         <p className="text-xs text-muted-foreground">Predicted</p>
-        <p className="text-xs text-muted-foreground">Resolution</p>
         <p className="text-xs text-muted-foreground">Penalty</p>
       </div>
     </div>
