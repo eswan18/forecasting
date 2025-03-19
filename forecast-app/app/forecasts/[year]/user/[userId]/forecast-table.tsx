@@ -1,5 +1,8 @@
+"use client";
+
+import { Dispatch, SetStateAction, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, Check, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Check, X } from "lucide-react";
 
 export type ScoredForecast = {
   category_id: number;
@@ -15,6 +18,11 @@ export type ScoredForecast = {
   year: number;
 };
 
+interface SortStatus {
+  column: string;
+  direction: "asc" | "desc";
+}
+
 interface ForecastTableProps {
   data: ScoredForecast[];
   editable: boolean;
@@ -23,9 +31,23 @@ interface ForecastTableProps {
 export default function ForecastTable(
   { data, editable }: ForecastTableProps,
 ) {
+  const [sortStatus, setSortStatus] = useState<SortStatus | null>(null);
+  if (sortStatus !== null) {
+    const sortedData = data.sort((a, b) => {
+      if (sortStatus?.direction === "asc") {
+        return a[sortStatus.column] > b[sortStatus.column] ? 1 : -1;
+      } else {
+        return a[sortStatus.column] < b[sortStatus.column] ? 1 : -1;
+      }
+    });
+    data = sortedData;
+  }
   return (
     <div className="w-full">
-      <ForecastTableHeader />
+      <ForecastTableHeader
+        sortStatus={sortStatus}
+        setSortStatus={setSortStatus}
+      />
       <ul className="w-full flex flex-col">
         {data.map((row) => (
           <li key={row.forecast_id}>
@@ -37,27 +59,70 @@ export default function ForecastTable(
   );
 }
 
-function ForecastTableHeader() {
+function ForecastTableHeader(
+  { sortStatus, setSortStatus }: {
+    sortStatus: SortStatus | null;
+    setSortStatus: Dispatch<SetStateAction<SortStatus | null>>;
+  },
+) {
+  const handleSortClick = (column: string) => {
+    setSortStatus((prev) => {
+      if (prev && prev.column === column) {
+        return {
+          column,
+          direction: prev.direction === "asc" ? "desc" : "asc",
+        };
+      } else {
+        return { column, direction: "desc" };
+      }
+    });
+  };
   return (
     <div className="w-full grid grid-cols-[2fr_1fr] px-4 pb-1 border-b text-muted">
       <div></div>
       <div className="col-span-1 grid grid-cols-[4fr_4fr_3fr] gap-x-1 text-right">
-        <div className="w-full flex flex-row items-end justify-end">
-          <Button variant="ghost" className="h-6 p-0 flex flex-row gap-x-1 m-0">
-            Sort<ArrowUpDown size={20} />
-          </Button>
-        </div>
-        <div className="w-full flex flex-row items-end justify-end">
-          <Button variant="ghost" className="h-6 p-0 flex flex-row gap-x-1 m-0">
-            Sort<ArrowUpDown size={20} />
-          </Button>
-        </div>
-        <div className="w-full flex flex-row items-end justify-end">
-          <Button variant="ghost" className="h-6 p-0 flex flex-row gap-x-1 m-0">
-            Sort<ArrowUpDown size={20} className="m-0" />
-          </Button>
-        </div>
+        <SortColumnHeader
+          onClick={() => handleSortClick("forecast")}
+          selection={sortStatus?.column === "forecast"
+            ? sortStatus.direction
+            : undefined}
+        />
+        <SortColumnHeader
+          onClick={() => handleSortClick("resolution")}
+          selection={sortStatus?.column === "resolution"
+            ? sortStatus.direction
+            : undefined}
+        />
+        <SortColumnHeader
+          onClick={() => handleSortClick("penalty")}
+          selection={sortStatus?.column === "penalty"
+            ? sortStatus.direction
+            : undefined}
+        />
       </div>
+    </div>
+  );
+}
+
+function SortColumnHeader(
+  { onClick, selection }: {
+    onClick: () => void;
+    selection: "asc" | "desc" | undefined;
+  },
+) {
+  return (
+    <div className="w-full flex flex-row items-end justify-end">
+      <Button
+        variant="ghost"
+        className="h-6 p-0 flex flex-row gap-x-1 m-0"
+        onClick={onClick}
+      >
+        Sort{selection === undefined
+          ? <ArrowUpDown size={20} />
+          : selection === "asc"
+          ? <ArrowUp size={20} />
+          : <ArrowDown size={20} />}
+      </Button>
     </div>
   );
 }
