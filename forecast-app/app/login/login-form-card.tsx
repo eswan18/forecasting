@@ -127,7 +127,7 @@ export default function LoginFormCard(
             )}
           </form>
           <div className="mt-4 flex flex-col gap-y-4">
-            <p className="text-center text-sm text-muted">
+            <p className="text-center text-sm text-muted-foreground">
               Forgot your credentials?
               <Link href="/reset-password">
                 <Button variant="link">
@@ -135,7 +135,7 @@ export default function LoginFormCard(
                 </Button>
               </Link>
             </p>
-            <p className="text-center text-sm text-muted">
+            <p className="text-center text-sm text-muted-foreground">
               Don&apos;t have an account?<br />
               You&apos;ll need an invite link from Ethan.
             </p>

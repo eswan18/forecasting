@@ -33,7 +33,7 @@ export default async function BoldTakesCard({ year }: { year: number }) {
                 <span className="w-full">{forecast.prop_text}</span>
                 <div className="w-full grid grid-cols-[1fr_1fr_1fr] mt-1 text-right">
                   <div className="flex flex-col justify-start items-end gap-0.5">
-                    <span className="text-muted">
+                    <span className="text-muted-foreground">
                       {forecast.user_name}
                     </span>
                     <span className="text-sm">
@@ -41,11 +41,11 @@ export default async function BoldTakesCard({ year }: { year: number }) {
                     </span>
                   </div>
                   <div className="flex flex-col justify-start items-end gap-0.5">
-                    <span className="text-muted">Others</span>
+                    <span className="text-muted-foreground">Others</span>
                     <span className="text-sm">{meanForecast.toFixed(2)}</span>
                   </div>
                   <div className="flex flex-col justify-start items-end gap-0.5">
-                    <span className="text-muted">Difference</span>
+                    <span className="text-muted-foreground">Difference</span>
                     <span className="text-sm">
                       {Math.abs(differenceFromMean).toFixed(2)}
                     </span>

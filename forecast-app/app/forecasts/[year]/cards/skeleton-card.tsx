@@ -11,7 +11,7 @@ export default async function SkeletonCard(
       </CardHeader>
       <CardContent className="h-full">
         <div className="flex justify-center items-center h-full">
-          <Loader2 className="w-24 h-24 animate-spin text-muted" />
+          <Loader2 className="w-24 h-24 animate-spin text-muted-foreground" />
         </div>
       </CardContent>
     </Card>

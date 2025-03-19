@@ -103,19 +103,15 @@ export default function ScoresChart(
           type="category"
           dataKey="name"
           axisLine={false}
+          tick={{ fill: "red" }}
         />
         <CartesianGrid strokeDasharray="3 3" />
         <ChartTooltip content={<ChartTooltipContent />} />
         <XAxis
           type="number"
           domain={[0, axisMaximum]}
+          tick={{ fill: "red" }}
         />
-        {false && (
-          <Legend
-            verticalAlign="top"
-            align="center"
-          />
-        )}
         {byProp
           ? propIdsAndColors.map(({ propId, color }) => (
             <Bar

@@ -80,7 +80,7 @@ function UserDetailsSection(
   }
   return (
     <div>
-      <h2 className="text-lg text-muted mb-4">User Details</h2>
+      <h2 className="text-lg text-muted-foreground mb-4">User Details</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
@@ -139,7 +139,7 @@ function LoginDetailsSection() {
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   return (
     <div>
-      <h2 className="text-lg text-muted mb-4">Login Details</h2>
+      <h2 className="text-lg text-muted-foreground mb-4">Login Details</h2>
       <div className="space-y-6">
         <div className="grid grid-cols-4 gap-4">
           <AccountLabel>Username</AccountLabel>

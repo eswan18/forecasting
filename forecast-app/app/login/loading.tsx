@@ -9,7 +9,7 @@ export default async function Loading() {
           <CardTitle className="text-xl">Login</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-center h-48">
-          <Loader2 className="w-24 h-24 animate-spin text-muted" />
+          <Loader2 className="w-24 h-24 animate-spin text-muted-foreground" />
         </CardContent>
       </Card>
     </div>

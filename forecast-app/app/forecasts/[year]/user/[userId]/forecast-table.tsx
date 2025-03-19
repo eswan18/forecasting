@@ -108,7 +108,7 @@ function ForecastTableHeader(
     });
   };
   return (
-    <div className="w-full grid grid-cols-[2fr_1fr] px-4 pb-1 border-b text-muted">
+    <div className="w-full grid grid-cols-[2fr_1fr] px-4 pb-1 border-b text-muted-foreground">
       <div></div>
       <div className="col-span-1 grid grid-cols-[4fr_4fr_3fr] gap-x-1 text-right">
         <SortColumnHeader
@@ -178,15 +178,15 @@ function ForecastTableRow(
           />
         )
     )
-    : <p className="text-muted">?</p>;
+    : <p className="text-muted-foreground">?</p>;
   const penaltyString = row.penalty !== null
     ? <p>{row.penalty.toFixed(2)}</p>
-    : <p className="text-muted">?</p>;
+    : <p className="text-muted-foreground">?</p>;
   return (
     <div className="w-full bg-card grid grid-cols-[2fr_1fr] px-4 py-4 border">
       <div className="flex flex-col gap-y-1">
         <p>{row.prop_text}</p>
-        <p className="text-muted text-sm">{row.category_name}</p>
+        <p className="text-muted-foreground text-sm">{row.category_name}</p>
       </div>
       <div className="grid grid-cols-[4fr_4fr_3fr] gap-x-1 text-right">
         <div className="w-full flex flex-row items-end justify-end text-lg font-bold">
@@ -198,9 +198,9 @@ function ForecastTableRow(
         <div className="w-full flex flex-row items-end justify-end text-lg font-bold">
           {penaltyString}
         </div>
-        <p className="text-xs text-muted">Predicted</p>
-        <p className="text-xs text-muted">Resolution</p>
-        <p className="text-xs text-muted">Penalty</p>
+        <p className="text-xs text-muted-foreground">Predicted</p>
+        <p className="text-xs text-muted-foreground">Resolution</p>
+        <p className="text-xs text-muted-foreground">Penalty</p>
       </div>
     </div>
   );

@@ -13,7 +13,7 @@ export default async function Home() {
       <div className="w-full max-w-lg">
         <PageHeading title="Your Dashboard" />
         <div className="flex flex-col gap-y-3">
-          <h2 className="text-muted mb-3">News & Updates</h2>
+          <h2 className="text-muted-foreground mb-3">News & Updates</h2>
           <div>
             <p className="font-semibold">
               2024 Scoring is finalized!

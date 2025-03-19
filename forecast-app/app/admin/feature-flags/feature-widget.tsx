@@ -63,7 +63,7 @@ export function FeatureWidget({ featureName, flags }: FeatureWidgetProps) {
             )
             : (
               <div className="flex flex-col gap-1 items-center">
-                <span className="text-muted">Default Value</span>
+                <span className="text-muted-foreground">Default Value</span>
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
                     <Button
