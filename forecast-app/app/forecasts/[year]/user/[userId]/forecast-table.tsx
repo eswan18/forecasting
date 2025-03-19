@@ -1,5 +1,18 @@
-import { Check, CircleCheck, CircleX, TrendingUpDown, X } from "lucide-react";
-import { ScoredForecast, useForecastColumns } from "./forecast-columns";
+import { Check, X } from "lucide-react";
+
+export type ScoredForecast = {
+  category_id: number;
+  category_name: string;
+  prop_id: number;
+  prop_text: string;
+  prop_notes: string | null;
+  resolution: boolean | null;
+  user_id: number;
+  forecast: number;
+  forecast_id: number;
+  penalty: number | null;
+  year: number;
+};
 
 interface ForecastTableProps {
   data: ScoredForecast[];
@@ -28,17 +41,21 @@ function ForecastTableRow(
 ) {
   const resolution = row.resolution !== null
     ? (
-      <p>
-        {row.resolution
-          ? (
-            <Check
-              size={20}
-              strokeWidth={3}
-              className="-translate-y-1.5 text-green-500"
-            />
-          )
-          : <X size={20} strokeWidth={3} className="-translate-y-1.5 text-destructive" />}
-      </p>
+      row.resolution
+        ? (
+          <Check
+            size={20}
+            strokeWidth={3}
+            className="-translate-y-1.5 text-green-500"
+          />
+        )
+        : (
+          <X
+            size={20}
+            strokeWidth={3}
+            className="-translate-y-1.5 text-destructive"
+          />
+        )
     )
     : <p className="text-muted">?</p>;
   const penaltyString = row.penalty !== null
@@ -50,20 +67,16 @@ function ForecastTableRow(
         <p>{row.prop_text}</p>
         <p className="text-muted text-sm">{row.category_name}</p>
       </div>
-      <div className="col-span-1 grid grid-cols-3 gap-x-1 text-right">
+      <div className="col-span-1 grid grid-cols-[4fr_4fr_3fr] gap-x-1 text-right">
         <div className="w-full flex flex-row items-end justify-end text-lg font-bold">
           {row.forecast.toFixed(2)}
         </div>
-
-        {/* */}
         <div className="w-full flex flex-row items-end justify-end text-lg font-bold">
           {resolution}
         </div>
-
         <div className="w-full flex flex-row items-end justify-end text-lg font-bold">
           {penaltyString}
         </div>
-
         <p className="text-xs text-muted">Predicted</p>
         <p className="text-xs text-muted">Resolution</p>
         <p className="text-xs text-muted">Penalty</p>

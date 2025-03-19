@@ -7,7 +7,6 @@ import {
 } from "@/lib/db_actions";
 import { notFound } from "next/navigation";
 import ForecastTable from "./forecast-table";
-import OldForecastTable from "./old-forecast-table";
 import { getUserFromCookies } from "@/lib/get-user";
 import { redirect } from "next/navigation";
 import UserYearSelector from "./user-year-selector";
@@ -54,11 +53,6 @@ export default async function Page(
           />
         </PageHeading>
         <ForecastTable
-          data={scoredForecasts}
-          editable={editable}
-          scored={scored}
-        />
-        <OldForecastTable
           data={scoredForecasts}
           editable={editable}
           scored={scored}
