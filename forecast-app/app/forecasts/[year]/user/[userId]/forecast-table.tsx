@@ -33,14 +33,44 @@ export default function ForecastTable(
 ) {
   const [sortStatus, setSortStatus] = useState<SortStatus | null>(null);
   if (sortStatus !== null) {
-    const sortedData = data.sort((a, b) => {
+    data = data.sort((a, b) => {
       if (sortStatus?.direction === "asc") {
-        return a[sortStatus.column] > b[sortStatus.column] ? 1 : -1;
-      } else {
-        return a[sortStatus.column] < b[sortStatus.column] ? 1 : -1;
+        switch (sortStatus.column) {
+          case "forecast":
+            return a.forecast > b.forecast ? 1 : -1;
+          case "resolution":
+            const aResolution = a.resolution === null ? -1 : +a.resolution;
+            const bResolution = b.resolution === null ? -1 : +b.resolution;
+            if (aResolution === bResolution) return 0;
+            return aResolution > bResolution ? 1 : -1;
+          case "penalty":
+            const aPenalty = a.penalty === null ? 0 : a.penalty;
+            const bPenalty = b.penalty === null ? 0 : b.penalty;
+            if (a.penalty === b.penalty) return 0;
+            return aPenalty > bPenalty ? 1 : -1;
+          default:
+            return 0;
+        }
+      } else if (sortStatus?.direction === "desc") {
+        switch (sortStatus.column) {
+          case "forecast":
+            return a.forecast < b.forecast ? 1 : -1;
+          case "resolution":
+            const aResolution = a.resolution === null ? -1 : +a.resolution;
+            const bResolution = b.resolution === null ? -1 : +b.resolution;
+            if (aResolution === bResolution) return 0;
+            return aResolution < bResolution ? 1 : -1;
+          case "penalty":
+            const aPenalty = a.penalty === null ? 0 : a.penalty;
+            const bPenalty = b.penalty === null ? 0 : b.penalty;
+            if (a.penalty === b.penalty) return 0;
+            return aPenalty < bPenalty ? 1 : -1;
+          default:
+            return 0;
+        }
       }
+      return 0;
     });
-    data = sortedData;
   }
   return (
     <div className="w-full">
