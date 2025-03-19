@@ -80,6 +80,14 @@ export function getColumns(
       },
     },
     {
+      accessorKey: "email",
+      header: "Email",
+      cell: ({ row }) =>
+        row.original.email && (
+          <div>{row.original.email}</div>
+        ),
+    },
+    {
       accessorKey: "login_id",
       header: "Login",
       cell: ({ row }) => (
@@ -90,14 +98,6 @@ export function getColumns(
       accessorKey: "id",
       header: "User",
       cell: ({ row }) => <div className="text-muted">{row.original.id}</div>,
-    },
-    {
-      accessorKey: "email",
-      header: "Email",
-      cell: ({ row }) =>
-        row.original.email && (
-          <div className="text-muted">{row.original.email}</div>
-        ),
     },
   ];
 }

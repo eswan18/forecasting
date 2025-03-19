@@ -55,6 +55,10 @@ export default async function NavBar() {
       href: "/scores/2024",
       label: "2024 Scores",
       icon: <Medal size={16} />,
+    }, {
+      href: "/scores/2025",
+      label: "2025 Scores",
+      icon: <Medal size={16} />,
     }],
   }];
   if (userId) {
