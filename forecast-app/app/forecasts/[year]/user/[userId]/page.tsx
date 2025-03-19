@@ -7,6 +7,7 @@ import {
 } from "@/lib/db_actions";
 import { notFound } from "next/navigation";
 import ForecastTable from "./forecast-table";
+import OldForecastTable from "./old-forecast-table";
 import { getUserFromCookies } from "@/lib/get-user";
 import { redirect } from "next/navigation";
 import UserYearSelector from "./user-year-selector";
@@ -43,7 +44,7 @@ export default async function Page(
   const scored = year <= thisYear;
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
-      <div className="w-full max-w-2xl">
+      <div className="w-full max-w-3xl">
         <PageHeading title="Forecasts" className="flex flex-row flex-wrap gap-x-4 lg:gap-x-8 items-end">
           <UserYearSelector
             users={allUsers}
@@ -53,6 +54,11 @@ export default async function Page(
           />
         </PageHeading>
         <ForecastTable
+          data={scoredForecasts}
+          editable={editable}
+          scored={scored}
+        />
+        <OldForecastTable
           data={scoredForecasts}
           editable={editable}
           scored={scored}
