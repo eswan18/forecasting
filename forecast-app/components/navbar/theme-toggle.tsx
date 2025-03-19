@@ -22,6 +22,7 @@ export default function ThemeToggle() {
     <Button
       variant="outline"
       size="icon"
+      className="h-9 w-9"
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
     >
       {theme === "dark" ? <Moon /> : <Sun />}

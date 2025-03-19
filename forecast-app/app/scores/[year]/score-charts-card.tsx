@@ -48,9 +48,7 @@ export function ScoreChartsCard(
                   onPressedChange={setBreakdownTogglePressed}
                 >
                   <span className="md:hidden">
-                    {selectedTabValue === "Overall"
-                      ? "By Category"
-                      : "By Prop"}
+                    {selectedTabValue === "Overall" ? "By Category" : "By Prop"}
                   </span>
                   <span className="hidden md:inline">
                     {selectedTabValue === "Overall"

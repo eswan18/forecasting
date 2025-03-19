@@ -40,11 +40,13 @@ export default async function Page(
     };
   });
   const editable = year > thisYear && authUser.id === requestedUser.id;
-  const scored = year <= thisYear;
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
-      <div className="w-full max-w-lg">
-        <PageHeading title="Forecasts">
+      <div className="w-full max-w-3xl">
+        <PageHeading
+          title="Forecasts"
+          className="flex flex-row flex-wrap gap-x-4 lg:gap-x-8 items-end"
+        >
           <UserYearSelector
             users={allUsers}
             selectedUserId={requestedUser.id}
@@ -52,11 +54,7 @@ export default async function Page(
             selectedYear={year}
           />
         </PageHeading>
-        <ForecastTable
-          data={scoredForecasts}
-          editable={editable}
-          scored={scored}
-        />
+        <ForecastTable data={scoredForecasts} editable={editable} />
       </div>
     </main>
   );

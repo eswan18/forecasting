@@ -37,7 +37,7 @@ export function InviteUserButton({ className }: { className?: string }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className={className}>Create Invite Link</Button>
+        <Button variant="secondary" className={className}>Create Invite Link</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

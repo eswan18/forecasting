@@ -55,6 +55,10 @@ export default async function NavBar() {
       href: "/scores/2024",
       label: "2024 Scores",
       icon: <Medal size={16} />,
+    }, {
+      href: "/scores/2025",
+      label: "2025 Scores",
+      icon: <Medal size={16} />,
     }],
   }];
   if (userId) {
@@ -94,7 +98,7 @@ export default async function NavBar() {
   }
 
   return (
-    <div className="w-full flex justify-between px-2 mt-3">
+    <div className="w-full flex justify-between px-3 py-2">
       <div className="flex flex-row justify-start">
         <Link href="/">
           <Button
