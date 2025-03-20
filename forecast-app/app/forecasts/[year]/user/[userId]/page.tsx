@@ -45,7 +45,7 @@ export default async function Page(
       <div className="w-full max-w-3xl">
         <PageHeading
           title="Forecasts"
-          className="flex flex-row flex-wrap gap-x-4 lg:gap-x-8 items-end"
+          className="flex flex-row flex-wrap gap-x-4 lg:gap-x-8 items-end mb-4 sm:mb-8"
         >
           <UserYearSelector
             users={allUsers}

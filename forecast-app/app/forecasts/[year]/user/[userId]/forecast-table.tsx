@@ -4,6 +4,7 @@ import { Dispatch, SetStateAction, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowDown, ArrowUp, ArrowUpDown, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export type ScoredForecast = {
   category_id: number;
@@ -24,6 +25,10 @@ interface SortStatus {
   direction: "asc" | "desc";
 }
 
+interface FilterStatus {
+  resolution: (boolean | null)[];
+}
+
 interface ForecastTableProps {
   data: ScoredForecast[];
   editable: boolean;
@@ -33,6 +38,14 @@ export default function ForecastTable(
   { data, editable }: ForecastTableProps,
 ) {
   const [sortStatus, setSortStatus] = useState<SortStatus | null>(null);
+  const [filter, setFilter] = useState<FilterStatus>({
+    resolution: [true, false],
+  });
+  // Filters
+  if (filter.resolution.length !== 3) {
+    data = data.filter((row) => filter.resolution.includes(row.resolution));
+  }
+  // Sort
   if (sortStatus !== null) {
     data = data.sort((a, b) => {
       if (sortStatus?.direction === "asc") {
@@ -75,6 +88,7 @@ export default function ForecastTable(
   }
   return (
     <div className="w-full">
+      <ForecastTableFilterPanel filter={filter} setFilter={setFilter} />
       <ForecastTableHeader
         sortStatus={sortStatus}
         setSortStatus={setSortStatus}
@@ -86,6 +100,28 @@ export default function ForecastTable(
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+function ForecastTableFilterPanel({ filter, setFilter }: {
+  filter: FilterStatus;
+  setFilter: Dispatch<SetStateAction<FilterStatus>>;
+}) {
+  const handleCheck = (checked: boolean) => {
+    if (checked) {
+      setFilter({ resolution: [true, false] });
+    } else {
+      setFilter({ resolution: [true, false, null] });
+    }
+  };
+  return (
+    <div className="w-full flex flex-row justify-center sm:justify-start px-2.5 items-center gap-x-2 text-muted-foreground mb-4 sm:mb-2">
+      <p>Hide unresolved props</p>
+      <Checkbox
+        checked={!filter.resolution.includes(null)}
+        onCheckedChange={handleCheck}
+      />
     </div>
   );
 }
