@@ -59,7 +59,7 @@ Fore consistency, use dashes instead of underscores or spaces.
 npm exec kysely migrate make <migration-description>
 ```
 
-### How do I run new migrations?
+#### How do I run new migrations?
 
 Obviously it's best to do this in the staging DB and make sure all is well before going to prod.
 
