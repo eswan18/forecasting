@@ -17,13 +17,14 @@ import { Label } from "@/components/ui/label";
 
 export function InviteUserButton({ className }: { className?: string }) {
   const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const inviteLink = inviteCode && makeInviteLink(inviteCode);
 
   async function generateInviteCode() {
     setLoading(true);
-    const inviteToken = await generateInviteToken();
+    const inviteToken = await generateInviteToken({notes});
     setInviteCode(inviteToken);
     setLoading(false);
   }
@@ -50,12 +51,22 @@ export function InviteUserButton({ className }: { className?: string }) {
         <div className="w-full flex justify-center">
           {loading ? <LoaderCircle className="animate-spin" /> : (
             inviteCode === null && (
-              <Button
-                disabled={inviteCode !== null}
-                onClick={generateInviteCode}
-              >
-                Generate Invite
-              </Button>
+              <div className="flex flex-col gap-y-4">
+                <div className="flex flex-col gap-y-2">
+                  <Label>Notes</Label>
+                  <Input
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Who is this for?"
+                  />
+                </div>
+                <Button
+                  disabled={inviteCode !== null || notes.length === 0}
+                  onClick={generateInviteCode}
+                >
+                  Generate Invite
+                </Button>
+              </div>
             )
           )}
         </div>

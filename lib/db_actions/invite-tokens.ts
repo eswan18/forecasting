@@ -5,7 +5,7 @@ import { randomBytes } from "crypto";
 import { db } from '@/lib/database';
 
 
-export async function generateInviteToken() {
+export async function generateInviteToken({ notes }: { notes?: string }) {
   const user = await getUserFromCookies();
   if (!user?.is_admin) {
     throw new Error('Unauthorized');
@@ -15,7 +15,7 @@ export async function generateInviteToken() {
   // Save it to the db.
   await db
     .insertInto('invite_tokens')
-    .values({ token, created_at: new Date })
+    .values({ token, created_at: new Date, notes })
     .execute();
   return token;
 }

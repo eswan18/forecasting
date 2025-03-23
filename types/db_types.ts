@@ -119,6 +119,7 @@ export interface InviteTokensTable {
   token: string,
   created_at: Date,
   used_at: Date | null,
+  notes: string | null,
 }
 export type InviteToken = Selectable<InviteTokensTable>;
 export type NewInviteToken = Insertable<InviteTokensTable>;
