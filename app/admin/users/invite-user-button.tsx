@@ -10,57 +10,87 @@ import {
 import { Input } from "@/components/ui/input";
 import { generateInviteToken } from "@/lib/db_actions/invite-tokens";
 import { useState } from "react";
-import { LoaderCircle } from "lucide-react";
+import { Clipboard, LoaderCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 
 export function InviteUserButton({ className }: { className?: string }) {
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const inviteLink = inviteCode && makeInviteLink(inviteCode);
+
   async function generateInviteCode() {
     setLoading(true);
     const inviteToken = await generateInviteToken();
     setInviteCode(inviteToken);
     setLoading(false);
   }
-  async function copyInviteLink() {
-    if (!inviteCode) return;
-    const host = window.location.host;
-    const protocol = window.location.protocol;
-    const url = `${protocol}//${host}/register?token=${inviteCode}`;
-    await navigator.clipboard.writeText(url);
+  const handleCopyInviteLink = () => {
+    if (inviteLink) {
+      copyLink(inviteLink);
+    }
     toast({
       title: "Link copied!",
       description: "The invite link has been copied to your clipboard.",
-    })
-  }
+    });
+  };
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="secondary" className={className}>Create Invite Link</Button>
+        <Button variant="secondary" className={className}>
+          Create Invite Link
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Invite User</DialogTitle>
         </DialogHeader>
-        {loading
-          ? (
-            <div className="w-full flex justify-center">
-              <LoaderCircle className="animate-spin" />
-            </div>
-          )
-          : (
-            <Button disabled={inviteCode !== null} onClick={generateInviteCode}>
-              Generate Invite Code
-            </Button>
+        <div className="w-full flex justify-center">
+          {loading ? <LoaderCircle className="animate-spin" /> : (
+            inviteCode === null && (
+              <Button
+                disabled={inviteCode !== null}
+                onClick={generateInviteCode}
+              >
+                Generate Invite
+              </Button>
+            )
           )}
-        <Input value={inviteCode ?? undefined} readOnly />
+        </div>
         {inviteCode && (
-          <Button onClick={copyInviteLink}>
-            Copy Link to Clipboard
-          </Button>
+          <Card className="mt-4 p-4">
+            <CardContent className="flex flex-col justify-center items-center gap-y-4">
+              <div className="flex flex-col gap-y-2 w-full">
+                <Label>Invite Link</Label>
+                <div className="flex flex-row items-center justify-center flex-nowrap">
+                  <Input value={inviteLink ?? ""} disabled />
+                  <Button
+                    onClick={handleCopyInviteLink}
+                    className="gap-x-2 mx-4"
+                  >
+                    <span className="hidden sm:inline">Copy</span>
+                    <Clipboard />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </DialogContent>
     </Dialog>
   );
+}
+
+const makeInviteLink = (code: string) => {
+  if (!code) return "";
+  const host = window.location.host;
+  const protocol = window.location.protocol;
+  return `${protocol}//${host}/register?token=${code}`;
+};
+
+async function copyLink(link: string) {
+  if (!link) return;
+  await navigator.clipboard.writeText(link);
 }

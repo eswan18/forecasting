@@ -38,6 +38,10 @@ export default function LoginFormCard(
   const { mutate } = useCurrentUser();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -77,7 +81,7 @@ export default function LoginFormCard(
                   <FormControl>
                     <Input
                       placeholder="bobbytables"
-                      autoCapitalize="off"
+                      autoCapitalize="none"
                       {...field}
                     />
                   </FormControl>

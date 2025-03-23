@@ -42,6 +42,12 @@ export default function RegisterFormCard({inviteToken}: {inviteToken?: string}) 
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+      name: "",
+      email: "",
+    },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -76,7 +82,7 @@ export default function RegisterFormCard({inviteToken}: {inviteToken?: string}) 
                   <FormControl>
                     <Input
                       placeholder="bobbytables"
-                      autoCapitalize="off"
+                      autoCapitalize="none"
                       {...field}
                     />
                   </FormControl>
