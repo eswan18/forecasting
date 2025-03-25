@@ -125,7 +125,7 @@ function PropTableFilterPanel(
       setFilter({ ...filter, propText });
     }, 400);
     return () => clearTimeout(handler);
-  }, [propText]);
+  }, [propText, filter, setFilter]);
   const handleCheck = (checked: boolean) => {
     if (checked) {
       // Remove null from the filter.
