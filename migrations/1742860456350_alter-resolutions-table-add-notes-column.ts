@@ -47,7 +47,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 				'props.year',
 				'resolutions.id as resolution_id', // Include the resolution ID
 				'resolutions.resolution',
-				'resolutions.notes as notes', // Include the new notes column
+				'resolutions.notes as resolution_notes', // Include the new notes column
 			])
 	).execute()
 }
