@@ -1,7 +1,8 @@
-import { Button } from "@/components/ui/button";
 import { VProp } from "@/types/db_types";
-import { Check, MoreHorizontal, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { ActionDropdown } from "./action-dropdown";
+import ResolutionSelectWidget from "./resolution-select-widget";
+import { resolveProp, unresolveProp } from "@/lib/db_actions";
 
 export default function Row(
   { row, editable }: { row: VProp; editable: boolean },
@@ -16,12 +17,25 @@ export default function Row(
   return (
     <div className="w-full bg-card grid grid-cols-[4fr_1fr] px-4 py-4 border gap-x-1">
       <div className="flex flex-col gap-y-1">
-        <p>{row.prop_text}</p>
+        <p>{row.prop_text}{editable && <ActionDropdown prop={row} />}</p>
         <p className="text-muted-foreground text-sm">{row.category_name}</p>
       </div>
       <div className="flex flex-row items-center justify-end text-lg font-bold gap-x-2 px-2">
-          {resolution}
-          {editable && <ActionDropdown prop={row} />}
+        {editable
+          ? (
+            <ResolutionSelectWidget
+              resolution={row.resolution ?? undefined}
+              setResolution={(resolution) =>
+                resolution === undefined
+                  ? unresolveProp({ propId: row.prop_id })
+                  : resolveProp({
+                    propId: row.prop_id,
+                    resolution,
+                    overwrite: true,
+                  })}
+            />
+          )
+          : resolution}
       </div>
     </div>
   );
