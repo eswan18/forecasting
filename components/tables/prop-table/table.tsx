@@ -2,123 +2,90 @@
 
 import { useState } from "react";
 import {
-  ColumnFiltersState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getSortedRowModel,
-  SortingState,
-  useReactTable,
-} from "@tanstack/react-table";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { getColumns } from "./columns";
 import { VProp } from "@/types/db_types";
-import { Filters } from "./filters";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CreateEditPropForm } from "@/components/forms/create-edit-prop-form";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Row from "./row";
+import { Checkbox } from "@/components/ui/checkbox";
+
+interface PropTableSearchParams {
+  propText: string | null;
+  resolution: (boolean | null)[];
+}
 
 interface PropTableProps {
   data: VProp[];
-  allowEdits: boolean;
+  editable: boolean;
 }
 
-export function PropTable({
-  data,
-  allowEdits,
-}: PropTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const columns = getColumns(allowEdits);
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
-    state: { sorting, columnFilters },
-    initialState: {
-      columnFilters: [{ "id": "resolution", "value": [] }],
-    },
+export function PropTable({ data, editable }: PropTableProps) {
+  const router = useRouter();
+  const pathName = usePathname();
+  const rawSearchParams = useSearchParams();
+  const searchParams: PropTableSearchParams = {
+    propText: rawSearchParams.get("prop_text") || null,
+    resolution: rawSearchParams.getAll("resolution").map((value) => {
+      if (value === "true") return true;
+      else if (value === "false") return false;
+      else if (value === "null") return null;
+      else return undefined;
+    }).filter((value) => value !== undefined),
+  };
+  if (searchParams.resolution.length === 0) {
+    // If no resolution filters are set, that means we use the default: show only
+    // resolved props, which are [true, false],
+    searchParams.resolution = [true, false];
+  }
+  const updateSearchParams = (params: PropTableSearchParams) => {
+    const newSearchParams = new URLSearchParams();
+    if (params.propText) {
+      newSearchParams.set("prop_text", params.propText);
+    }
+    if (
+      !(params.resolution.includes(true) && params.resolution.includes(false) &&
+        !params.resolution.includes(null))
+    ) {
+      // Only add resolution filter if it's not the default
+      params.resolution.forEach((value) => {
+        const stringValue = value === null ? "null" : String(value);
+        newSearchParams.append("resolution", stringValue);
+      });
+    }
+    router.push(`${pathName}?${newSearchParams.toString()}`);
+  };
+  // Filter the props.
+  data = data.filter((row) => {
+    const propTextMatch = searchParams.propText
+      ? row.prop_text
+        .toLowerCase()
+        .includes(searchParams.propText.toLowerCase())
+      : true;
+    const resolutionMatch = searchParams.resolution.includes(row.resolution);
+    return propTextMatch && resolutionMatch;
   });
-
   return (
     <>
-      <div className="w-full mt-6">
-        <h2 className="text-lg mb-2">Filters</h2>
-        <Filters table={table} className="mb-4" />
-        {allowEdits && <CreateNewPropButton className="mb-4 w-full" />}
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder ? null : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length
-              ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        align={(cell.column.columnDef.meta as any)?.align}
-                        className={(cell.column.columnDef.meta as any)
-                          ?.className}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              )
-              : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    No results.
-                  </TableCell>
-                </TableRow>
-              )}
-          </TableBody>
-        </Table>
-      </div>
+      <PropTableFilterPanel
+        filter={searchParams}
+        setFilter={updateSearchParams}
+      />
+      {editable && <CreateNewPropButton className="mb-4 w-full" />}
+      <ul className="w-full flex flex-col">
+        {data.map((row) => (
+          <li key={row.prop_id}>
+            <Row row={row} editable={editable} />
+          </li>
+        ))}
+      </ul>
     </>
   );
 }
@@ -141,5 +108,40 @@ function CreateNewPropButton({ className }: { className?: string }) {
         <CreateEditPropForm onSubmit={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
+  );
+}
+
+function PropTableFilterPanel(
+  { filter, setFilter }: {
+    filter: PropTableSearchParams;
+    setFilter: (filter: PropTableSearchParams) => void;
+  },
+) {
+  console.log("PropTableFilterPanel", filter);
+  const handleCheck = (checked: boolean) => {
+    if (checked) {
+      // Remove null from the filter.
+      setFilter({
+        ...filter,
+        resolution: filter.resolution.filter((value) => value !== null),
+      });
+    } else {
+      // Add null to the filter
+      if (!filter.resolution.includes(null)) {
+        setFilter({
+          ...filter,
+          resolution: [...filter.resolution, null],
+        });
+      }
+    }
+  };
+  return (
+    <div className="w-full flex flex-row justify-center sm:justify-start px-2.5 items-center gap-x-2 text-muted-foreground mb-4 sm:mb-2">
+      <p>Hide unresolved props</p>
+      <Checkbox
+        checked={!filter.resolution.includes(null)}
+        onCheckedChange={handleCheck}
+      />
+    </div>
   );
 }
