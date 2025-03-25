@@ -3,6 +3,7 @@ import PropTable from "@/components/tables/prop-table";
 import PageHeading from "@/components/page-heading";
 import YearSelector from "./year-selector";
 import { getUserFromCookies } from "@/lib/get-user";
+import Row from "@/components/tables/prop-table/row";
 
 export default async function Page(
   { params }: { params: Promise<{ year: number }> },
@@ -31,6 +32,13 @@ export default async function Page(
             selectedYear={year}
           />
         </PageHeading>
+        <ul className="w-full flex flex-col">
+          {propsAndResolutions.map((row) => (
+            <li key={row.prop_id}>
+              <Row row={row} editable={allowEdits} />
+            </li>
+          ))}
+        </ul>
         <PropTable data={propsAndResolutions} allowEdits={allowEdits} />
       </div>
     </main>
