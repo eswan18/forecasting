@@ -25,13 +25,14 @@ export default function Row(
           ? (
             <ResolutionSelectWidget
               resolution={row.resolution ?? undefined}
-              setResolution={(resolution) =>
+              setResolution={(resolution, notes) =>
                 resolution === undefined
                   ? unresolveProp({ propId: row.prop_id })
                   : resolveProp({
                     propId: row.prop_id,
                     resolution,
                     overwrite: true,
+                    notes,
                   })}
             />
           )

@@ -15,7 +15,7 @@ import { useState } from "react";
 export default function ResolutionSelectWidget(
   { resolution, setResolution }: {
     resolution: boolean | undefined;
-    setResolution: (value: boolean | undefined) => void;
+    setResolution: (value: boolean | undefined, notes?: string) => void;
   },
 ) {
   const [lastClicked, setLastClicked] = useState<boolean | undefined>(
@@ -96,7 +96,7 @@ export default function ResolutionSelectWidget(
               : (
                 <Button
                   onClick={() => {
-                    setResolution(resolutionToSet);
+                    setResolution(resolutionToSet, resolutionNotes);
                     setDialogIsOpen(false);
                   }}
                 >

@@ -13,7 +13,10 @@ export async function getProps({ year }: { year?: number | number[] }): Promise<
   return await query.execute();
 }
 
-export async function resolveProp({ propId, resolution, overwrite = false }: { propId: number, resolution: boolean, overwrite?: boolean }): Promise<void> {
+export async function resolveProp(
+  { propId, resolution, notes, overwrite = false }:
+    { propId: number, resolution: boolean, notes?: string, overwrite?: boolean }
+): Promise<void> {
   // Verify the user is an admin
   const user = await getUserFromCookies();
   if (!user || !user.is_admin) {
@@ -34,12 +37,12 @@ export async function resolveProp({ propId, resolution, overwrite = false }: { p
     // Update the existing record.
     await db
       .updateTable('resolutions')
-      .set({ resolution })
+      .set({ resolution, notes })
       .where('prop_id', '=', propId)
       .execute();
   } else {
     // Insert a new record.
-    await db.insertInto('resolutions').values({ prop_id: propId, resolution }).execute();
+    await db.insertInto('resolutions').values({ prop_id: propId, resolution, notes }).execute();
   }
   revalidatePath('/props');
 }
