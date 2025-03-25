@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,7 @@ import { CreateEditPropForm } from "@/components/forms/create-edit-prop-form";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Row from "./row";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 
 interface PropTableSearchParams {
   propText: string | null;
@@ -117,7 +118,14 @@ function PropTableFilterPanel(
     setFilter: (filter: PropTableSearchParams) => void;
   },
 ) {
-  console.log("PropTableFilterPanel", filter);
+  const [propText, setPropText] = useState(filter.propText || "");
+  useEffect(() => {
+    // Debounce the propText input.
+    const handler = setTimeout(() => {
+      setFilter({ ...filter, propText });
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [propText]);
   const handleCheck = (checked: boolean) => {
     if (checked) {
       // Remove null from the filter.
@@ -136,12 +144,19 @@ function PropTableFilterPanel(
     }
   };
   return (
-    <div className="w-full flex flex-row justify-center sm:justify-start px-2.5 items-center gap-x-2 text-muted-foreground mb-4 sm:mb-2">
-      <p>Hide unresolved props</p>
-      <Checkbox
-        checked={!filter.resolution.includes(null)}
-        onCheckedChange={handleCheck}
+    <div className="w-full flex flex-col justify-center sm:grid sm:grid-cols-2 px-2.5 items-center gap-2 text-muted-foreground mb-4">
+      <Input
+        placeholder="Search prop text..."
+        value={propText}
+        onChange={(e) => setPropText(e.target.value)}
       />
+      <div className="flex flex-row items-center gap-x-2">
+        <p>Hide unresolved props</p>
+        <Checkbox
+          checked={!filter.resolution.includes(null)}
+          onCheckedChange={handleCheck}
+        />
+      </div>
     </div>
   );
 }
