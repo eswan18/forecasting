@@ -75,11 +75,13 @@ export function PropTable({ data, editable }: PropTableProps) {
   });
   return (
     <>
-      <PropTableFilterPanel
-        filter={searchParams}
-        setFilter={updateSearchParams}
-      />
-      {editable && <CreateNewPropButton className="mb-4 w-full" />}
+      <div className="flex flex-row items-end justify-between">
+        <PropTableFilterPanel
+          filter={searchParams}
+          setFilter={updateSearchParams}
+        />
+        {editable && <CreateNewPropButton className="mb-4" />}
+      </div>
       <ul className="w-full flex flex-col">
         {data.map((row) => (
           <li key={row.prop_id}>
@@ -97,7 +99,7 @@ function CreateNewPropButton({ className }: { className?: string }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary" className={className}>
+        <Button variant="outline" className={className}>
           <span>New prop</span>
           <PlusCircle />
         </Button>
@@ -144,19 +146,19 @@ function PropTableFilterPanel(
     }
   };
   return (
-    <div className="w-full flex flex-col justify-center sm:grid sm:grid-cols-2 px-2.5 items-center gap-2 text-muted-foreground mb-4">
-      <Input
-        placeholder="Search prop text..."
-        value={propText}
-        onChange={(e) => setPropText(e.target.value)}
-      />
-      <div className="flex flex-row items-center gap-x-2">
+    <div className="flex flex-col justify-center px-2.5 items-start gap-2 text-muted-foreground mb-4">
+      <div className="flex flex-row items-center gap-x-2 px-1">
         <p>Hide unresolved props</p>
         <Checkbox
           checked={!filter.resolution.includes(null)}
           onCheckedChange={handleCheck}
         />
       </div>
+      <Input
+        placeholder="Search prop text..."
+        value={propText}
+        onChange={(e) => setPropText(e.target.value)}
+      />
     </div>
   );
 }
