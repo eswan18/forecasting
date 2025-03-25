@@ -10,11 +10,19 @@ export default function ResolutionSelectWidget(
     `px-4 py-1.5 rounded-full transition-colors duration-200 hover:bg-background ${
       selected ? "bg-background" : ""
     }`;
+  const handleTrueClick = () => {
+    // If already true, unresolve the prop. Otherwise resolve it to true.
+    resolution === true ? setResolution(undefined) : setResolution(true);
+  };
+  const handleFalseClick = () => {
+    // If already false, unresolve the prop. Otherwise resolve it to false.
+    resolution === false ? setResolution(undefined) : setResolution(false);
+  };
   return (
     <div className="inline-flex justify-between items-center bg-secondary rounded-full p-1 w-fit">
       <button
         className={buttonClasses(resolution === false)}
-        onClick={() => setResolution(false)}
+        onClick={handleFalseClick}
       >
         <X
           size={20}
@@ -27,7 +35,7 @@ export default function ResolutionSelectWidget(
 
       <button
         className={buttonClasses(resolution === true)}
-        onClick={() => setResolution(true)}
+        onClick={handleTrueClick}
       >
         <Check
           size={20}
