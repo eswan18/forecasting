@@ -20,13 +20,8 @@ import {
 import { VProp } from "@/types/db_types";
 import { CreateEditPropForm } from "@/components/forms/create-edit-prop-form";
 
-export interface ActionDropdownProps {
-  prop: VProp;
-  resolution: boolean | null;
-}
-
-export function ActionDropdown({ prop, resolution }: ActionDropdownProps) {
-  const actions = resolution !== null
+export function ActionDropdown({ prop }: { prop: VProp }) {
+  const actions = prop.resolution !== null
     ? [{
       "label": "Unresolve",
       "onClick": async () => {
@@ -51,9 +46,9 @@ export function ActionDropdown({ prop, resolution }: ActionDropdownProps) {
     <Dialog>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon">
+          <Button variant="outline" size="icon" className="h-8 w-8">
             <span className="sr-only">Open menu</span>
-            <Edit size={20} />
+            <Edit size={16} />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -77,4 +72,3 @@ export function ActionDropdown({ prop, resolution }: ActionDropdownProps) {
     </Dialog>
   );
 }
-
