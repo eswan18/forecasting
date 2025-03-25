@@ -3,14 +3,6 @@
 import { Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { resolveProp, unresolveProp } from "@/lib/db_actions";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -21,27 +13,6 @@ import { VProp } from "@/types/db_types";
 import { CreateEditPropForm } from "@/components/forms/create-edit-prop-form";
 
 export function EditPropButton({ prop }: { prop: VProp }) {
-  const actions = prop.resolution !== null
-    ? [{
-      "label": "Unresolve",
-      "onClick": async () => {
-        unresolveProp({ propId: prop.prop_id });
-      },
-    }]
-    : [
-      {
-        label: "Resolve to Yes",
-        onClick: async () => {
-          resolveProp({ propId: prop.prop_id, resolution: true });
-        },
-      },
-      {
-        label: "Resolve to No",
-        onClick: async () => {
-          resolveProp({ propId: prop.prop_id, resolution: false });
-        },
-      },
-    ];
   return (
     <Dialog>
       <DialogTrigger asChild>
