@@ -7,8 +7,8 @@ export default function ResolutionSelectWidget(
   },
 ) {
   const buttonClasses = (selected: boolean) =>
-    `px-4 py-1.5 rounded-full transition-colors duration-200 hover:bg-background ${
-      selected ? "bg-background" : ""
+    `px-4 py-1.5 rounded-full transition-colors duration-200 hover:bg-accent hover:text-accent-foreground ${
+      selected ? "bg-background" : "text-muted-foreground"
     }`;
   const handleTrueClick = () => {
     // If already true, unresolve the prop. Otherwise resolve it to true.
@@ -27,9 +27,7 @@ export default function ResolutionSelectWidget(
         <X
           size={20}
           strokeWidth={3}
-          className={`hover:text-destructive ${
-            resolution === false ? "text-destructive" : "text-muted-foreground"
-          }`}
+          className={resolution === false ? "text-destructive" : ""}
         />
       </button>
 
@@ -40,9 +38,7 @@ export default function ResolutionSelectWidget(
         <Check
           size={20}
           strokeWidth={3}
-          className={`hover:text-green-500 ${
-            resolution === true ? "text-green-500" : "text-muted-foreground"
-          }`}
+          className={resolution === true ? "text-green-500" : ""}
         />
       </button>
     </div>

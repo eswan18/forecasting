@@ -46,7 +46,7 @@ export function ActionDropdown({ prop }: { prop: VProp }) {
     <Dialog>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="secondary" size="icon" className="h-8 w-8">
+          <Button variant="ghost" size="icon" className="h-8 w-8">
             <span className="sr-only">Open menu</span>
             <Edit size={16} />
           </Button>
