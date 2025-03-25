@@ -22,7 +22,7 @@ The below line spins up a postgres container with a copy of the prod database, a
 It relies on you having a defined `DATABASE_URL` (with read access to the prod database) in your `.env.prod`.
 
 ```bash
-docker-compose --env-file .env.prod -f local-pg-container.yaml up
+docker compose --env-file .env.prod -f local-pg-container.yaml up
 ```
 
 Then, you can tell your local instance to use the local database copy by updating `.env.local` and adding this line:
