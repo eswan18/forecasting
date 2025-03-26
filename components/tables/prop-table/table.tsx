@@ -32,21 +32,25 @@ export function PropTable({ data, editable }: PropTableProps) {
   const router = useRouter();
   const pathName = usePathname();
   const rawSearchParams = useSearchParams();
+  const rawResolution = rawSearchParams.getAll("resolution").map((value) => {
+    if (value === "true") return true;
+    if (value === "false") return false;
+    if (value === "null") return null;
+    return undefined;
+  }).filter((value) => value !== undefined) as (boolean | null)[];
   const searchParams: PropTableSearchParams = {
     propText: rawSearchParams.get("prop_text") || null,
-    resolution: rawSearchParams.getAll("resolution").map((value) => {
-      if (value === "true") return true;
-      else if (value === "false") return false;
-      else if (value === "null") return null;
-      else return undefined;
-    }).filter((value) => value !== undefined),
+    resolution: rawResolution.length > 0 ? rawResolution : [true, false],
   };
-  if (searchParams.resolution.length === 0) {
-    // If no resolution filters are set, that means we use the default: show only
-    // resolved props, which are [true, false],
-    searchParams.resolution = [true, false];
-  }
-  const updateSearchParams = (params: PropTableSearchParams) => {
+  const updateSearchParams = (
+    params:
+      | PropTableSearchParams
+      | ((p: PropTableSearchParams) => PropTableSearchParams),
+  ) => {
+    const currentParamString = new URLSearchParams(rawSearchParams.toString());
+    if (typeof params === "function") {
+      params = params(searchParams);
+    }
     const newSearchParams = new URLSearchParams();
     if (params.propText) {
       newSearchParams.set("prop_text", params.propText);
@@ -61,7 +65,9 @@ export function PropTable({ data, editable }: PropTableProps) {
         newSearchParams.append("resolution", stringValue);
       });
     }
-    router.push(`${pathName}?${newSearchParams.toString()}`);
+    if (currentParamString.toString() !== newSearchParams.toString()) {
+      router.push(`${pathName}?${newSearchParams.toString()}`);
+    }
   };
   // Filter the props.
   data = data.filter((row) => {
@@ -117,32 +123,35 @@ function CreateNewPropButton({ className }: { className?: string }) {
 function PropTableFilterPanel(
   { filter, setFilter }: {
     filter: PropTableSearchParams;
-    setFilter: (filter: PropTableSearchParams) => void;
+    setFilter: (
+      filter:
+        | PropTableSearchParams
+        | ((p: PropTableSearchParams) => PropTableSearchParams),
+    ) => void;
   },
 ) {
   const [propText, setPropText] = useState(filter.propText || "");
   useEffect(() => {
     // Debounce the propText input.
     const handler = setTimeout(() => {
-      setFilter({ ...filter, propText });
+      setFilter((prev: PropTableSearchParams) => ({ ...prev, propText }));
     }, 400);
     return () => clearTimeout(handler);
-  }, [propText, filter, setFilter]);
+  }, [propText, setFilter]);
+
   const handleCheck = (checked: boolean) => {
     if (checked) {
       // Remove null from the filter.
-      setFilter({
-        ...filter,
-        resolution: filter.resolution.filter((value) => value !== null),
-      });
+      setFilter((prev) => ({
+        ...prev,
+        resolution: prev.resolution.filter((value) => value !== null),
+      }));
     } else {
       // Add null to the filter
-      if (!filter.resolution.includes(null)) {
-        setFilter({
-          ...filter,
-          resolution: [...filter.resolution, null],
-        });
-      }
+      setFilter((prev) => ({
+        ...prev,
+        resolution: [...prev.resolution, null],
+      }));
     }
   };
   return (
