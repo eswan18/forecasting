@@ -1,13 +1,13 @@
 import { getProps, getPropYears } from "@/lib/db_actions";
 import PropTable from "@/components/tables/prop-table";
 import PageHeading from "@/components/page-heading";
-import YearSelector from "./year-selector";
+import YearSelector from "../../year-selector";
 import { getUserFromCookies } from "@/lib/get-user";
 
 export default async function Page(
-  { params }: { params: Promise<{ year: number }> },
+  { params }: { params: Promise<{ year: number; userId: number }> },
 ) {
-  const { year } = await params;
+  const { year, userId } = await params;
   // Check that year is a number.
   if (isNaN(year)) {
     throw new Error("Invalid year");
@@ -18,14 +18,14 @@ export default async function Page(
   years.sort((a, b) => b - a);
   const propsAndResolutions = await getProps({
     year,
-    personal: false,
-    common: true,
+    personal: true,
+    common: false,
   });
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-3xl">
         <PageHeading
-          title="Public Props"
+          title="Personal Props"
           className="flex flex-row flex-wrap gap-x-4 lg:gap-x-8 items-end mb-4 sm:mb-8"
         >
           <YearSelector

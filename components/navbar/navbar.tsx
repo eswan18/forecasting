@@ -74,8 +74,8 @@ export default async function NavBar() {
     });
     if (await hasFeatureEnabled({featureName: "personal-props", userId})) {
       forecastLinks.links.push({
-        href: `/props/2025/personal/user/${userId}`,
-        label: "Your 2025 Personal Props",
+        href: `/props/2025/user/${userId}`,
+        label: "Your Personal Props",
         icon: <User2 size={16} />,
       });
     }
