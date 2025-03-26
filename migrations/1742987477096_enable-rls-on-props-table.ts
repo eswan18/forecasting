@@ -26,14 +26,8 @@ export async function up(db: Kysely<any>): Promise<void> {
 	// Users can only update their own records.
 	await sql<void>`
 		CREATE POLICY "users_own_records" ON props
-		USING (
-				props.user_id IS NULL
-			OR
-				props.user_id IS NOT NULL AND current_user_id() = props.user_id
-		)
-		WITH CHECK (
-			props.user_id IS NOT NULL AND current_user_id() = props.user_id
-		);
+		USING (props.user_id IS NULL OR current_user_id() = props.user_id)
+		WITH CHECK (props.user_id IS NOT NULL AND current_user_id() = props.user_id);
 		`
 		.execute(db);
 	// Admins can read and write all records.
