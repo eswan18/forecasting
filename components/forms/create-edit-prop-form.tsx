@@ -41,7 +41,9 @@ const formSchema = z.object({
   category_id: z.coerce.number(),
   year: z.coerce.number(),
   user_id: z.string().optional().transform(
-    (value) => (value === "null" || value === undefined ? null : parseInt(value, 10)),
+    (
+      value,
+    ) => (value === "null" || value === undefined ? null : parseInt(value, 10)),
   ).nullable(),
 });
 

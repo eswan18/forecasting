@@ -95,14 +95,13 @@ export async function updateProp({ id, prop }: { id: number, prop: PropUpdate })
 }
 
 export async function createProp({ prop }: { prop: NewProp }) {
-  // Check that the user is an admin.
-  const currentUser = await getUserFromCookies();
-  if (!currentUser || !currentUser.is_admin) {
-    throw new Error('Unauthorized: only admins can create props');
-  }
-  await db
-    .insertInto('props')
-    .values(prop)
-    .execute();
-  revalidatePath('/props');
+  const user = await getUserFromCookies();
+  return db.transaction().execute(async (trx) => {
+    await trx.executeQuery(sql`SELECT set_config('app.current_user_id', ${user?.id}, true);`.compile(db));
+    await trx
+      .insertInto('props')
+      .values(prop)
+      .execute();
+    revalidatePath('/props');
+  });
 }
