@@ -132,6 +132,7 @@ export interface VPropsView {
   prop_id: number,
   prop_text: string,
   prop_notes: string | null,
+  prop_user_id: number,
   category_id: number,
   category_name: string,
   year: number,
