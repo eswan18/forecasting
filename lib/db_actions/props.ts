@@ -3,14 +3,19 @@ import { getUserFromCookies } from "../get-user";
 import { revalidatePath } from "next/cache";
 import { db } from '@/lib/database';
 import { VProp, PropUpdate, NewProp } from "@/types/db_types";
+import { sql } from 'kysely';
 
 export async function getProps({ year }: { year?: number | number[] }): Promise<VProp[]> {
-  let query = db.selectFrom('v_props').orderBy('prop_id asc').selectAll();
-  if (year) {
-    const yearClause = Array.isArray(year) ? year : [year];
-    query = query.where('year', 'in', yearClause);
-  }
-  return await query.execute();
+  const user = await getUserFromCookies();
+  return db.transaction().execute(async (trx) => {
+    await trx.executeQuery(sql`SELECT set_config('app.current_user_id', ${user?.id}, true);`.compile(db));
+    let query = trx.selectFrom('v_props').orderBy('prop_id asc').selectAll();
+    if (year) {
+      const yearClause = Array.isArray(year) ? year : [year];
+      query = query.where('year', 'in', yearClause);
+    }
+    return await query.execute();
+  });
 }
 
 export async function resolveProp(
