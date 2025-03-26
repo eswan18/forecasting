@@ -31,7 +31,7 @@ export default function ResolutionSelectWidget(
       selected ? "bg-background" : "text-muted-foreground"
     }`;
   return (
-    <div className="inline-flex justify-between items-center bg-secondary rounded-full p-1 w-fit">
+    <div className="inline-flex justify-between items-center bg-secondary rounded-full p-1 w-fit mx-1">
       <Dialog open={dialogIsOpen} onOpenChange={setDialogIsOpen}>
         <DialogTrigger asChild>
           <button
@@ -87,6 +87,7 @@ export default function ResolutionSelectWidget(
                   variant="destructive"
                   onClick={() => {
                     setResolution(undefined);
+                    setResolutionNotes("");
                     setDialogIsOpen(false);
                   }}
                 >
@@ -97,6 +98,7 @@ export default function ResolutionSelectWidget(
                 <Button
                   onClick={() => {
                     setResolution(resolutionToSet, resolutionNotes);
+                    setResolutionNotes("");
                     setDialogIsOpen(false);
                   }}
                 >
