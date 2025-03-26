@@ -10,7 +10,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 			OR
 				props.user_id IS NOT NULL
 				AND current_setting('app.current_user_id', true) IS NOT NULL
-				AND props.user_id = current_setting('app.current_user_id', null)::INTEGER
+				AND props.user_id = current_setting('app.current_user_id', true)::INTEGER
 		)`
 		.execute(db);
 
