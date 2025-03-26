@@ -51,6 +51,7 @@ export interface PropsTable {
   category_id: number,
   year: number,
   notes: string | null,
+  user_id: number | null,
 }
 export type Prop = Selectable<PropsTable>
 export type NewProp = Insertable<PropsTable>
