@@ -8,10 +8,16 @@ export async function up(db: Kysely<any>): Promise<void> {
 		USING (
 				props.user_id IS NULL
 			OR
-				props.user_id IS NOT NULL
-				AND current_setting('app.current_user_id', true) IS NOT NULL
-				AND current_setting('app.current_user_id', true) <> ''
-				AND props.user_id = current_setting('app.current_user_id', true)::INTEGER
+				CASE WHEN (
+					props.user_id IS NOT NULL
+					AND current_setting('app.current_user_id', true) IS NOT NULL
+					AND current_setting('app.current_user_id', true) <> ''
+				)
+				THEN
+					props.user_id = current_setting('app.current_user_id', true)::INTEGER
+				ELSE
+					FALSE
+				END
 		)`
 		.execute(db);
 
@@ -37,6 +43,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
+	await sql<void>`ALTER VIEW v_forecasts RESET (security_barrier, security_invoker)`.execute(db);
 	await db.schema.dropView('v_props').execute();
 	await sql<void>`CREATE VIEW v_props AS
 		SELECT categories.id AS category_id,
