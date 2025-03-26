@@ -4,12 +4,12 @@ services:
   postgres:
     image: postgres:17
     environment:
-      POSTGRES_USER: ethan
-      POSTGRES_PASSWORD: ethan
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpw
       POSTGRES_DB: forecasting
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ethan -d forecasting"]
+      test: ["CMD-SHELL", "pg_isready -U admin -d forecasting"]
       interval: 3s
       timeout: 4s
       retries: 5
@@ -22,10 +22,11 @@ services:
       POSTGRES_USER: abc
       POSTGRES_PASSWORD: def
       POSTGRES_DB: nonsense
-      LOCAL_DB_URI: "postgresql://ethan:ethan@host.docker.internal:2345/forecasting"
+      LOCAL_DB_URI: "postgresql://admin:adminpw@host.docker.internal:2345/forecasting"
     depends_on:
       postgres:
         condition: service_healthy
     command: >
-      bash -c "pg_dump --no-owner --no-acl $DATABASE_URL | psql 'postgresql://ethan:ethan@host.docker.internal:2345/forecasting'"
+      bash -c "pg_dump --no-owner --no-acl $DATABASE_URL | psql 'postgresql://admin:adminpw@host.docker.internal:2345/forecasting'"
+
     
