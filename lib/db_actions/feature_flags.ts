@@ -12,15 +12,19 @@ export async function hasFeatureEnabled({ featureName, userId }: { featureName: 
   if (!user || user.id !== userId) {
     throw new Error('Unauthorized');
   }
-  const { enabled } = await db
+  const result = await db
     .selectFrom('feature_flags')
     .select('enabled')
     .where('name', '=', featureName)
     .where((eb) => eb('user_id', '=', userId).or('user_id', 'is', null))
     // By putting nulls last, we allow a blanket toggle for all users to be overriden by a specific user's setting.
     .orderBy(sql`user_id nulls last`)
-    .executeTakeFirstOrThrow();
-  return enabled;
+    .executeTakeFirst();
+  // Assume unset flags are disabled.
+  if (result === undefined) {
+    return false;
+  }
+  return result.enabled;
 }
 
 export async function getFeatureFlags() {

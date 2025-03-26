@@ -23,8 +23,10 @@ import {
   Medal,
   MessageCircle,
   TrendingUpDown,
+  User2,
   Users,
 } from "lucide-react";
+import { hasFeatureEnabled } from "@/lib/db_actions";
 
 type NavLink = {
   href: string;
@@ -70,6 +72,13 @@ export default async function NavBar() {
       label: "Your 2025 Forecasts",
       icon: <TrendingUpDown size={14} />,
     });
+    if (await hasFeatureEnabled({featureName: "personal-props", userId})) {
+      forecastLinks.links.push({
+        href: `/props/2025/personal/user/${userId}`,
+        label: "Your 2025 Personal Props",
+        icon: <User2 size={16} />,
+      });
+    }
   }
   const adminLinks: NavLink[] = [
     { href: "/admin/users", label: "Users", icon: <Users size={16} /> },
