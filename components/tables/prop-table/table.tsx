@@ -1,22 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { VProp } from "@/types/db_types";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { CreateEditPropForm } from "@/components/forms/create-edit-prop-form";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Row from "./row";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { CreateNewPropButton } from "./create-new-prop-button";
 
 interface PropTableSearchParams {
   propText: string | null;
@@ -99,26 +89,6 @@ export function PropTable({ data, editable }: PropTableProps) {
   );
 }
 
-function CreateNewPropButton({ className }: { className?: string }) {
-  const [open, setOpen] = useState(false);
-  className = cn("gap-2", className);
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" className={className}>
-          <span>New prop</span>
-          <PlusCircle />
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create new prop</DialogTitle>
-        </DialogHeader>
-        <CreateEditPropForm onSubmit={() => setOpen(false)} />
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 function PropTableFilterPanel(
   { filter, setFilter }: {
