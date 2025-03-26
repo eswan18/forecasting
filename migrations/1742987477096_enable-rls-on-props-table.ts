@@ -32,6 +32,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 			LEFT JOIN resolutions ON props.id = resolutions.prop_id;
 	`
 		.execute(db);
+	await sql<void>`ALTER VIEW v_forecasts SET (security_barrier = true, security_invoker = true)`.execute(db);
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
