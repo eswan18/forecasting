@@ -40,6 +40,9 @@ const formSchema = z.object({
   ),
   category_id: z.coerce.number(),
   year: z.coerce.number(),
+  user_id: z.string().optional().transform(
+    (value) => (value === "null" || value === undefined ? null : parseInt(value, 10)),
+  ).nullable(),
 });
 
 /*
@@ -47,7 +50,11 @@ const formSchema = z.object({
  * If initialProp is provided, the form will be in edit mode, otherwise in create mode.
  */
 export function CreateEditPropForm(
-  { initialProp, onSubmit }: { initialProp?: VProp; onSubmit?: () => void },
+  { initialProp, defaultUserId, onSubmit }: {
+    initialProp?: VProp;
+    defaultUserId?: number;
+    onSubmit?: () => void;
+  },
 ) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -61,9 +68,9 @@ export function CreateEditPropForm(
       notes: initialProp?.prop_notes || undefined,
       category_id: initialProp?.category_id,
       year: initialProp?.year,
+      user_id: initialProp?.prop_user_id || defaultUserId,
     },
   });
-
   useEffect(() => {
     getCategories().then(async (categories) => {
       setCategories(categories);
@@ -217,6 +224,39 @@ export function CreateEditPropForm(
                         {year}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
+        />
+        <FormField
+          control={form.control}
+          name="user_id"
+          render={({ field }) => {
+            return (
+              <FormItem>
+                <FormLabel>Public/Personal</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  {...field}
+                  value={field.value ? field.value.toString() : "null"}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {defaultUserId && (
+                      <SelectItem value={defaultUserId.toString()}>
+                        Personal
+                      </SelectItem>
+                    )}
+                    <SelectItem value="null">
+                      Public
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

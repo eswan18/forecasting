@@ -33,7 +33,11 @@ export default async function Page(
             selectedYear={year}
           />
         </PageHeading>
-        <PropTable data={propsAndResolutions} editable={allowEdits} />
+        <PropTable
+          data={propsAndResolutions}
+          editable={allowEdits}
+          defaultPropUserId={userId}
+        />
       </div>
     </main>
   );
