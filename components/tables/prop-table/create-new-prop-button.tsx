@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { CreateEditPropForm } from "@/components/forms/create-edit-prop-form";
 
-export function CreateNewPropButton({ className }: { className?: string }) {
+export default function CreateNewPropButton({ className }: { className?: string }) {
   const [open, setOpen] = useState(false);
   className = cn("gap-2", className);
   return (
