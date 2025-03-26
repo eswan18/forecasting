@@ -21,14 +21,17 @@ export default async function Page(
   const propsAndResolutions = await getProps({ year });
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
-      <div className="w-full max-w-lg">
-        <PageHeading title="Props">
+      <div className="w-full max-w-3xl">
+        <PageHeading
+          title="Props"
+          className="flex flex-row flex-wrap gap-x-4 lg:gap-x-8 items-end mb-4 sm:mb-8"
+        >
           <YearSelector
             years={years}
             selectedYear={year}
           />
         </PageHeading>
-        <PropTable data={propsAndResolutions} allowEdits={allowEdits} />
+        <PropTable data={propsAndResolutions} editable={allowEdits} />
       </div>
     </main>
   );

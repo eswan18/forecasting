@@ -1,145 +1,90 @@
 "use client";
 
-import { useState } from "react";
-import {
-  ColumnFiltersState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getSortedRowModel,
-  SortingState,
-  useReactTable,
-} from "@tanstack/react-table";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { getColumns } from "./columns";
 import { VProp } from "@/types/db_types";
-import { Filters } from "./filters";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { CreateEditPropForm } from "@/components/forms/create-edit-prop-form";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Row from "./row";
+import CreateNewPropButton from "./create-new-prop-button";
+import PropTableFilterPanel from "./prop-table-filter-panel";
+
+export interface PropTableSearchParams {
+  propText: string | null;
+  resolution: (boolean | null)[];
+}
 
 interface PropTableProps {
   data: VProp[];
-  allowEdits: boolean;
+  editable: boolean;
 }
 
-export function PropTable({
-  data,
-  allowEdits,
-}: PropTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const columns = getColumns(allowEdits);
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
-    state: { sorting, columnFilters },
-    initialState: {
-      columnFilters: [{ "id": "resolution", "value": [] }],
-    },
+export function PropTable({ data, editable }: PropTableProps) {
+  const router = useRouter();
+  const pathName = usePathname();
+  const rawSearchParams = useSearchParams();
+  const rawResolution = rawSearchParams.getAll("resolution").map((value) => {
+    if (value === "true") return true;
+    if (value === "false") return false;
+    if (value === "null") return null;
+    return undefined;
+  }).filter((value) => value !== undefined) as (boolean | null)[];
+  const searchParams: PropTableSearchParams = {
+    propText: rawSearchParams.get("prop_text") || null,
+    resolution: rawResolution.length > 0 ? rawResolution : [true, false],
+  };
+  const updateSearchParams = (
+    params:
+      | PropTableSearchParams
+      | ((p: PropTableSearchParams) => PropTableSearchParams),
+  ) => {
+    const currentParamString = new URLSearchParams(rawSearchParams.toString());
+    if (typeof params === "function") {
+      params = params(searchParams);
+    }
+    const newSearchParams = new URLSearchParams();
+    if (params.propText) {
+      newSearchParams.set("prop_text", params.propText);
+    }
+    if (
+      !(params.resolution.includes(true) && params.resolution.includes(false) &&
+        !params.resolution.includes(null))
+    ) {
+      // Only add resolution filter if it's not the default
+      params.resolution.forEach((value) => {
+        const stringValue = value === null ? "null" : String(value);
+        newSearchParams.append("resolution", stringValue);
+      });
+    }
+    if (currentParamString.toString() !== newSearchParams.toString()) {
+      router.push(`${pathName}?${newSearchParams.toString()}`);
+    }
+  };
+  // Filter the props.
+  data = data.filter((row) => {
+    const propTextMatch = searchParams.propText
+      ? row.prop_text
+        .toLowerCase()
+        .includes(searchParams.propText.toLowerCase())
+      : true;
+    const resolutionMatch = searchParams.resolution.includes(row.resolution);
+    return propTextMatch && resolutionMatch;
   });
-
   return (
     <>
-      <div className="w-full mt-6">
-        <h2 className="text-lg mb-2">Filters</h2>
-        <Filters table={table} className="mb-4" />
-        {allowEdits && <CreateNewPropButton className="mb-4 w-full" />}
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder ? null : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length
-              ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        align={(cell.column.columnDef.meta as any)?.align}
-                        className={(cell.column.columnDef.meta as any)
-                          ?.className}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              )
-              : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    No results.
-                  </TableCell>
-                </TableRow>
-              )}
-          </TableBody>
-        </Table>
+      <div className="flex flex-row items-end justify-between">
+        <PropTableFilterPanel
+          filter={searchParams}
+          setFilter={updateSearchParams}
+        />
+        {editable && <CreateNewPropButton className="mb-4" />}
       </div>
+      <ul className="w-full flex flex-col">
+        {data.map((row) => (
+          <li key={row.prop_id}>
+            <Row row={row} editable={editable} />
+          </li>
+        ))}
+      </ul>
     </>
   );
 }
 
-function CreateNewPropButton({ className }: { className?: string }) {
-  const [open, setOpen] = useState(false);
-  className = cn("gap-2", className);
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="secondary" className={className}>
-          <span>New prop</span>
-          <PlusCircle />
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create new prop</DialogTitle>
-        </DialogHeader>
-        <CreateEditPropForm onSubmit={() => setOpen(false)} />
-      </DialogContent>
-    </Dialog>
-  );
-}
+

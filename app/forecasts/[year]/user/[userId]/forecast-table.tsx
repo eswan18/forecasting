@@ -74,8 +74,6 @@ export default function ForecastTable(
     );
   }
   // Sort
-  console.log(searchParams.sortColumn);
-  console.log(searchParams.sortAsc);
   if (searchParams.sortColumn !== null) {
     data = data.sort((a, b) => {
       if (searchParams.sortAsc) {

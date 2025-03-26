@@ -5,7 +5,7 @@ import { db } from '@/lib/database';
 import { VProp, PropUpdate, NewProp } from "@/types/db_types";
 
 export async function getProps({ year }: { year?: number | number[] }): Promise<VProp[]> {
-  let query = db.selectFrom('v_props').selectAll();
+  let query = db.selectFrom('v_props').orderBy('prop_id asc').selectAll();
   if (year) {
     const yearClause = Array.isArray(year) ? year : [year];
     query = query.where('year', 'in', yearClause);
@@ -13,7 +13,10 @@ export async function getProps({ year }: { year?: number | number[] }): Promise<
   return await query.execute();
 }
 
-export async function resolveProp({ propId, resolution }: { propId: number, resolution: boolean }): Promise<void> {
+export async function resolveProp(
+  { propId, resolution, notes, overwrite = false }:
+    { propId: number, resolution: boolean, notes?: string, overwrite?: boolean }
+): Promise<void> {
   // Verify the user is an admin
   const user = await getUserFromCookies();
   if (!user || !user.is_admin) {
@@ -26,11 +29,21 @@ export async function resolveProp({ propId, resolution }: { propId: number, reso
     .where('prop_id', '=', propId)
     .select('resolution')
     .executeTakeFirst();
-  if (!!existingResolution) {
+  if (!!existingResolution && !overwrite) {
     throw new Error(`Proposition ${propId} already has a resolution`);
   }
 
-  await db.insertInto('resolutions').values({ prop_id: propId, resolution }).execute();
+  if (existingResolution) {
+    // Update the existing record.
+    await db
+      .updateTable('resolutions')
+      .set({ resolution, notes })
+      .where('prop_id', '=', propId)
+      .execute();
+  } else {
+    // Insert a new record.
+    await db.insertInto('resolutions').values({ prop_id: propId, resolution, notes }).execute();
+  }
   revalidatePath('/props');
 }
 
