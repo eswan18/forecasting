@@ -40,7 +40,7 @@ const formSchema = z.object({
   ),
   category_id: z.coerce.number(),
   year: z.coerce.number(),
-  user_id: z.string().optional().transform(
+  user_id: z.coerce.string().optional().transform(
     (
       value,
     ) => (value === "null" || value === undefined ? null : parseInt(value, 10)),
@@ -63,6 +63,7 @@ export function CreateEditPropForm(
   const [categories, setCategories] = useState<Category[]>([]);
   const [years, setYears] = useState<number[]>([]);
   const { toast } = useToast();
+  const initialUserId = initialProp?.prop_user_id || defaultUserId;
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -70,14 +71,13 @@ export function CreateEditPropForm(
       notes: initialProp?.prop_notes || undefined,
       category_id: initialProp?.category_id,
       year: initialProp?.year,
-      user_id: initialProp?.prop_user_id || defaultUserId,
+      user_id: initialUserId,
     },
   });
   useEffect(() => {
     getCategories().then(async (categories) => {
       setCategories(categories);
       const years = await getPropYears();
-      years.unshift(years[0] + 1);
       setYears(years);
       setLoading(false);
     });
@@ -251,11 +251,12 @@ export function CreateEditPropForm(
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {defaultUserId && (
-                      <SelectItem value={defaultUserId.toString()}>
-                        Personal
-                      </SelectItem>
-                    )}
+                    {initialUserId &&
+                      (
+                        <SelectItem value={initialUserId.toString()}>
+                          Personal
+                        </SelectItem>
+                      )}
                     <SelectItem value="null">
                       Public
                     </SelectItem>

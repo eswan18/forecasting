@@ -81,27 +81,27 @@ export async function getPropYears(): Promise<number[]> {
 }
 
 export async function updateProp({ id, prop }: { id: number, prop: PropUpdate }) {
-  // Check that the user is an admin.
-  const currentUser = await getUserFromCookies();
-  if (!currentUser || !currentUser.is_admin) {
-    throw new Error('Unauthorized: only admins can update props');
+  const user = await getUserFromCookies();
+  await db.transaction().execute(async (trx) => {
+    await trx.executeQuery(sql`SELECT set_config('app.current_user_id', ${user?.id}, true);`.compile(db));
+    await trx
+      .updateTable('props')
+      .set(prop)
+      .where('id', '=', id)
+      .execute();
   }
-  await db
-    .updateTable('props')
-    .set(prop)
-    .where('id', '=', id)
-    .execute();
+  );
   revalidatePath('/props');
 }
 
 export async function createProp({ prop }: { prop: NewProp }) {
   const user = await getUserFromCookies();
-  return db.transaction().execute(async (trx) => {
+  await db.transaction().execute(async (trx) => {
     await trx.executeQuery(sql`SELECT set_config('app.current_user_id', ${user?.id}, true);`.compile(db));
     await trx
       .insertInto('props')
       .values(prop)
       .execute();
-    revalidatePath('/props');
   });
+  revalidatePath('/props');
 }
