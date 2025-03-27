@@ -2,7 +2,7 @@
 import { getUserFromCookies } from "../get-user";
 import { revalidatePath } from "next/cache";
 import { db } from '@/lib/database';
-import { VProp, PropUpdate, NewProp } from "@/types/db_types";
+import { VProp, PropUpdate, NewProp, NewResolution } from "@/types/db_types";
 import { sql } from 'kysely';
 
 export async function getProps(
@@ -31,36 +31,37 @@ export async function getProps(
 }
 
 export async function resolveProp(
-  { propId, resolution, notes, overwrite = false }:
-    { propId: number, resolution: boolean, notes?: string, overwrite?: boolean }
+  { propId, resolution, notes, userId, overwrite = false }:
+    { propId: number, resolution: boolean, notes?: string, userId: number | null, overwrite?: boolean }
 ): Promise<void> {
-  // Verify the user is an admin
   const user = await getUserFromCookies();
-  if (!user || !user.is_admin) {
-    throw new Error('Unauthorized');
-  }
+  await db.transaction().execute(async (trx) => {
+    await trx.executeQuery(sql`SELECT set_config('app.current_user_id', ${user?.id}, true);`.compile(db));
+    console.log(sql`SELECT set_config('app.current_user_id', ${user?.id}, true);`.compile(db));
 
-  // first check that this prop doesn't already have a resolution
-  const existingResolution = await db
-    .selectFrom('resolutions')
-    .where('prop_id', '=', propId)
-    .select('resolution')
-    .executeTakeFirst();
-  if (!!existingResolution && !overwrite) {
-    throw new Error(`Proposition ${propId} already has a resolution`);
-  }
-
-  if (existingResolution) {
-    // Update the existing record.
-    await db
-      .updateTable('resolutions')
-      .set({ resolution, notes })
+    // first check that this prop doesn't already have a resolution
+    const existingResolution = await trx
+      .selectFrom('resolutions')
       .where('prop_id', '=', propId)
-      .execute();
-  } else {
-    // Insert a new record.
-    await db.insertInto('resolutions').values({ prop_id: propId, resolution, notes }).execute();
-  }
+      .select('resolution')
+      .executeTakeFirst();
+    if (!!existingResolution && !overwrite) {
+      throw new Error(`Proposition ${propId} already has a resolution`);
+    }
+
+    if (existingResolution) {
+      // Update the existing record.
+      await trx
+        .updateTable('resolutions')
+        .set({ resolution, notes })
+        .where('prop_id', '=', propId)
+        .execute();
+    } else {
+      // Insert a new record.
+      const record: NewResolution = { prop_id: propId, resolution, user_id: userId, notes }
+      await trx.insertInto('resolutions').values(record).execute();
+    }
+  });
   revalidatePath('/props');
 }
 

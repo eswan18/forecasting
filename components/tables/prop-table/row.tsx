@@ -38,6 +38,7 @@ export default function Row(
                     : resolveProp({
                       propId: row.prop_id,
                       resolution,
+                      userId: row.prop_user_id,
                       overwrite: true,
                       notes,
                     })}

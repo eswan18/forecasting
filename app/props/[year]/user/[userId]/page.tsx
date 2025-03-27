@@ -5,15 +5,21 @@ import YearSelector from "../../year-selector";
 import { getUserFromCookies } from "@/lib/get-user";
 
 export default async function Page(
-  { params }: { params: Promise<{ year: number; userId: number }> },
+  { params }: { params: Promise<{ year: string; userId: string }> },
 ) {
-  const { year, userId } = await params;
-  // Check that year is a number.
+  const year = parseInt((await params).year, 10);
+  const userId = parseInt((await params).userId, 10);
+  // Check that year & user were numbers
   if (isNaN(year)) {
     throw new Error("Invalid year");
   }
+  if (isNaN(userId)) {
+    throw new Error("Invalid user ID");
+  }
   const user = await getUserFromCookies();
-  const allowEdits = user?.is_admin || false;
+  if (user?.id !== userId) {
+    throw new Error("You don't have permission to view this page");
+  }
   const years = await getPropYears();
   years.sort((a, b) => b - a);
   const propsAndResolutions = await getProps({
@@ -35,7 +41,7 @@ export default async function Page(
         </PageHeading>
         <PropTable
           data={propsAndResolutions}
-          editable={allowEdits}
+          editable={true}
           defaultPropUserId={userId}
         />
       </div>
