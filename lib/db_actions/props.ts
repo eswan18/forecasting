@@ -66,13 +66,11 @@ export async function resolveProp(
 }
 
 export async function unresolveProp({ propId }: { propId: number }): Promise<void> {
-  // Verify the user is an admin
   const user = await getUserFromCookies();
-  if (!user || !user.is_admin) {
-    throw new Error('Unauthorized');
-  }
-
-  await db.deleteFrom('resolutions').where('prop_id', '=', propId).execute();
+  await db.transaction().execute(async (trx) => {
+    await trx.executeQuery(sql`SELECT set_config('app.current_user_id', ${user?.id}, true);`.compile(db));
+    await trx.deleteFrom('resolutions').where('prop_id', '=', propId).execute();
+  });
   revalidatePath('/props');
 }
 
