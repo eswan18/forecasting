@@ -21,10 +21,10 @@ export default async function Page(
   if (user?.id !== userId && user?.is_admin === false) {
     return (
       <ErrorPage title="Unauthorized">
-        <p>You don't have permission to view props for other users.</p>
+        <p>You don&apos;t have permission to view props for other users.</p>
         <p className="text-muted-foreground">
           Your user ID is{" "}
-          <code className="bg-muted">{user?.id}</code>, but you're attempting to
+          <code className="bg-muted">{user?.id}</code>, but you&apos;re attempting to
           view props for user ID{" "}
           <code>{userId}</code>.<br />Please log in with the correct account.
         </p>
