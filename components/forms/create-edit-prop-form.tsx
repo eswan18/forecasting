@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getUserFromCookies } from "@/lib/get-user";
 
 const formSchema = z.object({
   text: z.string().min(8).max(1000),
@@ -62,6 +63,7 @@ export function CreateEditPropForm(
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
   const [years, setYears] = useState<number[]>([]);
+  const [canEditPublicProps, setCanEditPublicProps] = useState(false);
   const { toast } = useToast();
   const initialUserId = initialProp?.prop_user_id || defaultUserId;
   const form = useForm<z.infer<typeof formSchema>>({
@@ -80,6 +82,11 @@ export function CreateEditPropForm(
       const years = await getPropYears();
       setYears(years);
       setLoading(false);
+    });
+    getUserFromCookies().then((user) => {
+      if (user && user.is_admin) {
+        setCanEditPublicProps(true); // Admins can edit public props
+      }
     });
   }, []);
 
@@ -257,9 +264,11 @@ export function CreateEditPropForm(
                           Personal
                         </SelectItem>
                       )}
-                    <SelectItem value="null">
-                      Public
-                    </SelectItem>
+                    {canEditPublicProps && (
+                      <SelectItem value="null">
+                        Public
+                      </SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
                 <FormMessage />
