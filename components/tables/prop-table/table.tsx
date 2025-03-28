@@ -14,9 +14,12 @@ export interface PropTableSearchParams {
 interface PropTableProps {
   data: VProp[];
   editable: boolean;
+  defaultPropUserId?: number | undefined;
 }
 
-export function PropTable({ data, editable }: PropTableProps) {
+export function PropTable(
+  { data, editable, defaultPropUserId }: PropTableProps,
+) {
   const router = useRouter();
   const pathName = usePathname();
   const rawSearchParams = useSearchParams();
@@ -74,7 +77,12 @@ export function PropTable({ data, editable }: PropTableProps) {
           filter={searchParams}
           setFilter={updateSearchParams}
         />
-        {editable && <CreateNewPropButton className="mb-4" />}
+        {editable && (
+          <CreateNewPropButton
+            className="mb-4"
+            defaultUserId={defaultPropUserId}
+          />
+        )}
       </div>
       <ul className="w-full flex flex-col">
         {data.map((row) => (
@@ -86,5 +94,3 @@ export function PropTable({ data, editable }: PropTableProps) {
     </>
   );
 }
-
-

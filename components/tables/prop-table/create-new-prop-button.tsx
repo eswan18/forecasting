@@ -12,7 +12,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { CreateEditPropForm } from "@/components/forms/create-edit-prop-form";
 
-export default function CreateNewPropButton({ className }: { className?: string }) {
+export default function CreateNewPropButton(
+  { className, defaultUserId }: {
+    className?: string;
+    defaultUserId?: number;
+  },
+) {
   const [open, setOpen] = useState(false);
   className = cn("gap-2", className);
   return (
@@ -27,7 +32,10 @@ export default function CreateNewPropButton({ className }: { className?: string 
         <DialogHeader>
           <DialogTitle>Create new prop</DialogTitle>
         </DialogHeader>
-        <CreateEditPropForm onSubmit={() => setOpen(false)} />
+        <CreateEditPropForm
+          onSubmit={() => setOpen(false)}
+          defaultUserId={defaultUserId}
+        />
       </DialogContent>
     </Dialog>
   );

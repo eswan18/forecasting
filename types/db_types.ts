@@ -51,6 +51,7 @@ export interface PropsTable {
   category_id: number,
   year: number,
   notes: string | null,
+  user_id: number | null,
 }
 export type Prop = Selectable<PropsTable>
 export type NewProp = Insertable<PropsTable>
@@ -71,6 +72,7 @@ export interface ResolutionsTable {
   prop_id: number,
   resolution: boolean,
   notes: string | null,
+  user_id: number | null,
 }
 export type Resolution = Selectable<ResolutionsTable>
 export type NewResolution = Insertable<ResolutionsTable>
@@ -132,11 +134,13 @@ export interface VPropsView {
   prop_id: number,
   prop_text: string,
   prop_notes: string | null,
+  prop_user_id: number,
   category_id: number,
   category_name: string,
   year: number,
   resolution_id: number | null,
   resolution: boolean | null,
+  resolution_user_id: number | null,
   resolution_notes: string | null,
 }
 export type VProp = Selectable<VPropsView>
@@ -154,6 +158,7 @@ export interface VForecastsView {
   forecast: number,
   resolution_id: number | null,
   resolution: boolean | null,
+  resolution_user_id: number | null,
   resolution_notes: string | null,
   score: number | null,
 }

@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getUserFromCookies } from "@/lib/get-user";
 
 const formSchema = z.object({
   text: z.string().min(8).max(1000),
@@ -40,6 +41,11 @@ const formSchema = z.object({
   ),
   category_id: z.coerce.number(),
   year: z.coerce.number(),
+  user_id: z.coerce.string().optional().transform(
+    (
+      value,
+    ) => (value === "null" || value === undefined ? null : parseInt(value, 10)),
+  ).nullable(),
 });
 
 /*
@@ -47,13 +53,19 @@ const formSchema = z.object({
  * If initialProp is provided, the form will be in edit mode, otherwise in create mode.
  */
 export function CreateEditPropForm(
-  { initialProp, onSubmit }: { initialProp?: VProp; onSubmit?: () => void },
+  { initialProp, defaultUserId, onSubmit }: {
+    initialProp?: VProp;
+    defaultUserId?: number;
+    onSubmit?: () => void;
+  },
 ) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
   const [years, setYears] = useState<number[]>([]);
+  const [canEditPublicProps, setCanEditPublicProps] = useState(false);
   const { toast } = useToast();
+  const initialUserId = initialProp?.prop_user_id || defaultUserId;
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -61,16 +73,20 @@ export function CreateEditPropForm(
       notes: initialProp?.prop_notes || undefined,
       category_id: initialProp?.category_id,
       year: initialProp?.year,
+      user_id: initialUserId,
     },
   });
-
   useEffect(() => {
     getCategories().then(async (categories) => {
       setCategories(categories);
       const years = await getPropYears();
-      years.unshift(years[0] + 1);
       setYears(years);
       setLoading(false);
+    });
+    getUserFromCookies().then((user) => {
+      if (user && user.is_admin) {
+        setCanEditPublicProps(true); // Admins can edit public props
+      }
     });
   }, []);
 
@@ -217,6 +233,42 @@ export function CreateEditPropForm(
                         {year}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
+        />
+        <FormField
+          control={form.control}
+          name="user_id"
+          render={({ field }) => {
+            return (
+              <FormItem>
+                <FormLabel>Public/Personal</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  {...field}
+                  value={field.value ? field.value.toString() : "null"}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {initialUserId &&
+                      (
+                        <SelectItem value={initialUserId.toString()}>
+                          Personal
+                        </SelectItem>
+                      )}
+                    {canEditPublicProps && (
+                      <SelectItem value="null">
+                        Public
+                      </SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
                 <FormMessage />
