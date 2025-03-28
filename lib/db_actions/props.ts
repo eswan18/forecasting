@@ -22,7 +22,18 @@ export async function getProps(
       const yearClause = Array.isArray(year) ? year : [year];
       query = query.where('year', 'in', yearClause);
     }
-    query = query.where('prop_user_id', 'in', userId);
+    query = query.where((eb) => {
+      const ors = [];
+      const nonNullUserIds = userId ? userId.filter(id => id !== null) : [];
+      if (nonNullUserIds.length > 0) {
+        ors.push(eb('prop_user_id', 'in', nonNullUserIds));
+      }
+      if (userId && userId.find(id => id === null) !== undefined) {
+        // If null is in the array, we want to include public props (where prop_user_id is null).
+        ors.push(eb('prop_user_id', 'is', null));
+      }
+      return eb.or(ors);
+    });
     return await query.execute();
   });
 }
@@ -34,7 +45,6 @@ export async function resolveProp(
   const user = await getUserFromCookies();
   await db.transaction().execute(async (trx) => {
     await trx.executeQuery(sql`SELECT set_config('app.current_user_id', ${user?.id}, true);`.compile(db));
-    console.log(sql`SELECT set_config('app.current_user_id', ${user?.id}, true);`.compile(db));
 
     // first check that this prop doesn't already have a resolution
     const existingResolution = await trx

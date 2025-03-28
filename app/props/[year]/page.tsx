@@ -16,11 +16,8 @@ export default async function Page(
   const allowEdits = user?.is_admin || false;
   const years = await getPropYears();
   years.sort((a, b) => b - a);
-  const propsAndResolutions = await getProps({
-    year,
-    personal: false,
-    common: true,
-  });
+  // Passing null as the userId gets us only public props.
+  const propsAndResolutions = await getProps({ year, userId: null });
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-3xl">
