@@ -6,11 +6,13 @@ import { VProp, PropUpdate, NewProp, NewResolution } from "@/types/db_types";
 import { sql } from 'kysely';
 
 export async function getProps(
-  { year, personal = true, common = true }:
-    { year?: number | number[], personal?: boolean, common?: boolean }
+  { year, userId = null }:
+    { year?: number | number[], userId?: (number | null)[] | number | null }
 ): Promise<VProp[]> {
-  if (!personal && !common) {
-    throw new Error('The result of neither personal nor common props is always empty');
+  if (typeof userId === 'number') {
+    userId = [userId];
+  } else if (userId === null) {
+    userId = [null];
   }
   const user = await getUserFromCookies();
   return db.transaction().execute(async (trx) => {
@@ -20,12 +22,7 @@ export async function getProps(
       const yearClause = Array.isArray(year) ? year : [year];
       query = query.where('year', 'in', yearClause);
     }
-    if (!personal) {
-      query = query.where('prop_user_id', 'is', null);
-    }
-    if (!common) {
-      query = query.where('prop_user_id', 'is not', null);
-    }
+    query = query.where('prop_user_id', 'in', userId);
     return await query.execute();
   });
 }
