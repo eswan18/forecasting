@@ -3,6 +3,7 @@ import PropTable from "@/components/tables/prop-table";
 import PageHeading from "@/components/page-heading";
 import YearSelector from "../../year-selector";
 import { getUserFromCookies } from "@/lib/get-user";
+import ErrorPage from "@/components/pages/error-page";
 
 export default async function Page(
   { params }: { params: Promise<{ year: string; userId: string }> },
@@ -17,8 +18,18 @@ export default async function Page(
     throw new Error("Invalid user ID");
   }
   const user = await getUserFromCookies();
-  if (user?.id !== userId) {
-    throw new Error("You don't have permission to view this page");
+  if (user?.id !== userId && user?.is_admin === false) {
+    return (
+      <ErrorPage title="Unauthorized">
+        <p>You don't have permission to view props for other users.</p>
+        <p className="text-muted-foreground">
+          Your user ID is{" "}
+          <code className="bg-muted">{user?.id}</code>, but you're attempting to
+          view props for user ID{" "}
+          <code>{userId}</code>.<br />Please log in with the correct account.
+        </p>
+      </ErrorPage>
+    );
   }
   const years = await getPropYears();
   years.sort((a, b) => b - a);
