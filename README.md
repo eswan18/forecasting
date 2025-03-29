@@ -13,6 +13,10 @@ A NextJS app and database migrations, basically.
 
 In Vercel, with minimal customization.
 
+## DB Schema
+
+![Schema Diagram](docs/schema.png)
+
 ## Development Tips
 
 ### How do I run it locally?
