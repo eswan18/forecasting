@@ -58,7 +58,7 @@ npm run dev
 #### How do I make a new migration?
 
 Create a migration with a relatively descriptive name, which will be embedded in the filename.
-Fore consistency, use dashes instead of underscores or spaces.
+For consistency, use dashes instead of underscores or spaces.
 ```bash
 npm exec kysely migrate make <migration-description>
 ```
