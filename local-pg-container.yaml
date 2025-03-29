@@ -26,7 +26,7 @@ services:
         condition: service_healthy
     command: >
       bash -c "
-        pg_dump --no-owner --no-acl $DATABASE_URL | psql 'postgresql://admin:admin_pw@host.docker.internal:2345/forecasting' &&
+        pg_dump --no-owner --no-acl $ADMIN_DATABASE_URL | psql 'postgresql://admin:admin_pw@host.docker.internal:2345/forecasting' &&
         psql 'postgresql://admin:admin_pw@host.docker.internal:2345/forecasting' -c \"
           CREATE ROLE app_user WITH LOGIN PASSWORD 'app_user_pw';
           GRANT USAGE ON SCHEMA public TO app_user;
