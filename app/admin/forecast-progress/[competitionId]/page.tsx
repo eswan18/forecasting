@@ -1,13 +1,18 @@
 import PageHeading from "@/components/page-heading";
-import { getForecasts, getUnforecastedProps, getUsers } from "@/lib/db_actions";
+import {
+  getCompetitionById,
+  getForecasts,
+  getUnforecastedProps,
+  getUsers,
+} from "@/lib/db_actions";
 import { getUserFromCookies } from "@/lib/get-user";
 import { VUser } from "@/types/db_types";
 import { InaccessiblePage } from "@/components/inaccessible-page";
 
 export default async function ForecastProgressPage(
-  { params }: { params: Promise<{ year: number }> },
+  { params }: { params: Promise<{ competitionId: number }> },
 ) {
-  const { year } = await params;
+  const { competitionId } = await params;
   const user = await getUserFromCookies();
   const authorized = user?.is_admin;
   if (!authorized) {
@@ -18,12 +23,21 @@ export default async function ForecastProgressPage(
       />
     );
   }
+  const competition = await getCompetitionById(competitionId);
+  if (!competition) {
+    return (
+      <InaccessiblePage
+        title="Competition not found"
+        message="The competition you are looking for does not exist."
+      />
+    );
+  }
   const users = await getUsers();
   const unforecastedProps = await Promise.all(
     users.map(async (user) => {
       return {
         userId: user.id,
-        props: await getUnforecastedProps({ userId: user.id, year }),
+        props: await getUnforecastedProps({ userId: user.id, competitionId }),
       };
     }),
   );
@@ -31,7 +45,7 @@ export default async function ForecastProgressPage(
     users.map(async (user) => {
       return {
         userId: user.id,
-        forecasts: await getForecasts({ userId: user.id, year }),
+        forecasts: await getForecasts({ userId: user.id, competitionId }),
       };
     }),
   );
@@ -54,7 +68,7 @@ export default async function ForecastProgressPage(
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-lg">
-        <PageHeading title={`${year} Forecast Progress`} />
+        <PageHeading title={`${competition?.name}: Forecast Progress`} />
         <table className="w-full mt-8">
           <thead>
             <tr>
