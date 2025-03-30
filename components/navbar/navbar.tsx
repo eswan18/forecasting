@@ -68,11 +68,11 @@ export default async function NavBar() {
       label === "Forecasts"
     ) as NavLinkGroup;
     forecastLinks.links.unshift({
-      href: `/forecasts/2025/user/${userId}`,
+      href: `/competitions/2/forecasts?user_id=${userId}`,
       label: "Your 2025 Forecasts",
       icon: <TrendingUpDown size={14} />,
     });
-    if (await hasFeatureEnabled({featureName: "personal-props", userId})) {
+    if (await hasFeatureEnabled({ featureName: "personal-props", userId })) {
       forecastLinks.links.push({
         href: `/props/2025/user/${userId}`,
         label: "Your Personal Props",
@@ -87,7 +87,11 @@ export default async function NavBar() {
       label: "Feature Flags",
       icon: <Flag size={16} />,
     },
-    { href: "/competitions/2/props", label: "Add/Edit Props", icon: <Edit size={16} /> },
+    {
+      href: "/competitions/2/props",
+      label: "Add/Edit Props",
+      icon: <Edit size={16} />,
+    },
     {
       href: "/admin/suggested-props",
       label: "View Suggested Props",

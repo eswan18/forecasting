@@ -11,7 +11,6 @@ export type ScoredForecast = {
   forecast: number;
   forecast_id: number;
   penalty: number | null;
-  year: number;
 };
 
 export default function ForecastTableRow(
