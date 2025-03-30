@@ -32,7 +32,7 @@ export async function createForecast({ forecast }: { forecast: NewForecast }): P
   const thisYear = new Date().getUTCFullYear();
   console.log(thisYear);
   const prop = await db
-    .selectFrom('props')
+    .selectFrom('v_props')
     .where('id', '=', forecast.prop_id)
     .select('year')
     .executeTakeFirstOrThrow();
