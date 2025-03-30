@@ -20,9 +20,12 @@ export default async function CompetitionLayout({
   if (!competition) {
     return <ErrorPage title="Competition not found" />;
   }
-  async function makeRedirectLink(id: number) {
+  async function makeRedirectLink(id: number, currentPath: string) {
     "use server";
-    return `/competitions/${id}/props`;
+    // replace just the second part of the current path with the new competition id
+    const pathParts = currentPath.split("/");
+    pathParts[2] = id.toString();
+    return pathParts.join("/");
   }
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">

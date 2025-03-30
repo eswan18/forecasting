@@ -10,23 +10,27 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Competition } from "@/types/db_types";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function CompetitionSelector(
   { competitions, selectedCompetitionId, redirectOnSelect }: {
     competitions: Competition[];
     selectedCompetitionId: number;
-    redirectOnSelect?: (id: number) => Promise<string>;
+    redirectOnSelect?: (id: number, currentPath: string) => Promise<string>;
   },
 ) {
   const router = useRouter();
+  const path = usePathname();
   return (
     <div className="flex flex-row gap-2">
       <Select
         value={String(selectedCompetitionId.toString())}
         onValueChange={async (competitionId) => {
           if (!redirectOnSelect) return;
-          const link = await redirectOnSelect(parseInt(competitionId, 10));
+          const link = await redirectOnSelect(
+            parseInt(competitionId, 10),
+            path,
+          );
           router.push(link);
         }}
       >
