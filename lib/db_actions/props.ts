@@ -6,8 +6,8 @@ import { VProp, PropUpdate, NewProp, NewResolution } from "@/types/db_types";
 import { sql } from 'kysely';
 
 export async function getProps(
-  { year, userId = null }:
-    { year?: number | number[], userId?: (number | null)[] | number | null }
+  { competitionId, userId = null }:
+    { competitionId?: number | number[], userId?: (number | null)[] | number | null }
 ): Promise<VProp[]> {
   if (typeof userId === 'number') {
     userId = [userId];
@@ -18,9 +18,9 @@ export async function getProps(
   return db.transaction().execute(async (trx) => {
     await trx.executeQuery(sql`SELECT set_config('app.current_user_id', ${user?.id}, true);`.compile(db));
     let query = trx.selectFrom('v_props').orderBy('prop_id asc').selectAll();
-    if (year) {
-      const yearClause = Array.isArray(year) ? year : [year];
-      query = query.where('year', 'in', yearClause);
+    if (competitionId) {
+      const competitionClause = Array.isArray(competitionId) ? competitionId : [competitionId];
+      query = query.where('competition_id', 'in', competitionClause);
     }
     query = query.where((eb) => {
       const ors = [];
@@ -79,11 +79,6 @@ export async function unresolveProp({ propId }: { propId: number }): Promise<voi
     await trx.deleteFrom('resolutions').where('prop_id', '=', propId).execute();
   });
   revalidatePath('/props');
-}
-
-export async function getPropYears(): Promise<number[]> {
-  const rows = await db.selectFrom('v_props').select('year').distinct().orderBy('year', 'desc').execute();
-  return rows.map(row => row.year);
 }
 
 export async function updateProp({ id, prop }: { id: number, prop: PropUpdate }) {

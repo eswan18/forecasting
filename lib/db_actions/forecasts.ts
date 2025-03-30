@@ -6,7 +6,7 @@ import { getUserFromCookies } from '@/lib/get-user';
 import { revalidatePath } from 'next/cache';
 
 export async function getForecasts(
-  { userId, year }: { userId?: number, year?: number } = {}
+  { userId, competitionId }: { userId?: number, competitionId?: number } = {}
 ): Promise<VForecast[]> {
   const currentUser = await getUserFromCookies();
   if (!currentUser) {
@@ -16,8 +16,8 @@ export async function getForecasts(
   if (userId !== undefined) {
     query = query.where('user_id', '=', userId);
   }
-  if (year !== undefined) {
-    query = query.where('year', '=', year);
+  if (competitionId !== undefined) {
+    query = query.where('competition_id', '=', competitionId);
   }
   return await query.execute();
 }
@@ -29,15 +29,14 @@ export async function createForecast({ forecast }: { forecast: NewForecast }): P
     throw new Error('Unauthorized');
   }
   // Only allow creating forecasts for future years.
-  const thisYear = new Date().getUTCFullYear();
-  console.log(thisYear);
   const prop = await db
     .selectFrom('v_props')
-    .where('id', '=', forecast.prop_id)
-    .select('year')
-    .executeTakeFirstOrThrow();
-  if (prop.year <= thisYear) {
-    throw new Error('Cannot create forecasts for the current year');
+    .where('prop_id', '=', forecast.prop_id)
+    .select('competition_forecasts_due_date')
+    .executeTakeFirst();
+  const dueDate = prop?.competition_forecasts_due_date;
+  if (dueDate && dueDate <= new Date()) {
+    throw new Error('Cannot create forecasts past the due date');
   }
   const { id } = await db
     .insertInto('forecasts')
@@ -57,18 +56,15 @@ export async function updateForecast({ id, forecast }: { id: number, forecast: F
     console.log(`Attempted update with invalid columns: ${Object.keys(forecast)}`);
     throw new Error('Unauthorized');
   }
-  // Only allow updates to forecasts for future years, and for the current user.
-  const existingForecast = await db
-    .selectFrom('v_forecasts')
-    .where('forecast_id', '=', id)
-    .select(['year', 'user_id'])
-    .executeTakeFirstOrThrow();
-  const thisYear = new Date().getUTCFullYear();
-  if (existingForecast.year <= thisYear) {
-    throw new Error('Cannot update forecasts for the current year');
-  }
-  if (existingForecast.user_id !== user.id) {
-    throw new Error('Unauthorized');
+  // Only allow creating forecasts for future years.
+  const prop = await db
+    .selectFrom('v_props')
+    .where('prop_id', '=', id)
+    .select('competition_forecasts_due_date')
+    .executeTakeFirst();
+  const dueDate = prop?.competition_forecasts_due_date;
+  if (dueDate && dueDate <= new Date()) {
+    throw new Error('Cannot create forecasts past the due date');
   }
   await db
     .updateTable('forecasts')
@@ -78,7 +74,10 @@ export async function updateForecast({ id, forecast }: { id: number, forecast: F
   revalidatePath('/forecasts');
 }
 
-export async function getUnforecastedProps({ year, userId }: { year: number, userId: number }): Promise<VProp[]> {
+export async function getUnforecastedProps(
+  { competitionId, userId }:
+    { competitionId: number, userId: number }
+): Promise<VProp[]> {
   // Make sure the user is who they say they, or an admin.
   const user = await getUserFromCookies();
   if (!user) throw new Error('Unauthorized');
@@ -87,7 +86,7 @@ export async function getUnforecastedProps({ year, userId }: { year: number, use
   const propsForYear = await db.
     selectFrom('v_props')
     .selectAll()
-    .where('year', '=', year)
+    .where('competition_id', '=', competitionId)
     .where(({ not, exists, selectFrom }) => not(exists(
       selectFrom('forecasts')
         .select("id")
