@@ -1,9 +1,4 @@
-import {
-  getCategories,
-  getForecasts,
-  getProps,
-  getUnforecastedProps,
-} from "@/lib/db_actions";
+import { getCategories, getUnforecastedProps } from "@/lib/db_actions";
 import { Category, VProp } from "@/types/db_types";
 import { RecordForecastForm } from "@/components/forms/record-forecast-form";
 import { getUserFromCookies, loginAndRedirect } from "@/lib/get-user";
@@ -12,17 +7,16 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default async function RecordForecastsPage(
-  { params }: { params: Promise<{ year: number }> },
+  { params }: { params: Promise<{ competitionId: number }> },
 ) {
-  const { year } = await params;
-
+  const { competitionId } = await params;
   const user = await getUserFromCookies();
   if (!user) {
-    await loginAndRedirect({ url: `/forecasts/record/${year}` });
-    return <></>; // will never reach this line due to redirect.
+    await loginAndRedirect({
+      url: `/forecasts/${competitionId}/forecasts/record`,
+    });
   }
-
-  let props = await getUnforecastedProps({ userId: user.id, year });
+  let props = await getUnforecastedProps({ userId: user!.id, competitionId });
   props.sort((a, b) => a.prop_id - b.prop_id);
   // Group props by category in a map.
   const propsByCategoryId: Map<number, { category: Category; props: VProp[] }> =
@@ -42,17 +36,16 @@ export default async function RecordForecastsPage(
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-lg">
-        <PageHeading title={`Record Forecasts for ${year}`} />
         <p>Record new forecasts here.</p>
         <p>
           You can edit existing forecasts on the{" "}
           <Link
-            href={`/forecasts/${year}/user/${user.id}`}
+            href={`/competitions/${competitionId}/forecasts`}
             className="underline"
           >
-            {year.toString()} Forecast History
-          </Link>{" "}
-          page.
+            Forecasts Page
+          </Link>
+          .
         </p>
         {categories.length > 0 && (
           <div className="flex flex-row my-3 items-center">
