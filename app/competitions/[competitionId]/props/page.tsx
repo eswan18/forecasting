@@ -1,4 +1,4 @@
-import { getCompetitions, getProps } from "@/lib/db_actions";
+import { getCompetitionById, getProps } from "@/lib/db_actions";
 import PropTable from "@/components/tables/prop-table";
 import { getUserFromCookies } from "@/lib/get-user";
 import ErrorPage from "@/components/pages/error-page";
@@ -8,9 +8,8 @@ export default async function Page(
 ) {
   const { competitionId: competitionIdString } = await params;
   const competitionId = parseInt(competitionIdString, 10);
-  const competitions = await getCompetitions();
-  const thisCompetition = competitions.find((c) => c.id === competitionId);
-  if (isNaN(competitionId) || !thisCompetition) {
+  const competition = await getCompetitionById(competitionId);
+  if (!competition) {
     return <ErrorPage title="Competition not found" />;
   }
   const user = await getUserFromCookies();
