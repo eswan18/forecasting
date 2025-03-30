@@ -18,7 +18,6 @@ import { ReactElement } from "react";
 import {
   BarChart,
   BarChartHorizontal,
-  Edit,
   Flag,
   Medal,
   MessageCircle,
@@ -52,16 +51,19 @@ export default async function NavBar() {
       },
     ],
   }, {
-    label: "Scores",
-    links: [{
-      href: "/scores/2024",
-      label: "2024 Scores",
-      icon: <Medal size={16} />,
-    }, {
-      href: "/scores/2025",
-      label: "2025 Scores",
-      icon: <Medal size={16} />,
-    }],
+    label: "Competitions",
+    links: [
+      {
+        href: "/competitions/1/forecasts",
+        label: "2024 Public Forecasts",
+        icon: <Medal size={16} />,
+      },
+      {
+        href: "/competitions/2/forecasts",
+        label: "2025 Public Forecasts",
+        icon: <Medal size={16} />,
+      },
+    ],
   }];
   if (userId) {
     const forecastLinks = links.find(({ label }) =>
@@ -86,11 +88,6 @@ export default async function NavBar() {
       href: "/admin/feature-flags",
       label: "Feature Flags",
       icon: <Flag size={16} />,
-    },
-    {
-      href: "/competitions/2/props",
-      label: "Edit 2025 Props",
-      icon: <Edit size={16} />,
     },
     {
       href: "/admin/suggested-props",

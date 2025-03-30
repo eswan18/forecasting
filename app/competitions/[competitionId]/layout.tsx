@@ -1,7 +1,7 @@
 import PageHeading from "@/components/page-heading";
 import ErrorPage from "@/components/pages/error-page";
 import { getCompetitionById, getCompetitions } from "@/lib/db_actions";
-import CompetitionSelector from "./props/competition-selector";
+import CompetitionSelector from "@/components/selectors/competition-selector";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import CompetitionTabs from "./competition-tabs";

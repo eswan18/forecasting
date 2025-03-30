@@ -9,8 +9,10 @@ import { getForecasts } from "@/lib/db_actions";
 import CertaintyContent, { AvgCertaintyForUser } from "./certainty-content";
 import { VForecast } from "@/types/db_types";
 
-export default async function CertaintyCard({ year }: { year: number }) {
-  const forecasts = await getForecasts({ year });
+export default async function CertaintyCard(
+  { competitionId }: { competitionId: number },
+) {
+  const forecasts = await getForecasts({ competitionId });
   return (
     <Card className="w-80 h-96">
       <CardHeader className="pb-1">

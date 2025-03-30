@@ -8,9 +8,11 @@ import {
 import { getCategories, getForecasts, getProps } from "@/lib/db_actions";
 import PropConsensusContent from "./prop-consensus-content";
 
-export default async function PropConsensusCard({ year }: { year: number }) {
-  const forecasts = await getForecasts({ year });
-  const props = await getProps({ year });
+export default async function PropConsensusCard(
+  { competitionId }: { competitionId: number },
+) {
+  const forecasts = await getForecasts({ competitionId });
+  const props = await getProps({ competitionId });
   const categories = await getCategories();
   return (
     <Card className="w-full">
