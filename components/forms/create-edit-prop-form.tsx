@@ -6,7 +6,6 @@ import { useToast } from "@/hooks/use-toast";
 import {
   createProp,
   getCategories,
-  getPropYears,
   updateProp,
 } from "@/lib/db_actions";
 import { Button } from "@/components/ui/button";

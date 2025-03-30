@@ -89,7 +89,7 @@ export default async function NavBar() {
     },
     {
       href: "/competitions/2/props",
-      label: "Add/Edit Props",
+      label: "Edit 2025 Props",
       icon: <Edit size={16} />,
     },
     {
