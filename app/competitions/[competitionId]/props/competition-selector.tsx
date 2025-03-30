@@ -21,7 +21,7 @@ export default function CompetitionSelector(
 ) {
   const router = useRouter();
   return (
-    <div className="flex flex-row gap-2 mt-2">
+    <div className="flex flex-row gap-2">
       <Select
         value={String(selectedCompetitionId.toString())}
         onValueChange={async (competitionId) => {
@@ -30,12 +30,12 @@ export default function CompetitionSelector(
           router.push(link);
         }}
       >
-        <SelectTrigger className="w-48">
+        <SelectTrigger className="w-56">
           <SelectValue placeholder="Select a year" />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            <SelectLabel>Years</SelectLabel>
+            <SelectLabel>Competitions</SelectLabel>
             {competitions.map((competition) => (
               <SelectItem
                 key={competition.id}
