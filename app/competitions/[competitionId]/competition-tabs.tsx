@@ -7,8 +7,8 @@ export default function CompetitionTabs({ className }: { className?: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const pathParts = pathname.split("/");
-  const competitionId = pathParts[pathParts.length - 2];
-  const subpage = pathParts[pathParts.length - 1];
+  const competitionId = pathParts[2];
+  const subpage = pathParts[3];
 
   return (
     <Tabs
