@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   createProp,
   getCategories,
+  getCompetitions,
   updateProp,
 } from "@/lib/db_actions";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Category, VProp } from "@/types/db_types";
+import { Category, Competition, VProp } from "@/types/db_types";
 import {
   Select,
   SelectContent,
@@ -39,7 +40,7 @@ const formSchema = z.object({
     z.string().max(1000).nullable().optional(),
   ),
   category_id: z.coerce.number(),
-  year: z.coerce.number(),
+  competition_id: z.coerce.number().optional(),
   user_id: z.coerce.string().optional().transform(
     (
       value,
@@ -61,7 +62,7 @@ export function CreateEditPropForm(
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [years, setYears] = useState<number[]>([]);
+  const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [canEditPublicProps, setCanEditPublicProps] = useState(false);
   const { toast } = useToast();
   const initialUserId = initialProp?.prop_user_id || defaultUserId;
@@ -71,15 +72,15 @@ export function CreateEditPropForm(
       text: initialProp?.prop_text,
       notes: initialProp?.prop_notes || undefined,
       category_id: initialProp?.category_id,
-      year: initialProp?.year,
+      competition_id: initialProp?.competition_id ?? undefined,
       user_id: initialUserId,
     },
   });
   useEffect(() => {
     getCategories().then(async (categories) => {
       setCategories(categories);
-      const years = await getPropYears();
-      setYears(years);
+      const competitions = await getCompetitions();
+      setCompetitions(competitions);
       setLoading(false);
     });
     getUserFromCookies().then((user) => {
@@ -208,11 +209,11 @@ export function CreateEditPropForm(
         />
         <FormField
           control={form.control}
-          name="year"
+          name="competition_id"
           render={({ field }) => {
             return (
               <FormItem>
-                <FormLabel>Year</FormLabel>
+                <FormLabel>Competition</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   {...field}
@@ -220,16 +221,16 @@ export function CreateEditPropForm(
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a year" />
+                      <SelectValue placeholder="Select a competition" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {years.map((year) => (
+                    {competitions.map((competition) => (
                       <SelectItem
-                        key={year}
-                        value={year.toString()}
+                        key={competition.id}
+                        value={competition.id.toString()}
                       >
-                        {year}
+                        {competition.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
