@@ -1,15 +1,7 @@
-import PageHeading from "@/components/page-heading";
-import {
-  getCompetitions,
-  getForecasts,
-  getUserById,
-  getUsers,
-} from "@/lib/db_actions";
-import { notFound } from "next/navigation";
+import { getForecasts, getUsers } from "@/lib/db_actions";
 import ForecastTable from "./forecast-table";
 import { getUserFromCookies, loginAndRedirect } from "@/lib/get-user";
-import { redirect } from "next/navigation";
-import UserYearSelector from "./user-year-selector";
+import UserSelector from "./user-selector";
 
 export default async function Page(
   { params, searchParams }: {
@@ -23,8 +15,6 @@ export default async function Page(
   if (!authUser) {
     loginAndRedirect({ url: `/competitions/${competitionId}/forecasts` });
   }
-  // BIG QUESTION: should `user_id` be a query param or a path param?
-  // Query param, I'm deciding. This page should still work without a user_id.
   const userIdString = (await searchParams).user_id;
   const userId = userIdString ? parseInt(userIdString, 10) : undefined;
   const forecasts = await getForecasts({ userId, competitionId });
@@ -41,16 +31,23 @@ export default async function Page(
     };
   });
   // todo – make sure that only some situations are editable – like if the user is looking at their own props.
-  // const allUsers = await getUsers({ sort: "name asc" });
+  const allUsers = await getUsers({ sort: "name asc" });
   const editable = true;
+  const makeRedirectLink = async (userId: number | undefined) => {
+    "use server";
+    if (!userId) {
+      return `/competitions/${competitionId}/forecasts`;
+    } else {
+      return `/competitions/${competitionId}/forecasts?user_id=${userId}`;
+    }
+  };
   return (
     <>
-      {
-        /*<UserSelector
-            users={allUsers}
-            selectedUserId={requestedUser.id}
-          /> */
-      }
+      <UserSelector
+        users={allUsers}
+        selectedUserId={userId}
+        redirectOnSelect={makeRedirectLink}
+      />
       <ForecastTable data={scoredForecasts} editable={editable} />
     </>
   );

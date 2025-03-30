@@ -14,7 +14,6 @@ export default async function Page(
   }
   const user = await getUserFromCookies();
   const allowEdits = user?.is_admin || false;
-  // Passing null as the userId gets us only public props.
-  const propsAndResolutions = await getProps({ competitionId, userId: null });
+  const propsAndResolutions = await getProps({ competitionId });
   return <PropTable data={propsAndResolutions} editable={allowEdits} />;
 }
