@@ -87,7 +87,7 @@ export default async function NavBar() {
       label: "Feature Flags",
       icon: <Flag size={16} />,
     },
-    { href: "/props/2025", label: "Add/Edit Props", icon: <Edit size={16} /> },
+    { href: "/competitions/2/props", label: "Add/Edit Props", icon: <Edit size={16} /> },
     {
       href: "/admin/suggested-props",
       label: "View Suggested Props",

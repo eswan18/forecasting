@@ -21,7 +21,7 @@ export default async function Page(
   const propsAndResolutions = await getProps({ competitionId, userId: null });
   async function makeRedirectLink(id: number) {
     "use server";
-    return `/competitions/${id}`;
+    return `/competitions/${id}/props`;
   }
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
