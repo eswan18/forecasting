@@ -1,4 +1,4 @@
-import { getProps, getPropYears } from "@/lib/db_actions";
+import { getProps } from "@/lib/db_actions";
 import PropTable from "@/components/tables/prop-table";
 import PageHeading from "@/components/page-heading";
 import YearSelector from "../../year-selector";
@@ -31,7 +31,7 @@ export default async function Page(
       </ErrorPage>
     );
   }
-  const years = await getPropYears();
+  const years = [1, 2, 3];
   years.sort((a, b) => b - a);
   const propsAndResolutions = await getProps({ year, userId: userId });
   return (

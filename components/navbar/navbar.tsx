@@ -94,7 +94,7 @@ export default async function NavBar() {
       icon: <MessageCircle size={16} />,
     },
     {
-      href: "/admin/forecast-progress/2025",
+      href: "/admin/forecast-progress/2",
       label: "2025 Forecast Progress",
       icon: <BarChartHorizontal size={16} />,
     },

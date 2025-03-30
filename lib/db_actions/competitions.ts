@@ -12,3 +12,8 @@ export async function getCompetitionById(id: number): Promise<Competition | unde
 
   return competition;
 }
+
+export async function getCompetitions(): Promise<Competition[]> {
+  let query = db.selectFrom('competitions').orderBy('name desc').selectAll();
+  return await query.execute();
+}
