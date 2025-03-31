@@ -56,17 +56,17 @@ export default async function NavBar() {
       },
     ],
   }];
-  if (userId) {
-    if (await hasFeatureEnabled({ featureName: "personal-props", userId })) {
-      links.push({
-        label: "Personal",
-        links: [{
-          href: `/props/2025/user/${userId}`,
-          label: "Your Personal Props",
-          icon: <User2 size={16} />,
-        }],
-      });
-    }
+  if (
+    userId && await hasFeatureEnabled({ featureName: "personal-props", userId })
+  ) {
+    links.push({
+      label: "Personal",
+      links: [{
+        href: `/props/user/${userId}`,
+        label: "Your Personal Props",
+        icon: <User2 size={16} />,
+      }],
+    });
   }
   const adminLinks: NavLink[] = [
     { href: "/admin/users", label: "Users", icon: <Users size={16} /> },
