@@ -25,8 +25,6 @@ export default async function Page(
       </ErrorPage>
     );
   }
-  const years = [1, 2, 3];
-  years.sort((a, b) => b - a);
   const propsAndResolutions = await getProps({ userId: userId });
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
