@@ -8,11 +8,16 @@ import {
 import { getUserFromCookies } from "@/lib/get-user";
 import { VUser } from "@/types/db_types";
 import { InaccessiblePage } from "@/components/inaccessible-page";
+import ErrorPage from "@/components/pages/error-page";
 
 export default async function ForecastProgressPage(
-  { params }: { params: Promise<{ competitionId: number }> },
+  { params }: { params: Promise<{ competitionId: string }> },
 ) {
-  const { competitionId } = await params;
+  const { competitionId: competitionIdString } = await params;
+  const competitionId = parseInt(competitionIdString, 10);
+  if (isNaN(competitionId)) {
+    return <ErrorPage title="Invalid competition ID" />;
+  }
   const user = await getUserFromCookies();
   const authorized = user?.is_admin;
   if (!authorized) {
