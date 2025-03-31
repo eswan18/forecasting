@@ -42,15 +42,6 @@ export default async function NavBar() {
   const user = await getUserFromCookies();
   const userId = user?.id;
   const links: (NavLink | NavLinkGroup)[] = [{
-    label: "Forecasts",
-    links: [
-      {
-        href: `/forecasts/2025`,
-        label: "2025 Forecast Stats",
-        icon: <BarChart size={16} />,
-      },
-    ],
-  }, {
     label: "Competitions",
     links: [
       {
@@ -66,19 +57,14 @@ export default async function NavBar() {
     ],
   }];
   if (userId) {
-    const forecastLinks = links.find(({ label }) =>
-      label === "Forecasts"
-    ) as NavLinkGroup;
-    forecastLinks.links.unshift({
-      href: `/competitions/2/forecasts?user_id=${userId}`,
-      label: "Your 2025 Forecasts",
-      icon: <TrendingUpDown size={14} />,
-    });
     if (await hasFeatureEnabled({ featureName: "personal-props", userId })) {
-      forecastLinks.links.push({
-        href: `/props/2025/user/${userId}`,
-        label: "Your Personal Props",
-        icon: <User2 size={16} />,
+      links.push({
+        label: "Personal",
+        links: [{
+          href: `/props/2025/user/${userId}`,
+          label: "Your Personal Props",
+          icon: <User2 size={16} />,
+        }],
       });
     }
   }
@@ -91,7 +77,7 @@ export default async function NavBar() {
     },
     {
       href: "/admin/suggested-props",
-      label: "View Suggested Props",
+      label: "Suggested Props",
       icon: <MessageCircle size={16} />,
     },
     {
