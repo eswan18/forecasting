@@ -18,18 +18,6 @@ export default async function Page(
   const userIdString = (await searchParams).user_id;
   const userId = userIdString ? parseInt(userIdString, 10) : undefined;
   const forecasts = await getForecasts({ userId, competitionId });
-  const scoredForecasts = forecasts.map((forecast) => {
-    const resolution = forecast.resolution;
-    let penalty = null;
-    if (resolution !== null) {
-      const resolutionAsNumber = resolution ? 1 : 0;
-      penalty = Math.pow(forecast.forecast - resolutionAsNumber, 2) || null;
-    }
-    return {
-      ...forecast,
-      penalty,
-    };
-  });
   // todo – make sure that only some situations are editable – like if the user is looking at their own props.
   const allUsers = await getUsers({ sort: "name asc" });
   const editable = true;
@@ -48,7 +36,7 @@ export default async function Page(
         selectedUserId={userId}
         redirectOnSelect={makeRedirectLink}
       />
-      <ForecastTable data={scoredForecasts} editable={editable} />
+      <ForecastTable data={forecasts} editable={editable} />
     </>
   );
 }

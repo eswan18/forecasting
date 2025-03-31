@@ -4,7 +4,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 
 import ForecastTableHeader from "./forecast-table-header";
-import ForecastTableRow, { ScoredForecast } from "./forecast-table-row";
+import ForecastTableRow from "./forecast-table-row";
+import { VForecast } from "@/types/db_types";
 
 interface ForecastTableSearchParams {
   sortColumn: string;
@@ -13,7 +14,7 @@ interface ForecastTableSearchParams {
 }
 
 interface ForecastTableProps {
-  data: ScoredForecast[];
+  data: VForecast[];
   editable: boolean;
 }
 
@@ -85,11 +86,11 @@ export default function ForecastTable(
             const bResolution = b.resolution === null ? -1 : +b.resolution;
             if (aResolution === bResolution) return 0;
             return aResolution > bResolution ? 1 : -1;
-          case "penalty":
-            const aPenalty = a.penalty === null ? 0 : a.penalty;
-            const bPenalty = b.penalty === null ? 0 : b.penalty;
-            if (a.penalty === b.penalty) return 0;
-            return aPenalty > bPenalty ? 1 : -1;
+          case "score":
+            const aScore = a.score === null ? 0 : a.score;
+            const bScore = b.score === null ? 0 : b.score;
+            if (aScore === bScore) return 0;
+            return aScore > bScore ? 1 : -1;
           default:
             return 0;
         }
@@ -102,11 +103,11 @@ export default function ForecastTable(
             const bResolution = b.resolution === null ? -1 : +b.resolution;
             if (aResolution === bResolution) return 0;
             return aResolution < bResolution ? 1 : -1;
-          case "penalty":
-            const aPenalty = a.penalty === null ? 0 : a.penalty;
-            const bPenalty = b.penalty === null ? 0 : b.penalty;
-            if (a.penalty === b.penalty) return 0;
-            return aPenalty < bPenalty ? 1 : -1;
+          case "score":
+            const aScore = a.score === null ? 0 : a.score;
+            const bScore = b.score === null ? 0 : b.score;
+            if (aScore === bScore) return 0;
+            return aScore < bScore ? 1 : -1;
           default:
             return 0;
         }

@@ -33,8 +33,8 @@ export default function ForecastTableHeader(
           ascending={sortColumn === "forecast" ? sortAsc : undefined}
         />
         <SortColumnHeader
-          onClick={() => handleSortClick("penalty")}
-          ascending={sortColumn === "penalty" ? sortAsc : undefined}
+          onClick={() => handleSortClick("score")}
+          ascending={sortColumn === "score" ? sortAsc : undefined}
         />
       </div>
     </div>

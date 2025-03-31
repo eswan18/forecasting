@@ -1,3 +1,4 @@
+import { VForecast } from "@/types/db_types";
 import { Check, X } from "lucide-react";
 
 export type ScoredForecast = {
@@ -14,7 +15,7 @@ export type ScoredForecast = {
 };
 
 export default function ForecastTableRow(
-  { row, editable }: { row: ScoredForecast; editable: boolean },
+  { row, editable }: { row: VForecast; editable: boolean },
 ) {
   const resolution = row.resolution !== null
     ? (
@@ -35,8 +36,8 @@ export default function ForecastTableRow(
         )
     )
     : <p className="text-muted-foreground">?</p>;
-  const penaltyString = row.penalty !== null
-    ? <p>{row.penalty.toFixed(2)}</p>
+  const penaltyString = row.score !== null
+    ? <p>{row.score.toFixed(2)}</p>
     : <p className="text-muted-foreground">?</p>;
   return (
     <div className="w-full bg-card grid grid-cols-[1fr_1fr] sm:grid-cols-[2fr_1fr] px-4 py-4 border gap-x-1">
