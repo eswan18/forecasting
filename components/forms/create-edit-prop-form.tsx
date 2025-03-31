@@ -114,7 +114,6 @@ export function CreateEditPropForm(
           });
         });
       } else {
-        console.log("Creating prop", values);
         await createProp({ prop: values }).then(() => {
           toast({
             title: "Prop Created!",
