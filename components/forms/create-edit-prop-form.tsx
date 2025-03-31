@@ -40,13 +40,21 @@ const formSchema = z.object({
     z.string().max(1000).nullable().optional(),
   ),
   category_id: z.coerce.number(),
-  competition_id: z.coerce.number().optional(),
-  user_id: z.coerce.string().optional().transform(
+  competition_id: z.coerce.string().transform(
+    (value) => (value === "null" ? null : parseInt(value, 10)),
+  ).nullable(),
+  user_id: z.coerce.string().transform(
     (
       value,
     ) => (value === "null" || value === undefined ? null : parseInt(value, 10)),
   ).nullable(),
-});
+}).refine(
+  (data) => !(data.user_id && data.competition_id),
+  {
+    message: "Props associated with a competition must be public.",
+    path: ["user_id"],
+  },
+);
 
 /*
  * Form for creating or editing a prop.
@@ -72,7 +80,7 @@ export function CreateEditPropForm(
       text: initialProp?.prop_text,
       notes: initialProp?.prop_notes || undefined,
       category_id: initialProp?.category_id,
-      competition_id: initialProp?.competition_id ?? undefined,
+      competition_id: initialProp?.competition_id ?? null,
       user_id: initialUserId,
     },
   });
@@ -217,7 +225,7 @@ export function CreateEditPropForm(
                 <Select
                   onValueChange={field.onChange}
                   {...field}
-                  value={field.value?.toString()}
+                  value={field.value ? field.value.toString() : "null"}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -225,6 +233,7 @@ export function CreateEditPropForm(
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
+                    <SelectItem value="null">None</SelectItem>
                     {competitions.map((competition) => (
                       <SelectItem
                         key={competition.id}
