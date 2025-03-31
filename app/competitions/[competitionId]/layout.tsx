@@ -15,6 +15,9 @@ export default async function CompetitionLayout({
 }) {
   const { competitionId: competitionIdString } = await params;
   const competitionId = parseInt(competitionIdString, 10);
+  if (isNaN(competitionId)) {
+    return <ErrorPage title={`Invalid competition ID '${competitionIdString}'`} />;
+  }
   const competition = await getCompetitionById(competitionId);
   const competitions = await getCompetitions();
   if (!competition) {

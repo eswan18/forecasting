@@ -2,14 +2,18 @@ import { getCategories, getUnforecastedProps } from "@/lib/db_actions";
 import { Category, VProp } from "@/types/db_types";
 import { RecordForecastForm } from "@/components/forms/record-forecast-form";
 import { getUserFromCookies, loginAndRedirect } from "@/lib/get-user";
-import PageHeading from "@/components/page-heading";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import ErrorPage from "@/components/pages/error-page";
 
 export default async function RecordForecastsPage(
-  { params }: { params: Promise<{ competitionId: number }> },
+  { params }: { params: Promise<{ competitionId: string }> },
 ) {
-  const { competitionId } = await params;
+  const { competitionId: competitionIdString } = await params;
+  const competitionId = parseInt(competitionIdString);
+  if (isNaN(competitionId)) {
+    return <ErrorPage title="Invalid competition ID" />;
+  }
   const user = await getUserFromCookies();
   if (!user) {
     await loginAndRedirect({
