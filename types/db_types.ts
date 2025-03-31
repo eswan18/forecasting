@@ -52,7 +52,7 @@ export interface PropsTable {
   category_id: number,
   notes: string | null,
   user_id: number | null,
-  competitions_id: number | null,
+  competition_id: number | null,
 }
 export type Prop = Selectable<PropsTable>
 export type NewProp = Insertable<PropsTable>
