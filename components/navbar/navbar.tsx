@@ -18,7 +18,6 @@ import { ReactElement } from "react";
 import {
   BarChart,
   BarChartHorizontal,
-  Edit,
   Flag,
   Medal,
   MessageCircle,
@@ -43,42 +42,31 @@ export default async function NavBar() {
   const user = await getUserFromCookies();
   const userId = user?.id;
   const links: (NavLink | NavLinkGroup)[] = [{
-    label: "Forecasts",
+    label: "Competitions",
     links: [
       {
-        href: `/forecasts/2025`,
-        label: "2025 Forecast Stats",
-        icon: <BarChart size={16} />,
+        href: "/competitions/1/forecasts",
+        label: "2024 Public Forecasts",
+        icon: <Medal size={16} />,
+      },
+      {
+        href: "/competitions/2/forecasts",
+        label: "2025 Public Forecasts",
+        icon: <Medal size={16} />,
       },
     ],
-  }, {
-    label: "Scores",
-    links: [{
-      href: "/scores/2024",
-      label: "2024 Scores",
-      icon: <Medal size={16} />,
-    }, {
-      href: "/scores/2025",
-      label: "2025 Scores",
-      icon: <Medal size={16} />,
-    }],
   }];
-  if (userId) {
-    const forecastLinks = links.find(({ label }) =>
-      label === "Forecasts"
-    ) as NavLinkGroup;
-    forecastLinks.links.unshift({
-      href: `/forecasts/2025/user/${userId}`,
-      label: "Your 2025 Forecasts",
-      icon: <TrendingUpDown size={14} />,
-    });
-    if (await hasFeatureEnabled({featureName: "personal-props", userId})) {
-      forecastLinks.links.push({
-        href: `/props/2025/user/${userId}`,
+  if (
+    userId && await hasFeatureEnabled({ featureName: "personal-props", userId })
+  ) {
+    links.push({
+      label: "Personal",
+      links: [{
+        href: `/props/user/${userId}`,
         label: "Your Personal Props",
         icon: <User2 size={16} />,
-      });
-    }
+      }],
+    });
   }
   const adminLinks: NavLink[] = [
     { href: "/admin/users", label: "Users", icon: <Users size={16} /> },
@@ -87,14 +75,13 @@ export default async function NavBar() {
       label: "Feature Flags",
       icon: <Flag size={16} />,
     },
-    { href: "/props/2025", label: "Add/Edit Props", icon: <Edit size={16} /> },
     {
       href: "/admin/suggested-props",
-      label: "View Suggested Props",
+      label: "Suggested Props",
       icon: <MessageCircle size={16} />,
     },
     {
-      href: "/admin/forecast-progress/2025",
+      href: "/admin/forecast-progress/2",
       label: "2025 Forecast Progress",
       icon: <BarChartHorizontal size={16} />,
     },

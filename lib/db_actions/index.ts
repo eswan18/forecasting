@@ -1,4 +1,5 @@
 export * from './categories';
+export * from './competitions';
 export * from './forecasts';
 export * from './feature_flags';
 export * from './logins';

@@ -7,6 +7,7 @@ import {
 
 export interface Database {
   categories: CategoriesTable,
+  competitions: CompetitionsTable,
   feature_flags: FeatureFlagsTable,
   forecasts: ForecastsTable,
   invite_tokens: InviteTokensTable,
@@ -49,9 +50,9 @@ export interface PropsTable {
   id: Generated<number>,
   text: string,
   category_id: number,
-  year: number,
   notes: string | null,
   user_id: number | null,
+  competition_id: number | null,
 }
 export type Prop = Selectable<PropsTable>
 export type NewProp = Insertable<PropsTable>
@@ -128,6 +129,16 @@ export type InviteToken = Selectable<InviteTokensTable>;
 export type NewInviteToken = Insertable<InviteTokensTable>;
 export type InviteTokenUpdate = Updateable<InviteTokensTable>;
 
+export interface CompetitionsTable {
+  id: Generated<number>,
+  name: string,
+  forecasts_due_date: Date,
+  end_date: Date,
+}
+export type Competition = Selectable<CompetitionsTable>
+export type NewCompetition = Insertable<CompetitionsTable>
+export type CompetitionUpdate = Updateable<CompetitionsTable>
+
 // Views
 
 export interface VPropsView {
@@ -137,7 +148,9 @@ export interface VPropsView {
   prop_user_id: number,
   category_id: number,
   category_name: string,
-  year: number,
+  competition_id: number | null,
+  competition_name: string | null,
+  competition_forecasts_due_date: Date | null,
   resolution_id: number | null,
   resolution: boolean | null,
   resolution_user_id: number | null,
@@ -146,21 +159,23 @@ export interface VPropsView {
 export type VProp = Selectable<VPropsView>
 
 export interface VForecastsView {
-  user_id: number,
-  user_name: string,
   category_id: number,
   category_name: string,
+  competition_id: number | null,
+  competition_name: string | null,
+  competition_forecasts_due_date: Date | null,
+  forecast_id: number
+  forecast: number,
   prop_id: number,
   prop_text: string,
   prop_notes: string | null,
-  year: number,
-  forecast_id: number
-  forecast: number,
   resolution_id: number | null,
   resolution: boolean | null,
   resolution_user_id: number | null,
   resolution_notes: string | null,
   score: number | null,
+  user_id: number,
+  user_name: string,
 }
 export type VForecast = Selectable<VForecastsView>
 

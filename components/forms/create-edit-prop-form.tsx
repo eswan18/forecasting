@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   createProp,
   getCategories,
-  getPropYears,
+  getCompetitions,
   updateProp,
 } from "@/lib/db_actions";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Category, VProp } from "@/types/db_types";
+import { Category, Competition, VProp } from "@/types/db_types";
 import {
   Select,
   SelectContent,
@@ -40,29 +40,38 @@ const formSchema = z.object({
     z.string().max(1000).nullable().optional(),
   ),
   category_id: z.coerce.number(),
-  year: z.coerce.number(),
-  user_id: z.coerce.string().optional().transform(
+  competition_id: z.coerce.string().transform(
+    (value) => (value === "null" ? null : parseInt(value, 10)),
+  ).nullable(),
+  user_id: z.coerce.string().transform(
     (
       value,
-    ) => (value === "null" || value === undefined ? null : parseInt(value, 10)),
+    ) => (value === "null" ? null : parseInt(value, 10)),
   ).nullable(),
-});
+}).refine(
+  (data) => !(data.user_id && data.competition_id),
+  {
+    message: "Props associated with a competition must be public.",
+    path: ["user_id"],
+  },
+);
 
 /*
  * Form for creating or editing a prop.
  * If initialProp is provided, the form will be in edit mode, otherwise in create mode.
  */
 export function CreateEditPropForm(
-  { initialProp, defaultUserId, onSubmit }: {
+  { initialProp, defaultUserId, defaultCompetitionId, onSubmit }: {
     initialProp?: VProp;
     defaultUserId?: number;
+    defaultCompetitionId?: number;
     onSubmit?: () => void;
   },
 ) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [years, setYears] = useState<number[]>([]);
+  const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [canEditPublicProps, setCanEditPublicProps] = useState(false);
   const { toast } = useToast();
   const initialUserId = initialProp?.prop_user_id || defaultUserId;
@@ -72,15 +81,16 @@ export function CreateEditPropForm(
       text: initialProp?.prop_text,
       notes: initialProp?.prop_notes || undefined,
       category_id: initialProp?.category_id,
-      year: initialProp?.year,
-      user_id: initialUserId,
+      competition_id: defaultCompetitionId ?? initialProp?.competition_id ??
+        null,
+      user_id: initialUserId ?? null,
     },
   });
   useEffect(() => {
     getCategories().then(async (categories) => {
       setCategories(categories);
-      const years = await getPropYears();
-      setYears(years);
+      const competitions = await getCompetitions();
+      setCompetitions(competitions);
       setLoading(false);
     });
     getUserFromCookies().then((user) => {
@@ -209,28 +219,29 @@ export function CreateEditPropForm(
         />
         <FormField
           control={form.control}
-          name="year"
+          name="competition_id"
           render={({ field }) => {
             return (
               <FormItem>
-                <FormLabel>Year</FormLabel>
+                <FormLabel>Competition</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   {...field}
-                  value={field.value?.toString()}
+                  value={field.value ? field.value.toString() : "null"}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a year" />
+                      <SelectValue placeholder="Select a competition" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {years.map((year) => (
+                    <SelectItem value="null">None</SelectItem>
+                    {competitions.map((competition) => (
                       <SelectItem
-                        key={year}
-                        value={year.toString()}
+                        key={competition.id}
+                        value={competition.id.toString()}
                       >
-                        {year}
+                        {competition.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
