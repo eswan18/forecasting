@@ -10,6 +10,8 @@ export async function up(db: Kysely<any>): Promise<void> {
 	//    have competition_id = 2. That makes the year column redundant.
 	// 5. Update views that user `year` to use `competition_id` and `competition_name` instead.
 	// 6. Drop the year column from props.
+	// 7. Add a constraint to `props`, ensuring that `competition_id` and `user_id` are
+	//    never both non-null.
 
 	// 1. Create the new table.
 	await db.schema
@@ -106,22 +108,37 @@ export async function up(db: Kysely<any>): Promise<void> {
 		.alterTable('props')
 		.dropColumn('year')
 		.execute();
+	// 7. Add a constraint to `props`, ensuring that `competition_id` and `user_id` are
+	//    never both non-null.
+	await db.schema
+		.alterTable('props')
+		.addCheckConstraint(
+			'never_both_competition_id_and_user_id_set',
+			sql<boolean>`competition_id IS NULL OR user_id IS NULL`,
+		)
+		.execute();
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
 	// Overview:
-	// 1. Re-add the year column.
-	// 2. Set it to 2024 for competition_id = 1 and 2025 for competition_id = 2.
-	// 3. Reset v_props and v_forecasts to use year instead of competition_id.
-	// 4. Drop the foreign key from props.
-	// 5. Finally, drop the competitions table.
+	// 1. Drop the 'never_both_competition_id_and_user_id_set' constraint on props.
+	// 2. Re-add the year column.
+	// 3. Set it to 2024 for competition_id = 1 and 2025 for competition_id = 2.
+	// 4. Reset v_props and v_forecasts to use year instead of competition_id.
+	// 5. Drop the foreign key from props.
+	// 6. Finally, drop the competitions table.
 
-	// 1. Re-add the year column.
+	// 1. Drop the 'never_both_competition_id_and_user_id_set' constraint on props.
+	await db.schema
+		.alterTable('props')
+		.dropConstraint('never_both_competition_id_and_user_id_set')
+		.execute();
+	// 2. Re-add the year column.
 	await db.schema
 		.alterTable('props')
 		.addColumn('year', 'integer')
 		.execute();
-	// 2. Set it to 2024 for competition_id = 1 and 2025 for competition_id = 2.
+	// 3. Set it to 2024 for competition_id = 1 and 2025 for competition_id = 2.
 	await db
 		.updateTable('props')
 		.set({ year: 2024 })
@@ -133,7 +150,7 @@ export async function down(db: Kysely<any>): Promise<void> {
 		.where('competition_id', '=', 2)
 		.execute();
 
-	// 3. Reset v_props and v_forecasts to use year instead of competition_id.
+	// 4. Reset v_props and v_forecasts to use year instead of competition_id.
 	await db.schema.dropView('v_props').execute();
 	await db.schema.dropView('v_forecasts').execute();
 	await sql<void>`CREATE VIEW v_props WITH (security_barrier, security_invoker) AS
@@ -175,12 +192,12 @@ export async function down(db: Kysely<any>): Promise<void> {
 			JOIN categories ON props.category_id = categories.id
 			LEFT JOIN resolutions ON props.id = resolutions.prop_id;
 	`.execute(db);
-	
-	// 4. Drop the foreign key from props.
+
+	// 5. Drop the foreign key from props.
 	await db.schema
 		.alterTable('props')
 		.dropColumn('competition_id')
 		.execute();
-	// 5. Finally, drop the competitions table.
+	// 6. Finally, drop the competitions table.
 	await db.schema.dropTable('competitions').execute();
 }
