@@ -14,11 +14,12 @@ export interface PropTableSearchParams {
 interface PropTableProps {
   data: VProp[];
   editable: boolean;
+  competitionId?: number | undefined;
   defaultPropUserId?: number | undefined;
 }
 
 export function PropTable(
-  { data, editable, defaultPropUserId }: PropTableProps,
+  { data, editable, competitionId, defaultPropUserId }: PropTableProps,
 ) {
   const router = useRouter();
   const pathName = usePathname();
@@ -81,6 +82,7 @@ export function PropTable(
           <CreateNewPropButton
             className="mb-4"
             defaultUserId={defaultPropUserId}
+            defaultCompetitionId={competitionId}
           />
         )}
       </div>

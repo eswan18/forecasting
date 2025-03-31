@@ -15,5 +15,11 @@ export default async function Page(
   const user = await getUserFromCookies();
   const allowEdits = user?.is_admin || false;
   const propsAndResolutions = await getProps({ competitionId });
-  return <PropTable data={propsAndResolutions} editable={allowEdits} />;
+  return (
+    <PropTable
+      data={propsAndResolutions}
+      editable={allowEdits}
+      competitionId={competitionId}
+    />
+  );
 }

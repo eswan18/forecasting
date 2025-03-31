@@ -46,7 +46,7 @@ const formSchema = z.object({
   user_id: z.coerce.string().transform(
     (
       value,
-    ) => (value === "null" || value === undefined ? null : parseInt(value, 10)),
+    ) => (value === "null" ? null : parseInt(value, 10)),
   ).nullable(),
 }).refine(
   (data) => !(data.user_id && data.competition_id),
@@ -61,9 +61,10 @@ const formSchema = z.object({
  * If initialProp is provided, the form will be in edit mode, otherwise in create mode.
  */
 export function CreateEditPropForm(
-  { initialProp, defaultUserId, onSubmit }: {
+  { initialProp, defaultUserId, defaultCompetitionId, onSubmit }: {
     initialProp?: VProp;
     defaultUserId?: number;
+    defaultCompetitionId?: number;
     onSubmit?: () => void;
   },
 ) {
@@ -80,8 +81,9 @@ export function CreateEditPropForm(
       text: initialProp?.prop_text,
       notes: initialProp?.prop_notes || undefined,
       category_id: initialProp?.category_id,
-      competition_id: initialProp?.competition_id ?? null,
-      user_id: initialUserId,
+      competition_id: defaultCompetitionId ?? initialProp?.competition_id ??
+        null,
+      user_id: initialUserId ?? null,
     },
   });
   useEffect(() => {
@@ -112,6 +114,7 @@ export function CreateEditPropForm(
           });
         });
       } else {
+        console.log("Creating prop", values);
         await createProp({ prop: values }).then(() => {
           toast({
             title: "Prop Created!",

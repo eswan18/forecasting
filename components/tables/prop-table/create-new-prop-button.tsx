@@ -13,8 +13,9 @@ import { Button } from "@/components/ui/button";
 import { CreateEditPropForm } from "@/components/forms/create-edit-prop-form";
 
 export default function CreateNewPropButton(
-  { className, defaultUserId }: {
+  { className, defaultCompetitionId, defaultUserId }: {
     className?: string;
+    defaultCompetitionId?: number;
     defaultUserId?: number;
   },
 ) {
@@ -35,6 +36,7 @@ export default function CreateNewPropButton(
         <CreateEditPropForm
           onSubmit={() => setOpen(false)}
           defaultUserId={defaultUserId}
+          defaultCompetitionId={defaultCompetitionId}
         />
       </DialogContent>
     </Dialog>
