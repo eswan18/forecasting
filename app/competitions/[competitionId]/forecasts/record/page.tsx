@@ -22,21 +22,32 @@ export default async function RecordForecastsPage(
   }
   let props = await getUnforecastedProps({ userId: user!.id, competitionId });
   props.sort((a, b) => a.prop_id - b.prop_id);
-  // Group props by category in a map.
-  const propsByCategoryId: Map<number, { category: Category; props: VProp[] }> =
-    new Map();
+
+  // Mapping from category IDs to the props in that category.
+  const propsByCategoryId: Map<(number | null), VProp[]> = new Map();
+  // Mapping from category IDs to category objects.
+  const categories: Map<(number | null), (Category | null)> = new Map();
   props.forEach((prop) => {
-    const categoryId = prop.category_id;
-    if (!propsByCategoryId.has(categoryId)) {
-      const category = { id: categoryId, name: prop.category_name };
-      propsByCategoryId.set(categoryId, { category, props: [prop] });
+    if (prop.category_id === null || prop.category_name === null) {
+      if (!categories.has(null)) {
+        categories.set(null, null);
+      }
+      if (!propsByCategoryId.has(null)) {
+        propsByCategoryId.set(null, []);
+      }
+      propsByCategoryId.get(null)!.push(prop);
     } else {
-      propsByCategoryId.get(categoryId)!.props.push(prop);
+      const category = { id: prop.category_id, name: prop.category_name };
+      if (!categories.has(category.id)) {
+        categories.set(category.id, category);
+      }
+      if (!propsByCategoryId.has(category.id)) {
+        propsByCategoryId.set(category.id, []);
+      }
+      propsByCategoryId.get(category.id)!.push(prop);
     }
   });
-  const categories = (await getCategories()).filter((c) =>
-    propsByCategoryId.has(c.id)
-  ).sort((a, b) => a.name < b.name ? -1 : 1);
+
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-lg">
@@ -51,19 +62,19 @@ export default async function RecordForecastsPage(
           </Link>
           .
         </p>
-        {categories.length > 0 && (
+        {categories.size > 0 && (
           <div className="flex flex-row my-3 items-center">
             <div className="text-muted-foreground text-xs pr-2">
               Jump to ...
             </div>
             <div className="flex flex-row flex-wrap justify-center">
-              {categories.map((category) => (
+              {Array.from(categories, ([categoryId, category]) => (
                 <Link
-                  href={`#category-${category.id}`}
-                  key={category.id}
+                  href={`#category-${categoryId ?? "uncategorized"}`}
+                  key={categoryId}
                 >
                   <Button variant="ghost" size="sm">
-                    {category.name}
+                    {category?.name ?? "Uncategorized"}
                   </Button>
                 </Link>
               ))}
@@ -85,10 +96,10 @@ export default async function RecordForecastsPage(
             : (
               Array.from(
                 propsByCategoryId,
-                ([categoryId, { category, props }]) => (
+                ([categoryId, props]) => (
                   <CategoryProps
                     key={categoryId}
-                    category={category}
+                    category={categories.get(categoryId) ?? null}
                     props={props}
                   />
                 ),
@@ -101,16 +112,16 @@ export default async function RecordForecastsPage(
 }
 
 function CategoryProps(
-  { category, props }: { category: Category; props: VProp[] },
+  { category, props }: { category: Category | null; props: VProp[] },
 ) {
   return (
     <div>
       <div className="w-[33%] border-b-foreground border-b mb-4 px-1">
         <h2
           className="text-muted-foreground text-xs mb-1"
-          id={`category-${category.id}`}
+          id={`category-${category?.id ?? "uncategorized"}`}
         >
-          {category.name}
+          {category?.name ?? "Uncategorized"}
         </h2>
       </div>
       <div className="flex flex-col gap-4">
