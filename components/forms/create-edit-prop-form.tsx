@@ -39,20 +39,26 @@ const formSchema = z.object({
     (arg) => (arg === "" ? null : arg),
     z.string().max(1000).nullable().optional(),
   ),
-  category_id: z.coerce.number(),
+  category_id: z.coerce.string().transform(
+    (value) => (value === "null" ? null : parseInt(value, 10)),
+  ).nullable(),
   competition_id: z.coerce.string().transform(
     (value) => (value === "null" ? null : parseInt(value, 10)),
   ).nullable(),
   user_id: z.coerce.string().transform(
-    (
-      value,
-    ) => (value === "null" ? null : parseInt(value, 10)),
+    (value) => (value === "null" ? null : parseInt(value, 10)),
   ).nullable(),
 }).refine(
-  (data) => !(data.user_id && data.competition_id),
+  (data) => data.competition_id === null || data.user_id === null,
   {
     message: "Props associated with a competition must be public.",
     path: ["user_id"],
+  },
+).refine(
+  (data) => !(data.user_id === null && data.category_id === null),
+  {
+    message: "Public props must have a category",
+    path: ["category_id"],
   },
 );
 
@@ -80,7 +86,7 @@ export function CreateEditPropForm(
     defaultValues: {
       text: initialProp?.prop_text,
       notes: initialProp?.prop_notes || undefined,
-      category_id: initialProp?.category_id,
+      category_id: initialProp?.category_id || null,
       competition_id: defaultCompetitionId ?? initialProp?.competition_id ??
         null,
       user_id: initialUserId ?? null,
@@ -194,7 +200,7 @@ export function CreateEditPropForm(
                 <Select
                   onValueChange={field.onChange}
                   {...field}
-                  value={field.value?.toString()}
+                  value={field.value ? field.value.toString() : "null"}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -202,6 +208,9 @@ export function CreateEditPropForm(
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
+                    <SelectItem value="null">
+                      None
+                    </SelectItem>
                     {categories.map((category) => (
                       <SelectItem
                         key={category.id}
