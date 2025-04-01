@@ -34,6 +34,11 @@ export default function OverallScoresChart(
   const userCategoryScores: UserCategoryScore[] = [];
   const categoryIdToName = new Map<number, string>();
   for (const forecast of scoredForecasts) {
+    // Skip over props without a category.
+    if (forecast.category_id === null || forecast.category_name === null) {
+      continue;
+    }
+
     const userCategoryScore = userCategoryScores.find((user) =>
       user.name === forecast.user_name
     );
@@ -82,7 +87,8 @@ export default function OverallScoresChart(
       name: userCategoryScore.name,
       totalScore: userCategoryScore.totalScore,
     }));
-  const categoryIds = scoredForecasts.map((forecast) => forecast.category_id);
+  const categoryIds = scoredForecasts.map((forecast) => forecast.category_id)
+    .filter((cat) => cat !== null);
   const uniqCategoryIds = [...new Set(categoryIds)];
   const categoryIdsAndColors = uniqCategoryIds.map((categoryId, index) => ({
     categoryId,
