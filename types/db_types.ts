@@ -49,7 +49,7 @@ export type CategoryUpdate = Updateable<CategoriesTable>
 export interface PropsTable {
   id: Generated<number>,
   text: string,
-  category_id: number,
+  category_id: number | null,
   notes: string | null,
   user_id: number | null,
   competition_id: number | null,
@@ -146,8 +146,8 @@ export interface VPropsView {
   prop_text: string,
   prop_notes: string | null,
   prop_user_id: number,
-  category_id: number,
-  category_name: string,
+  category_id: number | null,
+  category_name: string | null,
   competition_id: number | null,
   competition_name: string | null,
   competition_forecasts_due_date: Date | null,
@@ -159,8 +159,8 @@ export interface VPropsView {
 export type VProp = Selectable<VPropsView>
 
 export interface VForecastsView {
-  category_id: number,
-  category_name: string,
+  category_id: number | null,
+  category_name: string | null,
   competition_id: number | null,
   competition_name: string | null,
   competition_forecasts_due_date: Date | null,
