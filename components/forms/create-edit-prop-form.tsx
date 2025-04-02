@@ -35,19 +35,12 @@ import { getUserFromCookies } from "@/lib/get-user";
 
 const formSchema = z.object({
   text: z.string().min(8).max(1000),
-  notes: z.preprocess(
-    (arg) => (arg === "" ? null : arg),
-    z.string().max(1000).nullable().optional(),
+  notes: z.string().max(1000).nullable().transform((val) =>
+    val === "" ? null : val
   ),
-  category_id: z.coerce.string().transform(
-    (value) => (value === "null" ? null : parseInt(value, 10)),
-  ).nullable(),
-  competition_id: z.coerce.string().transform(
-    (value) => (value === "null" ? null : parseInt(value, 10)),
-  ).nullable(),
-  user_id: z.coerce.string().transform(
-    (value) => (value === "null" ? null : parseInt(value, 10)),
-  ).nullable(),
+  category_id: z.coerce.number().nullable(),
+  competition_id: z.coerce.number().nullable(),
+  user_id: z.coerce.number().nullable(),
 }).refine(
   (data) => data.competition_id === null || data.user_id === null,
   {
@@ -84,9 +77,9 @@ export function CreateEditPropForm(
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      text: initialProp?.prop_text,
-      notes: initialProp?.prop_notes || undefined,
-      category_id: initialProp?.category_id || null,
+      text: initialProp?.prop_text ?? "",
+      notes: initialProp?.prop_notes || null,
+      category_id: initialProp?.category_id ?? null,
       competition_id: defaultCompetitionId ?? initialProp?.competition_id ??
         null,
       user_id: initialUserId ?? null,
@@ -198,9 +191,10 @@ export function CreateEditPropForm(
               <FormItem>
                 <FormLabel>Category</FormLabel>
                 <Select
-                  onValueChange={field.onChange}
                   {...field}
-                  value={field.value ? field.value.toString() : "null"}
+                  value={field.value === null ? "null" : String(field.value)}
+                  onValueChange={(value) =>
+                    field.onChange(value === "null" ? null : Number(value))}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -208,14 +202,9 @@ export function CreateEditPropForm(
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="null">
-                      None
-                    </SelectItem>
+                    <SelectItem value="null">None</SelectItem>
                     {categories.map((category) => (
-                      <SelectItem
-                        key={category.id}
-                        value={category.id.toString()}
-                      >
+                      <SelectItem key={category.id} value={String(category.id)}>
                         {category.name}
                       </SelectItem>
                     ))}
@@ -234,9 +223,10 @@ export function CreateEditPropForm(
               <FormItem>
                 <FormLabel>Competition</FormLabel>
                 <Select
-                  onValueChange={field.onChange}
                   {...field}
-                  value={field.value ? field.value.toString() : "null"}
+                  value={field.value === null ? "null" : String(field.value)}
+                  onValueChange={(value) =>
+                    field.onChange(value === "null" ? null : Number(value))}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -248,7 +238,7 @@ export function CreateEditPropForm(
                     {competitions.map((competition) => (
                       <SelectItem
                         key={competition.id}
-                        value={competition.id.toString()}
+                        value={String(competition.id)}
                       >
                         {competition.name}
                       </SelectItem>
@@ -268,9 +258,10 @@ export function CreateEditPropForm(
               <FormItem>
                 <FormLabel>Public/Personal</FormLabel>
                 <Select
-                  onValueChange={field.onChange}
                   {...field}
-                  value={field.value ? field.value.toString() : "null"}
+                  value={field.value === null ? "null" : String(field.value)}
+                  onValueChange={(value) =>
+                    field.onChange(value === "null" ? null : Number(value))}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -280,14 +271,12 @@ export function CreateEditPropForm(
                   <SelectContent>
                     {initialUserId &&
                       (
-                        <SelectItem value={initialUserId.toString()}>
+                        <SelectItem value={String(initialUserId)}>
                           Personal
                         </SelectItem>
                       )}
                     {canEditPublicProps && (
-                      <SelectItem value="null">
-                        Public
-                      </SelectItem>
+                      <SelectItem value="null">Public</SelectItem>
                     )}
                   </SelectContent>
                 </Select>
