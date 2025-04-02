@@ -1,17 +1,36 @@
 import { Competition } from "@/types/db_types";
 import Link from "next/link";
 import { formatInTimeZone } from "date-fns-tz";
+import { Edit } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { CreateEditCompetitionForm } from "@/components/forms/create-edit-competition-form";
 
 export default function CompetitionRow(
   { competition, nProps }: { competition: Competition; nProps: number },
 ) {
-  console.log(competition.end_date);
   return (
     <div className="grid grid-cols-3 gap-4 p-4 border border-b-muted">
-      <div className="col-span-2 text-lg font-semibold">
+      <div className="col-span-2 text-lg font-semibold flex flex-row items-center justify-start gap-x-2">
         <Link href={`/competitions/${competition.id}/forecasts`}>
           {competition.name}
         </Link>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="ghost" size="icon" className="size-6">
+              <Edit size={18} />
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogTitle>Edit Competition</DialogTitle>
+            <CreateEditCompetitionForm initialCompetition={competition} />
+          </DialogContent>
+        </Dialog>
       </div>
       <div className="text-right">
         <Link href={`/competitions/${competition.id}/props`}>

@@ -23,6 +23,7 @@ export default async function Page() {
         <PageHeading title="Competitions" />
         {competitions.map((competition) => (
           <CompetitionRow
+            key={competition.id}
             competition={competition}
             nProps={propCountsByCompetitionId[competition.id]}
           />
