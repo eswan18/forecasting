@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
+import CompetitionStartEnd from "./competition-start-end";
 
 export default async function CompetitionLayout({
   children,
@@ -36,12 +37,11 @@ export default async function CompetitionLayout({
   if (!competition) {
     return <ErrorPage title="Competition not found" />;
   }
-  const competitionState = getCompetitionState(competition);
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <PageHeading
         title={competition.name}
-        className="flex flex-row items-start mb-4"
+        className="flex flex-row items-start mb-2"
       >
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -73,16 +73,7 @@ export default async function CompetitionLayout({
           </DropdownMenuContent>
         </DropdownMenu>
       </PageHeading>
-      <div className="flex flex-col items-center justify-start gap-y-2 mb-4 text-sm">
-        <p>
-          <span className="text-muted-foreground">{competitionState === "unstarted" ? "Begins" : "Began"}</span>{" "}
-          {String(competition.forecasts_due_date)}
-        </p>
-        <p>
-          <span className="text-muted-foreground">{competitionState === "ended" ? "Ended" : "Ends"}</span>{" "}
-          {String(competition.end_date)}
-        </p>
-      </div>
+      <CompetitionStartEnd competition={competition} />
       <div className="w-full max-w-3xl">
         <div className="flex flex-col items-center justify-start mb-4 gap-y-2">
           <Separator />
@@ -92,20 +83,4 @@ export default async function CompetitionLayout({
       </div>
     </main>
   );
-}
-
-function getCompetitionState(
-  competition: {
-    forecasts_due_date: Date;
-    end_date: Date;
-  },
-): "unstarted" | "ongoing" | "ended" {
-  const now = new Date();
-  if (competition.forecasts_due_date > now) {
-    return "unstarted";
-  }
-  if (competition.end_date < now) {
-    return "ended";
-  }
-  return "ongoing";
 }
