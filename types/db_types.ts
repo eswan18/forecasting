@@ -33,6 +33,8 @@ export interface UsersTable {
   email: string,
   login_id: number | null,
   is_admin: boolean,
+  updated_at: Generated<Date>,
+  created_at: Generated<Date>,
 }
 export type User = Selectable<UsersTable>
 export type NewUser = Insertable<UsersTable>
@@ -41,6 +43,8 @@ export type UserUpdate = Updateable<UsersTable>
 export interface CategoriesTable {
   id: Generated<number>,
   name: string,
+  updated_at: Generated<Date>,
+  created_at: Generated<Date>,
 }
 export type Category = Selectable<CategoriesTable>
 export type NewCategory = Insertable<CategoriesTable>
@@ -53,6 +57,8 @@ export interface PropsTable {
   notes: string | null,
   user_id: number | null,
   competition_id: number | null,
+  updated_at: Generated<Date>,
+  created_at: Generated<Date>,
 }
 export type Prop = Selectable<PropsTable>
 export type NewProp = Insertable<PropsTable>
@@ -63,6 +69,8 @@ export interface ForecastsTable {
   prop_id: number,
   user_id: number,
   forecast: number,
+  updated_at: Generated<Date>,
+  created_at: Generated<Date>,
 }
 export type Forecast = Selectable<ForecastsTable>
 export type NewForecast = Insertable<ForecastsTable>
@@ -74,6 +82,8 @@ export interface ResolutionsTable {
   resolution: boolean,
   notes: string | null,
   user_id: number | null,
+  updated_at: Generated<Date>,
+  created_at: Generated<Date>,
 }
 export type Resolution = Selectable<ResolutionsTable>
 export type NewResolution = Insertable<ResolutionsTable>
@@ -83,6 +93,8 @@ export interface LoginsTable {
   id: Generated<number>,
   username: string,
   password_hash: string,
+  updated_at: Generated<Date>,
+  created_at: Generated<Date>,
 }
 export type Login = Selectable<LoginsTable>
 export type NewLogin = Insertable<LoginsTable>
@@ -92,6 +104,8 @@ export interface SuggestedPropsTable {
   id: Generated<number>,
   suggester_user_id: number,
   prop: string,
+  updated_at: Generated<Date>,
+  created_at: Generated<Date>,
 }
 export type SuggestedProp = Selectable<SuggestedPropsTable>
 export type NewSuggestedProp = Insertable<SuggestedPropsTable>
@@ -102,6 +116,8 @@ export interface FeatureFlagsTable {
   name: string,
   user_id: number | null,
   enabled: boolean,
+  updated_at: Generated<Date>,
+  created_at: Generated<Date>,
 }
 export type FeatureFlag = Selectable<FeatureFlagsTable>
 export type NewFeatureFlag = Insertable<FeatureFlagsTable>
@@ -134,6 +150,8 @@ export interface CompetitionsTable {
   name: string,
   forecasts_due_date: Date,
   end_date: Date,
+  updated_at: Generated<Date>,
+  created_at: Generated<Date>,
 }
 export type Competition = Selectable<CompetitionsTable>
 export type NewCompetition = Insertable<CompetitionsTable>

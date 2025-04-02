@@ -26,7 +26,10 @@ export default async function RecordForecastsPage(
   // Mapping from category IDs to the props in that category.
   const propsByCategoryId: Map<(number | null), VProp[]> = new Map();
   // Mapping from category IDs to category objects.
-  const categories: Map<(number | null), (Category | null)> = new Map();
+  const categories: Map<
+    (number | null),
+    ({ id: number; name: string } | null)
+  > = new Map();
   props.forEach((prop) => {
     if (prop.category_id === null || prop.category_name === null) {
       if (!categories.has(null)) {
@@ -112,7 +115,10 @@ export default async function RecordForecastsPage(
 }
 
 function CategoryProps(
-  { category, props }: { category: Category | null; props: VProp[] },
+  { category, props }: {
+    category: { id: number; name: string } | null;
+    props: VProp[];
+  },
 ) {
   return (
     <div>
