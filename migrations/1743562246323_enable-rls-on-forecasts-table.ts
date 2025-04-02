@@ -7,7 +7,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 	// Users can view *all* forecasts, at least for now.
 	// Users can only update their own forecasts.
 	await sql<void>`
-		CREATE POLICY "everyone_sees_all" ON forecasts
+		CREATE POLICY everyone_sees_all ON forecasts
 		USING (1 = 1)
 		WITH CHECK (current_user_id() = forecasts.user_id);
 	`.execute(db);
@@ -20,7 +20,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
-	await sql<void>`DROP POLICY "users_own_records" ON forecasts;`.execute(db);
+	await sql<void>`DROP POLICY everyone_sees_all ON forecasts;`.execute(db);
 	await sql<void>`DROP POLICY admin_all_access ON forecasts;`.execute(db);
 	await sql<void>`ALTER TABLE forecasts DISABLE ROW LEVEL SECURITY`.execute(db);
 }
