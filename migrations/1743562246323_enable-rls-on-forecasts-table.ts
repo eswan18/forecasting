@@ -4,13 +4,12 @@ import { sql } from 'kysely'
 // `any` is required here since migrations should be frozen in time. alternatively, keep a "snapshot" db interface.
 export async function up(db: Kysely<any>): Promise<void> {
 	await sql<void>`ALTER TABLE forecasts ENABLE ROW LEVEL SECURITY`.execute(db);
-	// Users can view their own forecasts and public forecasts (where forecast.user_id
-	// is null).
+	// Users can view *all* forecasts, at least for now.
 	// Users can only update their own forecasts.
 	await sql<void>`
-		CREATE POLICY "users_own_records" ON forecasts
-		USING (forecasts.user_id IS NULL OR current_user_id() = forecasts.user_id)
-		WITH CHECK (forecasts.user_id IS NOT NULL AND current_user_id() = forecasts.user_id);
+		CREATE POLICY "everyone_sees_all" ON forecasts
+		USING (1 = 1)
+		WITH CHECK (current_user_id() = forecasts.user_id);
 	`.execute(db);
 	// Admins can read and write all forecasts.
 	await sql<void>`
