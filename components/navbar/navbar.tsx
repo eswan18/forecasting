@@ -71,6 +71,11 @@ export default async function NavBar() {
   const adminLinks: NavLink[] = [
     { href: "/admin/users", label: "Users", icon: <Users size={16} /> },
     {
+      href: "/admin/competitions",
+      label: "Competitions",
+      icon: <Medal size={16} />,
+    },
+    {
       href: "/admin/feature-flags",
       label: "Feature Flags",
       icon: <Flag size={16} />,
