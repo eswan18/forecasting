@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
+import { formatInTimeZone } from "date-fns-tz";
 
 interface DatePickerProps {
   selected?: Date;
@@ -22,7 +23,9 @@ export function DatePicker({ selected, onChange }: DatePickerProps) {
       <PopoverTrigger asChild>
         <Input
           readOnly
-          value={selected ? format(selected, "yyyy-MM-dd ' @  00:00 UTC'") : ""}
+          value={selected
+            ? formatInTimeZone(selected, "UTC", "yyyy-MM-dd '@' HH:mm 'UTC'")
+            : ""}
           placeholder="Select a date"
           className="text-left"
         />
@@ -35,7 +38,8 @@ export function DatePicker({ selected, onChange }: DatePickerProps) {
             onChange(date);
             setOpen(false);
           }}
-          initialFocus
+          autoFocus
+          timeZone="UTC"
         />
       </PopoverContent>
     </Popover>

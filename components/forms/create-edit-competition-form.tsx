@@ -3,12 +3,7 @@
 import { useState } from "react";
 import { AlertTriangle, LoaderCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import {
-  createProp,
-  getCategories,
-  getCompetitions,
-  updateProp,
-} from "@/lib/db_actions";
+import { createCompetition, updateCompetition } from "@/lib/db_actions";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -28,8 +23,8 @@ import { DatePicker } from "@/components/ui/date-picker";
 
 const formSchema = z.object({
   name: z.string().min(8).max(1000),
-  forecasts_due_date: z.coerce.date().optional(),
-  end_date: z.coerce.date().optional(),
+  forecasts_due_date: z.coerce.date(),
+  end_date: z.coerce.date(),
 });
 
 /*
@@ -130,7 +125,22 @@ export function CreateEditCompetitionForm(
               <FormControl>
                 <DatePicker
                   selected={field.value}
-                  onChange={(date) => field.onChange(date)}
+                  onChange={(date) => {
+                    if (date) {
+                      const utcDate = new Date(Date.UTC(
+                        date.getFullYear(),
+                        date.getMonth(),
+                        date.getDate(),
+                        date.getHours(),
+                        date.getMinutes(),
+                        date.getSeconds(),
+                        date.getMilliseconds(),
+                      ));
+                      field.onChange(utcDate);
+                    } else {
+                      field.onChange(undefined);
+                    }
+                  }}
                 />
               </FormControl>
               <FormMessage />
@@ -146,7 +156,22 @@ export function CreateEditCompetitionForm(
               <FormControl>
                 <DatePicker
                   selected={field.value}
-                  onChange={(date) => field.onChange(date)}
+                  onChange={(date) => {
+                    if (date) {
+                      const utcDate = new Date(Date.UTC(
+                        date.getFullYear(),
+                        date.getMonth(),
+                        date.getDate(),
+                        date.getHours(),
+                        date.getMinutes(),
+                        date.getSeconds(),
+                        date.getMilliseconds(),
+                      ));
+                      field.onChange(utcDate);
+                    } else {
+                      field.onChange(undefined);
+                    }
+                  }}
                 />
               </FormControl>
               <FormMessage />

@@ -1,3 +1,5 @@
+"use client";
+
 import { Competition } from "@/types/db_types";
 import Link from "next/link";
 import { formatInTimeZone } from "date-fns-tz";
@@ -10,17 +12,19 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { CreateEditCompetitionForm } from "@/components/forms/create-edit-competition-form";
+import { useState } from "react";
 
 export default function CompetitionRow(
   { competition, nProps }: { competition: Competition; nProps: number },
 ) {
+  const [open, setOpen] = useState(false);
   return (
     <div className="grid grid-cols-3 gap-4 p-4 border border-b-muted">
       <div className="col-span-2 text-lg font-semibold flex flex-row items-center justify-start gap-x-2">
         <Link href={`/competitions/${competition.id}/forecasts`}>
           {competition.name}
         </Link>
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button variant="ghost" size="icon" className="size-6">
               <Edit size={18} />
@@ -28,7 +32,10 @@ export default function CompetitionRow(
           </DialogTrigger>
           <DialogContent>
             <DialogTitle>Edit Competition</DialogTitle>
-            <CreateEditCompetitionForm initialCompetition={competition} />
+            <CreateEditCompetitionForm
+              initialCompetition={competition}
+              onSubmit={() => setOpen(false)}
+            />
           </DialogContent>
         </Dialog>
       </div>
