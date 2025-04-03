@@ -16,12 +16,10 @@ import { getUserFromCookies } from "@/lib/get-user";
 import { VUser } from "@/types/db_types";
 import { ReactElement } from "react";
 import {
-  BarChart,
   BarChartHorizontal,
   Flag,
   Medal,
   MessageCircle,
-  TrendingUpDown,
   User2,
   Users,
 } from "lucide-react";
@@ -46,12 +44,12 @@ export default async function NavBar() {
     links: [
       {
         href: "/competitions/1/forecasts",
-        label: "2024 Public Forecasts",
+        label: "2024 Open",
         icon: <Medal size={16} />,
       },
       {
         href: "/competitions/2/forecasts",
-        label: "2025 Public Forecasts",
+        label: "2025 Open",
         icon: <Medal size={16} />,
       },
     ],
