@@ -19,7 +19,6 @@ import { useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Competition } from "@/types/db_types";
 import { Input } from "@/components/ui/input";
-import { DateTimePicker } from "@/components/ui/datetime-picker";
 import DatePicker from "../ui/date-picker";
 
 const formSchema = z.object({
@@ -139,7 +138,7 @@ export function CreateEditCompetitionForm(
           name="end_date"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>End</FormLabel>
+              <FormLabel>Competition End</FormLabel>
               <FormControl>
                 <DatePicker
                   value={field.value}
