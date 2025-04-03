@@ -43,7 +43,7 @@ export function CreateEditCompetitionForm(
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: initialCompetition?.name,
+      name: initialCompetition?.name || "",
       forecasts_due_date: initialCompetition?.forecasts_due_date,
       end_date: initialCompetition?.end_date,
     },

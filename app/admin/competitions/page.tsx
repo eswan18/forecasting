@@ -1,6 +1,7 @@
 import PageHeading from "@/components/page-heading";
 import { getCompetitions, getProps } from "@/lib/db_actions";
 import CompetitionRow from "./competition-row";
+import CreateCompetitionButton from "./create-competition-button";
 
 export default async function Page() {
   const competitions = await getCompetitions();
@@ -20,12 +21,17 @@ export default async function Page() {
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-2xl">
-        <PageHeading title="Competitions" />
+        <PageHeading
+          title="Competitions"
+          className="flex flex-row justify-between"
+        >
+          <CreateCompetitionButton />
+        </PageHeading>
         {competitions.map((competition) => (
           <CompetitionRow
             key={competition.id}
             competition={competition}
-            nProps={propCountsByCompetitionId[competition.id]}
+            nProps={propCountsByCompetitionId[competition.id] ?? 0}
           />
         ))}
       </div>
