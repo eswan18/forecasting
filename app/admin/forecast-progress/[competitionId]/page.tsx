@@ -5,7 +5,6 @@ import {
   getUnforecastedProps,
   getUsers,
 } from "@/lib/db_actions";
-import { getUserFromCookies } from "@/lib/get-user";
 import { VUser } from "@/types/db_types";
 import { InaccessiblePage } from "@/components/inaccessible-page";
 import ErrorPage from "@/components/pages/error-page";
@@ -17,16 +16,6 @@ export default async function ForecastProgressPage(
   const competitionId = parseInt(competitionIdString, 10);
   if (isNaN(competitionId)) {
     return <ErrorPage title="Invalid competition ID" />;
-  }
-  const user = await getUserFromCookies();
-  const authorized = user?.is_admin;
-  if (!authorized) {
-    return (
-      <InaccessiblePage
-        title="No access"
-        message="Only admins can see this page."
-      />
-    );
   }
   const competition = await getCompetitionById(competitionId);
   if (!competition) {

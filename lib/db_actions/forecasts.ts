@@ -92,7 +92,7 @@ export async function getUnforecastedProps(
   // Fetch props without a corresponding entry in the forecasts table for that user.
   return db.transaction().execute(async (trx) => {
     await trx.executeQuery(sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(db));
-    return await db.
+    return await trx.
       selectFrom('v_props')
       .selectAll()
       .where('competition_id', '=', competitionId)

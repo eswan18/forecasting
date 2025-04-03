@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,8 +14,9 @@ import { VProp } from "@/types/db_types";
 import { CreateEditPropForm } from "@/components/forms/create-edit-prop-form";
 
 export function EditPropButton({ prop }: { prop: VProp }) {
+  const [open, setOpen] = useState(false);
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon" className="h-8 w-8">
           <span className="sr-only">Open menu</span>
@@ -25,7 +27,7 @@ export function EditPropButton({ prop }: { prop: VProp }) {
         <DialogHeader>
           <DialogTitle>Edit Prop</DialogTitle>
         </DialogHeader>
-        <CreateEditPropForm initialProp={prop} />
+        <CreateEditPropForm initialProp={prop} onSubmit={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );
