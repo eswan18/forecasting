@@ -20,6 +20,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Competition } from "@/types/db_types";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
+import { DateTimePicker } from "../ui/datetime-picker";
 
 const formSchema = z.object({
   name: z.string().min(8).max(1000),
@@ -123,24 +124,10 @@ export function CreateEditCompetitionForm(
             <FormItem>
               <FormLabel>Forecasts Due</FormLabel>
               <FormControl>
-                <DatePicker
-                  selected={field.value}
-                  onChange={(date) => {
-                    if (date) {
-                      const utcDate = new Date(Date.UTC(
-                        date.getFullYear(),
-                        date.getMonth(),
-                        date.getDate(),
-                        date.getHours(),
-                        date.getMinutes(),
-                        date.getSeconds(),
-                        date.getMilliseconds(),
-                      ));
-                      field.onChange(utcDate);
-                    } else {
-                      field.onChange(undefined);
-                    }
-                  }}
+                <DateTimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  timezone="UTC"
                 />
               </FormControl>
               <FormMessage />
@@ -154,24 +141,10 @@ export function CreateEditCompetitionForm(
             <FormItem>
               <FormLabel>End</FormLabel>
               <FormControl>
-                <DatePicker
-                  selected={field.value}
-                  onChange={(date) => {
-                    if (date) {
-                      const utcDate = new Date(Date.UTC(
-                        date.getFullYear(),
-                        date.getMonth(),
-                        date.getDate(),
-                        date.getHours(),
-                        date.getMinutes(),
-                        date.getSeconds(),
-                        date.getMilliseconds(),
-                      ));
-                      field.onChange(utcDate);
-                    } else {
-                      field.onChange(undefined);
-                    }
-                  }}
+                <DateTimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  timezone="UTC"
                 />
               </FormControl>
               <FormMessage />
