@@ -19,8 +19,8 @@ import { useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Competition } from "@/types/db_types";
 import { Input } from "@/components/ui/input";
-import { DatePicker } from "@/components/ui/date-picker";
-import { DateTimePicker } from "../ui/datetime-picker";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
+import DatePicker from "../ui/date-picker";
 
 const formSchema = z.object({
   name: z.string().min(8).max(1000),
@@ -121,13 +121,13 @@ export function CreateEditCompetitionForm(
           control={form.control}
           name="forecasts_due_date"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="flex flex-col">
               <FormLabel>Forecasts Due</FormLabel>
               <FormControl>
-                <DateTimePicker
+                <DatePicker
                   value={field.value}
                   onChange={field.onChange}
-                  timezone="UTC"
+                  timeZone="UTC"
                 />
               </FormControl>
               <FormMessage />
@@ -138,13 +138,13 @@ export function CreateEditCompetitionForm(
           control={form.control}
           name="end_date"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="flex flex-col">
               <FormLabel>End</FormLabel>
               <FormControl>
-                <DateTimePicker
+                <DatePicker
                   value={field.value}
                   onChange={field.onChange}
-                  timezone="UTC"
+                  timeZone="UTC"
                 />
               </FormControl>
               <FormMessage />

@@ -50,14 +50,14 @@ export default function CompetitionRow(
           <span className="text-muted-foreground">from</span> {formatInTimeZone(
             competition.forecasts_due_date,
             "UTC",
-            "yyyy-MM-dd HH:mm:ss 'UTC'",
+            "yyyy-MM-dd '@' HH:mm 'UTC'",
           )}
         </p>
         <p>
           <span className="text-muted-foreground">to</span> {formatInTimeZone(
             competition.end_date,
             "UTC",
-            "yyyy-MM-dd HH:mm:ss 'UTC'",
+            "yyyy-MM-dd '@' HH:mm 'UTC'",
           )}
         </p>
       </div>

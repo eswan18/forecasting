@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { format, getYear, isValid, parse } from "date-fns";
 import {
+  forwardRef,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -84,14 +85,15 @@ const mergeRefs = (...refs: any) => {
     }
   };
 };
-const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
+const DateTimeInput = forwardRef<HTMLInputElement, DateTimeInputProps>(
   (options: DateTimeInputProps, ref) => {
     const { format: formatProp, value: _value, timezone, ...rest } = options;
     const value = useMemo(() =>
       _value ? new TZDate(_value, timezone) : undefined, [_value, timezone]);
     const form = useFormContext();
-    const formatStr = React.useMemo(() =>
+    const formatStr = useMemo(() =>
       formatProp || "dd/MM/yyyy-hh:mm aa", [formatProp]);
+    // @ts-ignore
     const inputRef = useRef<HTMLInputElement>();
 
     const [segments, setSegments] = useState<Segment[]>([]);
