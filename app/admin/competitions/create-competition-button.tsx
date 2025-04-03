@@ -27,7 +27,7 @@ export default function CreateCompetitionButton(
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create new prop</DialogTitle>
+          <DialogTitle>Create new competition</DialogTitle>
         </DialogHeader>
         <CreateEditCompetitionForm onSubmit={() => setOpen(false)} />
       </DialogContent>

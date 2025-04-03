@@ -30,6 +30,7 @@ export async function updateCompetition({ id, competition }: { id: number, compe
     .where('id', '=', id)
     .execute();
   revalidatePath('/competitions');
+  revalidatePath('/admin/competitions');
 }
 
 export async function createCompetition({ competition }: { competition: NewCompetition }) {
@@ -42,4 +43,5 @@ export async function createCompetition({ competition }: { competition: NewCompe
     .values(competition)
     .execute();
   revalidatePath('/competitions');
+  revalidatePath('/admin/competitions');
 }
