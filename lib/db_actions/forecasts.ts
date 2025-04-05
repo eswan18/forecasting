@@ -52,7 +52,8 @@ export async function createForecast({ forecast }: { forecast: NewForecast }): P
       .executeTakeFirstOrThrow();
     return id;
   });
-  revalidatePath('/forecasts');
+  revalidatePath('/competitions');
+  revalidatePath('/standalone/forecasts');
   return id;
 }
 
@@ -85,7 +86,8 @@ export async function updateForecast({ id, forecast }: { id: number, forecast: F
       .where('id', '=', id)
       .execute();
   });
-  revalidatePath('/forecasts');
+  revalidatePath('/competitions');
+  revalidatePath('/standalone/forecasts');
 }
 
 export async function getUnforecastedProps(

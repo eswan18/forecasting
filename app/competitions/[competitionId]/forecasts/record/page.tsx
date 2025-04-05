@@ -1,5 +1,5 @@
-import { getCategories, getUnforecastedProps } from "@/lib/db_actions";
-import { Category, VProp } from "@/types/db_types";
+import { getUnforecastedProps } from "@/lib/db_actions";
+import { VProp } from "@/types/db_types";
 import { RecordForecastForm } from "@/components/forms/record-forecast-form";
 import { getUserFromCookies, loginAndRedirect } from "@/lib/get-user";
 import Link from "next/link";
