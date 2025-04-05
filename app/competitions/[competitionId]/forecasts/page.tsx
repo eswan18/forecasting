@@ -13,7 +13,7 @@ export default async function Page(
   const competitionId = parseInt(competitionIdString, 10);
   const authUser = await getUserFromCookies();
   if (!authUser) {
-    loginAndRedirect({ url: `/competitions/${competitionId}/forecasts` });
+    await loginAndRedirect({ url: `/competitions/${competitionId}/forecasts` });
   }
   const userIdString = (await searchParams).user_id;
   const userId = userIdString ? parseInt(userIdString, 10) : undefined;
