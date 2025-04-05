@@ -26,15 +26,15 @@ export default function ForecastCard(
         <p className="text-muted-foreground text-xs">{record.prop_notes}</p>
       </CardHeader>
       <CardContent>
-        <Separator className="w-full mb-1" />
-        <div className="w-full flex flex-row justify-between items-center">
+        <Separator className="w-full mb-2" />
+        <div className="w-full flex flex-row justify-between items-center sm:pl-3 sm:pr-2">
           <div className="flex flex-row gap-2 items-center">
+            <TrendingUpDown className="text-muted-foreground" size={16} />
             <ForecastFieldForm
               userId={userId}
               propId={record.prop_id}
               initialForecast={isForecast(record) ? record : undefined}
             />
-            <TrendingUpDown className="text-muted-foreground" size={16} />
           </div>
           <div className="flex flex-row gap-2 items-center">
             {isForecast(record)
