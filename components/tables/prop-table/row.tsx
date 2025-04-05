@@ -5,7 +5,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import ResolutionSelectWidget from "./resolution-select-widget";
+import ResolutionSelectWidget from "@/components/resolution-select-widget";
 import { resolveProp, unresolveProp } from "@/lib/db_actions";
 import { EditPropButton } from "./edit-prop-button";
 import { Label } from "@/components/ui/label";
@@ -53,7 +53,9 @@ export default function Row(
                 </span>
               </HoverCardTrigger>
               <HoverCardContent className="min-w-48 max-w-72">
-                <Label className="text-sm text-muted-foreground">Resolution Notes</Label>
+                <Label className="text-sm text-muted-foreground">
+                  Resolution Notes
+                </Label>
                 <p className="text-sm">{row.resolution_notes}</p>
               </HoverCardContent>
             </HoverCard>
