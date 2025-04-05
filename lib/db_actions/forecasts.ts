@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache';
 import { sql } from 'kysely';
 
 export async function getForecasts(
-  { userId, competitionId }: { userId?: number, competitionId?: number } = {}
+  { userId, competitionId }: { userId?: number, competitionId?: number | null } = {}
 ): Promise<VForecast[]> {
   const currentUser = await getUserFromCookies();
   return db.transaction().execute(async (trx) => {
@@ -16,8 +16,12 @@ export async function getForecasts(
     if (userId !== undefined) {
       query = query.where('user_id', '=', userId);
     }
-    if (competitionId !== undefined) {
+    if (typeof competitionId === 'number') {
+      // If competitionID is a number, we want to filter down to that competition.
       query = query.where('competition_id', '=', competitionId);
+    } else if (competitionId === null) {
+      // If competitionID is null, we want to filter down to forecasts that are not in a competition.
+      query = query.where('competition_id', 'is', null);
     }
     return await query.execute();
   });
