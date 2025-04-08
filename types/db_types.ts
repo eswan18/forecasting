@@ -184,6 +184,8 @@ export interface VForecastsView {
   competition_forecasts_due_date: Date | null,
   forecast_id: number
   forecast: number,
+  forecast_created_at: Date,
+  forecast_updated_at: Date,
   prop_id: number,
   prop_text: string,
   prop_notes: string | null,
@@ -191,6 +193,8 @@ export interface VForecastsView {
   resolution: boolean | null,
   resolution_user_id: number | null,
   resolution_notes: string | null,
+  resolution_created_at: Date | null,
+  resolution_updated_at: Date | null,
   score: number | null,
   user_id: number,
   user_name: string,
