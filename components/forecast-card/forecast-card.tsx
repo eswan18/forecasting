@@ -2,11 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { VForecast, VProp } from "@/types/db_types";
-import {
-  Card,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardFooter, CardHeader } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,7 +22,13 @@ import {
   TrendingUpDown,
 } from "lucide-react";
 import ResolutionSelectWidget from "@/components/resolution-select-widget";
-import { resolveProp, unresolveProp } from "@/lib/db_actions";
+import {
+  deleteForecast,
+  deleteProp,
+  deleteResolution,
+  resolveProp,
+  unresolveProp,
+} from "@/lib/db_actions";
 import ForecastFieldForm from "./forecast-field-form";
 import { CreateEditPropForm } from "@/components/forms/create-edit-prop-form";
 import {
@@ -67,10 +69,13 @@ export default function ForecastCard(
               userId={userId}
               propId={record.prop_id}
               initialForecast={isForecast(record) ? record : undefined}
+              // Adding a key causes this to rerender when the forecast is deleted,
+              // which clears the input field within.
+              key={isForecast(record) ? record.forecast_id : undefined}
             />
           </div>
           <div className="flex flex-row justify-end">
-            {isForecast(record)
+            {isForecast(record) || record.resolution_id
               ? (
                 <ResolutionSelectWidget
                   size="sm"
@@ -163,9 +168,6 @@ function ActionsButton({ record, userId }: {
               <Edit size={14} className="mr-2" /> Edit Prop
             </DropdownMenuItem>
           </DialogTrigger>
-          <DropdownMenuItem onClick={() => setDialogStatus("delete-prop")}>
-            <Trash size={14} className="mr-2" /> Delete Prop
-          </DropdownMenuItem>
           {isForecast(record)
             ? (
               <DropdownMenuItem onClick={() => setDialogStatus("clear-fcast")}>
@@ -173,6 +175,9 @@ function ActionsButton({ record, userId }: {
               </DropdownMenuItem>
             )
             : null}
+          <DropdownMenuItem onClick={() => setDialogStatus("delete-prop")}>
+            <Trash size={14} className="mr-2" /> Delete Prop
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       <DialogContent>
@@ -190,36 +195,71 @@ function ActionsButton({ record, userId }: {
           : (
             dialogStatus === "delete-prop"
               ? (
-                <>
-                  <DialogDescription>
-                    Are you sure? This will also delete the forecast and
-                    resolution.
-                  </DialogDescription>
-                  <DialogFooter>
-                    <Button
-                      variant="destructive"
-                      onClick={() => {/* delete logic */}}
-                    >
-                      Delete Prop & Forecast
-                    </Button>
-                  </DialogFooter>
-                </>
+                <DeletePropDialogContents
+                  record={record}
+                  onSubmit={() => setDialogStatus(null)}
+                />
               )
-              : (
-                <>
-                  <DialogDescription>Are you sure?</DialogDescription>
-                  <DialogFooter>
-                    <Button
-                      variant="destructive"
-                      onClick={() => {/* delete logic */}}
-                    >
-                      Clear Forecast
-                    </Button>
-                  </DialogFooter>
-                </>
-              )
+              : (isForecast(record)
+                ? (
+                  <ClearForecastDialogContents
+                    record={record}
+                    onSubmit={() => setDialogStatus(null)}
+                  />
+                )
+                : null)
           )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+function ClearForecastDialogContents(
+  { record, onSubmit }: { record: VForecast; onSubmit: () => void },
+) {
+  const handleClick = async () => {
+    await deleteForecast({ id: record.forecast_id });
+    onSubmit();
+  };
+  return (
+    <>
+      <DialogDescription>Are you sure?</DialogDescription>
+      <DialogFooter>
+        <Button variant="destructive" onClick={handleClick}>
+          Clear Forecast
+        </Button>
+      </DialogFooter>
+    </>
+  );
+}
+
+function DeletePropDialogContents(
+  { record, onSubmit }: { record: VForecast | VProp; onSubmit: () => void },
+) {
+  const description = isForecast(record)
+    ? (
+      record.resolution_id
+        ? "This will also delete the forecast and resolution."
+        : "This will also delete the forecast."
+    )
+    : (
+      record.resolution_id
+        ? "This will also delete the resolution."
+        : "Are you sure?"
+    );
+  const handleClick = async () => {
+    isForecast(record) && await deleteForecast({ id: record.forecast_id });
+    record.resolution_id &&
+      await deleteResolution({ id: record.resolution_id });
+    await deleteProp({ id: record.prop_id });
+    onSubmit();
+  };
+  return (
+    <>
+      <DialogDescription>{description}</DialogDescription>
+      <DialogFooter>
+        <Button variant="destructive" onClick={handleClick}>Delete Prop</Button>
+      </DialogFooter>
+    </>
   );
 }

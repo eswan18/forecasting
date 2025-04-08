@@ -132,3 +132,29 @@ export async function createProp({ prop }: { prop: NewProp }) {
   });
   revalidatePath('/props');
 }
+
+export async function deleteResolution({ id }: { id: number }): Promise<void> {
+  const currentUser = await getUserFromCookies();
+  await db.transaction().execute(async (trx) => {
+    await trx.executeQuery(sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(db));
+    await trx
+      .deleteFrom('resolutions')
+      .where('id', '=', id)
+      .execute();
+  });
+  revalidatePath('/props');
+  revalidatePath('/standalone');
+}
+
+export async function deleteProp({ id }: { id: number }): Promise<void> {
+  const currentUser = await getUserFromCookies();
+  await db.transaction().execute(async (trx) => {
+    await trx.executeQuery(sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(db));
+    await trx
+      .deleteFrom('props')
+      .where('id', '=', id)
+      .execute();
+  });
+  revalidatePath('/props');
+  revalidatePath('/standalone');
+}
