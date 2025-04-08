@@ -4,22 +4,14 @@ import { cn } from "@/lib/utils";
 import { VForecast, VProp } from "@/types/db_types";
 import {
   Card,
-  CardContent,
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
@@ -29,16 +21,13 @@ import {
   Calendar,
   CircleX,
   Edit,
-  Edit2,
   MoreHorizontal,
-  Plus,
   Trash,
   TrendingUpDown,
 } from "lucide-react";
 import ResolutionSelectWidget from "@/components/resolution-select-widget";
 import { resolveProp, unresolveProp } from "@/lib/db_actions";
 import ForecastFieldForm from "./forecast-field-form";
-import { EditPropButton } from "../tables/prop-table/edit-prop-button";
 import { CreateEditPropForm } from "@/components/forms/create-edit-prop-form";
 import {
   Dialog,
@@ -48,7 +37,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../ui/dialog";
+} from "@/components/ui/dialog";
 import { useState } from "react";
 
 export default function ForecastCard(
@@ -67,10 +56,9 @@ export default function ForecastCard(
       </div>
       <CardHeader className="pt-0 flex-1">
         <h3 className="text-card-foreground">{record.prop_text}</h3>
-        {/*<EditPropButton prop={record} />*/}
         <p className="text-muted-foreground text-xs">{record.prop_notes}</p>
       </CardHeader>
-      <CardFooter className="flex-col pb-3 flex-none">
+      <CardFooter className="flex-col pb-3 flex-none h-18">
         <Separator className="mb-2" />
         <div className="w-full grid grid-cols-2 gap-y-1 sm:pl-3 sm:pr-2">
           <div className="flex flex-row gap-2 justify-start items-center">
@@ -178,9 +166,13 @@ function ActionsButton({ record, userId }: {
           <DropdownMenuItem onClick={() => setDialogStatus("delete-prop")}>
             <Trash size={14} className="mr-2" /> Delete Prop
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setDialogStatus("clear-fcast")}>
-            <CircleX size={14} className="mr-2" /> Clear Forecast
-          </DropdownMenuItem>
+          {isForecast(record)
+            ? (
+              <DropdownMenuItem onClick={() => setDialogStatus("clear-fcast")}>
+                <CircleX size={14} className="mr-2" /> Clear Forecast
+              </DropdownMenuItem>
+            )
+            : null}
         </DropdownMenuContent>
       </DropdownMenu>
       <DialogContent>
@@ -199,7 +191,10 @@ function ActionsButton({ record, userId }: {
             dialogStatus === "delete-prop"
               ? (
                 <>
-                  <DialogDescription>Are you sure? This will also delete the forecast and resolution.</DialogDescription>
+                  <DialogDescription>
+                    Are you sure? This will also delete the forecast and
+                    resolution.
+                  </DialogDescription>
                   <DialogFooter>
                     <Button
                       variant="destructive"
