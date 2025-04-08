@@ -1,9 +1,8 @@
-import ForecastCard from "@/components/forecast-card";
-import CreateNewPropButton from "@/components/tables/prop-table/create-new-prop-button";
 import { getForecasts, getProps } from "@/lib/db_actions";
 import { getUserFromCookies } from "@/lib/get-user";
 import { Loader2 } from "lucide-react";
 import { Suspense } from "react";
+import ForecastGridListing from "./forecast-grid-listing";
 
 export default async function Page() {
   return (
@@ -39,17 +38,9 @@ async function ForecastPage() {
   // remove this line later: wait 1 second to simulate loading
   await new Promise((resolve) => setTimeout(resolve, 1000));
   return (
-    <div className="flex flex-col gap-y-4">
-      <CreateNewPropButton defaultUserId={user?.id} />
-      <div className="grid grid-cols-1 sm:grid-cols-2 justify-between gap-4 items-start">
-        {[...filteredProps, ...forecasts].map((record) => (
-          <ForecastCard
-            key={record.prop_id}
-            record={record}
-            userId={user.id}
-          />
-        ))}
-      </div>
-    </div>
+    <ForecastGridListing
+      records={[...forecasts, ...filteredProps]}
+      user={user}
+    />
   );
 }

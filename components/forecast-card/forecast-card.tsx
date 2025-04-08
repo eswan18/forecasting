@@ -15,6 +15,7 @@ import { Calendar, Edit2, Plus, TrendingUpDown } from "lucide-react";
 import ResolutionSelectWidget from "@/components/resolution-select-widget";
 import { resolveProp, unresolveProp } from "@/lib/db_actions";
 import ForecastFieldForm from "./forecast-field-form";
+import { EditPropButton } from "../tables/prop-table/edit-prop-button";
 
 export default function ForecastCard(
   { record, userId, className }: {
@@ -28,7 +29,10 @@ export default function ForecastCard(
   return (
     <Card className={className}>
       <CardHeader>
-        <h3 className="text-card-foreground">{record.prop_text}</h3>
+        <h3 className="text-card-foreground">
+          {record.prop_text}
+          <EditPropButton prop={record} />
+        </h3>
         <p className="text-muted-foreground text-xs">{record.prop_notes}</p>
       </CardHeader>
       <CardFooter className="flex-col pb-3">
