@@ -17,8 +17,7 @@ export default async function CompetitionLayout({
       <PageHeading
         title="Standalone Forecasts"
         className="mb-2"
-      >
-      </PageHeading>
+      />
       <p className="mb-4 text-muted-foreground">
         Forecasts not associated with a competition
       </p>

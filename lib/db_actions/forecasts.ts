@@ -1,13 +1,16 @@
 'use server';
 
-import { ForecastUpdate, NewForecast, VForecast, VProp } from '@/types/db_types';
+import { Database, ForecastUpdate, NewForecast, VForecast, VProp } from '@/types/db_types';
 import { db } from '@/lib/database';
 import { getUserFromCookies } from '@/lib/get-user';
 import { revalidatePath } from 'next/cache';
-import { sql } from 'kysely';
+import { OrderByExpression, sql } from 'kysely';
+
+type VForecastsOrderByExpression = OrderByExpression<Database, 'v_forecasts', {}>
 
 export async function getForecasts(
-  { userId, competitionId }: { userId?: number, competitionId?: number | null } = {}
+  { userId, competitionId, sort }:
+    { userId?: number, competitionId?: number | null, sort?: VForecastsOrderByExpression | ReadonlyArray<VForecastsOrderByExpression> }
 ): Promise<VForecast[]> {
   const currentUser = await getUserFromCookies();
   return db.transaction().execute(async (trx) => {
@@ -22,6 +25,10 @@ export async function getForecasts(
     } else if (competitionId === null) {
       // If competitionID is null, we want to filter down to forecasts that are not in a competition.
       query = query.where('competition_id', 'is', null);
+    }
+    if (sort) {
+      const sortClause = Array.isArray(sort) ? sort : [sort];
+      query = query.orderBy(sortClause);
     }
     return await query.execute();
   });
