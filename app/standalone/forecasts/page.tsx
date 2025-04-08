@@ -21,7 +21,7 @@ async function ForecastPage() {
     userId: user.id,
   });
   const props = await getProps({ competitionId: null });
-  // We fetch all standalone props and forecasts, but we there are duplicates in here:
+  // We fetch all standalone props and forecasts, but there are duplicates in here:
   // any prop that has a forecast. So we remove props that also appear in the forecast
   // array.
   const filteredProps = props.filter((prop) =>
@@ -30,7 +30,7 @@ async function ForecastPage() {
   // remove this line later: wait 1 second to simulate loading
   await new Promise((resolve) => setTimeout(resolve, 1000));
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 justify-between gap-4 items-start">
+    <div className="grid grid-cols-1 sm:grid-cols-2 justify-between gap-4 items-start">
       {[...filteredProps, ...forecasts].map((record) => (
         <ForecastCard
           key={record.prop_id}

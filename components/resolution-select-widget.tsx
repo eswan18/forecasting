@@ -31,12 +31,12 @@ export default function ResolutionSelectWidget(
   const resolutionToSet = lastClicked === resolution ? undefined : lastClicked;
   const buttonClasses = (selected: boolean) =>
     `${
-      size == "lg" ? "px-4 py-1.5" : "px-2 py-0.5"
+      size == "lg" ? "px-4 py-1.5" : "px-2 py-1"
     } rounded-full transition-colors duration-200 hover:bg-accent hover:text-accent-foreground ${
       selected ? "bg-background" : "text-muted-foreground"
     }`;
   return (
-    <div className="inline-flex justify-between items-center bg-secondary rounded-full p-1 w-fit mx-1">
+    <div className="inline-flex justify-between items-center bg-secondary rounded-full p-1 w-fit">
       <Dialog open={dialogIsOpen} onOpenChange={setDialogIsOpen}>
         <DialogTrigger asChild>
           <button

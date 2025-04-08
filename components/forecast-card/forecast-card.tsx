@@ -2,10 +2,16 @@
 
 import { cn } from "@/lib/utils";
 import { VForecast, VProp } from "@/types/db_types";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Edit2, Plus, TrendingUpDown } from "lucide-react";
+import { formatInTimeZone } from "date-fns-tz";
+import { Calendar, Edit2, Plus, TrendingUpDown } from "lucide-react";
 import ResolutionSelectWidget from "@/components/resolution-select-widget";
 import { resolveProp, unresolveProp } from "@/lib/db_actions";
 import ForecastFieldForm from "./forecast-field-form";
@@ -17,7 +23,7 @@ export default function ForecastCard(
     className?: string;
   },
 ) {
-  const defaultClasses = "";
+  const defaultClasses = "min-h-48 flex flex-col justify-between";
   className = cn(defaultClasses, className);
   return (
     <Card className={className}>
@@ -25,10 +31,10 @@ export default function ForecastCard(
         <h3 className="text-card-foreground">{record.prop_text}</h3>
         <p className="text-muted-foreground text-xs">{record.prop_notes}</p>
       </CardHeader>
-      <CardContent>
-        <Separator className="w-full mb-2" />
-        <div className="w-full flex flex-row justify-between items-center sm:pl-3 sm:pr-2">
-          <div className="flex flex-row gap-2 items-center">
+      <CardFooter className="flex-col pb-3">
+        <Separator className="mb-2" />
+        <div className="w-full grid grid-cols-2 gap-y-1 sm:pl-3 sm:pr-2">
+          <div className="flex flex-row gap-2 justify-start items-center">
             <TrendingUpDown className="text-muted-foreground" size={16} />
             <ForecastFieldForm
               userId={userId}
@@ -36,7 +42,7 @@ export default function ForecastCard(
               initialForecast={isForecast(record) ? record : undefined}
             />
           </div>
-          <div className="flex flex-row gap-2 items-center">
+          <div className="flex flex-row justify-end">
             {isForecast(record)
               ? (
                 <ResolutionSelectWidget
@@ -56,8 +62,34 @@ export default function ForecastCard(
               )
               : null}
           </div>
+          {isForecast(record)
+            ? (
+              <>
+                <div className="flex flex-row gap-1 justify-start items-center text-xs text-muted-foreground">
+                  <Calendar size={10} /> {formatInTimeZone(
+                    record.forecast_updated_at,
+                    "UTC",
+                    "yyyy-MM-dd",
+                  )}
+                </div>
+                <div className="flex flex-row justify-end gap-1 items-center text-xs text-muted-foreground">
+                  {record.resolution_updated_at !== null
+                    ? (
+                      <>
+                        <Calendar size={10} /> {formatInTimeZone(
+                          record.resolution_updated_at,
+                          "UTC",
+                          "yyyy-MM-dd",
+                        )}
+                      </>
+                    )
+                    : null}
+                </div>
+              </>
+            )
+            : null}
         </div>
-      </CardContent>
+      </CardFooter>
     </Card>
   );
 }
