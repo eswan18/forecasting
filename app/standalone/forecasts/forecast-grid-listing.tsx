@@ -4,7 +4,7 @@ import CreateNewPropButton from "@/components/tables/prop-table/create-new-prop-
 import { VForecast, VProp, VUser } from "@/types/db_types";
 import ForecastCard from "@/components/forecast-card";
 import { useState } from "react";
-import { ArrowUpDown, ChevronDown, ChevronsUpDown, Search } from "lucide-react";
+import { ArrowUpDown, Search } from "lucide-react";
 
 export default function ForecastGridListing({ records, user }: {
   records: (VProp | VForecast)[];
@@ -41,7 +41,9 @@ export default function ForecastGridListing({ records, user }: {
       <div className="grid grid-cols-1 sm:grid-cols-2 justify-between gap-4 items-start">
         {records.map((record) => (
           <ForecastCard
-            key={record.prop_id}
+            key={isForecast(record)
+              ? `fcast-${record.forecast_id}`
+              : `prop-${record.prop_id}`}
             record={record}
             userId={user.id}
           />
@@ -49,4 +51,9 @@ export default function ForecastGridListing({ records, user }: {
       </div>
     </div>
   );
+}
+
+// type guard to check if a record is a forecast
+function isForecast(record: VProp | VForecast): record is VForecast {
+  return (record as VForecast).forecast_id !== undefined;
 }
