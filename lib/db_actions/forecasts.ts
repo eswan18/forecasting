@@ -1,13 +1,16 @@
 'use server';
 
-import { ForecastUpdate, NewForecast, VForecast, VProp } from '@/types/db_types';
+import { Database, ForecastUpdate, NewForecast, VForecast, VProp } from '@/types/db_types';
 import { db } from '@/lib/database';
 import { getUserFromCookies } from '@/lib/get-user';
 import { revalidatePath } from 'next/cache';
-import { sql } from 'kysely';
+import { OrderByExpression, sql } from 'kysely';
+
+type VForecastsOrderByExpression = OrderByExpression<Database, 'v_forecasts', {}>
 
 export async function getForecasts(
-  { userId, competitionId }: { userId?: number, competitionId?: number } = {}
+  { userId, competitionId, sort }:
+    { userId?: number, competitionId?: number | null, sort?: VForecastsOrderByExpression | ReadonlyArray<VForecastsOrderByExpression> }
 ): Promise<VForecast[]> {
   const currentUser = await getUserFromCookies();
   return db.transaction().execute(async (trx) => {
@@ -16,8 +19,16 @@ export async function getForecasts(
     if (userId !== undefined) {
       query = query.where('user_id', '=', userId);
     }
-    if (competitionId !== undefined) {
+    if (typeof competitionId === 'number') {
+      // If competitionID is a number, we want to filter down to that competition.
       query = query.where('competition_id', '=', competitionId);
+    } else if (competitionId === null) {
+      // If competitionID is null, we want to filter down to forecasts that are not in a competition.
+      query = query.where('competition_id', 'is', null);
+    }
+    if (sort) {
+      const sortClause = Array.isArray(sort) ? sort : [sort];
+      query = query.orderBy(sortClause);
     }
     return await query.execute();
   });
@@ -48,7 +59,8 @@ export async function createForecast({ forecast }: { forecast: NewForecast }): P
       .executeTakeFirstOrThrow();
     return id;
   });
-  revalidatePath('/forecasts');
+  revalidatePath('/competitions');
+  revalidatePath('/standalone/forecasts');
   return id;
 }
 
@@ -81,7 +93,8 @@ export async function updateForecast({ id, forecast }: { id: number, forecast: F
       .where('id', '=', id)
       .execute();
   });
-  revalidatePath('/forecasts');
+  revalidatePath('/competitions');
+  revalidatePath('/standalone/forecasts');
 }
 
 export async function getUnforecastedProps(
@@ -105,4 +118,17 @@ export async function getUnforecastedProps(
       ))
       .execute();
   });
+}
+
+export async function deleteForecast({ id }: { id: number }): Promise<void> {
+  const currentUser = await getUserFromCookies();
+  await db.transaction().execute(async (trx) => {
+    await trx.executeQuery(sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(db));
+    await trx
+      .deleteFrom('forecasts')
+      .where('id', '=', id)
+      .execute();
+  });
+  revalidatePath('/competitions');
+  revalidatePath('/standalone/forecasts');
 }

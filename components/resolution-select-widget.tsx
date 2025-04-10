@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,9 +15,10 @@ import { Check, X } from "lucide-react";
 import { useState } from "react";
 
 export default function ResolutionSelectWidget(
-  { resolution, setResolution }: {
+  { resolution, setResolution, size = "lg" }: {
     resolution: boolean | undefined;
     setResolution: (value: boolean | undefined, notes?: string) => void;
+    size?: "sm" | "lg";
   },
 ) {
   const [lastClicked, setLastClicked] = useState<boolean | undefined>(
@@ -27,11 +30,13 @@ export default function ResolutionSelectWidget(
   // unresolve it. Otherwise, we want to set it to the last clicked value.
   const resolutionToSet = lastClicked === resolution ? undefined : lastClicked;
   const buttonClasses = (selected: boolean) =>
-    `px-4 py-1.5 rounded-full transition-colors duration-200 hover:bg-accent hover:text-accent-foreground ${
+    `${
+      size == "lg" ? "px-4 py-1.5" : "px-2 py-1"
+    } rounded-full transition-colors duration-200 hover:bg-accent hover:text-accent-foreground ${
       selected ? "bg-background" : "text-muted-foreground"
     }`;
   return (
-    <div className="inline-flex justify-between items-center bg-secondary rounded-full p-1 w-fit mx-1">
+    <div className="inline-flex justify-between items-center bg-secondary rounded-full p-1 w-fit">
       <Dialog open={dialogIsOpen} onOpenChange={setDialogIsOpen}>
         <DialogTrigger asChild>
           <button

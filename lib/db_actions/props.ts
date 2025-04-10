@@ -6,34 +6,60 @@ import { VProp, PropUpdate, NewProp, NewResolution } from "@/types/db_types";
 import { sql } from 'kysely';
 
 export async function getProps(
-  { competitionId, userId = null }:
-    { competitionId?: number | number[], userId?: (number | null)[] | number | null }
+  { competitionId, userId }:
+    { competitionId?: (number | null)[] | number | null, userId?: (number | null)[] | number | null }
 ): Promise<VProp[]> {
+  // Clients can pass a single user ID (or null) or a single competition ID (or null) or
+  // an array of IDs.
+  // Standardize the input to an array of IDs.
   if (typeof userId === 'number') {
     userId = [userId];
   } else if (userId === null) {
     userId = [null];
   }
+  if (typeof competitionId === 'number') {
+    competitionId = [competitionId];
+  } else if (competitionId === null) {
+    competitionId = [null];
+  }
+
+  // Build and execute the query.
   const user = await getUserFromCookies();
   return db.transaction().execute(async (trx) => {
     await trx.executeQuery(sql`SELECT set_config('app.current_user_id', ${user?.id}, true);`.compile(db));
     let query = trx.selectFrom('v_props').orderBy('prop_id asc').selectAll();
-    if (competitionId) {
-      const competitionClause = Array.isArray(competitionId) ? competitionId : [competitionId];
-      query = query.where('competition_id', 'in', competitionClause);
+
+    if (competitionId !== undefined) {
+      // Add filters for competitions, if requested.
+      const nonNullCompetitionIds = competitionId ? competitionId.filter(id => id !== null) : [];
+      query = query.where((eb) => {
+        const ors = [];
+        if (nonNullCompetitionIds.length > 0) {
+          ors.push(eb('competition_id', 'in', nonNullCompetitionIds));
+        }
+        if (competitionId && competitionId.find(id => id === null) !== undefined) {
+          // If null is in the array, include rows where competition_id is null.
+          ors.push(eb('competition_id', 'is', null));
+        }
+        return eb.or(ors);
+      });
     }
-    query = query.where((eb) => {
-      const ors = [];
+
+    if (userId !== undefined) {
+      // Add filters for users, if requested.
       const nonNullUserIds = userId ? userId.filter(id => id !== null) : [];
-      if (nonNullUserIds.length > 0) {
-        ors.push(eb('prop_user_id', 'in', nonNullUserIds));
-      }
-      if (userId && userId.find(id => id === null) !== undefined) {
-        // If null is in the array, we want to include public props (where prop_user_id is null).
-        ors.push(eb('prop_user_id', 'is', null));
-      }
-      return eb.or(ors);
-    });
+      query = query.where((eb) => {
+        const ors = [];
+        if (nonNullUserIds.length > 0) {
+          ors.push(eb('prop_user_id', 'in', nonNullUserIds));
+        }
+        if (userId && userId.find(id => id === null) !== undefined) {
+          // If null is in the array, we want to include public props (where prop_user_id is null).
+          ors.push(eb('prop_user_id', 'is', null));
+        }
+        return eb.or(ors);
+      });
+    }
     return await query.execute();
   });
 }
@@ -105,4 +131,30 @@ export async function createProp({ prop }: { prop: NewProp }) {
       .execute();
   });
   revalidatePath('/props');
+}
+
+export async function deleteResolution({ id }: { id: number }): Promise<void> {
+  const currentUser = await getUserFromCookies();
+  await db.transaction().execute(async (trx) => {
+    await trx.executeQuery(sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(db));
+    await trx
+      .deleteFrom('resolutions')
+      .where('id', '=', id)
+      .execute();
+  });
+  revalidatePath('/props');
+  revalidatePath('/standalone');
+}
+
+export async function deleteProp({ id }: { id: number }): Promise<void> {
+  const currentUser = await getUserFromCookies();
+  await db.transaction().execute(async (trx) => {
+    await trx.executeQuery(sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(db));
+    await trx
+      .deleteFrom('props')
+      .where('id', '=', id)
+      .execute();
+  });
+  revalidatePath('/props');
+  revalidatePath('/standalone');
 }

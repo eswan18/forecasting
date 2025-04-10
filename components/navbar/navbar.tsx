@@ -58,10 +58,10 @@ export default async function NavBar() {
     userId && await hasFeatureEnabled({ featureName: "personal-props", userId })
   ) {
     links.push({
-      label: "Personal",
+      label: "Standalone",
       links: [{
-        href: `/props/user/${userId}`,
-        label: "Your Personal Props",
+        href: `/standalone/forecasts`,
+        label: "Standalone Forecasts",
         icon: <User2 size={16} />,
       }],
     });
