@@ -18,6 +18,7 @@ export default function ForecastGridListing({ records, user }: {
     if (record.prop_notes?.toLowerCase().includes(propFilter.toLowerCase())) {
       return true;
     }
+    return false;
   });
   return (
     <div className="flex flex-col gap-y-4">
