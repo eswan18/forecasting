@@ -1,4 +1,4 @@
-import { DataTable } from "./data-table";
+import UsersTable from "./users-table";
 import PageHeading from "@/components/page-heading";
 import { getUsers } from "@/lib/db_actions";
 import { InviteUserButton } from "./invite-user-button";
@@ -12,7 +12,7 @@ export default async function Page() {
         <PageHeading title="Users">
           <InviteUserButton className="ml-8" />
         </PageHeading>
-        <DataTable data={users} />
+        <UsersTable data={users} />
       </div>
     </main>
   );

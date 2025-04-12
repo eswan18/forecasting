@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import ThemeToggle from "@/components/navbar/theme-toggle";
 
 const meta = {
-  title: "Example/ThemeToggle",
+  title: "Navbar/ThemeToggle",
   component: ThemeToggle,
   parameters: {
     layout: "centered",
@@ -14,6 +14,6 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const ResolvedTrue: Story = {
+export const Default: Story = {
   args: {}
 };
