@@ -24,7 +24,7 @@ import { VUser } from "@/types/db_types";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { getColumns } from "./columns";
 
-export function DataTable({ data }: { data: VUser[] }) {
+export default function UsersTable({ data }: { data: VUser[] }) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   // The columns object needs access to `mutateUser`, which can only be accessed in a client component.
