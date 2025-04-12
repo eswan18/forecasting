@@ -39,7 +39,6 @@
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "dotenv": "^16.5.0",
-    "fs": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "kysely": "^0.27.6",
     "lucide-react": "^0.487.0",
