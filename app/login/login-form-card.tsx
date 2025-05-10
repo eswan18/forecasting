@@ -133,7 +133,7 @@ export default function LoginFormCard(
           <div className="mt-4 flex flex-col gap-y-4">
             <p className="text-center text-sm text-muted-foreground">
               Forgot your credentials?
-              <Link href="/reset-password">
+              <Link href="/reset-password" legacyBehavior>
                 <Button variant="link">
                   Reset password
                 </Button>

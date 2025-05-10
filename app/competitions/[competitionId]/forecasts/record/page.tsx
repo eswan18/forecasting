@@ -75,7 +75,7 @@ export default async function RecordForecastsPage(
                 <Link
                   href={`#category-${categoryId ?? "uncategorized"}`}
                   key={categoryId}
-                >
+                  legacyBehavior>
                   <Button variant="ghost" size="sm">
                     {category?.name ?? "Uncategorized"}
                   </Button>

@@ -63,7 +63,7 @@ export default async function CompetitionLayout({
                   <Link
                     href={`/competitions/${competition.id}/forecasts`}
                     key={competition.id}
-                  >
+                    legacyBehavior>
                     <DropdownMenuItem>
                       {competition.name}
                     </DropdownMenuItem>

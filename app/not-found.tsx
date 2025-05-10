@@ -11,7 +11,7 @@ export default function NotFound() {
         <PageHeading title="404: Not Found" />
         <div className="flex flex-col justify-start items-start gap-3">
           <p>Could not find requested resource</p>
-          <Link href="/">
+          <Link href="/" legacyBehavior>
             <Button>Return Home</Button>
           </Link>
         </div>

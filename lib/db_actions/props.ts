@@ -27,7 +27,7 @@ export async function getProps(
   const user = await getUserFromCookies();
   return db.transaction().execute(async (trx) => {
     await trx.executeQuery(sql`SELECT set_config('app.current_user_id', ${user?.id}, true);`.compile(db));
-    let query = trx.selectFrom('v_props').orderBy('prop_id asc').selectAll();
+    let query = trx.selectFrom('v_props').orderBy('prop_id', 'asc').selectAll();
 
     if (competitionId !== undefined) {
       // Add filters for competitions, if requested.
