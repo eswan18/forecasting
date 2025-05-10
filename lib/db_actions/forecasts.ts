@@ -4,13 +4,17 @@ import { Database, ForecastUpdate, NewForecast, VForecast, VProp } from '@/types
 import { db } from '@/lib/database';
 import { getUserFromCookies } from '@/lib/get-user';
 import { revalidatePath } from 'next/cache';
-import { OrderByExpression, sql } from 'kysely';
+import { OrderByExpression, OrderByModifiers, sql } from 'kysely';
 
 type VForecastsOrderByExpression = OrderByExpression<Database, 'v_forecasts', {}>
+type Sort = {
+  expr: VForecastsOrderByExpression,
+  modifiers?: OrderByModifiers
+}
 
 export async function getForecasts(
   { userId, competitionId, sort }:
-    { userId?: number, competitionId?: number | null, sort?: VForecastsOrderByExpression | ReadonlyArray<VForecastsOrderByExpression> }
+    { userId?: number, competitionId?: number | null, sort?: Sort }
 ): Promise<VForecast[]> {
   const currentUser = await getUserFromCookies();
   return db.transaction().execute(async (trx) => {
@@ -27,8 +31,7 @@ export async function getForecasts(
       query = query.where('competition_id', 'is', null);
     }
     if (sort) {
-      const sortClause = Array.isArray(sort) ? sort : [sort];
-      query = query.orderBy(sortClause);
+      query = query.orderBy(sort.expr, sort.modifiers);
     }
     return await query.execute();
   });

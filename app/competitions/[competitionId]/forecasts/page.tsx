@@ -19,7 +19,7 @@ export default async function Page(
   const userId = userIdString ? parseInt(userIdString, 10) : undefined;
   const forecasts = await getForecasts({ userId, competitionId });
   // todo – make sure that only some situations are editable – like if the user is looking at their own props.
-  const allUsers = await getUsers({ sort: "name asc" });
+  const allUsers = await getUsers({ sort: { expr: "name", modifiers: "asc" } });
   const editable = true;
   const makeRedirectLink = async (userId: number | undefined) => {
     "use server";

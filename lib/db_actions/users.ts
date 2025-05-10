@@ -1,23 +1,23 @@
 'use server';
 
-import { OrderByExpression } from 'kysely';
+import { OrderByExpression, OrderByModifiers } from 'kysely';
 import { db } from '@/lib/database';
 import { VUser, NewUser, UserUpdate, Database } from '@/types/db_types';
 import { getUserFromCookies } from '@/lib/get-user';
 
-type VUsersOrderByExpression = OrderByExpression<Database, 'v_users', {}>
+type Sort = {
+  expr: OrderByExpression<Database, 'v_users', VUser>,
+  modifiers?: OrderByModifiers
+}
 
-export async function getUsers(
-  { sort }: { sort?: VUsersOrderByExpression | ReadonlyArray<VUsersOrderByExpression> } = {},
-): Promise<VUser[]> {
+export async function getUsers({ sort }: { sort?: Sort } = {}): Promise<VUser[]> {
   const user = await getUserFromCookies();
   if (!user) {
     throw new Error('Unauthorized');
   }
   let query = db.selectFrom('v_users').selectAll();
   if (sort) {
-    const sortClause = Array.isArray(sort) ? sort : [sort];
-    query = query.orderBy(sortClause);
+    query = query.orderBy(sort.expr, sort.modifiers);
   }
   return await query.execute();
 }

@@ -26,7 +26,7 @@ async function ForecastPage() {
   const forecasts = await getForecasts({
     competitionId: null,
     userId: user.id,
-    sort: "forecast_updated_at desc",
+    sort: { expr: "forecast_updated_at", modifiers: "desc" },
   });
   const props = await getProps({ competitionId: null });
   // We fetch all standalone props and forecasts, but there are duplicates in here:
