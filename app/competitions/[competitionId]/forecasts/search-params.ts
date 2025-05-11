@@ -1,8 +1,9 @@
 export interface SearchParams {
   user_id?: string;
   resolution?: string[];
-  sortColumn?: string;
-  sortAsc?: string;
+  sort_col?: string;
+  sort_asc?: string;
+  prop_text?: string;
 }
 
 const defaultSearch: SearchState = {
@@ -10,6 +11,7 @@ const defaultSearch: SearchState = {
   resolution: [true, false],
   sortColumn: "score",
   sortAsc: false,
+  propText: undefined,
 };
 
 export function parseSearchParamsAsState({ params }: { params: SearchParams }): SearchState {
@@ -36,15 +38,18 @@ export function parseSearchParamsAsState({ params }: { params: SearchParams }): 
     });
     state.resolution = resolution;
   }
-  if (params.sortColumn) {
-    state.sortColumn = params.sortColumn;
+  if (params.sort_col) {
+    state.sortColumn = params.sort_col;
   }
-  if (params.sortAsc) {
-    if (params.sortAsc === "true") {
+  if (params.sort_asc) {
+    if (params.sort_asc === "true") {
       state.sortAsc = true;
-    } else if (params.sortAsc === "false") {
+    } else if (params.sort_asc === "false") {
       state.sortAsc = false;
     }
+  }
+  if (params.prop_text) {
+    state.propText = params.prop_text;
   }
   return state;
 }
@@ -54,6 +59,7 @@ export type SearchState = {
   resolution: (boolean | null)[];
   sortColumn: string;
   sortAsc: boolean;
+  propText?: string | undefined;
 }
 
 export function searchStateAsURLSearchParams({ search }: { search: SearchState }): URLSearchParams {
@@ -74,10 +80,13 @@ export function searchStateAsURLSearchParams({ search }: { search: SearchState }
     });
   }
   if (search.sortColumn !== defaultSearch.sortColumn) {
-    params.set("sortColumn", search.sortColumn);
+    params.set("sort_col", search.sortColumn);
   }
   if (search.sortAsc !== defaultSearch.sortAsc) {
-    params.set("sortAsc", search.sortAsc.toString());
+    params.set("sort_asc", search.sortAsc.toString());
+  }
+  if (search.propText && search.propText !== defaultSearch.propText) {
+    params.set("prop_text", search.propText);
   }
   return params;
 }

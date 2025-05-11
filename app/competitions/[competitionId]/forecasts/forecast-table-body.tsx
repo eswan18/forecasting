@@ -9,13 +9,14 @@ export interface ForecastTableBodyProps {
   resolution?: (boolean | null)[];
   sortColumn?: string;
   sortAsc?: boolean;
+  propText?: string | undefined;
 }
 
 export default async function ForecastTableBody(
-  { competitionId, userId, resolution, sortColumn, sortAsc }:
+  { competitionId, userId, resolution, sortColumn, sortAsc, propText }:
     ForecastTableBodyProps,
 ) {
-  const data = await getForecasts({
+  let data = await getForecasts({
     userId,
     competitionId,
     resolution,
@@ -24,6 +25,12 @@ export default async function ForecastTableBody(
       modifiers: sortAsc ? "asc" : "desc",
     },
   });
+  // Filtering by prop text isn't supported in the db query so we do it here.
+  if (propText) {
+    data = data.filter((row) =>
+      row.prop_text?.toLowerCase().includes(propText.toLowerCase())
+    );
+  }
   return (
     <ul className="w-full flex flex-col">
       {data.map((row) => (
