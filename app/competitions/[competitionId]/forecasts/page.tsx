@@ -1,12 +1,12 @@
-import { getForecasts, getUsers } from "@/lib/db_actions";
-import ForecastTable from "./forecast-table";
+import { getUsers } from "@/lib/db_actions";
 import { getUserFromCookies, loginAndRedirect } from "@/lib/get-user";
-import UserSelector from "./user-selector";
+import { SearchParams } from "./search-params";
+import ForecastTable from "./forecast-table";
 
 export default async function Page(
   { params, searchParams }: {
     params: Promise<{ competitionId: string }>;
-    searchParams: Promise<{ user_id?: string }>;
+    searchParams: Promise<SearchParams>;
   },
 ) {
   const { competitionId: competitionIdString } = await params;
@@ -15,28 +15,12 @@ export default async function Page(
   if (!authUser) {
     await loginAndRedirect({ url: `/competitions/${competitionId}/forecasts` });
   }
-  const userIdString = (await searchParams).user_id;
-  const userId = userIdString ? parseInt(userIdString, 10) : undefined;
-  const forecasts = await getForecasts({ userId, competitionId });
-  // todo – make sure that only some situations are editable – like if the user is looking at their own props.
-  const allUsers = await getUsers({ sort: { expr: "name", modifiers: "asc" } });
-  const editable = true;
-  const makeRedirectLink = async (userId: number | undefined) => {
-    "use server";
-    if (!userId) {
-      return `/competitions/${competitionId}/forecasts`;
-    } else {
-      return `/competitions/${competitionId}/forecasts?user_id=${userId}`;
-    }
-  };
+  const users = await getUsers();
   return (
-    <>
-      <UserSelector
-        users={allUsers}
-        selectedUserId={userId}
-        redirectOnSelect={makeRedirectLink}
-      />
-      <ForecastTable data={forecasts} editable={editable} />
-    </>
+    <ForecastTable
+      competitionId={competitionId}
+      searchParams={await searchParams}
+      users={users}
+    />
   );
 }

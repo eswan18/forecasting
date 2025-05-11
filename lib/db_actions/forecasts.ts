@@ -6,15 +6,15 @@ import { getUserFromCookies } from '@/lib/get-user';
 import { revalidatePath } from 'next/cache';
 import { OrderByExpression, OrderByModifiers, sql } from 'kysely';
 
-type VForecastsOrderByExpression = OrderByExpression<Database, 'v_forecasts', {}>
+export type VForecastsOrderByExpression = OrderByExpression<Database, 'v_forecasts', {}>
 type Sort = {
   expr: VForecastsOrderByExpression,
   modifiers?: OrderByModifiers
 }
 
 export async function getForecasts(
-  { userId, competitionId, sort }:
-    { userId?: number, competitionId?: number | null, sort?: Sort }
+  { userId, competitionId, resolution, sort }:
+    { userId?: number, competitionId?: number | null, resolution?: (boolean | null)[], sort?: Sort }
 ): Promise<VForecast[]> {
   const currentUser = await getUserFromCookies();
   return db.transaction().execute(async (trx) => {
@@ -29,6 +29,20 @@ export async function getForecasts(
     } else if (competitionId === null) {
       // If competitionID is null, we want to filter down to forecasts that are not in a competition.
       query = query.where('competition_id', 'is', null);
+    }
+    if (resolution !== undefined) {
+      const nonNullResolutions = resolution.filter(res => res !== null);
+      query = query.where((eb) => {
+        const ors = [];
+        if (nonNullResolutions.length > 0) {
+          ors.push(eb('resolution', 'in', nonNullResolutions));
+        }
+        if (resolution && resolution.find(r => r === null) !== undefined) {
+          // If null is in the array, include rows where resolution is null.
+          ors.push(eb('resolution', 'is', null));
+        }
+        return eb.or(ors);
+      });
     }
     if (sort) {
       query = query.orderBy(sort.expr, sort.modifiers);

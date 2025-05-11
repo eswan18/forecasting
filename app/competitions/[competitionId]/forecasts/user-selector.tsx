@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 interface User {
   id: number;
@@ -17,27 +17,23 @@ interface User {
 }
 
 export default function UserSelector(
-  { users, selectedUserId, redirectOnSelect }: {
+  { users, setUserId }: {
     users: User[];
-    selectedUserId: number | undefined;
-    redirectOnSelect?: (userId: number | undefined) => Promise<string>;
+    setUserId: (userId: number | undefined) => void;
   },
 ) {
-  const router = useRouter();
+  const selectedUserId = useSearchParams().get("user_id");
   return (
     <div className="flex flex-row gap-2 mt-2">
       <Select
-        value={selectedUserId !== undefined
+        value={selectedUserId !== null
           ? selectedUserId.toString()
           : "undefined"}
-        onValueChange={async (userId) => {
-          if (redirectOnSelect === undefined) {
-            return;
-          }
-          if (userId === "undefined") {
-            router.push(await redirectOnSelect(undefined));
+        onValueChange={(value) => {
+          if (value === "undefined") {
+            setUserId(undefined);
           } else {
-            router.push(await redirectOnSelect(parseInt(userId, 10)));
+            setUserId(parseInt(value, 10));
           }
         }}
       >
