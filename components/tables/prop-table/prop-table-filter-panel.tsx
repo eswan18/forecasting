@@ -39,19 +39,19 @@ export default function PropTableFilterPanel(
     }
   };
   return (
-    <div className="flex flex-col justify-center px-2.5 items-start gap-2 text-muted-foreground mb-4">
-      <div className="flex flex-row items-center gap-x-2 px-1">
-        <p>Hide unresolved props</p>
-        <Checkbox
-          checked={!filter.resolution.includes(null)}
-          onCheckedChange={handleCheck}
-        />
-      </div>
+    <div className="flex flex-row w-full justify-between px-2.5 items-center gap-x-4 text-muted-foreground">
       <Input
         placeholder="Search prop text..."
         value={propText}
         onChange={(e) => setPropText(e.target.value)}
       />
+      <div className="flex flex-row items-center gap-x-2 px-1 shrink-0">
+        <p className="text-sm shrink-0">Hide unresolved</p>
+        <Checkbox
+          checked={!filter.resolution.includes(null)}
+          onCheckedChange={handleCheck}
+        />
+      </div>
     </div>
   );
 }

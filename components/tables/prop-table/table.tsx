@@ -73,14 +73,13 @@ export function PropTable(
   });
   return (
     <>
-      <div className="flex flex-row items-end justify-between">
+      <div className="flex flex-row items-center justify-between gap-x-8 mb-4">
         <PropTableFilterPanel
           filter={searchParams}
           setFilter={updateSearchParams}
         />
         {editable && (
           <CreateNewPropButton
-            className="mb-4"
             defaultUserId={defaultPropUserId}
             defaultCompetitionId={competitionId}
           />
