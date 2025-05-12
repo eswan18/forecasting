@@ -1,5 +1,6 @@
+import { Badge } from "@/components/ui/badge";
 import { VForecast } from "@/types/db_types";
-import { Check, X } from "lucide-react";
+import { Check, CircleUser, X } from "lucide-react";
 
 export type ScoredForecast = {
   category_id: number;
@@ -41,9 +42,19 @@ export default function ForecastTableRow(
     : <p className="text-muted-foreground">?</p>;
   return (
     <div className="w-full bg-card grid grid-cols-[1fr_1fr] sm:grid-cols-[2fr_1fr] px-4 py-4 border gap-x-1">
-      <div className="flex flex-col gap-y-1">
-        <p>{row.prop_text}</p>
-        <p className="text-muted-foreground text-sm">{row.category_name}</p>
+      <div className="flex flex-col gap-y-2">
+        <div className="flex flex-row items-center justify-start gap-x-4 text-muted-foreground text-sm">
+          <div className="flex items-center justify-start gap-x-1">
+            <CircleUser size={16} />
+            <p>{row.user_name}</p>
+          </div>
+          <Badge className="justify-center text-muted-foreground" variant="outline">
+            {row.category_name}
+          </Badge>
+        </div>
+        <div className="flex flex-col gap-y-1">
+          <p>{row.prop_text}</p>
+        </div>
       </div>
       <div className="grid grid-cols-[1fr_1fr_1fr] gap-x-1 text-right">
         <div className="w-full flex flex-row items-end justify-center sm:justify-end text-lg font-bold">
