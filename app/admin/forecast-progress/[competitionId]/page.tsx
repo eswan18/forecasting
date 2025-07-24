@@ -8,6 +8,7 @@ import {
 import { VUser } from "@/types/db_types";
 import { InaccessiblePage } from "@/components/inaccessible-page";
 import ErrorPage from "@/components/pages/error-page";
+import { handleServerActionResult } from "@/lib/server-action-helpers";
 
 export default async function ForecastProgressPage(
   { params }: { params: Promise<{ competitionId: string }> },
@@ -26,7 +27,9 @@ export default async function ForecastProgressPage(
       />
     );
   }
-  const users = await getUsers();
+  const usersResult = await getUsers();
+  const users = handleServerActionResult(usersResult);
+  
   const unforecastedProps = await Promise.all(
     users.map(async (user) => {
       return {
