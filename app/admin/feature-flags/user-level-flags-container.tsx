@@ -86,10 +86,18 @@ function AddUserFeatureFlagWidget(
   const [selectedUser, setSelectedUser] = useState<VUser | null>(null);
   const { toast } = useToast();
   useEffect(() => {
-    getUsers().then((users) => {
-      setUsers(users.filter((user) => !excludeUserIds?.includes(user.id)));
+    getUsers().then((result) => {
+      if (result.success) {
+        setUsers(result.data.filter((user) => !excludeUserIds?.includes(user.id)));
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to load users",
+          variant: "destructive",
+        });
+      }
     });
-  }, [excludeUserIds]);
+  }, [excludeUserIds, toast]);
   const saveUserFlag = async (enabled: boolean) => {
     if (!selectedUser) return;
     const featureFlag = {
