@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "prebuild": "npm ls @rollup/rollup-linux-x64-gnu || npm install @rollup/rollup-linux-x64-gnu",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -12,7 +13,8 @@
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "postinstall": "node -e \"try { require('child_process').execSync('npm rebuild', { stdio: 'inherit' }) } catch (e) {}\""
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -87,9 +89,13 @@
     "kysely-ctl": "^0.12.2",
     "playwright": "^1.52.0",
     "postcss": "^8.5.3",
+    "rollup": "^4.28.1",
     "storybook": "^8.6.12",
     "tailwindcss": "^4.1.7",
     "typescript": "^5.8.2",
     "vitest": "^3.1.3"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.28.1"
   }
 }
