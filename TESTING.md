@@ -5,16 +5,16 @@ This project uses Vitest as the testing framework for unit tests. The setup is m
 ## Running Tests
 
 ```bash
-# Run all tests
+# Run all tests once and exit
 npm test
 
-# Run tests in watch mode
+# Run tests in watch mode (stays running)
 npm run test:watch
 
-# Run tests with coverage
+# Run tests with coverage report
 npm run test:coverage
 
-# Run tests with UI
+# Run tests with interactive UI
 npm run test:ui
 ```
 
