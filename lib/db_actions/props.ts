@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { db } from '@/lib/database';
 import { VProp, PropUpdate, NewProp, NewResolution } from "@/types/db_types";
 import { sql } from 'kysely';
+import { ServerActionResult, ERROR_CODES, error, success, validationError } from "@/lib/server-action-result";
 
 export async function getProps(
   { competitionId, userId }:
@@ -107,30 +108,84 @@ export async function unresolveProp({ propId }: { propId: number }): Promise<voi
   revalidatePath('/props');
 }
 
-export async function updateProp({ id, prop }: { id: number, prop: PropUpdate }) {
-  const user = await getUserFromCookies();
-  await db.transaction().execute(async (trx) => {
-    await trx.executeQuery(sql`SELECT set_config('app.current_user_id', ${user?.id}, true);`.compile(db));
-    await trx
-      .updateTable('props')
-      .set(prop)
-      .where('id', '=', id)
-      .execute();
+export async function updateProp({ id, prop }: { id: number, prop: PropUpdate }): Promise<ServerActionResult<void>> {
+  try {
+    const user = await getUserFromCookies();
+    if (!user) {
+      return error('You must be logged in to update propositions', ERROR_CODES.UNAUTHORIZED);
+    }
+    
+    // Validate prop data
+    if (prop.text && prop.text.trim().length < 10) {
+      return validationError(
+        'Proposition text must be at least 10 characters long',
+        { text: ['Text is too short'] },
+        ERROR_CODES.VALIDATION_ERROR
+      );
+    }
+    
+    await db.transaction().execute(async (trx) => {
+      await trx.executeQuery(sql`SELECT set_config('app.current_user_id', ${user?.id}, true);`.compile(db));
+      await trx
+        .updateTable('props')
+        .set(prop)
+        .where('id', '=', id)
+        .execute();
+    });
+    
+    revalidatePath('/props');
+    return success(undefined);
+  } catch (err) {
+    console.error('Error updating proposition:', err);
+    return error('Failed to update proposition', ERROR_CODES.DATABASE_ERROR);
   }
-  );
-  revalidatePath('/props');
 }
 
-export async function createProp({ prop }: { prop: NewProp }) {
-  const user = await getUserFromCookies();
-  await db.transaction().execute(async (trx) => {
-    await trx.executeQuery(sql`SELECT set_config('app.current_user_id', ${user?.id}, true);`.compile(db));
-    await trx
-      .insertInto('props')
-      .values(prop)
-      .execute();
-  });
-  revalidatePath('/props');
+export async function createProp({ prop }: { prop: NewProp }): Promise<ServerActionResult<void>> {
+  try {
+    const user = await getUserFromCookies();
+    if (!user) {
+      return error('You must be logged in to create propositions', ERROR_CODES.UNAUTHORIZED);
+    }
+    
+    // Validate prop data
+    const validationErrors: Record<string, string[]> = {};
+    
+    if (!prop.text || prop.text.trim().length < 10) {
+      validationErrors.text = ['Proposition text must be at least 10 characters long'];
+    }
+    
+    if (!prop.category_id) {
+      validationErrors.category_id = ['Category is required'];
+    }
+    
+    if (Object.keys(validationErrors).length > 0) {
+      return validationError(
+        'Please fix the validation errors',
+        validationErrors,
+        ERROR_CODES.VALIDATION_ERROR
+      );
+    }
+    
+    await db.transaction().execute(async (trx) => {
+      await trx.executeQuery(sql`SELECT set_config('app.current_user_id', ${user?.id}, true);`.compile(db));
+      await trx
+        .insertInto('props')
+        .values(prop)
+        .execute();
+    });
+    
+    revalidatePath('/props');
+    return success(undefined);
+  } catch (err) {
+    console.error('Error creating proposition:', err);
+    
+    if (err instanceof Error && err.message.includes('duplicate')) {
+      return error('A proposition with this text already exists', ERROR_CODES.VALIDATION_ERROR);
+    }
+    
+    return error('Failed to create proposition', ERROR_CODES.DATABASE_ERROR);
+  }
 }
 
 export async function deleteResolution({ id }: { id: number }): Promise<void> {

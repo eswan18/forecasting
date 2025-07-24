@@ -2,6 +2,7 @@ import { getUsers } from "@/lib/db_actions";
 import { getUserFromCookies, loginAndRedirect } from "@/lib/get-user";
 import { SearchParams } from "./search-params";
 import ForecastTable from "./forecast-table";
+import { handleServerActionResult } from "@/lib/server-action-helpers";
 
 export default async function Page(
   { params, searchParams }: {
@@ -15,7 +16,9 @@ export default async function Page(
   if (!authUser) {
     await loginAndRedirect({ url: `/competitions/${competitionId}/forecasts` });
   }
-  const users = await getUsers();
+  const usersResult = await getUsers();
+  const users = handleServerActionResult(usersResult);
+  
   return (
     <ForecastTable
       competitionId={competitionId}

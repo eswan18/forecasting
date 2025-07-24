@@ -31,6 +31,12 @@ export async function getUserFromToken(token: string): Promise<VUser | null> {
 }
 
 export async function loginAndRedirect({ url }: { url: string }): Promise<never> {
-  const redirectTo = encodeURIComponent(url);
-  redirect(`/login?redirect=${redirectTo}`);
+  if (url === '/') {
+    // The login page redirect to the home page by default, so we don't need to specify
+    // it in the query params.
+    redirect('/login');
+  } else {
+    const redirectTo = encodeURIComponent(url);
+    redirect(`/login?redirect=${redirectTo}`);
+  }
 }

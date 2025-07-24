@@ -28,6 +28,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { updateLoginPassword } from "@/lib/auth";
+import { useServerAction } from "@/hooks/use-server-action";
 
 export function AccountDetails() {
   const { user, isLoading, mutate } = useCurrentUser();
@@ -63,21 +64,28 @@ function UserDetailsSection(
     mutateUser: (updatedUser: UserUpdate) => void;
   },
 ) {
-  const [loading, setLoading] = useState(false);
   const form = useForm<z.infer<typeof userDetailsFormSchema>>({
     resolver: zodResolver(userDetailsFormSchema),
     defaultValues: initialUser,
   });
+  
+  const updateUserAction = useServerAction(updateUser, {
+    successMessage: 'Profile updated successfully',
+    onSuccess: () => {
+      const values = form.getValues();
+      form.reset(values);
+      mutateUser(values);
+    },
+  });
+  
   async function onSubmit(values: z.infer<typeof userDetailsFormSchema>) {
     if (!form.formState.isDirty) {
       return;
     }
-    setLoading(true);
-    await updateUser({ id: initialUser.id, user: values });
-    form.reset(values);
-    mutateUser(values);
-    setLoading(false);
+    
+    await updateUserAction.execute({ id: initialUser.id, user: values });
   }
+  
   return (
     <div>
       <h2 className="text-lg text-muted-foreground mb-4">User Details</h2>
@@ -109,7 +117,7 @@ function UserDetailsSection(
               </AccountFormItem>
             )}
           />
-          {loading
+          {updateUserAction.isLoading
             ? (
               <div className="grid grid-cols-4 gap-4">
                 <div className="col-start-2 col-span-2 flex flex-row justify-center">
