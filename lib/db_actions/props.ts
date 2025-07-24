@@ -116,10 +116,10 @@ export async function updateProp({ id, prop }: { id: number, prop: PropUpdate })
     }
     
     // Validate prop data
-    if (prop.prop_text && prop.prop_text.trim().length < 10) {
+    if (prop.text && prop.text.trim().length < 10) {
       return validationError(
         'Proposition text must be at least 10 characters long',
-        { prop_text: ['Text is too short'] },
+        { text: ['Text is too short'] },
         ERROR_CODES.VALIDATION_ERROR
       );
     }
@@ -151,8 +151,8 @@ export async function createProp({ prop }: { prop: NewProp }): Promise<ServerAct
     // Validate prop data
     const validationErrors: Record<string, string[]> = {};
     
-    if (!prop.prop_text || prop.prop_text.trim().length < 10) {
-      validationErrors.prop_text = ['Proposition text must be at least 10 characters long'];
+    if (!prop.text || prop.text.trim().length < 10) {
+      validationErrors.text = ['Proposition text must be at least 10 characters long'];
     }
     
     if (!prop.category_id) {
