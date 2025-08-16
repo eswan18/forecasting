@@ -15,9 +15,19 @@ This is a Next.js forecasting application inspired by Philip Tetlock's Good Judg
 - `npm run start` - Start production server
 
 ### Testing
+- `npm run test` - Run all unit tests with Vitest
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:ui` - Run tests with Vitest UI
+- `npm run test:coverage` - Run tests with coverage report
 - `npm run storybook` - Start Storybook development server
 - `npm run build-storybook` - Build Storybook
-- Tests are configured with Vitest and run via Storybook test addon
+
+**Testing Setup:**
+- Unit tests use Vitest with Node.js environment
+- Test files: `**/*.{test,spec}.{ts,tsx}` 
+- Coverage provided by V8 with HTML/JSON/text reports
+- UI components tested in Storybook (excluded from coverage)
+- Existing test files cover auth, database actions, server utilities
 
 ### Database Migrations
 - `npm exec kysely migrate make <migration-description>` - Create new migration
