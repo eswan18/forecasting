@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AlertTriangle, LoaderCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useServerAction } from "@/hooks/use-server-action";
 import {
   createProp,
   getCategories,
@@ -67,13 +68,26 @@ export function CreateEditPropForm(
     onSubmit?: () => void;
   },
 ) {
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [canEditPublicProps, setCanEditPublicProps] = useState(false);
   const { toast } = useToast();
   const initialUserId = initialProp?.prop_user_id || defaultUserId;
+  
+  const createPropAction = useServerAction(createProp, {
+    successMessage: "Prop Created!",
+    onSuccess: () => {
+      if (onSubmit) onSubmit();
+    }
+  });
+  
+  const updatePropAction = useServerAction(updateProp, {
+    successMessage: "Prop Updated!",
+    onSuccess: () => {
+      if (onSubmit) onSubmit();
+    }
+  });
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -100,50 +114,16 @@ export function CreateEditPropForm(
   }, []);
 
   async function handleSubmit(values: z.infer<typeof formSchema>) {
-    setError("");
-    setLoading(true);
-    try {
-      if (initialProp) {
-        await updateProp({
-          id: initialProp.prop_id,
-          prop: { ...values },
-        }).then(() => {
-          toast({
-            title: "Prop Updated!",
-          });
-        });
-      } else {
-        await createProp({ prop: values }).then(() => {
-          toast({
-            title: "Prop Created!",
-          });
-        });
-      }
-    } catch (e) {
-      const title = initialProp ? "Update Error" : "Create Error";
-      if (e instanceof Error) {
-        toast({
-          title,
-          description: e.message,
-          variant: "destructive",
-        });
-        setError(e.message);
-      } else {
-        toast({
-          title,
-          description: "An error occurred.",
-          variant: "destructive",
-        });
-        setError("An error occurred.");
-      }
-    } finally {
-      setLoading(false);
-    }
-    if (onSubmit) {
-      onSubmit();
+    if (initialProp) {
+      await updatePropAction.execute({
+        id: initialProp.prop_id,
+        prop: { ...values },
+      });
+    } else {
+      await createPropAction.execute({ prop: values });
     }
   }
-  if (loading) {
+  if (loading || createPropAction.isLoading || updatePropAction.isLoading) {
     return (
       <div className="flex justify-center items-center h-40">
         <LoaderCircle className="animate-spin" />
@@ -285,7 +265,7 @@ export function CreateEditPropForm(
             );
           }}
         />
-        {loading
+        {createPropAction.isLoading || updatePropAction.isLoading
           ? (
             <Button type="submit" disabled className="w-full">
               <LoaderCircle className="animate-spin" />
@@ -296,7 +276,7 @@ export function CreateEditPropForm(
               {initialProp ? "Update" : "Create"}
             </Button>
           )}
-        {error && (
+        {(createPropAction.error || updatePropAction.error) && (
           <Alert
             variant="destructive"
             className="m-4 w-auto flex flex-row justify-start items-center"
@@ -304,7 +284,7 @@ export function CreateEditPropForm(
             <AlertTriangle className="h-8 w-8 mr-4 inline" />
             <div className="ml-4">
               <AlertTitle>Submission Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>{createPropAction.error || updatePropAction.error}</AlertDescription>
             </div>
           </Alert>
         )}
