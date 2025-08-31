@@ -4,44 +4,168 @@ import { db } from '@/lib/database';
 import { Competition, CompetitionUpdate, NewCompetition } from "@/types/db_types";
 import { getUserFromCookies } from '../get-user';
 import { revalidatePath } from 'next/cache';
+import { logger } from '@/lib/logger';
 
 export async function getCompetitionById(id: number): Promise<Competition | undefined> {
-  const competition = await db
-    .selectFrom('competitions')
-    .selectAll()
-    .where('id', '=', id)
-    .executeTakeFirst();
-  return competition;
+  const currentUser = await getUserFromCookies();
+  logger.debug('Getting competition by ID', { 
+    competitionId: id, 
+    currentUserId: currentUser?.id 
+  });
+  
+  const startTime = Date.now();
+  try {
+    const competition = await db
+      .selectFrom('competitions')
+      .selectAll()
+      .where('id', '=', id)
+      .executeTakeFirst();
+    
+    const duration = Date.now() - startTime;
+    if (competition) {
+      logger.info('Competition retrieved successfully', { 
+        operation: 'getCompetitionById',
+        table: 'competitions',
+        competitionId: id,
+        duration
+      });
+    } else {
+      logger.warn('Competition not found', { 
+        operation: 'getCompetitionById',
+        table: 'competitions',
+        competitionId: id,
+        duration
+      });
+    }
+    
+    return competition;
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    logger.error('Failed to get competition by ID', error as Error, { 
+      operation: 'getCompetitionById',
+      table: 'competitions',
+      competitionId: id,
+      duration
+    });
+    throw error;
+  }
 }
 
 export async function getCompetitions(): Promise<Competition[]> {
-  let query = db.selectFrom('competitions').orderBy('name', 'desc').selectAll();
-  return await query.execute();
+  const currentUser = await getUserFromCookies();
+  logger.debug('Getting all competitions', { 
+    currentUserId: currentUser?.id 
+  });
+  
+  const startTime = Date.now();
+  try {
+    let query = db.selectFrom('competitions').orderBy('name', 'desc').selectAll();
+    const results = await query.execute();
+    
+    const duration = Date.now() - startTime;
+    logger.info(`Retrieved ${results.length} competitions`, { 
+      operation: 'getCompetitions',
+      table: 'competitions',
+      duration
+    });
+    
+    return results;
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    logger.error('Failed to get competitions', error as Error, { 
+      operation: 'getCompetitions',
+      table: 'competitions',
+      duration
+    });
+    throw error;
+  }
 }
 
 export async function updateCompetition({ id, competition }: { id: number, competition: CompetitionUpdate }) {
-  const user = await getUserFromCookies();
-  if (!user?.is_admin) {
-    throw new Error('Unauthorized: Only admins can update competitions');
+  const currentUser = await getUserFromCookies();
+  logger.debug('Updating competition', { 
+    competitionId: id, 
+    updateFields: Object.keys(competition),
+    currentUserId: currentUser?.id 
+  });
+  
+  const startTime = Date.now();
+  try {
+    if (!currentUser?.is_admin) {
+      logger.warn('Unauthorized attempt to update competition', { 
+        competitionId: id, 
+        currentUserId: currentUser?.id 
+      });
+      throw new Error('Unauthorized: Only admins can update competitions');
+    }
+    
+    await db
+      .updateTable('competitions')
+      .set(competition)
+      .where('id', '=', id)
+      .execute();
+    
+    const duration = Date.now() - startTime;
+    logger.info('Competition updated successfully', { 
+      operation: 'updateCompetition',
+      table: 'competitions',
+      competitionId: id,
+      duration
+    });
+    
+    revalidatePath('/competitions');
+    revalidatePath('/admin/competitions');
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    logger.error('Failed to update competition', error as Error, { 
+      operation: 'updateCompetition',
+      table: 'competitions',
+      competitionId: id,
+      duration
+    });
+    throw error;
   }
-  await db
-    .updateTable('competitions')
-    .set(competition)
-    .where('id', '=', id)
-    .execute();
-  revalidatePath('/competitions');
-  revalidatePath('/admin/competitions');
 }
 
 export async function createCompetition({ competition }: { competition: NewCompetition }) {
-  const user = await getUserFromCookies();
-  if (!user?.is_admin) {
-    throw new Error('Unauthorized: Only admins can create competitions');
+  const currentUser = await getUserFromCookies();
+  logger.debug('Creating competition', { 
+    competitionName: competition.name,
+    currentUserId: currentUser?.id 
+  });
+  
+  const startTime = Date.now();
+  try {
+    if (!currentUser?.is_admin) {
+      logger.warn('Unauthorized attempt to create competition', { 
+        currentUserId: currentUser?.id 
+      });
+      throw new Error('Unauthorized: Only admins can create competitions');
+    }
+    
+    await db
+      .insertInto('competitions')
+      .values(competition)
+      .execute();
+    
+    const duration = Date.now() - startTime;
+    logger.info('Competition created successfully', { 
+      operation: 'createCompetition',
+      table: 'competitions',
+      competitionName: competition.name,
+      duration
+    });
+    
+    revalidatePath('/competitions');
+    revalidatePath('/admin/competitions');
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    logger.error('Failed to create competition', error as Error, { 
+      operation: 'createCompetition',
+      table: 'competitions',
+      competitionName: competition.name,
+      duration
+    });
+    throw error;
   }
-  await db
-    .insertInto('competitions')
-    .values(competition)
-    .execute();
-  revalidatePath('/competitions');
-  revalidatePath('/admin/competitions');
 }
