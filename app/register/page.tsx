@@ -2,9 +2,11 @@ import { getUserFromCookies } from "@/lib/get-user";
 import RegisterFormCard from "./register-form-card";
 import { InaccessiblePage } from "@/components/inaccessible-page";
 
-export default async function RegisterPage(
-  { searchParams }: { searchParams: Promise<{ token?: string }> },
-) {
+export default async function RegisterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ token?: string }>;
+}) {
   const { token } = await searchParams;
   const user = await getUserFromCookies();
   if (!token && !user?.is_admin) {

@@ -8,9 +8,13 @@ import ForecastTableHeader from "./forecast-table-header";
 import { VUser } from "@/types/db_types";
 import PropFilterInput from "./prop-filter-input";
 
-export function ForecastTableInteractivePanel(
-  { search, users }: { search: SearchState; users: VUser[] },
-) {
+export function ForecastTableInteractivePanel({
+  search,
+  users,
+}: {
+  search: SearchState;
+  users: VUser[];
+}) {
   const router = useRouter();
   const updateQueryFromSearch = (newSearch: SearchState) => {
     const params = searchStateAsURLSearchParams({ search: newSearch });
@@ -65,9 +69,7 @@ export function ForecastTableInteractivePanel(
           }}
         />
         <div className="flex flex-row items-center gap-x-2 min-w-36">
-          <p className="text-muted-foreground text-sm break">
-            Hide unresolved
-          </p>
+          <p className="text-muted-foreground text-sm break">Hide unresolved</p>
           <Checkbox
             checked={!search.resolution.includes(null)}
             onCheckedChange={handleCheck}

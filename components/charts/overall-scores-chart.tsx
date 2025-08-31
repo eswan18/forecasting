@@ -22,9 +22,13 @@ interface UserCategoryScore {
   totalScore?: number;
 }
 
-export default function OverallScoresChart(
-  { forecasts, byCategory }: { forecasts: VForecast[]; byCategory: boolean },
-) {
+export default function OverallScoresChart({
+  forecasts,
+  byCategory,
+}: {
+  forecasts: VForecast[];
+  byCategory: boolean;
+}) {
   // Keep only the forecasts that have a score.
   const scoredForecasts = forecasts.filter(
     (forecast): forecast is ScoredForecast =>
@@ -39,8 +43,8 @@ export default function OverallScoresChart(
       continue;
     }
 
-    const userCategoryScore = userCategoryScores.find((user) =>
-      user.name === forecast.user_name
+    const userCategoryScore = userCategoryScores.find(
+      (user) => user.name === forecast.user_name,
     );
     if (userCategoryScore) {
       if (forecast.category_id in userCategoryScore.scores) {
@@ -59,9 +63,8 @@ export default function OverallScoresChart(
   // Compute the total score for each user, and sort.
   for (const userCategoryScore of userCategoryScores) {
     const scores = Object.values(userCategoryScore.scores);
-    userCategoryScore.totalScore = scores.reduce((acc, score) =>
-      acc + score, 0) /
-      scores.length;
+    userCategoryScore.totalScore =
+      scores.reduce((acc, score) => acc + score, 0) / scores.length;
   }
   userCategoryScores.sort((a, b) => (a.totalScore || 0) - (b.totalScore || 0));
 
@@ -69,7 +72,7 @@ export default function OverallScoresChart(
   if (byCategory) {
     maximumScore = Math.max(
       ...userCategoryScores.map((userCategoryScore) =>
-        Math.max(...Object.values(userCategoryScore.scores))
+        Math.max(...Object.values(userCategoryScore.scores)),
       ),
     );
   } else {
@@ -80,14 +83,15 @@ export default function OverallScoresChart(
 
   const chartData = byCategory
     ? userCategoryScores.map((userCategoryScore) => ({
-      name: userCategoryScore.name,
-      ...userCategoryScore.scores, // This spreads all the category score values as separate properties.
-    }))
+        name: userCategoryScore.name,
+        ...userCategoryScore.scores, // This spreads all the category score values as separate properties.
+      }))
     : userCategoryScores.map((userCategoryScore) => ({
-      name: userCategoryScore.name,
-      totalScore: userCategoryScore.totalScore,
-    }));
-  const categoryIds = scoredForecasts.map((forecast) => forecast.category_id)
+        name: userCategoryScore.name,
+        totalScore: userCategoryScore.totalScore,
+      }));
+  const categoryIds = scoredForecasts
+    .map((forecast) => forecast.category_id)
     .filter((cat) => cat !== null);
   const uniqCategoryIds = [...new Set(categoryIds)];
   const categoryIdsAndColors = uniqCategoryIds.map((categoryId, index) => ({
@@ -96,30 +100,14 @@ export default function OverallScoresChart(
   }));
   return (
     <ChartContainer config={{}} className="w-full h-[30rem]">
-      <BarChart
-        accessibilityLayer
-        data={chartData}
-        layout="vertical"
-      >
-        <YAxis
-          type="category"
-          dataKey="name"
-          axisLine={false}
-        />
+      <BarChart accessibilityLayer data={chartData} layout="vertical">
+        <YAxis type="category" dataKey="name" axisLine={false} />
         <CartesianGrid strokeDasharray="3 3" />
         <ChartTooltip content={<ChartTooltipContent />} />
-        <XAxis
-          type="number"
-          domain={[0, axisMaximum]}
-        />
-        {byCategory && (
-          <Legend
-            verticalAlign="top"
-            align="center"
-          />
-        )}
-        {byCategory
-          ? categoryIdsAndColors.map(({ categoryId, color }) => (
+        <XAxis type="number" domain={[0, axisMaximum]} />
+        {byCategory && <Legend verticalAlign="top" align="center" />}
+        {byCategory ? (
+          categoryIdsAndColors.map(({ categoryId, color }) => (
             <Bar
               key={categoryId}
               dataKey={categoryId}
@@ -128,14 +116,14 @@ export default function OverallScoresChart(
               radius={2}
             />
           ))
-          : (
-            <Bar
-              dataKey="totalScore"
-              fill="hsl(var(--chart-1))"
-              name="Score"
-              radius={2}
-            />
-          )}
+        ) : (
+          <Bar
+            dataKey="totalScore"
+            fill="hsl(var(--chart-1))"
+            name="Score"
+            radius={2}
+          />
+        )}
       </BarChart>
     </ChartContainer>
   );

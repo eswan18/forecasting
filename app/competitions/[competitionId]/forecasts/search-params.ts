@@ -14,7 +14,11 @@ const defaultSearch: SearchState = {
   propText: undefined,
 };
 
-export function parseSearchParamsAsState({ params }: { params: SearchParams }): SearchState {
+export function parseSearchParamsAsState({
+  params,
+}: {
+  params: SearchParams;
+}): SearchState {
   const state: SearchState = { ...defaultSearch };
   if (params.user_id) {
     const userId = parseInt(params.user_id, 10);
@@ -23,19 +27,21 @@ export function parseSearchParamsAsState({ params }: { params: SearchParams }): 
     }
   }
   if (params.resolution) {
-    const resolution = params.resolution.map((value) => {
-      if (value === "true") {
-        return true;
-      } else if (value === "false") {
-        return false;
-      } else if (value === "null") {
-        return null;
-      } else {
-        return undefined;
-      }
-    }).filter((value) => {
-      return value !== undefined;
-    });
+    const resolution = params.resolution
+      .map((value) => {
+        if (value === "true") {
+          return true;
+        } else if (value === "false") {
+          return false;
+        } else if (value === "null") {
+          return null;
+        } else {
+          return undefined;
+        }
+      })
+      .filter((value) => {
+        return value !== undefined;
+      });
     state.resolution = resolution;
   }
   if (params.sort_col) {
@@ -60,9 +66,13 @@ export type SearchState = {
   sortColumn: string;
   sortAsc: boolean;
   propText?: string | undefined;
-}
+};
 
-export function searchStateAsURLSearchParams({ search }: { search: SearchState }): URLSearchParams {
+export function searchStateAsURLSearchParams({
+  search,
+}: {
+  search: SearchState;
+}): URLSearchParams {
   const params = new URLSearchParams();
   if (search.userId !== undefined && search.userId !== defaultSearch.userId) {
     params.set("user_id", search.userId.toString());
@@ -91,7 +101,10 @@ export function searchStateAsURLSearchParams({ search }: { search: SearchState }
   return params;
 }
 
-function arraysHaveSameValues(a: (boolean | null)[], b: (boolean | null)[]): boolean {
+function arraysHaveSameValues(
+  a: (boolean | null)[],
+  b: (boolean | null)[],
+): boolean {
   const aSet = new Set(a);
   const bSet = new Set(b);
   if (aSet.size !== bSet.size) {

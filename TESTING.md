@@ -62,16 +62,17 @@ lib/
 ## Testing Best Practices
 
 ### 1. Mock External Dependencies
+
 ```typescript
 // Mock Next.js modules
-vi.mock('next/navigation', () => ({
+vi.mock("next/navigation", () => ({
   redirect: vi.fn(() => {
-    throw new Error('NEXT_REDIRECT');
+    throw new Error("NEXT_REDIRECT");
   }),
 }));
 
 // Mock database
-vi.mock('@/lib/database', () => ({
+vi.mock("@/lib/database", () => ({
   db: {
     selectFrom: vi.fn(),
   },
@@ -79,22 +80,24 @@ vi.mock('@/lib/database', () => ({
 ```
 
 ### 2. Test Both Success and Error Cases
+
 ```typescript
-it('should return data on success', () => {
+it("should return data on success", () => {
   // Test happy path
 });
 
-it('should handle errors gracefully', () => {
+it("should handle errors gracefully", () => {
   // Test error scenarios
 });
 ```
 
 ### 3. Use Type-Safe Mocks
+
 ```typescript
 const mockUser = {
   id: 1,
   login_id: 1,
-  username: 'testuser',
+  username: "testuser",
   is_admin: false,
 } satisfies Partial<User>;
 ```
@@ -126,7 +129,7 @@ To add tests to your CI pipeline:
 # Example GitHub Actions
 - name: Run tests
   run: npm test -- --run
-  
+
 - name: Upload coverage
   run: npm run test:coverage
 ```
@@ -134,11 +137,12 @@ To add tests to your CI pipeline:
 ## Troubleshooting
 
 ### Environment Variables
+
 Some tests may fail if they depend on environment variables. Use `vi.stubEnv()` to mock them:
 
 ```typescript
 beforeEach(() => {
-  vi.stubEnv('JWT_SECRET', 'test-secret');
+  vi.stubEnv("JWT_SECRET", "test-secret");
 });
 
 afterEach(() => {
@@ -147,11 +151,12 @@ afterEach(() => {
 ```
 
 ### Next.js Server Components
+
 Server components and server actions require special mocking:
 
 ```typescript
 // Mock cookies
-vi.mock('next/headers', () => ({
+vi.mock("next/headers", () => ({
   cookies: vi.fn(() => ({
     set: vi.fn(),
     get: vi.fn(),
@@ -160,6 +165,7 @@ vi.mock('next/headers', () => ({
 ```
 
 ### Database Queries
+
 Mock Kysely query builders by chaining mock functions:
 
 ```typescript

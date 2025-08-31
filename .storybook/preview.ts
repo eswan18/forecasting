@@ -1,13 +1,13 @@
-import type { Preview } from '@storybook/react'
-import { withThemeByClassName } from '@storybook/addon-themes'
-import '@/app/globals.css'
+import type { Preview } from "@storybook/react";
+import { withThemeByClassName } from "@storybook/addon-themes";
+import "@/app/globals.css";
 
 const preview: Preview = {
   parameters: {
     controls: {
       matchers: {
-       color: /(background|color)$/i,
-       date: /Date$/i,
+        color: /(background|color)$/i,
+        date: /Date$/i,
       },
     },
     nextjs: {
@@ -17,10 +17,10 @@ const preview: Preview = {
   decorators: [
     withThemeByClassName({
       themes: {
-        light: '',
-        dark: 'dark',
+        light: "",
+        dark: "dark",
       },
-      defaultTheme: 'light',
+      defaultTheme: "light",
     }),
   ],
 };

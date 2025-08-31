@@ -12,9 +12,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { CreateEditCompetitionForm } from "@/components/forms/create-edit-competition-form";
 
-export default function CreateCompetitionButton(
-  { className }: { className?: string },
-) {
+export default function CreateCompetitionButton({
+  className,
+}: {
+  className?: string;
+}) {
   const [open, setOpen] = useState(false);
   className = cn("gap-2", className);
   return (

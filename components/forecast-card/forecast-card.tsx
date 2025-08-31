@@ -11,13 +11,15 @@ import { resolveProp, unresolveProp } from "@/lib/db_actions";
 import ForecastFieldForm from "./forecast-field-form";
 import ForecastCardActionsButton from "./forecast-card-actions-button";
 
-export default function ForecastCard(
-  { record, userId, className }: {
-    record: VProp | VForecast;
-    userId: number;
-    className?: string;
-  },
-) {
+export default function ForecastCard({
+  record,
+  userId,
+  className,
+}: {
+  record: VProp | VForecast;
+  userId: number;
+  className?: string;
+}) {
   const defaultClasses = "min-h-48 flex flex-col justify-start";
   className = cn(defaultClasses, className);
   return (
@@ -44,51 +46,48 @@ export default function ForecastCard(
             />
           </div>
           <div className="flex flex-row justify-end">
-            {isForecast(record) || record.resolution_id
-              ? (
-                <ResolutionSelectWidget
-                  size="sm"
-                  resolution={record.resolution ?? undefined}
-                  setResolution={(resolution, notes) =>
-                    resolution === undefined
-                      ? unresolveProp({ propId: record.prop_id })
-                      : resolveProp({
+            {isForecast(record) || record.resolution_id ? (
+              <ResolutionSelectWidget
+                size="sm"
+                resolution={record.resolution ?? undefined}
+                setResolution={(resolution, notes) =>
+                  resolution === undefined
+                    ? unresolveProp({ propId: record.prop_id })
+                    : resolveProp({
                         propId: record.prop_id,
                         resolution,
                         userId: userId,
                         overwrite: true,
                         notes,
-                      })}
-                />
-              )
-              : null}
+                      })
+                }
+              />
+            ) : null}
           </div>
-          {isForecast(record)
-            ? (
-              <>
-                <div className="flex flex-row gap-1 justify-start items-center text-xs text-muted-foreground">
-                  <Calendar size={10} /> {formatInTimeZone(
-                    record.forecast_updated_at,
-                    "UTC",
-                    "yyyy-MM-dd",
-                  )}
-                </div>
-                <div className="flex flex-row justify-end gap-1 items-center text-xs text-muted-foreground">
-                  {record.resolution_updated_at !== null
-                    ? (
-                      <>
-                        <Calendar size={10} /> {formatInTimeZone(
-                          record.resolution_updated_at,
-                          "UTC",
-                          "yyyy-MM-dd",
-                        )}
-                      </>
-                    )
-                    : null}
-                </div>
-              </>
-            )
-            : null}
+          {isForecast(record) ? (
+            <>
+              <div className="flex flex-row gap-1 justify-start items-center text-xs text-muted-foreground">
+                <Calendar size={10} />{" "}
+                {formatInTimeZone(
+                  record.forecast_updated_at,
+                  "UTC",
+                  "yyyy-MM-dd",
+                )}
+              </div>
+              <div className="flex flex-row justify-end gap-1 items-center text-xs text-muted-foreground">
+                {record.resolution_updated_at !== null ? (
+                  <>
+                    <Calendar size={10} />{" "}
+                    {formatInTimeZone(
+                      record.resolution_updated_at,
+                      "UTC",
+                      "yyyy-MM-dd",
+                    )}
+                  </>
+                ) : null}
+              </div>
+            </>
+          ) : null}
         </div>
       </CardFooter>
     </Card>

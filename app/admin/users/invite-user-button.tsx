@@ -24,7 +24,7 @@ export function InviteUserButton({ className }: { className?: string }) {
 
   async function generateInviteCode() {
     setLoading(true);
-    const inviteToken = await generateInviteToken({notes});
+    const inviteToken = await generateInviteToken({ notes });
     setInviteCode(inviteToken);
     setLoading(false);
   }
@@ -49,7 +49,9 @@ export function InviteUserButton({ className }: { className?: string }) {
           <DialogTitle>Invite User</DialogTitle>
         </DialogHeader>
         <div className="w-full flex justify-center">
-          {loading ? <LoaderCircle className="animate-spin" /> : (
+          {loading ? (
+            <LoaderCircle className="animate-spin" />
+          ) : (
             inviteCode === null && (
               <div className="flex flex-col gap-y-4">
                 <div className="flex flex-col gap-y-2">

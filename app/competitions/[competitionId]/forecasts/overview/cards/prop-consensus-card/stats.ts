@@ -9,7 +9,10 @@ export function quantile(values: number[], p: number): number {
   const index = p * (sortedValues.length - 1);
   const lowerIndex = Math.floor(index);
   const upperIndex = Math.ceil(index);
-  return sortedValues[lowerIndex] + (sortedValues[upperIndex] - sortedValues[lowerIndex]) * (index - lowerIndex);
+  return (
+    sortedValues[lowerIndex] +
+    (sortedValues[upperIndex] - sortedValues[lowerIndex]) * (index - lowerIndex)
+  );
 }
 
 export interface PropStatistics {
@@ -22,7 +25,9 @@ export interface PropStatistics {
   p75: number;
 }
 
-export function propStatisticsForForecasts(forecasts: VForecast[]): Map<number, PropStatistics> {
+export function propStatisticsForForecasts(
+  forecasts: VForecast[],
+): Map<number, PropStatistics> {
   const forecastsByProp = new Map<number, VForecast[]>();
   for (const forecast of forecasts) {
     const forecastsForProp = forecastsByProp.get(forecast.prop_id) || [];
@@ -44,4 +49,3 @@ export function propStatisticsForForecasts(forecasts: VForecast[]): Map<number, 
   }
   return propStatisticsByPropId;
 }
-

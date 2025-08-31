@@ -26,9 +26,13 @@ const formSchema = z.object({
   password: z.string().min(8).max(30),
 });
 
-export default function ResetPasswordFormCard(
-  { username, token }: { username: string; token: string },
-) {
+export default function ResetPasswordFormCard({
+  username,
+  token,
+}: {
+  username: string;
+  token: string;
+}) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -39,8 +43,8 @@ export default function ResetPasswordFormCard(
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    executePasswordReset({ username, token, password: values.password }).then(
-      () => {
+    executePasswordReset({ username, token, password: values.password })
+      .then(() => {
         setError("");
         toast({
           title: "Password Reset",
@@ -49,15 +53,15 @@ export default function ResetPasswordFormCard(
         setTimeout(() => {
           router.push("/login");
         }, 2000);
-      },
-    ).catch((e) => {
-      if (e instanceof Error) {
-        setError(e.message);
-      } else {
-        setError("An error occurred");
-      }
-      setLoading(false);
-    });
+      })
+      .catch((e) => {
+        if (e instanceof Error) {
+          setError(e.message);
+        } else {
+          setError("An error occurred");
+        }
+        setLoading(false);
+      });
   }
   return (
     <Card className="w-full max-w-md mx-4">
@@ -92,17 +96,15 @@ export default function ResetPasswordFormCard(
                 </FormItem>
               )}
             />
-            {loading
-              ? (
-                <div className="w-full flex justify-center">
-                  <LoaderCircle className="animate-spin" />
-                </div>
-              )
-              : (
-                <Button type="submit" className="w-full">
-                  Reset Password
-                </Button>
-              )}
+            {loading ? (
+              <div className="w-full flex justify-center">
+                <LoaderCircle className="animate-spin" />
+              </div>
+            ) : (
+              <Button type="submit" className="w-full">
+                Reset Password
+              </Button>
+            )}
             {error && (
               <Alert
                 variant="destructive"

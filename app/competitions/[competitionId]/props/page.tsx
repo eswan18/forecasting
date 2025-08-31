@@ -3,9 +3,11 @@ import PropTable from "@/components/tables/prop-table";
 import { getUserFromCookies } from "@/lib/get-user";
 import ErrorPage from "@/components/pages/error-page";
 
-export default async function Page(
-  { params }: { params: Promise<{ competitionId: string }> },
-) {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ competitionId: string }>;
+}) {
   const { competitionId: competitionIdString } = await params;
   const competitionId = parseInt(competitionIdString, 10);
   const competition = await getCompetitionById(competitionId);

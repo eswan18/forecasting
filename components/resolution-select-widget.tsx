@@ -14,13 +14,15 @@ import { Label } from "@/components/ui/label";
 import { Check, X } from "lucide-react";
 import { useState } from "react";
 
-export default function ResolutionSelectWidget(
-  { resolution, setResolution, size = "lg" }: {
-    resolution: boolean | undefined;
-    setResolution: (value: boolean | undefined, notes?: string) => void;
-    size?: "sm" | "lg";
-  },
-) {
+export default function ResolutionSelectWidget({
+  resolution,
+  setResolution,
+  size = "lg",
+}: {
+  resolution: boolean | undefined;
+  setResolution: (value: boolean | undefined, notes?: string) => void;
+  size?: "sm" | "lg";
+}) {
   const [lastClicked, setLastClicked] = useState<boolean | undefined>(
     undefined,
   );
@@ -70,46 +72,42 @@ export default function ResolutionSelectWidget(
                 : "Resolve Prop"}
             </DialogTitle>
           </DialogHeader>
-          {resolutionToSet !== undefined
-            ? (
-              <div>
-                <Label>
-                  Add a note (optional)
-                </Label>
-                <Input
-                  type="text"
-                  placeholder="Details about why this was resolved."
-                  value={resolutionNotes}
-                  onChange={(e) => setResolutionNotes(e.target.value)}
-                />
-              </div>
-            )
-            : <p>Are you sure?</p>}
+          {resolutionToSet !== undefined ? (
+            <div>
+              <Label>Add a note (optional)</Label>
+              <Input
+                type="text"
+                placeholder="Details about why this was resolved."
+                value={resolutionNotes}
+                onChange={(e) => setResolutionNotes(e.target.value)}
+              />
+            </div>
+          ) : (
+            <p>Are you sure?</p>
+          )}
           <DialogFooter>
-            {resolutionToSet === undefined
-              ? (
-                <Button
-                  variant="destructive"
-                  onClick={() => {
-                    setResolution(undefined);
-                    setResolutionNotes("");
-                    setDialogIsOpen(false);
-                  }}
-                >
-                  Unresolve
-                </Button>
-              )
-              : (
-                <Button
-                  onClick={() => {
-                    setResolution(resolutionToSet, resolutionNotes);
-                    setResolutionNotes("");
-                    setDialogIsOpen(false);
-                  }}
-                >
-                  Resolve to {resolutionToSet ? "True" : "False"}
-                </Button>
-              )}
+            {resolutionToSet === undefined ? (
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  setResolution(undefined);
+                  setResolutionNotes("");
+                  setDialogIsOpen(false);
+                }}
+              >
+                Unresolve
+              </Button>
+            ) : (
+              <Button
+                onClick={() => {
+                  setResolution(resolutionToSet, resolutionNotes);
+                  setResolutionNotes("");
+                  setDialogIsOpen(false);
+                }}
+              >
+                Resolve to {resolutionToSet ? "True" : "False"}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

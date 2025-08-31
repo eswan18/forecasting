@@ -1,24 +1,24 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { Input } from './input';
-import { Label } from './label';
+import type { Meta, StoryObj } from "@storybook/react";
+import { Input } from "./input";
+import { Label } from "./label";
 
 const meta = {
-  title: 'UI/Input',
+  title: "UI/Input",
   component: Input,
   parameters: {
-    layout: 'centered',
+    layout: "centered",
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
   argTypes: {
     type: {
-      control: 'select',
-      options: ['text', 'email', 'password', 'number', 'tel', 'url', 'search'],
+      control: "select",
+      options: ["text", "email", "password", "number", "tel", "url", "search"],
     },
     disabled: {
-      control: 'boolean',
+      control: "boolean",
     },
     placeholder: {
-      control: 'text',
+      control: "text",
     },
   },
 } satisfies Meta<typeof Input>;
@@ -28,7 +28,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    placeholder: 'Enter text...',
+    placeholder: "Enter text...",
   },
 };
 

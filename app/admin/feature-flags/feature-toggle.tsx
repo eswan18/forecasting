@@ -2,13 +2,15 @@
 
 import { Switch } from "@/components/ui/switch";
 
-export function FeatureToggle(
-  { name, checked, onCheckedChange }: {
-    name?: string;
-    checked: boolean;
-    onCheckedChange?: (checked: boolean) => void;
-  },
-) {
+export function FeatureToggle({
+  name,
+  checked,
+  onCheckedChange,
+}: {
+  name?: string;
+  checked: boolean;
+  onCheckedChange?: (checked: boolean) => void;
+}) {
   return (
     <div className="flex flex-col gap-1 items-center">
       {name && <span className="text-muted-foreground">{name}</span>}

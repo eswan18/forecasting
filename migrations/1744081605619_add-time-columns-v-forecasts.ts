@@ -1,10 +1,10 @@
-import type { Kysely } from 'kysely'
-import { sql } from 'kysely'
+import type { Kysely } from "kysely";
+import { sql } from "kysely";
 
 export async function up(db: Kysely<any>): Promise<void> {
-	// Add the updated_at and created_at columns from both props and forecasts tables.
-	await db.schema.dropView('v_forecasts').execute();
-	await sql<void>`CREATE VIEW v_forecasts WITH (security_barrier, security_invoker) AS
+  // Add the updated_at and created_at columns from both props and forecasts tables.
+  await db.schema.dropView("v_forecasts").execute();
+  await sql<void>`CREATE VIEW v_forecasts WITH (security_barrier, security_invoker) AS
 		SELECT users.id AS user_id,
 			users.name AS user_name,
 			categories.id AS category_id,
@@ -38,9 +38,9 @@ export async function up(db: Kysely<any>): Promise<void> {
 
 // `any` is required here since migrations should be frozen in time. alternatively, keep a "snapshot" db interface.
 export async function down(db: Kysely<any>): Promise<void> {
-	// Return the view to its original state.
-	await db.schema.dropView('v_forecasts').execute();
-	await sql<void>`CREATE VIEW v_forecasts WITH (security_barrier, security_invoker) AS
+  // Return the view to its original state.
+  await db.schema.dropView("v_forecasts").execute();
+  await sql<void>`CREATE VIEW v_forecasts WITH (security_barrier, security_invoker) AS
 		SELECT users.id AS user_id,
 			users.name AS user_name,
 			categories.id AS category_id,

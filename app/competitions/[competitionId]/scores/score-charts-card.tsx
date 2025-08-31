@@ -20,9 +20,10 @@ interface ScoreChartsCardProps {
   forecasts: VForecast[];
 }
 
-export function ScoreChartsCard(
-  { categories, forecasts }: ScoreChartsCardProps,
-) {
+export function ScoreChartsCard({
+  categories,
+  forecasts,
+}: ScoreChartsCardProps) {
   const [selectedTabValue, setSelectedTabValue] = useState("Overall");
   const [breakdownTogglePressed, setBreakdownTogglePressed] = useState(false);
   return (
@@ -76,16 +77,14 @@ export function ScoreChartsCard(
             />
           </TabsContent>
           {categories.map((category) => {
-            const forecastsInScope = category.id === -1
-              ? forecasts // This is the "Overall" category
-              : forecasts.filter((forecast) =>
-                forecast.category_id === category.id
-              );
+            const forecastsInScope =
+              category.id === -1
+                ? forecasts // This is the "Overall" category
+                : forecasts.filter(
+                    (forecast) => forecast.category_id === category.id,
+                  );
             return (
-              <TabsContent
-                key={category.name}
-                value={category.name}
-              >
+              <TabsContent key={category.name} value={category.name}>
                 <ScoresChart
                   forecasts={forecastsInScope}
                   byProp={breakdownTogglePressed}

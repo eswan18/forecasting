@@ -1,27 +1,34 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { Button } from './button';
+import type { Meta, StoryObj } from "@storybook/react";
+import { Button } from "./button";
 
 const meta = {
-  title: 'UI/Button',
+  title: "UI/Button",
   component: Button,
   parameters: {
-    layout: 'centered',
+    layout: "centered",
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
   argTypes: {
     variant: {
-      control: 'select',
-      options: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'],
+      control: "select",
+      options: [
+        "default",
+        "destructive",
+        "outline",
+        "secondary",
+        "ghost",
+        "link",
+      ],
     },
     size: {
-      control: 'select',
-      options: ['default', 'sm', 'lg', 'icon'],
+      control: "select",
+      options: ["default", "sm", "lg", "icon"],
     },
     asChild: {
-      control: 'boolean',
+      control: "boolean",
     },
     disabled: {
-      control: 'boolean',
+      control: "boolean",
     },
   },
 } satisfies Meta<typeof Button>;
@@ -31,7 +38,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    children: 'Button',
+    children: "Button",
   },
 };
 
@@ -65,8 +72,12 @@ export const Disabled: Story = {
   render: () => (
     <div className="flex gap-4 items-center">
       <Button disabled>Disabled Default</Button>
-      <Button variant="secondary" disabled>Disabled Secondary</Button>
-      <Button variant="outline" disabled>Disabled Outline</Button>
+      <Button variant="secondary" disabled>
+        Disabled Secondary
+      </Button>
+      <Button variant="outline" disabled>
+        Disabled Outline
+      </Button>
     </div>
   ),
 };

@@ -6,7 +6,10 @@ import ForecastCard from "@/components/forecast-card";
 import { useState } from "react";
 import { ArrowUpDown, Search } from "lucide-react";
 
-export default function ForecastGridListing({ records, user }: {
+export default function ForecastGridListing({
+  records,
+  user,
+}: {
   records: (VProp | VForecast)[];
   user: VUser;
 }) {
@@ -42,9 +45,11 @@ export default function ForecastGridListing({ records, user }: {
       <div className="grid grid-cols-1 sm:grid-cols-2 justify-between gap-4 items-start">
         {records.map((record) => (
           <ForecastCard
-            key={isForecast(record)
-              ? `fcast-${record.forecast_id}`
-              : `prop-${record.prop_id}`}
+            key={
+              isForecast(record)
+                ? `fcast-${record.forecast_id}`
+                : `prop-${record.prop_id}`
+            }
             record={record}
             userId={user.id}
           />

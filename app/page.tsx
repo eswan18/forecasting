@@ -15,9 +15,7 @@ export default async function Home() {
         <div className="flex flex-col gap-y-3">
           <h2 className="text-muted-foreground mb-3">News & Updates</h2>
           <div>
-            <p className="font-semibold">
-              2024 Scoring is finalized!
-            </p>
+            <p className="font-semibold">2024 Scoring is finalized!</p>
             <p className="text-sm">
               All propositions for 2024 have been resolved, and scores can be
               found on the{" "}
@@ -28,9 +26,7 @@ export default async function Home() {
             </p>
           </div>
           <div>
-            <p className="font-semibold">
-              2025 Forecasts are locked in
-            </p>
+            <p className="font-semibold">2025 Forecasts are locked in</p>
             <p className="text-sm">
               Check out the{" "}
               <Link href="/forecasts/2025" className="underline">

@@ -12,13 +12,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { CreateEditPropForm } from "@/components/forms/create-edit-prop-form";
 
-export default function CreateNewPropButton(
-  { className, defaultCompetitionId, defaultUserId }: {
-    className?: string;
-    defaultCompetitionId?: number;
-    defaultUserId?: number;
-  },
-) {
+export default function CreateNewPropButton({
+  className,
+  defaultCompetitionId,
+  defaultUserId,
+}: {
+  className?: string;
+  defaultCompetitionId?: number;
+  defaultUserId?: number;
+}) {
   const [open, setOpen] = useState(false);
   className = cn("gap-2", className);
   return (

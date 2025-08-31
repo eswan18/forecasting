@@ -9,17 +9,17 @@ import { getForecasts } from "@/lib/db_actions";
 import CertaintyContent, { AvgCertaintyForUser } from "./certainty-content";
 import { VForecast } from "@/types/db_types";
 
-export default async function CertaintyCard(
-  { competitionId }: { competitionId: number },
-) {
+export default async function CertaintyCard({
+  competitionId,
+}: {
+  competitionId: number;
+}) {
   const forecasts = await getForecasts({ competitionId });
   return (
     <Card className="w-80 h-96">
       <CardHeader className="pb-1">
         <CardTitle>Average Certainty</CardTitle>
-        <CardDescription>
-          Who&apos;s confident?
-        </CardDescription>
+        <CardDescription>Who&apos;s confident?</CardDescription>
       </CardHeader>
       <CardContent className="max-h-full">
         <CertaintyContent certainties={getAvgCertaintyByUser(forecasts)} />
@@ -40,11 +40,11 @@ function getAvgCertaintyByUser(forecasts: VForecast[]): AvgCertaintyForUser[] {
     const certainty = Math.abs(value - 0.5);
     certainties.get(user_id)!.forecasts.push(certainty);
   });
-  return Array.from(certainties.entries()).map((
-    [userId, { user_name, forecasts }],
-  ) => ({
-    userId,
-    userName: user_name,
-    avgCertainty: forecasts.reduce((a, b) => a + b, 0) / forecasts.length,
-  }));
+  return Array.from(certainties.entries()).map(
+    ([userId, { user_name, forecasts }]) => ({
+      userId,
+      userName: user_name,
+      avgCertainty: forecasts.reduce((a, b) => a + b, 0) / forecasts.length,
+    }),
+  );
 }

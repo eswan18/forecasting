@@ -16,12 +16,13 @@ interface User {
   name: string;
 }
 
-export default function UserSelector(
-  { users, setUserId }: {
-    users: User[];
-    setUserId: (userId: number | undefined) => void;
-  },
-) {
+export default function UserSelector({
+  users,
+  setUserId,
+}: {
+  users: User[];
+  setUserId: (userId: number | undefined) => void;
+}) {
   const selectedUserId = useSearchParams().get("user_id");
   return (
     <Select
@@ -40,14 +41,9 @@ export default function UserSelector(
       <SelectContent>
         <SelectGroup>
           <SelectLabel>Users</SelectLabel>
-          <SelectItem value="undefined">
-            All users
-          </SelectItem>
+          <SelectItem value="undefined">All users</SelectItem>
           {users.map((user) => (
-            <SelectItem
-              key={user.id}
-              value={user.id.toString()}
-            >
+            <SelectItem key={user.id} value={user.id.toString()}>
               {user.name}
             </SelectItem>
           ))}

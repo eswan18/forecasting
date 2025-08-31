@@ -34,6 +34,7 @@ I've successfully set up Storybook 8.6 for your Next.js project with experimenta
 ## React Server Components Support
 
 ### Current State (2024/2025)
+
 Storybook now has **experimental** support for React Server Components through the `@storybook/experimental-nextjs-vite` package. This means:
 
 - ✅ **Client components work perfectly** - Any component with `"use client"` directive

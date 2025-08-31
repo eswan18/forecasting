@@ -3,7 +3,7 @@
 This is a web application for predicting the likelihood that certain events will happen in the coming year.
 Check it out at [forecasting.ethanswan.com](https://forecasting.ethanswan.com).
 
-The idea is inspired by Philip Tetlock's [Good Judgment Project](https://en.wikipedia.org/wiki/The_Good_Judgment_Project) and book *Superforecasting*.
+The idea is inspired by Philip Tetlock's [Good Judgment Project](https://en.wikipedia.org/wiki/The_Good_Judgment_Project) and book _Superforecasting_.
 
 ## What's in here?
 
@@ -30,6 +30,7 @@ docker compose --env-file .env.prod -f local-pg-container.yaml up
 ```
 
 Then, you can tell your local instance to use the local database copy by updating `.env.local` and adding this line:
+
 ```bash
 DATABASE_URL='postgresql://ethan:ethan@localhost:2345/forecasting'
 ```
@@ -49,6 +50,7 @@ MAILGUN_API_KEY='abcxyz'
 ```
 
 Now, you can launch a fully-functional dev instance.
+
 ```bash
 npm run dev
 ```
@@ -59,6 +61,7 @@ npm run dev
 
 Create a migration with a relatively descriptive name, which will be embedded in the filename.
 For consistency, use dashes instead of underscores or spaces.
+
 ```bash
 npm exec kysely migrate make <migration-description>
 ```

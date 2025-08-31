@@ -7,9 +7,11 @@ import {
   SkeletonCard,
 } from "./cards";
 
-export default async function Page(
-  { params }: { params: Promise<{ competitionId: string }> },
-) {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ competitionId: string }>;
+}) {
   const { competitionId: competitionIdString } = await params;
   const competitionId = parseInt(competitionIdString, 10);
   const authUser = await getUserFromCookies();

@@ -1,14 +1,14 @@
-import type { Kysely } from 'kysely'
-import { sql } from 'kysely'
+import type { Kysely } from "kysely";
+import { sql } from "kysely";
 
 export async function up(db: Kysely<any>): Promise<void> {
-	await db.schema
-		.alterTable('resolutions')
-		.addColumn('user_id', 'integer', (col) => col.references('users.id'))
-		.execute()
-	// Update v_props and v_forecasts to include resolutions.user_id as resolution_user_id.
-	await db.schema.dropView('v_props').execute();
-	await sql<void>`CREATE VIEW v_props WITH (security_barrier, security_invoker) AS
+  await db.schema
+    .alterTable("resolutions")
+    .addColumn("user_id", "integer", (col) => col.references("users.id"))
+    .execute();
+  // Update v_props and v_forecasts to include resolutions.user_id as resolution_user_id.
+  await db.schema.dropView("v_props").execute();
+  await sql<void>`CREATE VIEW v_props WITH (security_barrier, security_invoker) AS
 		SELECT categories.id AS category_id,
 			categories.name AS category_name,
 			props.id AS prop_id,
@@ -24,8 +24,8 @@ export async function up(db: Kysely<any>): Promise<void> {
 			JOIN categories ON props.category_id = categories.id
 			LEFT JOIN resolutions ON props.id = resolutions.prop_id;
 	`.execute(db);
-	await db.schema.dropView('v_forecasts').execute();
-	await sql<void>`CREATE VIEW v_forecasts WITH (security_barrier, security_invoker) AS
+  await db.schema.dropView("v_forecasts").execute();
+  await sql<void>`CREATE VIEW v_forecasts WITH (security_barrier, security_invoker) AS
 		SELECT users.id AS user_id,
 			users.name AS user_name,
 			categories.id AS category_id,
@@ -50,9 +50,9 @@ export async function up(db: Kysely<any>): Promise<void> {
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
-	// Revert v_props and v_forecasts to exclude resolutions.user_id.
-	await db.schema.dropView('v_props').execute();
-	await sql<void>`CREATE VIEW v_props WITH (security_barrier, security_invoker) AS
+  // Revert v_props and v_forecasts to exclude resolutions.user_id.
+  await db.schema.dropView("v_props").execute();
+  await sql<void>`CREATE VIEW v_props WITH (security_barrier, security_invoker) AS
 		SELECT categories.id AS category_id,
 			categories.name AS category_name,
 			props.id AS prop_id,
@@ -67,8 +67,8 @@ export async function down(db: Kysely<any>): Promise<void> {
 			JOIN categories ON props.category_id = categories.id
 			LEFT JOIN resolutions ON props.id = resolutions.prop_id;
 	`.execute(db);
-	await db.schema.dropView('v_forecasts').execute();
-	await sql<void>`CREATE VIEW v_forecasts WITH (security_barrier, security_invoker) AS
+  await db.schema.dropView("v_forecasts").execute();
+  await sql<void>`CREATE VIEW v_forecasts WITH (security_barrier, security_invoker) AS
 		SELECT users.id AS user_id,
 			users.name AS user_name,
 			categories.id AS category_id,
@@ -89,9 +89,6 @@ export async function down(db: Kysely<any>): Promise<void> {
 			JOIN categories ON props.category_id = categories.id
 			LEFT JOIN resolutions ON props.id = resolutions.prop_id;
 	`.execute(db);
-	// Drop the user_id column from the underlying resolutions table.
-	await db.schema
-		.alterTable('resolutions')
-		.dropColumn('user_id')
-		.execute()
+  // Drop the user_id column from the underlying resolutions table.
+  await db.schema.alterTable("resolutions").dropColumn("user_id").execute();
 }

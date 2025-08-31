@@ -1,6 +1,12 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ServerComponentWrapper } from '@/.storybook/ServerComponentWrapper';
+import type { Meta, StoryObj } from "@storybook/react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ServerComponentWrapper } from "@/.storybook/ServerComponentWrapper";
 
 // Example of a component that might fetch data on the server
 interface UserCardProps {
@@ -16,9 +22,9 @@ interface UserCardProps {
 function UserCard({ userData }: UserCardProps) {
   // In a real server component, this data might come from an async fetch
   const user = userData || {
-    name: 'John Doe',
-    email: 'john@example.com',
-    role: 'Developer',
+    name: "John Doe",
+    email: "john@example.com",
+    role: "Developer",
   };
 
   return (
@@ -35,12 +41,12 @@ function UserCard({ userData }: UserCardProps) {
 }
 
 const meta = {
-  title: 'Examples/Server Component Patterns',
+  title: "Examples/Server Component Patterns",
   component: UserCard,
   parameters: {
-    layout: 'centered',
+    layout: "centered",
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 } satisfies Meta<typeof UserCard>;
 
 export default meta;
@@ -50,9 +56,9 @@ type Story = StoryObj<typeof meta>;
 export const WithMockData: Story = {
   args: {
     userData: {
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      role: 'Product Manager',
+      name: "Jane Smith",
+      email: "jane@example.com",
+      role: "Product Manager",
     },
   },
 };
@@ -63,9 +69,9 @@ export const WithWrapper: Story = {
     <ServerComponentWrapper>
       <UserCard
         userData={{
-          name: 'Alice Johnson',
-          email: 'alice@example.com',
-          role: 'Designer',
+          name: "Alice Johnson",
+          email: "alice@example.com",
+          role: "Designer",
         }}
       />
     </ServerComponentWrapper>
@@ -75,17 +81,19 @@ export const WithWrapper: Story = {
 // Example 3: Simulating loading states
 export const LoadingState: Story = {
   render: () => (
-    <ServerComponentWrapper fallback={
-      <Card className="w-[350px]">
-        <CardHeader>
-          <div className="h-6 w-32 bg-gray-200 rounded animate-pulse" />
-          <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mt-2" />
-        </CardHeader>
-        <CardContent>
-          <div className="h-4 w-48 bg-gray-200 rounded animate-pulse" />
-        </CardContent>
-      </Card>
-    }>
+    <ServerComponentWrapper
+      fallback={
+        <Card className="w-[350px]">
+          <CardHeader>
+            <div className="h-6 w-32 bg-gray-200 rounded animate-pulse" />
+            <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mt-2" />
+          </CardHeader>
+          <CardContent>
+            <div className="h-4 w-48 bg-gray-200 rounded animate-pulse" />
+          </CardContent>
+        </Card>
+      }
+    >
       <UserCard />
     </ServerComponentWrapper>
   ),
@@ -98,18 +106,18 @@ export const MultipleComponents: Story = {
       <ServerComponentWrapper>
         <UserCard
           userData={{
-            name: 'Team Lead',
-            email: 'lead@example.com',
-            role: 'Engineering Manager',
+            name: "Team Lead",
+            email: "lead@example.com",
+            role: "Engineering Manager",
           }}
         />
       </ServerComponentWrapper>
       <ServerComponentWrapper>
         <UserCard
           userData={{
-            name: 'Developer',
-            email: 'dev@example.com',
-            role: 'Senior Developer',
+            name: "Developer",
+            email: "dev@example.com",
+            role: "Senior Developer",
           }}
         />
       </ServerComponentWrapper>

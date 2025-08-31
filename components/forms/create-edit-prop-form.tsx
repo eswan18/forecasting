@@ -34,59 +34,61 @@ import {
 } from "@/components/ui/select";
 import { getUserFromCookies } from "@/lib/get-user";
 
-const formSchema = z.object({
-  text: z.string().min(8).max(1000),
-  notes: z.string().max(1000).nullable().transform((val) =>
-    val === "" ? null : val
-  ),
-  category_id: z.number().nullable(),
-  competition_id: z.number().nullable(),
-  user_id: z.number().nullable(),
-}).refine(
-  (data) => data.competition_id === null || data.user_id === null,
-  {
+const formSchema = z
+  .object({
+    text: z.string().min(8).max(1000),
+    notes: z
+      .string()
+      .max(1000)
+      .nullable()
+      .transform((val) => (val === "" ? null : val)),
+    category_id: z.number().nullable(),
+    competition_id: z.number().nullable(),
+    user_id: z.number().nullable(),
+  })
+  .refine((data) => data.competition_id === null || data.user_id === null, {
     message: "Props associated with a competition must be public.",
     path: ["user_id"],
-  },
-).refine(
-  (data) => !(data.user_id === null && data.category_id === null),
-  {
+  })
+  .refine((data) => !(data.user_id === null && data.category_id === null), {
     message: "Public props must have a category",
     path: ["category_id"],
-  },
-);
+  });
 
 /*
  * Form for creating or editing a prop.
  * If initialProp is provided, the form will be in edit mode, otherwise in create mode.
  */
-export function CreateEditPropForm(
-  { initialProp, defaultUserId, defaultCompetitionId, onSubmit }: {
-    initialProp?: VProp;
-    defaultUserId?: number;
-    defaultCompetitionId?: number;
-    onSubmit?: () => void;
-  },
-) {
+export function CreateEditPropForm({
+  initialProp,
+  defaultUserId,
+  defaultCompetitionId,
+  onSubmit,
+}: {
+  initialProp?: VProp;
+  defaultUserId?: number;
+  defaultCompetitionId?: number;
+  onSubmit?: () => void;
+}) {
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [canEditPublicProps, setCanEditPublicProps] = useState(false);
   const { toast } = useToast();
   const initialUserId = initialProp?.prop_user_id || defaultUserId;
-  
+
   const createPropAction = useServerAction(createProp, {
     successMessage: "Prop Created!",
     onSuccess: () => {
       if (onSubmit) onSubmit();
-    }
+    },
   });
-  
+
   const updatePropAction = useServerAction(updateProp, {
     successMessage: "Prop Updated!",
     onSuccess: () => {
       if (onSubmit) onSubmit();
-    }
+    },
   });
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -94,8 +96,8 @@ export function CreateEditPropForm(
       text: initialProp?.prop_text ?? "",
       notes: initialProp?.prop_notes || null,
       category_id: initialProp?.category_id ?? null,
-      competition_id: defaultCompetitionId ?? initialProp?.competition_id ??
-        null,
+      competition_id:
+        defaultCompetitionId ?? initialProp?.competition_id ?? null,
       user_id: initialUserId ?? null,
     },
   });
@@ -174,7 +176,8 @@ export function CreateEditPropForm(
                   {...field}
                   value={field.value === null ? "null" : String(field.value)}
                   onValueChange={(value) =>
-                    field.onChange(value === "null" ? null : Number(value))}
+                    field.onChange(value === "null" ? null : Number(value))
+                  }
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -206,7 +209,8 @@ export function CreateEditPropForm(
                   {...field}
                   value={field.value === null ? "null" : String(field.value)}
                   onValueChange={(value) =>
-                    field.onChange(value === "null" ? null : Number(value))}
+                    field.onChange(value === "null" ? null : Number(value))
+                  }
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -241,7 +245,8 @@ export function CreateEditPropForm(
                   {...field}
                   value={field.value === null ? "null" : String(field.value)}
                   onValueChange={(value) =>
-                    field.onChange(value === "null" ? null : Number(value))}
+                    field.onChange(value === "null" ? null : Number(value))
+                  }
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -249,12 +254,11 @@ export function CreateEditPropForm(
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {initialUserId &&
-                      (
-                        <SelectItem value={String(initialUserId)}>
-                          Personal
-                        </SelectItem>
-                      )}
+                    {initialUserId && (
+                      <SelectItem value={String(initialUserId)}>
+                        Personal
+                      </SelectItem>
+                    )}
                     {canEditPublicProps && (
                       <SelectItem value="null">Public</SelectItem>
                     )}
@@ -265,17 +269,15 @@ export function CreateEditPropForm(
             );
           }}
         />
-        {createPropAction.isLoading || updatePropAction.isLoading
-          ? (
-            <Button type="submit" disabled className="w-full">
-              <LoaderCircle className="animate-spin" />
-            </Button>
-          )
-          : (
-            <Button type="submit" className="w-full">
-              {initialProp ? "Update" : "Create"}
-            </Button>
-          )}
+        {createPropAction.isLoading || updatePropAction.isLoading ? (
+          <Button type="submit" disabled className="w-full">
+            <LoaderCircle className="animate-spin" />
+          </Button>
+        ) : (
+          <Button type="submit" className="w-full">
+            {initialProp ? "Update" : "Create"}
+          </Button>
+        )}
         {(createPropAction.error || updatePropAction.error) && (
           <Alert
             variant="destructive"
@@ -284,7 +286,9 @@ export function CreateEditPropForm(
             <AlertTriangle className="h-8 w-8 mr-4 inline" />
             <div className="ml-4">
               <AlertTitle>Submission Error</AlertTitle>
-              <AlertDescription>{createPropAction.error || updatePropAction.error}</AlertDescription>
+              <AlertDescription>
+                {createPropAction.error || updatePropAction.error}
+              </AlertDescription>
             </div>
           </Alert>
         )}

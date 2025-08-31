@@ -14,10 +14,7 @@ export default async function CompetitionLayout({
   }
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
-      <PageHeading
-        title="Standalone Forecasts"
-        className="mb-2"
-      />
+      <PageHeading title="Standalone Forecasts" className="mb-2" />
       <p className="mb-4 text-muted-foreground">
         Forecasts not associated with a competition
       </p>

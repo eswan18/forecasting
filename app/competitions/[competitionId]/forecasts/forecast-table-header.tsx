@@ -3,13 +3,15 @@ import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-export default function ForecastTableHeader(
-  { sortColumn, sortAsc, setSort }: {
-    sortColumn: string;
-    sortAsc: boolean;
-    setSort: (column: string, asc: boolean) => void;
-  },
-) {
+export default function ForecastTableHeader({
+  sortColumn,
+  sortAsc,
+  setSort,
+}: {
+  sortColumn: string;
+  sortAsc: boolean;
+  setSort: (column: string, asc: boolean) => void;
+}) {
   const handleSortClick = (column: string) => {
     if (sortColumn === column) {
       // If clicking a column that's already sorted, flip the sort direction
@@ -41,13 +43,15 @@ export default function ForecastTableHeader(
   );
 }
 
-function SortColumnHeader(
-  { onClick, ascending, className }: {
-    onClick: () => void;
-    ascending: boolean | undefined;
-    className?: string;
-  },
-) {
+function SortColumnHeader({
+  onClick,
+  ascending,
+  className,
+}: {
+  onClick: () => void;
+  ascending: boolean | undefined;
+  className?: string;
+}) {
   className = cn("w-full flex flex-row items-end justify-end", className);
   return (
     <div className={className}>
@@ -57,11 +61,13 @@ function SortColumnHeader(
         onClick={onClick}
       >
         <span className="hidden sm:inline">Sort</span>
-        {ascending === undefined
-          ? <ArrowUpDown size={20} />
-          : ascending
-          ? <ArrowUp size={20} />
-          : <ArrowDown size={20} />}
+        {ascending === undefined ? (
+          <ArrowUpDown size={20} />
+        ) : ascending ? (
+          <ArrowUp size={20} />
+        ) : (
+          <ArrowDown size={20} />
+        )}
       </Button>
     </div>
   );

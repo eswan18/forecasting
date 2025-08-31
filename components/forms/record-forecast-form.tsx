@@ -23,9 +23,13 @@ const formSchema = z.object({
   forecast: z.number({ message: "You must choose a number" }).min(0).max(1),
 });
 
-export function RecordForecastForm(
-  { prop, initialForecast }: { prop: VProp; initialForecast?: Forecast },
-) {
+export function RecordForecastForm({
+  prop,
+  initialForecast,
+}: {
+  prop: VProp;
+  initialForecast?: Forecast;
+}) {
   const { user } = useCurrentUser();
   const [loading, setLoading] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -48,7 +52,7 @@ export function RecordForecastForm(
           toast({ title: "Forecast recorded!" });
         });
       } catch (e) {
-        const msg = (e instanceof Error) ? e.message : "An error occurred";
+        const msg = e instanceof Error ? e.message : "An error occurred";
         toast({
           title: "Error recording forecast",
           description: msg,
@@ -67,7 +71,7 @@ export function RecordForecastForm(
           toast({ title: "Forecast updated!" });
         });
       } catch (e) {
-        const msg = (e instanceof Error) ? e.message : "An error occurred";
+        const msg = e instanceof Error ? e.message : "An error occurred";
         toast({
           title: "Error updating forecast",
           description: msg,
@@ -85,12 +89,11 @@ export function RecordForecastForm(
         <div className="grid grid-cols-6 grid-flow-col content-end gap-y-2 gap-x-1">
           <div className="col-span-4 mr-2 flex flex-col">
             <span className="text-sm">{prop.prop_text}</span>
-            {prop.prop_notes &&
-              (
-                <span className="text-muted-foreground italic break-words text-xs mt-1">
-                  {prop.prop_notes}
-                </span>
-              )}
+            {prop.prop_notes && (
+              <span className="text-muted-foreground italic break-words text-xs mt-1">
+                {prop.prop_notes}
+              </span>
+            )}
           </div>
           <FormField
             control={form.control}
@@ -114,22 +117,20 @@ export function RecordForecastForm(
               </FormItem>
             )}
           />
-          {loading
-            ? (
-              <Button variant="outline" disabled size="icon">
-                <LoaderCircle className="animate-spin" />
-              </Button>
-            )
-            : (
-              <Button
-                type="submit"
-                variant="outline"
-                size="icon"
-                disabled={form.formState.isDirty ? undefined : true}
-              >
-                <Check size={16} />
-              </Button>
-            )}
+          {loading ? (
+            <Button variant="outline" disabled size="icon">
+              <LoaderCircle className="animate-spin" />
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              variant="outline"
+              size="icon"
+              disabled={form.formState.isDirty ? undefined : true}
+            >
+              <Check size={16} />
+            </Button>
+          )}
         </div>
       </form>
     </Form>

@@ -18,7 +18,7 @@ Next.js recommends returning structured results from server actions rather than 
 All server actions should return a `ServerActionResult<T>`:
 
 ```typescript
-export type ServerActionResult<T> = 
+export type ServerActionResult<T> =
   | { success: true; data: T }
   | { success: false; error: string; code?: string };
 ```
@@ -26,23 +26,37 @@ export type ServerActionResult<T> =
 ### 2. Writing Server Actions
 
 ```typescript
-import { ServerActionResult, success, error, ERROR_CODES } from '@/lib/server-action-result';
+import {
+  ServerActionResult,
+  success,
+  error,
+  ERROR_CODES,
+} from "@/lib/server-action-result";
 
-export async function updateUser({ id, user }: { id: number, user: UserUpdate }): Promise<ServerActionResult<void>> {
+export async function updateUser({
+  id,
+  user,
+}: {
+  id: number;
+  user: UserUpdate;
+}): Promise<ServerActionResult<void>> {
   try {
     // Check authorization
     const currentUser = await getUserFromCookies();
     if (!currentUser || currentUser.id !== id) {
-      return error('You can only update your own profile', ERROR_CODES.UNAUTHORIZED);
+      return error(
+        "You can only update your own profile",
+        ERROR_CODES.UNAUTHORIZED,
+      );
     }
-    
+
     // Perform the action
-    await db.updateTable('users').set(user).where('id', '=', id).execute();
-    
+    await db.updateTable("users").set(user).where("id", "=", id).execute();
+
     return success(undefined);
   } catch (err) {
-    console.error('Error updating user:', err);
-    return error('Failed to update user', ERROR_CODES.DATABASE_ERROR);
+    console.error("Error updating user:", err);
+    return error("Failed to update user", ERROR_CODES.DATABASE_ERROR);
   }
 }
 ```
@@ -61,11 +75,11 @@ function MyComponent() {
       // Handle success
     },
   });
-  
+
   async function handleSubmit(values: FormValues) {
     await updateUserAction.execute({ id: userId, user: values });
   }
-  
+
   return (
     <form onSubmit={handleSubmit}>
       {/* Form fields */}
@@ -90,7 +104,7 @@ import { handleServerActionResult } from '@/lib/server-action-helpers';
 export default async function Page() {
   const result = await getUsers();
   const users = handleServerActionResult(result); // Automatically handles errors
-  
+
   return <UsersList users={users} />;
 }
 ```
@@ -101,11 +115,11 @@ Use predefined error codes for consistency:
 
 ```typescript
 export const ERROR_CODES = {
-  UNAUTHORIZED: 'UNAUTHORIZED',
-  NOT_FOUND: 'NOT_FOUND',
-  VALIDATION_ERROR: 'VALIDATION_ERROR',
-  DATABASE_ERROR: 'DATABASE_ERROR',
-  UNKNOWN_ERROR: 'UNKNOWN_ERROR',
+  UNAUTHORIZED: "UNAUTHORIZED",
+  NOT_FOUND: "NOT_FOUND",
+  VALIDATION_ERROR: "VALIDATION_ERROR",
+  DATABASE_ERROR: "DATABASE_ERROR",
+  UNKNOWN_ERROR: "UNKNOWN_ERROR",
 };
 ```
 
@@ -114,21 +128,27 @@ export const ERROR_CODES = {
 For forms with multiple fields, use `ServerActionResultWithValidation`:
 
 ```typescript
-export async function createProp({ prop }: { prop: NewProp }): Promise<ServerActionResultWithValidation<void>> {
+export async function createProp({
+  prop,
+}: {
+  prop: NewProp;
+}): Promise<ServerActionResultWithValidation<void>> {
   const validationErrors: Record<string, string[]> = {};
-  
+
   if (!prop.prop_text || prop.prop_text.trim().length < 10) {
-    validationErrors.prop_text = ['Proposition text must be at least 10 characters long'];
+    validationErrors.prop_text = [
+      "Proposition text must be at least 10 characters long",
+    ];
   }
-  
+
   if (Object.keys(validationErrors).length > 0) {
     return validationError(
-      'Please fix the validation errors',
+      "Please fix the validation errors",
       validationErrors,
-      ERROR_CODES.VALIDATION_ERROR
+      ERROR_CODES.VALIDATION_ERROR,
     );
   }
-  
+
   // ... rest of the action
 }
 ```

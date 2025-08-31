@@ -4,16 +4,17 @@ import { useEffect, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 
-export default function PropTableFilterPanel(
-  { filter, setFilter }: {
-    filter: PropTableSearchParams;
-    setFilter: (
-      filter:
-        | PropTableSearchParams
-        | ((p: PropTableSearchParams) => PropTableSearchParams),
-    ) => void;
-  },
-) {
+export default function PropTableFilterPanel({
+  filter,
+  setFilter,
+}: {
+  filter: PropTableSearchParams;
+  setFilter: (
+    filter:
+      | PropTableSearchParams
+      | ((p: PropTableSearchParams) => PropTableSearchParams),
+  ) => void;
+}) {
   const [propText, setPropText] = useState(filter.propText || "");
   useEffect(() => {
     // Debounce the propText input.

@@ -37,7 +37,7 @@ export function SuggestPropForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user) {
-      return
+      return;
     }
     setLoading(true);
     setError("");
@@ -91,17 +91,15 @@ export function SuggestPropForm() {
                 </FormItem>
               )}
             />
-            {loading
-              ? (
-                <Button type="submit" disabled className="w-full">
-                  <LoaderCircle className="animate-spin" />
-                </Button>
-              )
-              : (
-                <Button type="submit" className="w-full">
-                  Suggest
-                </Button>
-              )}
+            {loading ? (
+              <Button type="submit" disabled className="w-full">
+                <LoaderCircle className="animate-spin" />
+              </Button>
+            ) : (
+              <Button type="submit" className="w-full">
+                Suggest
+              </Button>
+            )}
             {error && (
               <Alert
                 variant="destructive"

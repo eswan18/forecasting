@@ -12,7 +12,11 @@ import {
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 
-export default function DatePicker({ value, onChange, timeZone }: {
+export default function DatePicker({
+  value,
+  onChange,
+  timeZone,
+}: {
   value: Date | undefined;
   onChange: (date: Date | undefined) => void;
   timeZone?: string;
@@ -29,9 +33,11 @@ export default function DatePicker({ value, onChange, timeZone }: {
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {value
-            ? formatInTimeZone(value, timeZone || "UTC", "PPP")
-            : <span>Pick a date</span>}
+          {value ? (
+            formatInTimeZone(value, timeZone || "UTC", "PPP")
+          ) : (
+            <span>Pick a date</span>
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">

@@ -1,51 +1,57 @@
-'use server';
+"use server";
 
-import { db } from '@/lib/database';
-import { Competition, CompetitionUpdate, NewCompetition } from "@/types/db_types";
-import { getUserFromCookies } from '../get-user';
-import { revalidatePath } from 'next/cache';
-import { logger } from '@/lib/logger';
+import { db } from "@/lib/database";
+import {
+  Competition,
+  CompetitionUpdate,
+  NewCompetition,
+} from "@/types/db_types";
+import { getUserFromCookies } from "../get-user";
+import { revalidatePath } from "next/cache";
+import { logger } from "@/lib/logger";
 
-export async function getCompetitionById(id: number): Promise<Competition | undefined> {
+export async function getCompetitionById(
+  id: number,
+): Promise<Competition | undefined> {
   const currentUser = await getUserFromCookies();
-  logger.debug('Getting competition by ID', { 
-    competitionId: id, 
-    currentUserId: currentUser?.id 
+  logger.debug("Getting competition by ID", {
+    competitionId: id,
+    currentUserId: currentUser?.id,
   });
-  
+
   const startTime = Date.now();
   try {
     const competition = await db
-      .selectFrom('competitions')
+      .selectFrom("competitions")
       .selectAll()
-      .where('id', '=', id)
+      .where("id", "=", id)
       .executeTakeFirst();
-    
+
     const duration = Date.now() - startTime;
     if (competition) {
-      logger.info('Competition retrieved successfully', { 
-        operation: 'getCompetitionById',
-        table: 'competitions',
+      logger.info("Competition retrieved successfully", {
+        operation: "getCompetitionById",
+        table: "competitions",
         competitionId: id,
-        duration
+        duration,
       });
     } else {
-      logger.warn('Competition not found', { 
-        operation: 'getCompetitionById',
-        table: 'competitions',
+      logger.warn("Competition not found", {
+        operation: "getCompetitionById",
+        table: "competitions",
         competitionId: id,
-        duration
+        duration,
       });
     }
-    
+
     return competition;
   } catch (error) {
     const duration = Date.now() - startTime;
-    logger.error('Failed to get competition by ID', error as Error, { 
-      operation: 'getCompetitionById',
-      table: 'competitions',
+    logger.error("Failed to get competition by ID", error as Error, {
+      operation: "getCompetitionById",
+      table: "competitions",
       competitionId: id,
-      duration
+      duration,
     });
     throw error;
   }
@@ -53,118 +59,128 @@ export async function getCompetitionById(id: number): Promise<Competition | unde
 
 export async function getCompetitions(): Promise<Competition[]> {
   const currentUser = await getUserFromCookies();
-  logger.debug('Getting all competitions', { 
-    currentUserId: currentUser?.id 
+  logger.debug("Getting all competitions", {
+    currentUserId: currentUser?.id,
   });
-  
+
   const startTime = Date.now();
   try {
-    let query = db.selectFrom('competitions').orderBy('name', 'desc').selectAll();
+    let query = db
+      .selectFrom("competitions")
+      .orderBy("name", "desc")
+      .selectAll();
     const results = await query.execute();
-    
+
     const duration = Date.now() - startTime;
-    logger.info(`Retrieved ${results.length} competitions`, { 
-      operation: 'getCompetitions',
-      table: 'competitions',
-      duration
+    logger.info(`Retrieved ${results.length} competitions`, {
+      operation: "getCompetitions",
+      table: "competitions",
+      duration,
     });
-    
+
     return results;
   } catch (error) {
     const duration = Date.now() - startTime;
-    logger.error('Failed to get competitions', error as Error, { 
-      operation: 'getCompetitions',
-      table: 'competitions',
-      duration
+    logger.error("Failed to get competitions", error as Error, {
+      operation: "getCompetitions",
+      table: "competitions",
+      duration,
     });
     throw error;
   }
 }
 
-export async function updateCompetition({ id, competition }: { id: number, competition: CompetitionUpdate }) {
+export async function updateCompetition({
+  id,
+  competition,
+}: {
+  id: number;
+  competition: CompetitionUpdate;
+}) {
   const currentUser = await getUserFromCookies();
-  logger.debug('Updating competition', { 
-    competitionId: id, 
+  logger.debug("Updating competition", {
+    competitionId: id,
     updateFields: Object.keys(competition),
-    currentUserId: currentUser?.id 
+    currentUserId: currentUser?.id,
   });
-  
+
   const startTime = Date.now();
   try {
     if (!currentUser?.is_admin) {
-      logger.warn('Unauthorized attempt to update competition', { 
-        competitionId: id, 
-        currentUserId: currentUser?.id 
+      logger.warn("Unauthorized attempt to update competition", {
+        competitionId: id,
+        currentUserId: currentUser?.id,
       });
-      throw new Error('Unauthorized: Only admins can update competitions');
+      throw new Error("Unauthorized: Only admins can update competitions");
     }
-    
+
     await db
-      .updateTable('competitions')
+      .updateTable("competitions")
       .set(competition)
-      .where('id', '=', id)
+      .where("id", "=", id)
       .execute();
-    
+
     const duration = Date.now() - startTime;
-    logger.info('Competition updated successfully', { 
-      operation: 'updateCompetition',
-      table: 'competitions',
+    logger.info("Competition updated successfully", {
+      operation: "updateCompetition",
+      table: "competitions",
       competitionId: id,
-      duration
+      duration,
     });
-    
-    revalidatePath('/competitions');
-    revalidatePath('/admin/competitions');
+
+    revalidatePath("/competitions");
+    revalidatePath("/admin/competitions");
   } catch (error) {
     const duration = Date.now() - startTime;
-    logger.error('Failed to update competition', error as Error, { 
-      operation: 'updateCompetition',
-      table: 'competitions',
+    logger.error("Failed to update competition", error as Error, {
+      operation: "updateCompetition",
+      table: "competitions",
       competitionId: id,
-      duration
+      duration,
     });
     throw error;
   }
 }
 
-export async function createCompetition({ competition }: { competition: NewCompetition }) {
+export async function createCompetition({
+  competition,
+}: {
+  competition: NewCompetition;
+}) {
   const currentUser = await getUserFromCookies();
-  logger.debug('Creating competition', { 
+  logger.debug("Creating competition", {
     competitionName: competition.name,
-    currentUserId: currentUser?.id 
+    currentUserId: currentUser?.id,
   });
-  
+
   const startTime = Date.now();
   try {
     if (!currentUser?.is_admin) {
-      logger.warn('Unauthorized attempt to create competition', { 
-        currentUserId: currentUser?.id 
+      logger.warn("Unauthorized attempt to create competition", {
+        currentUserId: currentUser?.id,
       });
-      throw new Error('Unauthorized: Only admins can create competitions');
+      throw new Error("Unauthorized: Only admins can create competitions");
     }
-    
-    await db
-      .insertInto('competitions')
-      .values(competition)
-      .execute();
-    
+
+    await db.insertInto("competitions").values(competition).execute();
+
     const duration = Date.now() - startTime;
-    logger.info('Competition created successfully', { 
-      operation: 'createCompetition',
-      table: 'competitions',
+    logger.info("Competition created successfully", {
+      operation: "createCompetition",
+      table: "competitions",
       competitionName: competition.name,
-      duration
+      duration,
     });
-    
-    revalidatePath('/competitions');
-    revalidatePath('/admin/competitions');
+
+    revalidatePath("/competitions");
+    revalidatePath("/admin/competitions");
   } catch (error) {
     const duration = Date.now() - startTime;
-    logger.error('Failed to create competition', error as Error, { 
-      operation: 'createCompetition',
-      table: 'competitions',
+    logger.error("Failed to create competition", error as Error, {
+      operation: "createCompetition",
+      table: "competitions",
       competitionName: competition.name,
-      duration
+      duration,
     });
     throw error;
   }

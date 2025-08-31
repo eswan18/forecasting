@@ -15,9 +15,11 @@ interface ForecastTableProps {
   users: VUser[];
 }
 
-export default async function ForecastTable(
-  { competitionId, searchParams, users }: ForecastTableProps,
-) {
+export default async function ForecastTable({
+  competitionId,
+  searchParams,
+  users,
+}: ForecastTableProps) {
   const search = parseSearchParamsAsState({ params: searchParams });
   const forecastTableBodyProps = {
     ...search,
@@ -25,10 +27,7 @@ export default async function ForecastTable(
   };
   return (
     <div className="w-full">
-      <ForecastTableInteractivePanel
-        search={search}
-        users={users}
-      />
+      <ForecastTableInteractivePanel search={search} users={users} />
       <ForecastTableBody {...forecastTableBodyProps} />
     </div>
   );

@@ -1,9 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 
-export default async function SkeletonCard(
-  { title, className }: { title: string; className?: string },
-) {
+export default async function SkeletonCard({
+  title,
+  className,
+}: {
+  title: string;
+  className?: string;
+}) {
   return (
     <Card className={className}>
       <CardHeader>

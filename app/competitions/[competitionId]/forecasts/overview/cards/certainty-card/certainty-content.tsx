@@ -1,12 +1,7 @@
 "use client";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { ArrowUpDown } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -17,9 +12,11 @@ export interface AvgCertaintyForUser {
   avgCertainty: number;
 }
 
-export default function CertaintyContent(
-  { certainties }: { certainties: AvgCertaintyForUser[] },
-) {
+export default function CertaintyContent({
+  certainties,
+}: {
+  certainties: AvgCertaintyForUser[];
+}) {
   const [reversed, setReversed] = useState(false);
   // Sort by most certain to least certain.
   if (reversed) {

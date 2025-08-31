@@ -40,7 +40,7 @@ export default function UsersTable({ data }: { data: VUser[] }) {
     getFilteredRowModel: getFilteredRowModel(),
     state: { sorting, columnFilters },
     initialState: {
-      columnFilters: [{ "id": "resolution", "value": [] }],
+      columnFilters: [{ id: "resolution", value: [] }],
     },
   });
 
@@ -53,10 +53,12 @@ export default function UsersTable({ data }: { data: VUser[] }) {
               {headerGroup.headers.map((header) => {
                 return (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                   </TableHead>
                 );
               })}
@@ -64,37 +66,29 @@ export default function UsersTable({ data }: { data: VUser[] }) {
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows?.length
-            ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      align={(cell.column.columnDef.meta as any)?.align}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            )
-            : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && "selected"}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell
+                    key={cell.id}
+                    align={(cell.column.columnDef.meta as any)?.align}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
               </TableRow>
-            )}
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                No results.
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </div>
@@ -103,13 +97,15 @@ export default function UsersTable({ data }: { data: VUser[] }) {
 
 type ResolutionOption = "Yes" | "No" | "?";
 
-function ResolutionCheckboxFilter(
-  { filterValue, setFilterValue, resolution }: {
-    filterValue?: ResolutionOption[];
-    setFilterValue: (value: ResolutionOption[]) => void;
-    resolution: ResolutionOption;
-  },
-) {
+function ResolutionCheckboxFilter({
+  filterValue,
+  setFilterValue,
+  resolution,
+}: {
+  filterValue?: ResolutionOption[];
+  setFilterValue: (value: ResolutionOption[]) => void;
+  resolution: ResolutionOption;
+}) {
   return (
     <div className="flex flex-row justify-start items-center gap-1.5">
       <Checkbox

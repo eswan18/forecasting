@@ -41,61 +41,58 @@ export function FeatureWidget({ featureName, flags }: FeatureWidgetProps) {
       </CardHeader>
       <CardContent>
         <div className="flex flex-row justify-between items-end">
-          {defaultValue !== undefined
-            ? (
-              <FeatureToggle
-                name="Default Value"
-                checked={defaultValue.enabled}
-                onCheckedChange={async (checked) => {
-                  await updateFeatureFlag({
-                    id: defaultValue.id,
-                    enabled: checked,
-                  });
-                  toast({
-                    title: "Feature flag updated",
-                    description:
-                      `The default value for "${featureName}" is now *${
-                        checked ? "on" : "off"
-                      }*`,
-                  });
-                }}
-              />
-            )
-            : (
-              <div className="flex flex-col gap-1 items-center">
-                <span className="text-muted-foreground">Default Value</span>
-                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="gap-2 font-normal"
-                    >
-                      <span className="text-sm">None</span>
-                      <Edit size={14} />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>{featureName}</DialogTitle>
-                      <DialogDescription>Add a default value</DialogDescription>
-                    </DialogHeader>
-                    <AddDefaultFeatureFlagWidget
-                      featureName={featureName}
-                      onChoice={() => setDialogOpen(false)}
-                    />
-                  </DialogContent>
-                </Dialog>
-              </div>
-            )}
+          {defaultValue !== undefined ? (
+            <FeatureToggle
+              name="Default Value"
+              checked={defaultValue.enabled}
+              onCheckedChange={async (checked) => {
+                await updateFeatureFlag({
+                  id: defaultValue.id,
+                  enabled: checked,
+                });
+                toast({
+                  title: "Feature flag updated",
+                  description: `The default value for "${featureName}" is now *${
+                    checked ? "on" : "off"
+                  }*`,
+                });
+              }}
+            />
+          ) : (
+            <div className="flex flex-col gap-1 items-center">
+              <span className="text-muted-foreground">Default Value</span>
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-2 font-normal"
+                  >
+                    <span className="text-sm">None</span>
+                    <Edit size={14} />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>{featureName}</DialogTitle>
+                    <DialogDescription>Add a default value</DialogDescription>
+                  </DialogHeader>
+                  <AddDefaultFeatureFlagWidget
+                    featureName={featureName}
+                    onChoice={() => setDialogOpen(false)}
+                  />
+                </DialogContent>
+              </Dialog>
+            </div>
+          )}
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 className="flex flex-row justify-end gap-2"
               >
-                {userValues.length}{" "}
-                user-level flag{userValues.length != 1 && "s"}
+                {userValues.length} user-level flag
+                {userValues.length != 1 && "s"}
               </Button>
             </PopoverTrigger>
             <PopoverContent>
@@ -111,9 +108,13 @@ export function FeatureWidget({ featureName, flags }: FeatureWidgetProps) {
   );
 }
 
-function AddDefaultFeatureFlagWidget(
-  { featureName, onChoice }: { featureName: string; onChoice?: () => void },
-) {
+function AddDefaultFeatureFlagWidget({
+  featureName,
+  onChoice,
+}: {
+  featureName: string;
+  onChoice?: () => void;
+}) {
   const flag = { name: featureName, user_id: null };
   const saveDefaultFlag = (enabled: boolean) => {
     createFeatureFlag({ featureFlag: { ...flag, enabled } });

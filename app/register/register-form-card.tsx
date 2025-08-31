@@ -24,19 +24,28 @@ import { z } from "zod";
 import { registerNewUser } from "@/lib/auth";
 
 const formSchema = z.object({
-  username: z.string().regex(
-    /^[a-z0-9_]+$/,
-    "Must contain only lowercase letters, numbers, or underscores",
-  ).min(2).max(30),
+  username: z
+    .string()
+    .regex(
+      /^[a-z0-9_]+$/,
+      "Must contain only lowercase letters, numbers, or underscores",
+    )
+    .min(2)
+    .max(30),
   password: z.string().min(8).max(30),
-  name: z.string().regex(
-    /^[a-zA-Z \-]+$/,
-    "Must contain only letters, hyphens, and spaces",
-  ).min(2).max(30),
+  name: z
+    .string()
+    .regex(/^[a-zA-Z \-]+$/, "Must contain only letters, hyphens, and spaces")
+    .min(2)
+    .max(30),
   email: z.string().email(),
 });
 
-export default function RegisterFormCard({inviteToken}: {inviteToken?: string}) {
+export default function RegisterFormCard({
+  inviteToken,
+}: {
+  inviteToken?: string;
+}) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -52,17 +61,20 @@ export default function RegisterFormCard({inviteToken}: {inviteToken?: string}) 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    registerNewUser({...values, inviteToken}).then(() => {
-      router.push("/login");
-    }).catch((error) => {
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError("An error occurred.");
-      }
-    }).finally(() => {
-      setLoading(false);
-    });
+    registerNewUser({ ...values, inviteToken })
+      .then(() => {
+        router.push("/login");
+      })
+      .catch((error) => {
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError("An error occurred.");
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }
 
   return (
@@ -114,10 +126,7 @@ export default function RegisterFormCard({inviteToken}: {inviteToken?: string}) 
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Robert Tables"
-                      {...field}
-                    />
+                    <Input placeholder="Robert Tables" {...field} />
                   </FormControl>
                   <FormDescription>
                     This is how your name will appear in scores and rankings.
@@ -143,17 +152,15 @@ export default function RegisterFormCard({inviteToken}: {inviteToken?: string}) 
                 </FormItem>
               )}
             />
-            {loading
-              ? (
-                <div className="w-full flex justify-center">
-                  <LoaderCircle className="animate-spin" />
-                </div>
-              )
-              : (
-                <Button type="submit" className="w-full">
-                  Register
-                </Button>
-              )}
+            {loading ? (
+              <div className="w-full flex justify-center">
+                <LoaderCircle className="animate-spin" />
+              </div>
+            ) : (
+              <Button type="submit" className="w-full">
+                Register
+              </Button>
+            )}
             {error && (
               <Alert
                 variant="destructive"
@@ -171,9 +178,7 @@ export default function RegisterFormCard({inviteToken}: {inviteToken?: string}) 
         <p className="mt-4 text-center text-sm text-muted-foreground">
           Already have an account?{" "}
           <Link href="/login" legacyBehavior>
-            <Button variant="link">
-              Log in
-            </Button>
+            <Button variant="link">Log in</Button>
           </Link>
         </p>
       </CardContent>

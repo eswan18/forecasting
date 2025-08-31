@@ -23,16 +23,18 @@ import { LoaderCircle } from "lucide-react";
 import { login, LoginResponse } from "@/lib/auth";
 
 const formSchema = z.object({
-  username: z.string().regex(
-    /^[a-z0-9_]+$/,
-    "Must contain only lowercase letters, numbers, or underscores",
-  ).min(2).max(30),
+  username: z
+    .string()
+    .regex(
+      /^[a-z0-9_]+$/,
+      "Must contain only lowercase letters, numbers, or underscores",
+    )
+    .min(2)
+    .max(30),
   password: z.string().min(8).max(30),
 });
 
-export default function LoginFormCard(
-  { onLogin }: { onLogin?: () => void },
-) {
+export default function LoginFormCard({ onLogin }: { onLogin?: () => void }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { mutate } = useCurrentUser();
@@ -50,9 +52,8 @@ export default function LoginFormCard(
       username: values.username,
       password: values.password,
     }).catch((error) => {
-      const message = error instanceof Error
-        ? error.message
-        : "An error occurred";
+      const message =
+        error instanceof Error ? error.message : "An error occurred";
       return { success: false, error: message } as LoginResponse;
     });
     mutate();
@@ -106,17 +107,15 @@ export default function LoginFormCard(
                 </FormItem>
               )}
             />
-            {loading
-              ? (
-                <div className="w-full flex justify-center">
-                  <LoaderCircle className="animate-spin" />
-                </div>
-              )
-              : (
-                <Button type="submit" className="w-full">
-                  Login
-                </Button>
-              )}
+            {loading ? (
+              <div className="w-full flex justify-center">
+                <LoaderCircle className="animate-spin" />
+              </div>
+            ) : (
+              <Button type="submit" className="w-full">
+                Login
+              </Button>
+            )}
             {error && (
               <Alert
                 variant="destructive"
@@ -134,13 +133,12 @@ export default function LoginFormCard(
             <p className="text-center text-sm text-muted-foreground">
               Forgot your credentials?
               <Link href="/reset-password" legacyBehavior>
-                <Button variant="link">
-                  Reset password
-                </Button>
+                <Button variant="link">Reset password</Button>
               </Link>
             </p>
             <p className="text-center text-sm text-muted-foreground">
-              Don&apos;t have an account?<br />
+              Don&apos;t have an account?
+              <br />
               You&apos;ll need an invite link from Ethan.
             </p>
           </div>

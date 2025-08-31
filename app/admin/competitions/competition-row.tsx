@@ -14,9 +14,13 @@ import {
 import { CreateEditCompetitionForm } from "@/components/forms/create-edit-competition-form";
 import { useState } from "react";
 
-export default function CompetitionRow(
-  { competition, nProps }: { competition: Competition; nProps: number },
-) {
+export default function CompetitionRow({
+  competition,
+  nProps,
+}: {
+  competition: Competition;
+  nProps: number;
+}) {
   const [open, setOpen] = useState(false);
   return (
     <div className="grid grid-cols-3 gap-4 p-4 border border-b-muted">
@@ -47,14 +51,16 @@ export default function CompetitionRow(
       </div>
       <div className="text-sm col-span-2 flex flex-col items-start justify-start">
         <p>
-          <span className="text-muted-foreground">from</span> {formatInTimeZone(
+          <span className="text-muted-foreground">from</span>{" "}
+          {formatInTimeZone(
             competition.forecasts_due_date,
             "UTC",
             "yyyy-MM-dd '@' HH:mm 'UTC'",
           )}
         </p>
         <p>
-          <span className="text-muted-foreground">to</span> {formatInTimeZone(
+          <span className="text-muted-foreground">to</span>{" "}
+          {formatInTimeZone(
             competition.end_date,
             "UTC",
             "yyyy-MM-dd '@' HH:mm 'UTC'",

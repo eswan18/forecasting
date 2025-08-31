@@ -2,9 +2,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import LoginFormCard from "./login-form-card";
 
-export default async function LoginPage(
-  { searchParams }: { searchParams: Promise<{ redirect: string }> },
-) {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ redirect: string }>;
+}) {
   const { redirect: redirectUrlParam } = await searchParams;
   const redirectUrl = redirectUrlParam
     ? decodeURIComponent(redirectUrlParam)

@@ -22,25 +22,30 @@ import {
 } from "@/components/ui/dialog";
 import { deleteForecast, deleteProp, deleteResolution } from "@/lib/db_actions";
 
-export default function ForecastCardActionsButton({ record, userId }: {
+export default function ForecastCardActionsButton({
+  record,
+  userId,
+}: {
   record: VForecast | VProp;
   userId: number;
 }) {
   const [dialogStatus, setDialogStatus] = useState<
     "edit" | "delete-prop" | "clear-fcast" | null
   >(null);
-  const dialogTitle = dialogStatus === "edit"
-    ? "Edit Prop"
-    : dialogStatus === "delete-prop"
-    ? "Delete Prop"
-    : dialogStatus === "clear-fcast"
-    ? "Clear Forecast"
-    : null;
+  const dialogTitle =
+    dialogStatus === "edit"
+      ? "Edit Prop"
+      : dialogStatus === "delete-prop"
+        ? "Delete Prop"
+        : dialogStatus === "clear-fcast"
+          ? "Clear Forecast"
+          : null;
   return (
     <Dialog
       open={dialogStatus !== null}
       onOpenChange={(open) =>
-        setDialogStatus(open ? dialogStatus || "edit" : null)}
+        setDialogStatus(open ? dialogStatus || "edit" : null)
+      }
     >
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -59,13 +64,11 @@ export default function ForecastCardActionsButton({ record, userId }: {
               <Edit size={14} className="mr-2" /> Edit Prop
             </DropdownMenuItem>
           </DialogTrigger>
-          {isForecast(record)
-            ? (
-              <DropdownMenuItem onClick={() => setDialogStatus("clear-fcast")}>
-                <CircleX size={14} className="mr-2" /> Clear Forecast
-              </DropdownMenuItem>
-            )
-            : null}
+          {isForecast(record) ? (
+            <DropdownMenuItem onClick={() => setDialogStatus("clear-fcast")}>
+              <CircleX size={14} className="mr-2" /> Clear Forecast
+            </DropdownMenuItem>
+          ) : null}
           <DropdownMenuItem onClick={() => setDialogStatus("delete-prop")}>
             <Trash size={14} className="mr-2" /> Delete Prop
           </DropdownMenuItem>
@@ -75,39 +78,35 @@ export default function ForecastCardActionsButton({ record, userId }: {
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
         </DialogHeader>
-        {dialogStatus === "edit"
-          ? (
-            <CreateEditPropForm
-              initialProp={record}
-              defaultUserId={userId}
-              onSubmit={() => setDialogStatus(null)}
-            />
-          )
-          : (
-            dialogStatus === "delete-prop"
-              ? (
-                <DeletePropDialogContents
-                  record={record}
-                  onSubmit={() => setDialogStatus(null)}
-                />
-              )
-              : (isForecast(record)
-                ? (
-                  <ClearForecastDialogContents
-                    record={record}
-                    onSubmit={() => setDialogStatus(null)}
-                  />
-                )
-                : null)
-          )}
+        {dialogStatus === "edit" ? (
+          <CreateEditPropForm
+            initialProp={record}
+            defaultUserId={userId}
+            onSubmit={() => setDialogStatus(null)}
+          />
+        ) : dialogStatus === "delete-prop" ? (
+          <DeletePropDialogContents
+            record={record}
+            onSubmit={() => setDialogStatus(null)}
+          />
+        ) : isForecast(record) ? (
+          <ClearForecastDialogContents
+            record={record}
+            onSubmit={() => setDialogStatus(null)}
+          />
+        ) : null}
       </DialogContent>
     </Dialog>
   );
 }
 
-function ClearForecastDialogContents(
-  { record, onSubmit }: { record: VForecast; onSubmit: () => void },
-) {
+function ClearForecastDialogContents({
+  record,
+  onSubmit,
+}: {
+  record: VForecast;
+  onSubmit: () => void;
+}) {
   const handleClick = async () => {
     await deleteForecast({ id: record.forecast_id });
     onSubmit();
@@ -124,24 +123,24 @@ function ClearForecastDialogContents(
   );
 }
 
-function DeletePropDialogContents(
-  { record, onSubmit }: { record: VForecast | VProp; onSubmit: () => void },
-) {
+function DeletePropDialogContents({
+  record,
+  onSubmit,
+}: {
+  record: VForecast | VProp;
+  onSubmit: () => void;
+}) {
   const description = isForecast(record)
-    ? (
-      record.resolution_id
-        ? "This will also delete the forecast and resolution."
-        : "This will also delete the forecast."
-    )
-    : (
-      record.resolution_id
-        ? "This will also delete the resolution."
-        : "Are you sure?"
-    );
+    ? record.resolution_id
+      ? "This will also delete the forecast and resolution."
+      : "This will also delete the forecast."
+    : record.resolution_id
+      ? "This will also delete the resolution."
+      : "Are you sure?";
   const handleClick = async () => {
-    isForecast(record) && await deleteForecast({ id: record.forecast_id });
+    isForecast(record) && (await deleteForecast({ id: record.forecast_id }));
     record.resolution_id &&
-      await deleteResolution({ id: record.resolution_id });
+      (await deleteResolution({ id: record.resolution_id }));
     await deleteProp({ id: record.prop_id });
     onSubmit();
   };
@@ -149,7 +148,9 @@ function DeletePropDialogContents(
     <>
       <DialogDescription>{description}</DialogDescription>
       <DialogFooter>
-        <Button variant="destructive" onClick={handleClick}>Delete Prop</Button>
+        <Button variant="destructive" onClick={handleClick}>
+          Delete Prop
+        </Button>
       </DialogFooter>
     </>
   );

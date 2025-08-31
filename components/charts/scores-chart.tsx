@@ -24,9 +24,13 @@ interface UserScore {
 
 // A chart that shows the total scores of each user for all the given forecasts, or the
 // scores broken down by prop.
-export default function ScoresChart(
-  { forecasts, byProp }: { forecasts: VForecast[]; byProp: boolean },
-) {
+export default function ScoresChart({
+  forecasts,
+  byProp,
+}: {
+  forecasts: VForecast[];
+  byProp: boolean;
+}) {
   // Keep only the forecasts that have a score.
   const scoredForecasts = forecasts.filter(
     (forecast): forecast is ScoredForecast =>
@@ -36,8 +40,8 @@ export default function ScoresChart(
   const userScores: UserScore[] = [];
   const propIdToText = new Map<number, string>();
   for (const forecast of scoredForecasts) {
-    const userScore = userScores.find((user) =>
-      user.name === forecast.user_name
+    const userScore = userScores.find(
+      (user) => user.name === forecast.user_name,
     );
     if (userScore) {
       if (forecast.prop_id in userScore.scores) {
@@ -56,8 +60,8 @@ export default function ScoresChart(
   // Compute the total score for each user, and sort.
   for (const userScore of userScores) {
     const scores = Object.values(userScore.scores);
-    userScore.totalScore = scores.reduce((acc, score) => acc + score, 0) /
-      scores.length;
+    userScore.totalScore =
+      scores.reduce((acc, score) => acc + score, 0) / scores.length;
   }
   userScores.sort((a, b) => (a.totalScore || 0) - (b.totalScore || 0));
 
@@ -65,7 +69,7 @@ export default function ScoresChart(
   if (byProp) {
     maximumScore = Math.max(
       ...userScores.map((userScore) =>
-        Math.max(...Object.values(userScore.scores))
+        Math.max(...Object.values(userScore.scores)),
       ),
     );
   } else {
@@ -75,13 +79,13 @@ export default function ScoresChart(
 
   const chartData = byProp
     ? userScores.map((userScore) => ({
-      name: userScore.name,
-      ...userScore.scores, // This spreads all the prop score values as separate properties.
-    }))
+        name: userScore.name,
+        ...userScore.scores, // This spreads all the prop score values as separate properties.
+      }))
     : userScores.map((userScore) => ({
-      name: userScore.name,
-      totalScore: userScore.totalScore,
-    }));
+        name: userScore.name,
+        totalScore: userScore.totalScore,
+      }));
   const propIds = Array.from(
     new Set(scoredForecasts.map((forecast) => forecast.prop_id)),
   );
@@ -94,11 +98,7 @@ export default function ScoresChart(
       config={{}}
       className={`w-full ${byProp ? "h-[48rem]" : "h-[32rem]"}`}
     >
-      <BarChart
-        accessibilityLayer
-        data={chartData}
-        layout="vertical"
-      >
+      <BarChart accessibilityLayer data={chartData} layout="vertical">
         <YAxis
           type="category"
           dataKey="name"
@@ -107,13 +107,9 @@ export default function ScoresChart(
         />
         <CartesianGrid strokeDasharray="3 3" />
         <ChartTooltip content={<ChartTooltipContent />} />
-        <XAxis
-          type="number"
-          domain={[0, axisMaximum]}
-          tick={{ fill: "red" }}
-        />
-        {byProp
-          ? propIdsAndColors.map(({ propId, color }) => (
+        <XAxis type="number" domain={[0, axisMaximum]} tick={{ fill: "red" }} />
+        {byProp ? (
+          propIdsAndColors.map(({ propId, color }) => (
             <Bar
               key={propId}
               dataKey={propId}
@@ -122,14 +118,14 @@ export default function ScoresChart(
               radius={2}
             />
           ))
-          : (
-            <Bar
-              dataKey="totalScore"
-              fill="hsl(var(--chart-1))"
-              name="Score"
-              radius={2}
-            />
-          )}
+        ) : (
+          <Bar
+            dataKey="totalScore"
+            fill="hsl(var(--chart-1))"
+            name="Score"
+            radius={2}
+          />
+        )}
       </BarChart>
     </ChartContainer>
   );

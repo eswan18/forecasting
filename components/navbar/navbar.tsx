@@ -39,31 +39,36 @@ type NavLinkGroup = {
 export default async function NavBar() {
   const user = await getUserFromCookies();
   const userId = user?.id;
-  const links: (NavLink | NavLinkGroup)[] = [{
-    label: "Competitions",
-    links: [
-      {
-        href: "/competitions/1/forecasts",
-        label: "2024 Open",
-        icon: <Medal size={16} />,
-      },
-      {
-        href: "/competitions/2/forecasts",
-        label: "2025 Open",
-        icon: <Medal size={16} />,
-      },
-    ],
-  }];
+  const links: (NavLink | NavLinkGroup)[] = [
+    {
+      label: "Competitions",
+      links: [
+        {
+          href: "/competitions/1/forecasts",
+          label: "2024 Open",
+          icon: <Medal size={16} />,
+        },
+        {
+          href: "/competitions/2/forecasts",
+          label: "2025 Open",
+          icon: <Medal size={16} />,
+        },
+      ],
+    },
+  ];
   if (
-    userId && await hasFeatureEnabled({ featureName: "personal-props", userId })
+    userId &&
+    (await hasFeatureEnabled({ featureName: "personal-props", userId }))
   ) {
     links.push({
       label: "Standalone",
-      links: [{
-        href: `/standalone/forecasts`,
-        label: "Standalone Forecasts",
-        icon: <User2 size={16} />,
-      }],
+      links: [
+        {
+          href: `/standalone/forecasts`,
+          label: "Standalone Forecasts",
+          icon: <User2 size={16} />,
+        },
+      ],
     });
   }
   const adminLinks: NavLink[] = [
@@ -109,9 +114,9 @@ export default async function NavBar() {
         </Link>
         <NavigationMenu>
           <NavigationMenuList>
-            {user && links.map((link) =>
-              isLink(link)
-                ? (
+            {user &&
+              links.map((link) =>
+                isLink(link) ? (
                   <NavigationMenuItem key={link.href}>
                     <Link href={link.href} passHref legacyBehavior>
                       <NavigationMenuLink
@@ -121,9 +126,10 @@ export default async function NavBar() {
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem>
-                )
-                : <DropdownNavbarItem key={link.label} group={link} />
-            )}
+                ) : (
+                  <DropdownNavbarItem key={link.label} group={link} />
+                ),
+              )}
           </NavigationMenuList>
         </NavigationMenu>
       </div>
@@ -135,9 +141,12 @@ export default async function NavBar() {
   );
 }
 
-async function DropdownNavbarItem(
-  { group: { label, links } }: { group: NavLinkGroup; user?: VUser },
-) {
+async function DropdownNavbarItem({
+  group: { label, links },
+}: {
+  group: NavLinkGroup;
+  user?: VUser;
+}) {
   return (
     <NavigationMenuItem>
       <NavigationMenuTrigger>{label}</NavigationMenuTrigger>

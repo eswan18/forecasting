@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { Suspense } from 'react';
+import React, { Suspense } from "react";
 
 interface ServerComponentWrapperProps {
   children: React.ReactNode;
@@ -11,15 +11,11 @@ interface ServerComponentWrapperProps {
  * Wrapper component for server components in Storybook.
  * This helps handle async components and provides a loading state.
  */
-export function ServerComponentWrapper({ 
-  children, 
-  fallback = <div>Loading...</div> 
+export function ServerComponentWrapper({
+  children,
+  fallback = <div>Loading...</div>,
 }: ServerComponentWrapperProps) {
-  return (
-    <Suspense fallback={fallback}>
-      {children}
-    </Suspense>
-  );
+  return <Suspense fallback={fallback}>{children}</Suspense>;
 }
 
 /**
@@ -27,7 +23,7 @@ export function ServerComponentWrapper({
  */
 export function mockAsyncComponent<T extends Record<string, any>>(
   Component: React.ComponentType<T>,
-  asyncData?: () => Promise<any>
+  asyncData?: () => Promise<any>,
 ) {
   return function MockedComponent(props: T) {
     const [data, setData] = React.useState<any>(null);

@@ -18,18 +18,24 @@ interface PropTableProps {
   defaultPropUserId?: number | undefined;
 }
 
-export function PropTable(
-  { data, editable, competitionId, defaultPropUserId }: PropTableProps,
-) {
+export function PropTable({
+  data,
+  editable,
+  competitionId,
+  defaultPropUserId,
+}: PropTableProps) {
   const router = useRouter();
   const pathName = usePathname();
   const rawSearchParams = useSearchParams();
-  const rawResolution = rawSearchParams.getAll("resolution").map((value) => {
-    if (value === "true") return true;
-    if (value === "false") return false;
-    if (value === "null") return null;
-    return undefined;
-  }).filter((value) => value !== undefined) as (boolean | null)[];
+  const rawResolution = rawSearchParams
+    .getAll("resolution")
+    .map((value) => {
+      if (value === "true") return true;
+      if (value === "false") return false;
+      if (value === "null") return null;
+      return undefined;
+    })
+    .filter((value) => value !== undefined) as (boolean | null)[];
   const searchParams: PropTableSearchParams = {
     propText: rawSearchParams.get("prop_text") || null,
     resolution: rawResolution.length > 0 ? rawResolution : [true, false],
@@ -48,8 +54,11 @@ export function PropTable(
       newSearchParams.set("prop_text", params.propText);
     }
     if (
-      !(params.resolution.includes(true) && params.resolution.includes(false) &&
-        !params.resolution.includes(null))
+      !(
+        params.resolution.includes(true) &&
+        params.resolution.includes(false) &&
+        !params.resolution.includes(null)
+      )
     ) {
       // Only add resolution filter if it's not the default
       params.resolution.forEach((value) => {
@@ -65,8 +74,8 @@ export function PropTable(
   data = data.filter((row) => {
     const propTextMatch = searchParams.propText
       ? row.prop_text
-        .toLowerCase()
-        .includes(searchParams.propText.toLowerCase())
+          .toLowerCase()
+          .includes(searchParams.propText.toLowerCase())
       : true;
     const resolutionMatch = searchParams.resolution.includes(row.resolution);
     return propTextMatch && resolutionMatch;

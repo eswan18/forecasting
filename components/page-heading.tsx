@@ -1,12 +1,14 @@
 import { cn } from "@/lib/utils";
 
-export default function PageHeading(
-  { title, className, children }: {
-    title: string;
-    className?: string;
-    children?: React.ReactNode;
-  },
-) {
+export default function PageHeading({
+  title,
+  className,
+  children,
+}: {
+  title: string;
+  className?: string;
+  children?: React.ReactNode;
+}) {
   const defaultClassName = "mb-8";
   className = cn(defaultClassName, className);
   return (

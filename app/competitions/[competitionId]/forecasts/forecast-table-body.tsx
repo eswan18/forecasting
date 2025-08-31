@@ -14,10 +14,14 @@ export interface ForecastTableBodyProps {
   propText?: string | undefined;
 }
 
-export default async function ForecastTableBody(
-  { competitionId, userId, resolution, sortColumn, sortAsc, propText }:
-    ForecastTableBodyProps,
-) {
+export default async function ForecastTableBody({
+  competitionId,
+  userId,
+  resolution,
+  sortColumn,
+  sortAsc,
+  propText,
+}: ForecastTableBodyProps) {
   const currentUser = await getUserFromCookies();
   let data = await getForecasts({
     userId,
@@ -31,7 +35,7 @@ export default async function ForecastTableBody(
   // Filtering by prop text isn't supported in the db query so we do it here.
   if (propText) {
     data = data.filter((row) =>
-      row.prop_text?.toLowerCase().includes(propText.toLowerCase())
+      row.prop_text?.toLowerCase().includes(propText.toLowerCase()),
     );
   }
   const isRowEditable = (row: VForecast) => {

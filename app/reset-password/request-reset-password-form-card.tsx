@@ -23,7 +23,11 @@ import { LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
-  username: z.string().regex(/^[a-z0-9_]+$/).min(2).max(30),
+  username: z
+    .string()
+    .regex(/^[a-z0-9_]+$/)
+    .min(2)
+    .max(30),
 });
 
 export default function RequestPasswordResetFormCard() {
@@ -37,13 +41,15 @@ export default function RequestPasswordResetFormCard() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     setError("");
-    initiatePasswordReset(values).then(() => {
-      setLoading(false);
-      router.push("/reset-password/email-sent");
-    }).catch((e) => {
-      setLoading(false);
-      setError(e.message);
-    });
+    initiatePasswordReset(values)
+      .then(() => {
+        setLoading(false);
+        router.push("/reset-password/email-sent");
+      })
+      .catch((e) => {
+        setLoading(false);
+        setError(e.message);
+      });
   }
 
   return (
@@ -71,17 +77,15 @@ export default function RequestPasswordResetFormCard() {
                 </FormItem>
               )}
             />
-            {loading
-              ? (
-                <div className="w-full flex justify-center">
-                  <LoaderCircle className="animate-spin" />
-                </div>
-              )
-              : (
-                <Button type="submit" className="w-full">
-                  Send Reset Email
-                </Button>
-              )}
+            {loading ? (
+              <div className="w-full flex justify-center">
+                <LoaderCircle className="animate-spin" />
+              </div>
+            ) : (
+              <Button type="submit" className="w-full">
+                Send Reset Email
+              </Button>
+            )}
             {error && (
               <Alert
                 variant="destructive"
@@ -98,9 +102,7 @@ export default function RequestPasswordResetFormCard() {
         </Form>
         <p className="mt-4 text-center text-sm text-muted-foreground">
           <Link href="/login" legacyBehavior>
-            <Button variant="link">
-              Back to Login
-            </Button>
+            <Button variant="link">Back to Login</Button>
           </Link>
         </p>
       </CardContent>

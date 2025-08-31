@@ -19,40 +19,40 @@ export function UserStatus() {
   const logout = useLogout("/login");
   return (
     <div className="lg:w-48 flex justify-end items-end gap-2 pb-1">
-      {loggedIn
-        ? (
-          <>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="h-9 w-9 ">
-                  {user.is_admin ? <UserRoundPen /> : <User2 />}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>
-                  {user.name} {user.is_admin ? "(Admin)" : ""}
-                </DropdownMenuLabel>
-                <Link href="/account">
-                  <DropdownMenuItem className="px-4">
-                    <Settings size={14} className="mr-2" />
-                    <span>Account</span>
-                  </DropdownMenuItem>
-                </Link>
-                <DropdownMenuItem onClick={logout} className="px-4">
-                  <LogOut size={14} className="mr-2" />
-                  <span>Log out</span>
+      {loggedIn ? (
+        <>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" className="h-9 w-9 ">
+                {user.is_admin ? <UserRoundPen /> : <User2 />}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>
+                {user.name} {user.is_admin ? "(Admin)" : ""}
+              </DropdownMenuLabel>
+              <Link href="/account">
+                <DropdownMenuItem className="px-4">
+                  <Settings size={14} className="mr-2" />
+                  <span>Account</span>
                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </>
-        )
-        : isLoading
-        ? <Button disabled variant="outline">Loading...</Button>
-        : (
-          <Link href="/login">
-            <Button>Log in</Button>
-          </Link>
-        )}
+              </Link>
+              <DropdownMenuItem onClick={logout} className="px-4">
+                <LogOut size={14} className="mr-2" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
+      ) : isLoading ? (
+        <Button disabled variant="outline">
+          Loading...
+        </Button>
+      ) : (
+        <Link href="/login">
+          <Button>Log in</Button>
+        </Link>
+      )}
     </div>
   );
 }

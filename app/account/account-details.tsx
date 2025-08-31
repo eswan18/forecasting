@@ -37,55 +37,56 @@ export function AccountDetails() {
   }
   return (
     <div className="mt-4 space-y-12">
-      {user &&
-        (
-          <>
-            {!isLoading && (
-              <UserDetailsSection initialUser={user} mutateUser={mutateUser} />
-            )}
-            <LoginDetailsSection />
-          </>
-        )}
+      {user && (
+        <>
+          {!isLoading && (
+            <UserDetailsSection initialUser={user} mutateUser={mutateUser} />
+          )}
+          <LoginDetailsSection />
+        </>
+      )}
     </div>
   );
 }
 
 const userDetailsFormSchema = z.object({
-  name: z.string().regex(
-    /^[a-zA-Z \-]+$/,
-    "Must contain only letters, hyphens, and spaces",
-  ).min(2).max(30),
+  name: z
+    .string()
+    .regex(/^[a-zA-Z \-]+$/, "Must contain only letters, hyphens, and spaces")
+    .min(2)
+    .max(30),
   email: z.string().email(),
 });
 
-function UserDetailsSection(
-  { initialUser, mutateUser }: {
-    initialUser: VUser;
-    mutateUser: (updatedUser: UserUpdate) => void;
-  },
-) {
+function UserDetailsSection({
+  initialUser,
+  mutateUser,
+}: {
+  initialUser: VUser;
+  mutateUser: (updatedUser: UserUpdate) => void;
+}) {
   const form = useForm<z.infer<typeof userDetailsFormSchema>>({
     resolver: zodResolver(userDetailsFormSchema),
     defaultValues: initialUser,
   });
-  
+
   const updateUserAction = useServerAction(updateUser, {
-    successMessage: 'Profile updated successfully',
+    successMessage: "Profile updated successfully",
     onSuccess: () => {
       const values = form.getValues();
       form.reset(values);
       mutateUser(values);
     },
   });
-  
+
   async function onSubmit(values: z.infer<typeof userDetailsFormSchema>) {
     if (!form.formState.isDirty) {
       return;
     }
-    
+
     await updateUserAction.execute({ id: initialUser.id, user: values });
   }
-  
+
   return (
     <div>
       <h2 className="text-lg text-muted-foreground mb-4">User Details</h2>
@@ -117,25 +118,23 @@ function UserDetailsSection(
               </AccountFormItem>
             )}
           />
-          {updateUserAction.isLoading
-            ? (
-              <div className="grid grid-cols-4 gap-4">
-                <div className="col-start-2 col-span-2 flex flex-row justify-center">
-                  <LoaderCircle className="animate-spin" />
-                </div>
+          {updateUserAction.isLoading ? (
+            <div className="grid grid-cols-4 gap-4">
+              <div className="col-start-2 col-span-2 flex flex-row justify-center">
+                <LoaderCircle className="animate-spin" />
               </div>
-            )
-            : (
-              <div className="grid grid-cols-4 gap-4">
-                <Button
-                  type="submit"
-                  disabled={!form.formState.isDirty}
-                  className="col-start-2 col-span-2"
-                >
-                  Update
-                </Button>
-              </div>
-            )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-4 gap-4">
+              <Button
+                type="submit"
+                disabled={!form.formState.isDirty}
+                className="col-start-2 col-span-2"
+              >
+                Update
+              </Button>
+            </div>
+          )}
         </form>
       </Form>
     </div>
@@ -197,10 +196,14 @@ function LoginDetailsSection() {
 }
 
 const changeUsernameFormSchema = z.object({
-  username: z.string().regex(
-    /^[a-z0-9_]+$/,
-    "Must contain only lowercase letters, numbers, or underscores",
-  ).min(2).max(30),
+  username: z
+    .string()
+    .regex(
+      /^[a-z0-9_]+$/,
+      "Must contain only lowercase letters, numbers, or underscores",
+    )
+    .min(2)
+    .max(30),
 });
 
 function ChangeUsernameForm({ onSuccess }: { onSuccess: () => void }) {
@@ -254,21 +257,19 @@ function ChangeUsernameForm({ onSuccess }: { onSuccess: () => void }) {
               </FormItem>
             )}
           />
-          {loading
-            ? (
-              <div className="col-start-2 col-span-2 flex flex-row justify-center w-32">
-                <LoaderCircle className="animate-spin" />
-              </div>
-            )
-            : (
-              <Button
-                type="submit"
-                disabled={!form.formState.isDirty}
-                className="w-32"
-              >
-                Update
-              </Button>
-            )}
+          {loading ? (
+            <div className="col-start-2 col-span-2 flex flex-row justify-center w-32">
+              <LoaderCircle className="animate-spin" />
+            </div>
+          ) : (
+            <Button
+              type="submit"
+              disabled={!form.formState.isDirty}
+              className="w-32"
+            >
+              Update
+            </Button>
+          )}
           {error && (
             <div className="col-start-2 col-span-2 text-red-500">{error}</div>
           )}
@@ -296,11 +297,13 @@ function ChangePasswordForm({ onSuccess }: { onSuccess: () => void }) {
       return;
     }
     setLoading(true);
-    const response = await updateLoginPassword({ id: loginId, ...values })
-      .catch((e) => {
-        const error = e instanceof Error ? e.message : "An error occurred";
-        return { success: false, error };
-      });
+    const response = await updateLoginPassword({
+      id: loginId,
+      ...values,
+    }).catch((e) => {
+      const error = e instanceof Error ? e.message : "An error occurred";
+      return { success: false, error };
+    });
     if (!response.success) {
       setError(response.error);
     } else {
@@ -339,13 +342,15 @@ function ChangePasswordForm({ onSuccess }: { onSuccess: () => void }) {
               </FormItem>
             )}
           />
-          {loading
-            ? (
-              <div className="col-start-2 col-span-2 flex flex-row justify-center w-32">
-                <LoaderCircle className="animate-spin" />
-              </div>
-            )
-            : <Button type="submit" className="w-32">Update</Button>}
+          {loading ? (
+            <div className="col-start-2 col-span-2 flex flex-row justify-center w-32">
+              <LoaderCircle className="animate-spin" />
+            </div>
+          ) : (
+            <Button type="submit" className="w-32">
+              Update
+            </Button>
+          )}
           {error && (
             <Alert
               variant="destructive"

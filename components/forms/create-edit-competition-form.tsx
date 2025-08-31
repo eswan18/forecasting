@@ -31,12 +31,13 @@ const formSchema = z.object({
  * Form for creating or editing a competition..
  * If initialCompetition is provided, the form will be in edit mode, otherwise in create mode.
  */
-export function CreateEditCompetitionForm(
-  { initialCompetition, onSubmit }: {
-    initialCompetition?: Competition;
-    onSubmit?: () => void;
-  },
-) {
+export function CreateEditCompetitionForm({
+  initialCompetition,
+  onSubmit,
+}: {
+  initialCompetition?: Competition;
+  onSubmit?: () => void;
+}) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -150,17 +151,15 @@ export function CreateEditCompetitionForm(
             </FormItem>
           )}
         />
-        {loading
-          ? (
-            <Button type="submit" disabled className="w-full">
-              <LoaderCircle className="animate-spin" />
-            </Button>
-          )
-          : (
-            <Button type="submit" className="w-full">
-              {initialCompetition ? "Update" : "Create"}
-            </Button>
-          )}
+        {loading ? (
+          <Button type="submit" disabled className="w-full">
+            <LoaderCircle className="animate-spin" />
+          </Button>
+        ) : (
+          <Button type="submit" className="w-full">
+            {initialCompetition ? "Update" : "Create"}
+          </Button>
+        )}
         {error && (
           <Alert
             variant="destructive"

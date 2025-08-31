@@ -15,31 +15,37 @@ export type ScoredForecast = {
   penalty: number | null;
 };
 
-export default function ForecastTableRow(
-  { row, editable }: { row: VForecast; editable: boolean },
-) {
-  const resolution = row.resolution !== null
-    ? (
-      row.resolution
-        ? (
-          <Check
-            size={20}
-            strokeWidth={3}
-            className="-translate-y-1.5 text-green-500"
-          />
-        )
-        : (
-          <X
-            size={20}
-            strokeWidth={3}
-            className="-translate-y-1.5 text-destructive"
-          />
-        )
-    )
-    : <p className="text-muted-foreground">?</p>;
-  const penaltyString = row.score !== null
-    ? <p>{row.score.toFixed(2)}</p>
-    : <p className="text-muted-foreground">?</p>;
+export default function ForecastTableRow({
+  row,
+  editable,
+}: {
+  row: VForecast;
+  editable: boolean;
+}) {
+  const resolution =
+    row.resolution !== null ? (
+      row.resolution ? (
+        <Check
+          size={20}
+          strokeWidth={3}
+          className="-translate-y-1.5 text-green-500"
+        />
+      ) : (
+        <X
+          size={20}
+          strokeWidth={3}
+          className="-translate-y-1.5 text-destructive"
+        />
+      )
+    ) : (
+      <p className="text-muted-foreground">?</p>
+    );
+  const penaltyString =
+    row.score !== null ? (
+      <p>{row.score.toFixed(2)}</p>
+    ) : (
+      <p className="text-muted-foreground">?</p>
+    );
   return (
     <div className="w-full bg-card grid grid-cols-[1fr_1fr] sm:grid-cols-[2fr_1fr] px-4 py-4 border gap-x-1">
       <div className="flex flex-col gap-y-2">
@@ -48,7 +54,10 @@ export default function ForecastTableRow(
             <CircleUser size={16} />
             <p>{row.user_name}</p>
           </div>
-          <Badge className="justify-center text-muted-foreground" variant="outline">
+          <Badge
+            className="justify-center text-muted-foreground"
+            variant="outline"
+          >
             {row.category_name}
           </Badge>
         </div>

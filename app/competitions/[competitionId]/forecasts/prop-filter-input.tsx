@@ -2,12 +2,13 @@
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 
-export default function PropFilterInput(
-  { initialSearchString, onSearchStringChange }: {
-    initialSearchString: string;
-    onSearchStringChange: (searchString: string) => void;
-  },
-) {
+export default function PropFilterInput({
+  initialSearchString,
+  onSearchStringChange,
+}: {
+  initialSearchString: string;
+  onSearchStringChange: (searchString: string) => void;
+}) {
   const [propText, setPropText] = useState(initialSearchString);
   useEffect(() => {
     // Debounce the propText input.

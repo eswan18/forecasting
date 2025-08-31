@@ -16,9 +16,11 @@ import { loginViaImpersonation } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 
-export function getColumns(
-  { mutateUser }: { mutateUser: () => void },
-): ColumnDef<VUser>[] {
+export function getColumns({
+  mutateUser,
+}: {
+  mutateUser: () => void;
+}): ColumnDef<VUser>[] {
   return [
     {
       accessorKey: "username",
@@ -28,21 +30,20 @@ export function getColumns(
         const name = row.original.name;
         const handleImpersonate = username
           ? async () => {
-            await loginViaImpersonation(username).then(async () => {
-              mutateUser();
-            }).then(() => {
-              redirect("/");
-            });
-          }
+              await loginViaImpersonation(username)
+                .then(async () => {
+                  mutateUser();
+                })
+                .then(() => {
+                  redirect("/");
+                });
+            }
           : null;
         // Admins have a little badge next to their name; everyone else has an "Impersonate" button.
-        const button = row.original.is_admin
-          ? (
-            <Badge variant="outline">
-              Admin
-            </Badge>
-          )
-          : handleImpersonate && (
+        const button = row.original.is_admin ? (
+          <Badge variant="outline">Admin</Badge>
+        ) : (
+          handleImpersonate && (
             <Dialog>
               <DialogTrigger asChild>
                 <Button size="sm" className="h-5 text-[0.6rem]">
@@ -63,18 +64,19 @@ export function getColumns(
                 </DialogFooter>
               </DialogContent>
             </Dialog>
-          );
+          )
+        );
         return (
           <div className="px-2">
             <div className="flex flex-row gap-x-2 items-center text-lg">
-              {username
-                ? <p>{username}</p>
-                : <p className="text-muted-foreground">&lt;no username&gt;</p>}
+              {username ? (
+                <p>{username}</p>
+              ) : (
+                <p className="text-muted-foreground">&lt;no username&gt;</p>
+              )}
               {button}
             </div>
-            <div className="text-sm text-muted-foreground">
-              {name}
-            </div>
+            <div className="text-sm text-muted-foreground">{name}</div>
           </div>
         );
       },
@@ -82,10 +84,7 @@ export function getColumns(
     {
       accessorKey: "email",
       header: "Email",
-      cell: ({ row }) =>
-        row.original.email && (
-          <div>{row.original.email}</div>
-        ),
+      cell: ({ row }) => row.original.email && <div>{row.original.email}</div>,
     },
     {
       accessorKey: "login_id",
@@ -97,7 +96,9 @@ export function getColumns(
     {
       accessorKey: "id",
       header: "User",
-      cell: ({ row }) => <div className="text-muted-foreground">{row.original.id}</div>,
+      cell: ({ row }) => (
+        <div className="text-muted-foreground">{row.original.id}</div>
+      ),
     },
   ];
 }

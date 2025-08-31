@@ -27,7 +27,10 @@ export function EditPropButton({ prop }: { prop: VProp }) {
         <DialogHeader>
           <DialogTitle>Edit Prop</DialogTitle>
         </DialogHeader>
-        <CreateEditPropForm initialProp={prop} onSubmit={() => setOpen(false)} />
+        <CreateEditPropForm
+          initialProp={prop}
+          onSubmit={() => setOpen(false)}
+        />
       </DialogContent>
     </Dialog>
   );

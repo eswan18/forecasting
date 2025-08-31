@@ -5,9 +5,11 @@ import { formatInTimeZone } from "date-fns-tz";
 
 const DATE_FORMAT = "MMM d, yyyy";
 
-export default function CompetitionStartEnd(
-  { competition }: { competition: Competition },
-) {
+export default function CompetitionStartEnd({
+  competition,
+}: {
+  competition: Competition;
+}) {
   const competitionState = getCompetitionState(competition);
   return (
     <div className="flex flex-row flex-wrap items-center justify-center gap-x-4 sm:gap-x-8 gap-y-2 mb-4 text-sm">
@@ -27,12 +29,10 @@ export default function CompetitionStartEnd(
   );
 }
 
-function getCompetitionState(
-  competition: {
-    forecasts_due_date: Date;
-    end_date: Date;
-  },
-): "unstarted" | "ongoing" | "ended" {
+function getCompetitionState(competition: {
+  forecasts_due_date: Date;
+  end_date: Date;
+}): "unstarted" | "ongoing" | "ended" {
   const now = new Date();
   if (competition.forecasts_due_date > now) {
     return "unstarted";

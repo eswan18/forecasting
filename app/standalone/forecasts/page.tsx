@@ -32,8 +32,8 @@ async function ForecastPage() {
   // We fetch all standalone props and forecasts, but there are duplicates in here:
   // any prop that has a forecast. So we remove props that also appear in the forecast
   // array.
-  const filteredProps = props.filter((prop) =>
-    !forecasts.some((forecast) => forecast.prop_id === prop.prop_id)
+  const filteredProps = props.filter(
+    (prop) => !forecasts.some((forecast) => forecast.prop_id === prop.prop_id),
   );
   // remove this line later: wait 1 second to simulate loading
   await new Promise((resolve) => setTimeout(resolve, 1000));

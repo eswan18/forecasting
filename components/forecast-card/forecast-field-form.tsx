@@ -19,20 +19,23 @@ import { Button } from "../ui/button";
 import { LoaderCircle, Save } from "lucide-react";
 
 const formSchema = z.object({
-  forecast: z.string()
+  forecast: z
+    .string()
     .min(1, "You must enter a forecast")
     .transform((val) => parseFloat(val))
     .refine((val) => !isNaN(val), "You must enter a valid number")
     .refine((val) => val >= 0 && val <= 1, "Forecast must be between 0 and 1"),
 });
 
-export default function ForecastFieldForm(
-  { propId, userId, initialForecast }: {
-    propId: number;
-    userId: number;
-    initialForecast?: VForecast;
-  },
-) {
+export default function ForecastFieldForm({
+  propId,
+  userId,
+  initialForecast,
+}: {
+  propId: number;
+  userId: number;
+  initialForecast?: VForecast;
+}) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -53,7 +56,7 @@ export default function ForecastFieldForm(
           toast({ title: "Forecast recorded!" });
         });
       } catch (e) {
-        const msg = (e instanceof Error) ? e.message : "An error occurred";
+        const msg = e instanceof Error ? e.message : "An error occurred";
         toast({
           title: "Error recording forecast",
           description: msg,
@@ -68,12 +71,14 @@ export default function ForecastFieldForm(
         forecast: values.forecast,
       };
       try {
-        await updateForecast({ id: initialForecast.forecast_id, forecast })
-          .then(() => {
-            toast({ title: "Forecast updated!" });
-          });
+        await updateForecast({
+          id: initialForecast.forecast_id,
+          forecast,
+        }).then(() => {
+          toast({ title: "Forecast updated!" });
+        });
       } catch (e) {
-        const msg = (e instanceof Error) ? e.message : "An error occurred";
+        const msg = e instanceof Error ? e.message : "An error occurred";
         toast({
           title: "Error updating forecast",
           description: msg,
@@ -107,24 +112,15 @@ export default function ForecastFieldForm(
                     className="w-14"
                   />
                 </FormControl>
-                {loading
-                  ? (
-                    <Button variant="outline" disabled size="icon">
-                      <LoaderCircle className="animate-spin" />
-                    </Button>
-                  )
-                  : (
-                    form.formState.isDirty
-                      ? (
-                        <Button
-                          type="submit"
-                          size="icon"
-                        >
-                          <Save size={16} />
-                        </Button>
-                      )
-                      : null
-                  )}
+                {loading ? (
+                  <Button variant="outline" disabled size="icon">
+                    <LoaderCircle className="animate-spin" />
+                  </Button>
+                ) : form.formState.isDirty ? (
+                  <Button type="submit" size="icon">
+                    <Save size={16} />
+                  </Button>
+                ) : null}
               </div>
               <FormMessage />
             </FormItem>

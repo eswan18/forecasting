@@ -26,6 +26,7 @@ As of 2024/2025, Storybook has experimental support for React Server Components 
 ### 1. Focus on Client Components
 
 For the best Storybook experience, focus on creating stories for:
+
 - UI components (buttons, cards, forms, etc.)
 - Client-side interactive components
 - Layout components
@@ -37,7 +38,7 @@ If you need to create stories for components that use server features:
 
 ```tsx
 // Use the ServerComponentWrapper for async components
-import { ServerComponentWrapper } from '@/.storybook/ServerComponentWrapper';
+import { ServerComponentWrapper } from "@/.storybook/ServerComponentWrapper";
 
 export const MyStory = {
   render: () => (
@@ -65,6 +66,7 @@ export const WithData = {
 ### 4. Creating Stories
 
 Stories are automatically discovered in these locations:
+
 - `/stories/**/*.stories.tsx`
 - `/components/**/*.stories.tsx`
 - `/app/**/*.stories.tsx`
@@ -82,21 +84,21 @@ npm run build-storybook
 ## Example Story Structure
 
 ```tsx
-import type { Meta, StoryObj } from '@storybook/react';
-import { MyComponent } from './MyComponent';
+import type { Meta, StoryObj } from "@storybook/react";
+import { MyComponent } from "./MyComponent";
 
 const meta = {
-  title: 'Category/ComponentName',
+  title: "Category/ComponentName",
   component: MyComponent,
   parameters: {
-    layout: 'centered', // or 'fullscreen', 'padded'
+    layout: "centered", // or 'fullscreen', 'padded'
   },
-  tags: ['autodocs'], // Generates documentation automatically
+  tags: ["autodocs"], // Generates documentation automatically
   argTypes: {
     // Define controls for props
     variant: {
-      control: 'select',
-      options: ['primary', 'secondary'],
+      control: "select",
+      options: ["primary", "secondary"],
     },
   },
 } satisfies Meta<typeof MyComponent>;
@@ -114,16 +116,19 @@ export const Default: Story = {
 ## Troubleshooting
 
 ### Component Not Rendering
+
 - Ensure the component is a client component or properly wrapped
 - Check for missing imports or dependencies
 - Verify that async operations are properly handled
 
 ### Styling Issues
+
 - Make sure `@/app/globals.css` is imported in `.storybook/preview.ts`
 - Check that Tailwind classes are being processed
 - Verify theme switching is working with the addon-themes
 
 ### Build Errors
+
 - Clear the Storybook cache: `rm -rf node_modules/.cache/storybook`
 - Ensure all dependencies are installed
 - Check for TypeScript errors in your components
@@ -131,6 +136,7 @@ export const Default: Story = {
 ## Future Improvements
 
 As Storybook's RSC support improves, we'll be able to:
+
 - Create stories for async server components more easily
 - Test server actions within Storybook
 - Better integrate with Next.js App Router features

@@ -19,9 +19,11 @@ import { getUserFromCookies } from "@/lib/get-user";
 import SkeletonCard from "./skeleton-card";
 import ErrorPage from "@/components/pages/error-page";
 
-export default async function Page(
-  { params }: { params: Promise<{ competitionId: string }> },
-) {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ competitionId: string }>;
+}) {
   const { competitionId: competitionIdString } = await params;
   const competitionId = parseInt(competitionIdString, 10);
   const competition = await getCompetitionById(competitionId);
@@ -51,25 +53,20 @@ export default async function Page(
               Lower scores are better.
             </p>
             <p>
-              For every prediction, a <span className="font-bold">penalty</span>
-              {" "}
+              For every prediction, a <span className="font-bold">penalty</span>{" "}
               is calculated. This penalty is the square of the size of the
               &quot;miss&quot;.
             </p>
             <p>
               For example, if an event was predicted with 90% confidence and
-              came to happen, the miss was 0.1, and the penalty is 0.01
-              (=0.1<sup>
-                2
-              </sup>). If the event <span className="italic">didn&apos;t</span>
-              {" "}
-              happen, then the miss is 0.9 and the penalty is 0.81 (=0.9<sup>
-                2
-              </sup>).
+              came to happen, the miss was 0.1, and the penalty is 0.01 (=0.1
+              <sup>2</sup>). If the event{" "}
+              <span className="italic">didn&apos;t</span> happen, then the miss
+              is 0.9 and the penalty is 0.81 (=0.9<sup>2</sup>).
             </p>
             <p>
-              A user&apos;s <span className="font-bold">total score</span>{" "}
-              is the average of all their penalties.
+              A user&apos;s <span className="font-bold">total score</span> is
+              the average of all their penalties.
             </p>
           </AccordionContent>
         </AccordionItem>
@@ -90,9 +87,11 @@ export default async function Page(
   );
 }
 
-async function ScoreChartsCardSection(
-  { competitionId }: { competitionId: number },
-) {
+async function ScoreChartsCardSection({
+  competitionId,
+}: {
+  competitionId: number;
+}) {
   // We break this out so that we can wrap it in a Suspense component.
   const categories = await getCategories();
   const forecasts = await getForecasts({ competitionId });

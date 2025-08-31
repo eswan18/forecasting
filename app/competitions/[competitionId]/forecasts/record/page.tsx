@@ -6,9 +6,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import ErrorPage from "@/components/pages/error-page";
 
-export default async function RecordForecastsPage(
-  { params }: { params: Promise<{ competitionId: string }> },
-) {
+export default async function RecordForecastsPage({
+  params,
+}: {
+  params: Promise<{ competitionId: string }>;
+}) {
   const { competitionId: competitionIdString } = await params;
   const competitionId = parseInt(competitionIdString);
   if (isNaN(competitionId)) {
@@ -24,12 +26,10 @@ export default async function RecordForecastsPage(
   props.sort((a, b) => a.prop_id - b.prop_id);
 
   // Mapping from category IDs to the props in that category.
-  const propsByCategoryId: Map<(number | null), VProp[]> = new Map();
+  const propsByCategoryId: Map<number | null, VProp[]> = new Map();
   // Mapping from category IDs to category objects.
-  const categories: Map<
-    (number | null),
-    ({ id: number; name: string } | null)
-  > = new Map();
+  const categories: Map<number | null, { id: number; name: string } | null> =
+    new Map();
   props.forEach((prop) => {
     if (prop.category_id === null || prop.category_name === null) {
       if (!categories.has(null)) {
@@ -75,7 +75,8 @@ export default async function RecordForecastsPage(
                 <Link
                   href={`#category-${categoryId ?? "uncategorized"}`}
                   key={categoryId}
-                  legacyBehavior>
+                  legacyBehavior
+                >
                   <Button variant="ghost" size="sm">
                     {category?.name ?? "Uncategorized"}
                   </Button>
@@ -85,41 +86,37 @@ export default async function RecordForecastsPage(
           </div>
         )}
         <div className="mt-8 flex flex-col gap-16">
-          {propsByCategoryId.size === 0
-            ? (
-              <div className="text-center">
-                <div className="text-muted-foreground mb-4">
-                  No props to forecast
-                </div>
-                <p className="text-muted-foreground">
-                  You have already forecasted all props for this year.
-                </p>
+          {propsByCategoryId.size === 0 ? (
+            <div className="text-center">
+              <div className="text-muted-foreground mb-4">
+                No props to forecast
               </div>
-            )
-            : (
-              Array.from(
-                propsByCategoryId,
-                ([categoryId, props]) => (
-                  <CategoryProps
-                    key={categoryId}
-                    category={categories.get(categoryId) ?? null}
-                    props={props}
-                  />
-                ),
-              )
-            )}
+              <p className="text-muted-foreground">
+                You have already forecasted all props for this year.
+              </p>
+            </div>
+          ) : (
+            Array.from(propsByCategoryId, ([categoryId, props]) => (
+              <CategoryProps
+                key={categoryId}
+                category={categories.get(categoryId) ?? null}
+                props={props}
+              />
+            ))
+          )}
         </div>
       </div>
     </main>
   );
 }
 
-function CategoryProps(
-  { category, props }: {
-    category: { id: number; name: string } | null;
-    props: VProp[];
-  },
-) {
+function CategoryProps({
+  category,
+  props,
+}: {
+  category: { id: number; name: string } | null;
+  props: VProp[];
+}) {
   return (
     <div>
       <div className="w-[33%] border-b-foreground border-b mb-4 px-1">

@@ -24,9 +24,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export function UserLevelFlagsContainer(
-  { flags, featureName }: { flags: VFeatureFlag[]; featureName: string },
-) {
+export function UserLevelFlagsContainer({
+  flags,
+  featureName,
+}: {
+  flags: VFeatureFlag[];
+  featureName: string;
+}) {
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
   const setFlagEnabled = async (flagId: number, enabled: boolean) => {
@@ -36,20 +40,21 @@ export function UserLevelFlagsContainer(
       description: `The feature flag is now *${enabled ? "on" : "off"}*`,
     });
   };
-  const userIdsWithFlags = flags.map((flag) => flag.user_id).filter((id) =>
-    id !== null
-  );
+  const userIdsWithFlags = flags
+    .map((flag) => flag.user_id)
+    .filter((id) => id !== null);
   return (
     <div className="flex flex-col gap-2">
       {flags.map((flag, index) => (
         <div key={flag.user_id} className="flex flex-col gap-2">
           {index > 0 && <Separator />}
           <div className="flex flex-row justify-between px-2">
-            <span>{flag.user_id} ({flag.user_name})</span>
+            <span>
+              {flag.user_id} ({flag.user_name})
+            </span>
             <FeatureToggle
               checked={flag.enabled}
-              onCheckedChange={(checked) =>
-                setFlagEnabled(flag.id, checked)}
+              onCheckedChange={(checked) => setFlagEnabled(flag.id, checked)}
             />
           </div>
         </div>
@@ -57,7 +62,8 @@ export function UserLevelFlagsContainer(
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger asChild>
           <Button variant="outline" className="mt-3 mx-2 gap-x-2">
-            Add User-Level Flag<CirclePlus />
+            Add User-Level Flag
+            <CirclePlus />
           </Button>
         </DialogTrigger>
         <DialogContent>
@@ -75,20 +81,24 @@ export function UserLevelFlagsContainer(
   );
 }
 
-function AddUserFeatureFlagWidget(
-  { featureName, onChoice, excludeUserIds }: {
-    featureName: string;
-    onChoice?: () => void;
-    excludeUserIds?: number[];
-  },
-) {
+function AddUserFeatureFlagWidget({
+  featureName,
+  onChoice,
+  excludeUserIds,
+}: {
+  featureName: string;
+  onChoice?: () => void;
+  excludeUserIds?: number[];
+}) {
   const [users, setUsers] = useState<VUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<VUser | null>(null);
   const { toast } = useToast();
   useEffect(() => {
     getUsers().then((result) => {
       if (result.success) {
-        setUsers(result.data.filter((user) => !excludeUserIds?.includes(user.id)));
+        setUsers(
+          result.data.filter((user) => !excludeUserIds?.includes(user.id)),
+        );
       } else {
         toast({
           title: "Error",
@@ -128,13 +138,12 @@ function AddUserFeatureFlagWidget(
           <SelectValue placeholder="Select a user" />
         </SelectTrigger>
         <SelectContent>
-          {users.length > 0 && (
+          {users.length > 0 &&
             users.map((user) => (
               <SelectItem key={user.id} value={user.id.toString()}>
                 {user.name}
               </SelectItem>
-            ))
-          )}
+            ))}
         </SelectContent>
       </Select>
       <div className="flex flex-row gap-4 items-center">

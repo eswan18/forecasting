@@ -21,16 +21,18 @@ import {
 } from "recharts";
 import { Tooltip } from "recharts";
 
-export default function PropConsensusContent(
-  { categories, forecasts, props }: {
-    categories: Category[];
-    forecasts: VForecast[];
-    props: VProp[];
-  },
-) {
+export default function PropConsensusContent({
+  categories,
+  forecasts,
+  props,
+}: {
+  categories: Category[];
+  forecasts: VForecast[];
+  props: VProp[];
+}) {
   const [selectedCategory, setSelectedCategory] = useState(categories[0]);
-  const forecastsInScope = forecasts.filter((forecast) =>
-    forecast.category_id === selectedCategory.id
+  const forecastsInScope = forecasts.filter(
+    (forecast) => forecast.category_id === selectedCategory.id,
   );
 
   return (
@@ -67,9 +69,11 @@ export default function PropConsensusContent(
 
 const chartConfig = {} satisfies ChartConfig;
 
-function AllPropsConsensusChart(
-  { props }: { props: Map<number, PropStatistics> },
-) {
+function AllPropsConsensusChart({
+  props,
+}: {
+  props: Map<number, PropStatistics>;
+}) {
   const data = Array.from(props.values());
   // Order by average.
   data.sort((a, b) => a.mean - b.mean);
@@ -123,13 +127,15 @@ interface TooltipPayload {
   value: number;
 }
 
-const CustomTooltip = (
-  { active, payload, label }: {
-    active?: boolean;
-    payload?: TooltipPayload[];
-    label?: string;
-  },
-) => {
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: TooltipPayload[];
+  label?: string;
+}) => {
   if (active && payload && payload.length) {
     const stats = payload[0].payload;
     return (
@@ -154,15 +160,21 @@ const CustomTooltip = (
   return null;
 };
 
-const RenderDot: FC<
-  { cx?: number; cy?: number; radius: number; fill: string }
-> = (
-  { cx, cy, radius, fill }: {
-    cx?: number;
-    cy?: number;
-    radius: number;
-    fill: string;
-  },
-) => {
+const RenderDot: FC<{
+  cx?: number;
+  cy?: number;
+  radius: number;
+  fill: string;
+}> = ({
+  cx,
+  cy,
+  radius,
+  fill,
+}: {
+  cx?: number;
+  cy?: number;
+  radius: number;
+  fill: string;
+}) => {
   return <Dot cx={cx} cy={cy} r={radius} fill={fill} />;
 };

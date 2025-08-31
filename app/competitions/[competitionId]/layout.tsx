@@ -52,24 +52,21 @@ export default async function CompetitionLayout({
           <DropdownMenuContent>
             <DropdownMenuLabel>All Competitions</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {competitions.map((competition) => (
-              competitionId === competition.id
-                ? (
-                  <DropdownMenuItem disabled key={competition.id}>
-                    {competition.name}
-                  </DropdownMenuItem>
-                )
-                : (
-                  <Link
-                    href={`/competitions/${competition.id}/forecasts`}
-                    key={competition.id}
-                    legacyBehavior>
-                    <DropdownMenuItem>
-                      {competition.name}
-                    </DropdownMenuItem>
-                  </Link>
-                )
-            ))}
+            {competitions.map((competition) =>
+              competitionId === competition.id ? (
+                <DropdownMenuItem disabled key={competition.id}>
+                  {competition.name}
+                </DropdownMenuItem>
+              ) : (
+                <Link
+                  href={`/competitions/${competition.id}/forecasts`}
+                  key={competition.id}
+                  legacyBehavior
+                >
+                  <DropdownMenuItem>{competition.name}</DropdownMenuItem>
+                </Link>
+              ),
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </PageHeading>
