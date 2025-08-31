@@ -23,8 +23,8 @@ import DatePicker from "../ui/date-picker";
 
 const formSchema = z.object({
   name: z.string().min(8).max(1000),
-  forecasts_due_date: z.coerce.date(),
-  end_date: z.coerce.date(),
+  forecasts_due_date: z.date(),
+  end_date: z.date(),
 });
 
 /*
