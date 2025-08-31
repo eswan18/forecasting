@@ -295,7 +295,7 @@ export async function createProp({ prop }: { prop: NewProp }): Promise<ServerAct
       validationErrors.text = ['Proposition text must be at least 8 characters long'];
     }
     
-    if (!prop.category_id) {
+    if (!prop.category_id && prop.user_id === null) {
       validationErrors.category_id = ['Category is required'];
     }
     
