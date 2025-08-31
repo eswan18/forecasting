@@ -19,10 +19,7 @@ import { Button } from "../ui/button";
 import { Check, LoaderCircle, Save } from "lucide-react";
 
 const formSchema = z.object({
-  forecast: z.coerce.number({ message: "You must choose a number" }).min(0)
-    .max(
-      1,
-    ),
+  forecast: z.number({ message: "You must choose a number" }).min(0).max(1),
 });
 
 export default function ForecastFieldForm(

@@ -38,9 +38,9 @@ const formSchema = z.object({
   notes: z.string().max(1000).nullable().transform((val) =>
     val === "" ? null : val
   ),
-  category_id: z.coerce.number().nullable(),
-  competition_id: z.coerce.number().nullable(),
-  user_id: z.coerce.number().nullable(),
+  category_id: z.number().nullable(),
+  competition_id: z.number().nullable(),
+  user_id: z.number().nullable(),
 }).refine(
   (data) => data.competition_id === null || data.user_id === null,
   {

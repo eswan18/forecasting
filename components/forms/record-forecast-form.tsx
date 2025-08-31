@@ -20,9 +20,7 @@ import { createForecast, updateForecast } from "@/lib/db_actions";
 import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
-  forecast: z.coerce.number({ message: "You must choose a number" }).min(0).max(
-    1,
-  ),
+  forecast: z.number({ message: "You must choose a number" }).min(0).max(1),
 });
 
 export function RecordForecastForm(
