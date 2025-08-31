@@ -16,10 +16,14 @@ import { ForecastUpdate, NewForecast, VForecast } from "@/types/db_types";
 import { createForecast, updateForecast } from "@/lib/db_actions";
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
-import { Check, LoaderCircle, Save } from "lucide-react";
+import { LoaderCircle, Save } from "lucide-react";
 
 const formSchema = z.object({
-  forecast: z.number({ message: "You must choose a number" }).min(0).max(1),
+  forecast: z.string()
+    .min(1, "You must enter a forecast")
+    .transform((val) => parseFloat(val))
+    .refine((val) => !isNaN(val), "You must enter a valid number")
+    .refine((val) => val >= 0 && val <= 1, "Forecast must be between 0 and 1"),
 });
 
 export default function ForecastFieldForm(
@@ -33,7 +37,7 @@ export default function ForecastFieldForm(
   const [loading, setLoading] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { forecast: initialForecast?.forecast },
+    defaultValues: { forecast: initialForecast?.forecast?.toString() ?? "" },
   });
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
@@ -93,7 +97,13 @@ export default function ForecastFieldForm(
               <div className="flex flex-row gap-2 items-center justify-start">
                 <FormControl>
                   <Input
+                    type="text"
+                    inputMode="decimal"
                     {...field}
+                    onChange={(e) => {
+                      // Keep the raw string value so user can type decimals
+                      field.onChange(e.target.value);
+                    }}
                     className="w-14"
                   />
                 </FormControl>
