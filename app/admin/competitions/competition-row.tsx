@@ -21,7 +21,7 @@ export default function CompetitionRow(
   return (
     <div className="grid grid-cols-3 gap-4 p-4 border border-b-muted">
       <div className="col-span-2 text-lg font-semibold flex flex-row items-center justify-start gap-x-2">
-        <Link href={`/competitions/${competition.id}/forecasts`} legacyBehavior>
+        <Link href={`/competitions/${competition.id}/forecasts`}>
           {competition.name}
         </Link>
         <Dialog open={open} onOpenChange={setOpen}>
@@ -40,7 +40,7 @@ export default function CompetitionRow(
         </Dialog>
       </div>
       <div className="text-right">
-        <Link href={`/competitions/${competition.id}/props`} legacyBehavior>
+        <Link href={`/competitions/${competition.id}/props`}>
           <span className="font-semibold">{nProps}</span>{" "}
           <span className="text-muted-foreground">props</span>
         </Link>
