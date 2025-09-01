@@ -22,9 +22,10 @@ const formSchema = z.object({
   forecast: z
     .string()
     .min(1, "You must enter a forecast")
-    .transform((val) => parseFloat(val))
-    .refine((val) => !isNaN(val), "You must enter a valid number")
-    .refine((val) => val >= 0 && val <= 1, "Forecast must be between 0 and 1"),
+    .refine((val) => {
+      const num = parseFloat(val);
+      return !isNaN(num) && num >= 0 && num <= 1;
+    }, "Forecast must be a valid number between 0 and 1"),
 });
 
 export default function ForecastFieldForm({
@@ -44,12 +45,15 @@ export default function ForecastFieldForm({
   });
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
+    // Convert string to number for the API calls
+    const forecastValue = parseFloat(values.forecast);
+    
     if (!initialForecast) {
       // If there was no initial forecast, we're creating a new one.
       const forecast: NewForecast = {
         prop_id: propId,
         user_id: userId,
-        forecast: values.forecast,
+        forecast: forecastValue,
       };
       try {
         await createForecast({ forecast }).then(() => {
@@ -68,7 +72,7 @@ export default function ForecastFieldForm({
     } else {
       // If there was an initial forecast, we're updating it.
       const forecast: ForecastUpdate = {
-        forecast: values.forecast,
+        forecast: forecastValue,
       };
       try {
         await updateForecast({
@@ -88,7 +92,7 @@ export default function ForecastFieldForm({
         setLoading(false);
       }
     }
-    form.reset(values);
+    form.reset();
   }
 
   return (
