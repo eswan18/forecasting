@@ -18,7 +18,7 @@ export async function getCategories(): Promise<Category[]> {
     const results = await db.selectFrom("categories").selectAll().execute();
 
     const duration = Date.now() - startTime;
-    logger.info(`Retrieved ${results.length} categories`, {
+    logger.debug(`Retrieved ${results.length} categories`, {
       operation: "getCategories",
       table: "categories",
       duration,

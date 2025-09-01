@@ -29,7 +29,7 @@ class Logger {
 
     // In production, only log info and above
     const levels: LogLevel[] = ["debug", "info", "warn", "error"];
-    const minLevel = (process.env.LOG_LEVEL as LogLevel) || "info";
+    const minLevel = (process.env.LOG_LEVEL?.toLowerCase() as LogLevel) || "info";
     return levels.indexOf(level) >= levels.indexOf(minLevel);
   }
 

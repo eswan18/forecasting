@@ -43,7 +43,7 @@ export async function getUsers({ sort }: { sort?: Sort } = {}): Promise<
     const users = await query.execute();
 
     const duration = Date.now() - startTime;
-    logger.info(`Retrieved ${users.length} users`, {
+    logger.debug(`Retrieved ${users.length} users`, {
       operation: "getUsers",
       table: "v_users",
       duration,
@@ -88,7 +88,7 @@ export async function getUserById(
 
     const duration = Date.now() - startTime;
     if (foundUser) {
-      logger.info("User retrieved successfully", {
+      logger.debug("User retrieved successfully", {
         operation: "getUserById",
         table: "v_users",
         userId: id,
@@ -222,7 +222,7 @@ export async function updateUser({
     await db.updateTable("users").set(user).where("id", "=", id).execute();
 
     const duration = Date.now() - startTime;
-    logger.info("User updated successfully", {
+    logger.debug("User updated successfully", {
       operation: "updateUser",
       table: "users",
       userId: id,

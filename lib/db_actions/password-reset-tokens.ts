@@ -82,7 +82,7 @@ export async function initiatePasswordReset({
       .returning("id")
       .executeTakeFirst();
 
-    logger.info("Password reset token created successfully", {
+    logger.debug("Password reset token created successfully", {
       operation: "initiatePasswordReset",
       table: "password_reset_tokens",
       loginId: user.login_id,
@@ -145,7 +145,7 @@ export async function executePasswordReset({
     await updateLoginPasswordFromResetToken({ username, token, password });
 
     const duration = Date.now() - startTime;
-    logger.info("Password reset executed successfully", {
+    logger.debug("Password reset executed successfully", {
       operation: "executePasswordReset",
       table: "password_reset_tokens",
       username,

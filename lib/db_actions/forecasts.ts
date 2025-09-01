@@ -82,7 +82,7 @@ export async function getForecasts({
     });
 
     const duration = Date.now() - startTime;
-    logger.info(`Retrieved ${results.length} forecasts`, {
+    logger.debug(`Retrieved ${results.length} forecasts`, {
       operation: "getForecasts",
       table: "v_forecasts",
       duration,
@@ -244,7 +244,7 @@ export async function updateForecast({
     });
 
     const duration = Date.now() - startTime;
-    logger.info("Forecast updated successfully", {
+    logger.debug("Forecast updated successfully", {
       operation: "updateForecast",
       table: "forecasts",
       forecastId: id,
@@ -307,7 +307,7 @@ export async function getUnforecastedProps({
     });
 
     const duration = Date.now() - startTime;
-    logger.info(`Found ${results.length} unforecasted props`, {
+    logger.debug(`Found ${results.length} unforecasted props`, {
       operation: "getUnforecastedProps",
       table: "v_props",
       competitionId,
@@ -348,7 +348,7 @@ export async function deleteForecast({ id }: { id: number }): Promise<void> {
     });
 
     const duration = Date.now() - startTime;
-    logger.info("Forecast deleted successfully", {
+    logger.debug("Forecast deleted successfully", {
       operation: "deleteForecast",
       table: "forecasts",
       forecastId: id,

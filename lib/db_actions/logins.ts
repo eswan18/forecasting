@@ -22,7 +22,7 @@ export async function getLoginByUsername(
 
     const duration = Date.now() - startTime;
     if (login) {
-      logger.info("Login retrieved successfully", {
+      logger.debug("Login retrieved successfully", {
         operation: "getLoginByUsername",
         table: "logins",
         loginId: login.id,
@@ -142,7 +142,7 @@ export async function updateLogin({
     await db.updateTable("logins").set(login).where("id", "=", id).execute();
 
     const duration = Date.now() - startTime;
-    logger.info("Login updated successfully", {
+    logger.debug("Login updated successfully", {
       operation: "updateLogin",
       table: "logins",
       loginId: id,
