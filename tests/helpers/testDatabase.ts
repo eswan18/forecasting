@@ -21,18 +21,50 @@ export async function setupTestDatabase(): Promise<Kysely<Database>> {
 
   // Create the setup promise to prevent race conditions
   setupPromise = (async (): Promise<Kysely<Database>> => {
-    console.log("🐳 Starting PostgreSQL test container...");
-    
-    // Start PostgreSQL container
-    globalContainer = await new PostgreSqlContainer("postgres:16-alpine")
-      .withDatabase("test_forecasting")
-      .withUsername("test_user")
-      .withPassword("test_password")
-      .withExposedPorts(5432)
-      .withStartupTimeout(120000) // 2 minutes max
-      .start();
+    // Check if Docker is available before attempting to start container
+    try {
+      console.log("🐳 Starting PostgreSQL test container...");
       
-    console.log("✅ PostgreSQL container started");
+      // Start PostgreSQL container
+      globalContainer = await new PostgreSqlContainer("postgres:16-alpine")
+        .withDatabase("test_forecasting")
+        .withUsername("test_user")
+        .withPassword("test_password")
+        .withExposedPorts(5432)
+        .withStartupTimeout(120000) // 2 minutes max
+        .start();
+        
+      console.log("✅ PostgreSQL container started");
+    } catch (error: any) {
+      // Provide helpful error messages for common Docker issues
+      if (error.message?.includes('Cannot connect to the Docker daemon')) {
+        throw new Error(
+          '❌ Docker daemon is not running. Please start Docker Desktop or your Docker service.\n' +
+          'To run tests without containers, use: npm run test (without TEST_USE_CONTAINERS=true)'
+        );
+      } else if (error.message?.includes('docker: command not found')) {
+        throw new Error(
+          '❌ Docker is not installed. Please install Docker Desktop.\n' +
+          'To run tests without containers, use: npm run test (without TEST_USE_CONTAINERS=true)'
+        );
+      } else if (error.message?.includes('permission denied')) {
+        throw new Error(
+          '❌ Permission denied accessing Docker. Please ensure your user is in the docker group.\n' +
+          'To run tests without containers, use: npm run test (without TEST_USE_CONTAINERS=true)'
+        );
+      } else if (error.message?.includes('timeout')) {
+        throw new Error(
+          '❌ Timeout starting PostgreSQL container. This may be due to slow network or system resources.\n' +
+          'Try again or use: npm run test (without TEST_USE_CONTAINERS=true)'
+        );
+      } else {
+        // Re-throw with additional context for unknown errors
+        throw new Error(
+          `❌ Failed to start PostgreSQL test container: ${error.message}\n` +
+          'To run tests without containers, use: npm run test (without TEST_USE_CONTAINERS=true)'
+        );
+      }
+    }
 
     // Create database connection
     const connectionString = globalContainer.getConnectionUri();
