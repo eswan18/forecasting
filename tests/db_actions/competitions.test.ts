@@ -28,11 +28,13 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
-// We need to replace the db import with our test database
+// Mock the database module - we'll replace the implementation in beforeEach
+let originalDb: any;
 vi.mock("@/lib/database", async () => {
-  const { getTestDb } = await import("../helpers/testDatabase");
+  const actual = await vi.importActual("@/lib/database");
   return {
-    db: await getTestDb(),
+    ...actual,
+    get db() { return originalDb; }
   };
 });
 
@@ -45,6 +47,9 @@ describe("Competitions Database Actions", () => {
   beforeEach(async () => {
     testDb = await getTestDb();
     factory = new TestDataFactory(testDb);
+    
+    // Replace the mocked database with our test database
+    originalDb = testDb;
   });
 
   describe("getCompetitions", () => {
@@ -88,7 +93,6 @@ describe("Competitions Database Actions", () => {
       const user = await factory.createUser();
       const competition = await factory.createCompetition({
         name: "Test Competition",
-        description: "A test competition",
       });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
@@ -109,7 +113,6 @@ describe("Competitions Database Actions", () => {
 
       expect(result).toBeDefined();
       expect(result?.name).toBe("Test Competition");
-      expect(result?.description).toBe("A test competition");
     });
 
     it("should return undefined when competition not found", async () => {
@@ -141,8 +144,7 @@ describe("Competitions Database Actions", () => {
 
       const competitionData = {
         name: "New Competition",
-        description: "A newly created competition",
-        start_date: new Date(),
+        forecasts_due_date: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 days
         end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
       };
 
@@ -157,7 +159,6 @@ describe("Competitions Database Actions", () => {
 
       expect(createdCompetition).toBeDefined();
       expect(createdCompetition.name).toBe(competitionData.name);
-      expect(createdCompetition.description).toBe(competitionData.description);
     });
 
     it("should throw error when user is not admin", async () => {
@@ -172,8 +173,6 @@ describe("Competitions Database Actions", () => {
 
       const competitionData = {
         name: "New Competition",
-        description: "A newly created competition",
-        start_date: new Date(),
         end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       };
 
@@ -187,8 +186,6 @@ describe("Competitions Database Actions", () => {
 
       const competitionData = {
         name: "New Competition",
-        description: "A newly created competition", 
-        start_date: new Date(),
         end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       };
 
@@ -203,7 +200,6 @@ describe("Competitions Database Actions", () => {
       const adminUser = await factory.createAdminUser();
       const competition = await factory.createCompetition({
         name: "Original Name",
-        description: "Original description",
       });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
@@ -222,7 +218,6 @@ describe("Competitions Database Actions", () => {
 
       const updateData = {
         name: "Updated Name",
-        description: "Updated description",
       };
 
       await updateCompetition({ 
@@ -238,7 +233,6 @@ describe("Competitions Database Actions", () => {
         .executeTakeFirst();
 
       expect(updatedCompetition.name).toBe("Updated Name");
-      expect(updatedCompetition.description).toBe("Updated description");
     });
 
     it("should throw error when user is not admin", async () => {

@@ -23,11 +23,13 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
-// We need to replace the db import with our test database
+// Mock the database module - we'll replace the implementation in beforeEach
+let originalDb: any;
 vi.mock("@/lib/database", async () => {
-  const { getTestDb } = await import("../helpers/testDatabase");
+  const actual = await vi.importActual("@/lib/database");
   return {
-    db: await getTestDb(),
+    ...actual,
+    get db() { return originalDb; }
   };
 });
 
@@ -40,6 +42,9 @@ describe("Forecasts Database Actions", () => {
   beforeEach(async () => {
     testDb = await getTestDb();
     factory = new TestDataFactory(testDb);
+    
+    // Replace the mocked database with our test database
+    originalDb = testDb;
   });
 
   describe("getForecasts", () => {
@@ -49,8 +54,8 @@ describe("Forecasts Database Actions", () => {
       const prop1 = await factory.createProp();
       const prop2 = await factory.createProp();
 
-      await factory.createForecast(user1.id, prop1.id, { probability: 0.7 });
-      await factory.createForecast(user2.id, prop2.id, { probability: 0.3 });
+      await factory.createForecast(user1.id, prop1.id, { forecast: 0.7 });
+      await factory.createForecast(user2.id, prop2.id, { forecast: 0.3 });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
         id: user1.id,
@@ -62,8 +67,8 @@ describe("Forecasts Database Actions", () => {
       const result = await getForecasts({});
 
       expect(result).toHaveLength(2);
-      expect(result.some(f => f.probability === 0.7)).toBe(true);
-      expect(result.some(f => f.probability === 0.3)).toBe(true);
+      expect(result.some(f => parseFloat(f.forecast.toString()) === 0.7)).toBe(true);
+      expect(result.some(f => parseFloat(f.forecast.toString()) === 0.3)).toBe(true);
     });
 
     it("should filter forecasts by userId", async () => {
@@ -71,8 +76,8 @@ describe("Forecasts Database Actions", () => {
       const user2 = await factory.createUser();
       const prop = await factory.createProp();
 
-      await factory.createForecast(user1.id, prop.id, { probability: 0.7 });
-      await factory.createForecast(user2.id, prop.id, { probability: 0.3 });
+      await factory.createForecast(user1.id, prop.id, { forecast: 0.7 });
+      await factory.createForecast(user2.id, prop.id, { forecast: 0.3 });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
         id: user1.id,
@@ -91,7 +96,7 @@ describe("Forecasts Database Actions", () => {
       const result = await getForecasts({ userId: dbUser1.id });
 
       expect(result).toHaveLength(1);
-      expect(result[0].probability).toBe(0.7);
+      expect(parseFloat(result[0].forecast.toString())).toBe(0.7);
     });
 
     it("should filter forecasts by competition", async () => {
@@ -100,8 +105,8 @@ describe("Forecasts Database Actions", () => {
       const propInComp = await factory.createCompetitionProp(competition.id);
       const propNotInComp = await factory.createProp();
 
-      await factory.createForecast(user.id, propInComp.id, { probability: 0.7 });
-      await factory.createForecast(user.id, propNotInComp.id, { probability: 0.3 });
+      await factory.createForecast(user.id, propInComp.id, { forecast: 0.7 });
+      await factory.createForecast(user.id, propNotInComp.id, { forecast: 0.3 });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
         id: user.id,
@@ -120,7 +125,7 @@ describe("Forecasts Database Actions", () => {
       const result = await getForecasts({ competitionId: dbComp.id });
 
       expect(result).toHaveLength(1);
-      expect(result[0].probability).toBe(0.7);
+      expect(parseFloat(result[0].forecast.toString())).toBe(0.7);
     });
 
     it("should filter forecasts outside competitions", async () => {
@@ -129,8 +134,8 @@ describe("Forecasts Database Actions", () => {
       const propInComp = await factory.createCompetitionProp(competition.id);
       const propNotInComp = await factory.createProp();
 
-      await factory.createForecast(user.id, propInComp.id, { probability: 0.7 });
-      await factory.createForecast(user.id, propNotInComp.id, { probability: 0.3 });
+      await factory.createForecast(user.id, propInComp.id, { forecast: 0.7 });
+      await factory.createForecast(user.id, propNotInComp.id, { forecast: 0.3 });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
         id: user.id,
@@ -142,7 +147,7 @@ describe("Forecasts Database Actions", () => {
       const result = await getForecasts({ competitionId: null });
 
       expect(result).toHaveLength(1);
-      expect(result[0].probability).toBe(0.3);
+      expect(parseFloat(result[0].forecast.toString())).toBe(0.3);
     });
 
     it("should apply sorting when provided", async () => {
@@ -150,8 +155,8 @@ describe("Forecasts Database Actions", () => {
       const prop1 = await factory.createProp();
       const prop2 = await factory.createProp();
 
-      await factory.createForecast(user.id, prop1.id, { probability: 0.3 });
-      await factory.createForecast(user.id, prop2.id, { probability: 0.7 });
+      await factory.createForecast(user.id, prop1.id, { forecast: 0.3 });
+      await factory.createForecast(user.id, prop2.id, { forecast: 0.7 });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
         id: user.id,
@@ -161,12 +166,12 @@ describe("Forecasts Database Actions", () => {
       });
 
       const result = await getForecasts({ 
-        sort: { expr: "probability", modifiers: "asc" } 
+        sort: { expr: "forecast", modifiers: "asc" } 
       });
 
       expect(result).toHaveLength(2);
-      expect(result[0].probability).toBe(0.3);
-      expect(result[1].probability).toBe(0.7);
+      expect(parseFloat(result[0].forecast.toString())).toBe(0.3);
+      expect(parseFloat(result[1].forecast.toString())).toBe(0.7);
     });
   });
 
@@ -198,7 +203,7 @@ describe("Forecasts Database Actions", () => {
       const forecastData = {
         user_id: dbUser.id,
         prop_id: dbProp.id,
-        probability: 0.75,
+        forecast: 0.75,
       };
 
       const forecastId = await createForecast({ forecast: forecastData });
@@ -216,7 +221,7 @@ describe("Forecasts Database Actions", () => {
       expect(createdForecast).toBeDefined();
       expect(createdForecast.user_id).toBe(dbUser.id);
       expect(createdForecast.prop_id).toBe(dbProp.id);
-      expect(createdForecast.probability).toBe(0.75);
+      expect(createdForecast.forecast).toBe(0.75);
     });
 
     it("should prevent duplicate forecasts for same user-prop combination", async () => {
@@ -246,7 +251,7 @@ describe("Forecasts Database Actions", () => {
       const forecastData = {
         user_id: dbUser.id,
         prop_id: dbProp.id,
-        probability: 0.75,
+        forecast: 0.75,
       };
 
       // Create first forecast
@@ -287,7 +292,7 @@ describe("Forecasts Database Actions", () => {
       const forecastData = {
         user_id: dbUser.id,
         prop_id: dbProp.id,
-        probability: 0.75,
+        forecast: 0.75,
       };
 
       await expect(createForecast({ forecast: forecastData })).rejects.toThrow(

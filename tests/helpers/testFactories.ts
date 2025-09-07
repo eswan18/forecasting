@@ -160,22 +160,27 @@ export class TestDataFactory {
     overrides: Partial<TestForecast> = {}
   ): Promise<TestForecast> {
     const defaults = {
-      id: `forecast_${Date.now()}_${Math.random().toString(36).substring(7)}`,
-      user_id: userId,
-      prop_id: propId,
+      user_id: parseInt(userId),
+      prop_id: parseInt(propId),
       forecast: Math.round(Math.random() * 100) / 100, // Random probability between 0 and 1
-      created_at: new Date(),
-      updated_at: new Date(),
     };
 
     const forecastData = { ...defaults, ...overrides };
     
-    await this.db
+    const result = await this.db
       .insertInto("forecasts")
       .values(forecastData)
-      .execute();
+      .returning(["id", "user_id", "prop_id", "forecast"])
+      .executeTakeFirst();
 
-    return forecastData;
+    return {
+      id: result!.id.toString(),
+      user_id: userId,
+      prop_id: propId,
+      forecast: result!.forecast,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
   }
 
   async createAdminUser(overrides: Partial<TestUser> = {}): Promise<TestUser> {
