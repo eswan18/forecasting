@@ -197,7 +197,7 @@ describe("Forecasts Database Actions", () => {
       const dbProp = await testDb
         .selectFrom("props")
         .select("id")
-        .where("title", "=", prop.title)
+        .where("text", "=", prop.text)
         .executeTakeFirst();
 
       const forecastData = {
@@ -221,7 +221,7 @@ describe("Forecasts Database Actions", () => {
       expect(createdForecast).toBeDefined();
       expect(createdForecast.user_id).toBe(dbUser.id);
       expect(createdForecast.prop_id).toBe(dbProp.id);
-      expect(createdForecast.forecast).toBe(0.75);
+      expect(parseFloat(createdForecast.forecast.toString())).toBe(0.75);
     });
 
     it("should prevent duplicate forecasts for same user-prop combination", async () => {
@@ -245,7 +245,7 @@ describe("Forecasts Database Actions", () => {
       const dbProp = await testDb
         .selectFrom("props")
         .select("id")
-        .where("title", "=", prop.title)
+        .where("text", "=", prop.text)
         .executeTakeFirst();
 
       const forecastData = {
@@ -286,7 +286,7 @@ describe("Forecasts Database Actions", () => {
       const dbProp = await testDb
         .selectFrom("props")
         .select("id")
-        .where("title", "=", prop.title)
+        .where("text", "=", prop.text)
         .executeTakeFirst();
 
       const forecastData = {
