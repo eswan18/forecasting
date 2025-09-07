@@ -108,7 +108,9 @@ export async function cleanupTestData(db: Kysely<Database>): Promise<void> {
   // Clean up test data in proper order to respect foreign key constraints
   // Use try-catch to handle tables that may not exist in all test scenarios
   // NOTE: We preserve seed data (categories, admin user) between tests
-  const tables = [
+  
+  // First clean tables that reference users (foreign key constraints)
+  const dependentTables = [
     "forecasts",
     "resolutions", 
     "props",
@@ -116,11 +118,9 @@ export async function cleanupTestData(db: Kysely<Database>): Promise<void> {
     "password_resets",
     "invite_tokens", 
     "suggested_props"
-    // NOTE: We do NOT clean feature_flags, users, logins, categories 
-    // because these contain seed data that should persist between tests
   ];
   
-  for (const table of tables) {
+  for (const table of dependentTables) {
     try {
       await db.deleteFrom(table as any).execute();
     } catch (error: any) {
@@ -132,6 +132,7 @@ export async function cleanupTestData(db: Kysely<Database>): Promise<void> {
   }
   
   // Clean only test-created feature flags, preserving seed flags
+  // This must be done before cleaning users due to foreign key constraint
   try {
     await db.deleteFrom("feature_flags")
       .where("name", "not in", ["2025-forecasts", "personal-props"])

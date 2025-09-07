@@ -42,9 +42,8 @@ describe("Users Database Actions", () => {
     // Replace the mocked database with our test database
     originalDb = testDb;
     
-    // Clear any existing data
-    await testDb.deleteFrom("users").execute();
-    await testDb.deleteFrom("logins").execute();
+    // Note: Data cleanup is handled by the global setup.ts cleanupTestData function
+    // No need to manually clean here as it would violate foreign key constraints
   });
 
   describe("createUser", () => {
@@ -120,9 +119,11 @@ describe("Users Database Actions", () => {
       const result = await getUsers();
 
       expect(result.success).toBe(true);
-      expect(result.data).toHaveLength(2);
+      // Should include admin user (ID 1) plus the 2 test users
+      expect(result.data).toHaveLength(3);
       expect(result.data?.find(u => u.email === user1.email)).toBeDefined();
       expect(result.data?.find(u => u.email === user2.email)).toBeDefined();
+      expect(result.data?.find(u => u.id === 1)).toBeDefined(); // Admin user
     });
 
     it("should apply sorting when provided", async () => {
@@ -139,9 +140,12 @@ describe("Users Database Actions", () => {
       const result = await getUsers({ sort: { expr: "name", modifiers: "asc" } });
 
       expect(result.success).toBe(true);
-      expect(result.data).toHaveLength(2);
-      expect(result.data?.[0].name).toBe("alice");
-      expect(result.data?.[1].name).toBe("bob");
+      // Should include admin user (ID 1) plus the 2 test users
+      expect(result.data).toHaveLength(3);
+      // With sorting by name asc, admin user should be first, then alice, then bob
+      expect(result.data?.[0].name).toBe("System Admin"); // Admin user
+      expect(result.data?.[1].name).toBe("alice");
+      expect(result.data?.[2].name).toBe("bob");
     });
   });
 

@@ -23,11 +23,13 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
-// We need to replace the db import with our test database
+// Mock the database module - we'll replace the implementation in beforeEach
+let originalDb: any;
 vi.mock("@/lib/database", async () => {
-  const { getTestDb } = await import("../helpers/testDatabase");
+  const actual = await vi.importActual("@/lib/database");
   return {
-    db: await getTestDb(),
+    ...actual,
+    get db() { return originalDb; }
   };
 });
 
@@ -40,6 +42,9 @@ describe("Props Database Actions", () => {
   beforeEach(async () => {
     testDb = await getTestDb();
     factory = new TestDataFactory(testDb);
+    
+    // Replace the mocked database with our test database
+    originalDb = testDb;
   });
 
   describe("getProps", () => {

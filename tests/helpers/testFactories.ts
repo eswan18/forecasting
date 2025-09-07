@@ -27,9 +27,9 @@ export interface TestProp {
   id: string;
   title: string;
   description: string;
-  category: string | null;
-  competition_id: string | null;
-  user_id: string | null;
+  category_id: number | null;
+  competition_id: number | null;
+  user_id: number | null;
   notes: string | null;
   created_at: Date;
   updated_at: Date;
@@ -38,8 +38,7 @@ export interface TestProp {
 export interface TestCompetition {
   id: string;
   name: string;
-  description: string | null;
-  start_date: Date;
+  forecasts_due_date: Date;
   end_date: Date;
   created_at: Date;
   updated_at: Date;
@@ -104,46 +103,59 @@ export class TestDataFactory {
 
   async createCompetition(overrides: Partial<TestCompetition> = {}): Promise<TestCompetition> {
     const defaults = {
-      id: `comp_${Date.now()}_${Math.random().toString(36).substring(7)}`,
       name: `Test Competition ${Math.random().toString(36).substring(7)}`,
-      description: "A test competition for forecasting",
-      start_date: new Date(),
+      forecasts_due_date: new Date(),
       end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-      created_at: new Date(),
-      updated_at: new Date(),
     };
 
     const competitionData = { ...defaults, ...overrides };
     
-    await this.db
+    const result = await this.db
       .insertInto("competitions")
       .values(competitionData)
-      .execute();
+      .returning(["id", "name", "forecasts_due_date", "end_date"])
+      .executeTakeFirst();
 
-    return competitionData;
+    return {
+      id: result!.id.toString(),
+      name: result!.name,
+      forecasts_due_date: result!.forecasts_due_date,
+      end_date: result!.end_date,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
   }
 
   async createProp(overrides: Partial<TestProp> = {}): Promise<TestProp> {
     const defaults = {
-      id: `prop_${Date.now()}_${Math.random().toString(36).substring(7)}`,
       title: `Test Proposition ${Math.random().toString(36).substring(7)}`,
+      text: `Test proposition text ${Math.random().toString(36).substring(7)}`,
       description: "A test proposition for forecasting",
-      category: "test",
+      category_id: 1, // Default to first category (politics)
       competition_id: null,
       user_id: null,
       notes: null,
-      created_at: new Date(),
-      updated_at: new Date(),
     };
 
     const propData = { ...defaults, ...overrides };
     
-    await this.db
+    const result = await this.db
       .insertInto("props")
       .values(propData)
-      .execute();
+      .returning(["id", "title", "text", "description", "category_id", "competition_id", "user_id", "notes"])
+      .executeTakeFirst();
 
-    return propData;
+    return {
+      id: result!.id.toString(),
+      title: result!.title,
+      description: result!.description,
+      category_id: result!.category_id,
+      competition_id: result!.competition_id,
+      user_id: result!.user_id,
+      notes: result!.notes,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
   }
 
   async createForecast(
