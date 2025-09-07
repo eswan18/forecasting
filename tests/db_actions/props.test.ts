@@ -63,15 +63,15 @@ describe("Props Database Actions", () => {
       const result = await getProps({});
 
       expect(result).toHaveLength(2);
-      expect(result.some(p => p.title === "Prop 1")).toBe(true);
-      expect(result.some(p => p.title === "Prop 2")).toBe(true);
+      expect(result.some(p => p.prop_text === "Prop 1")).toBe(true);
+      expect(result.some(p => p.prop_text === "Prop 2")).toBe(true);
     });
 
     it("should filter props by single competition ID", async () => {
       const user = await factory.createUser();
       const competition = await factory.createCompetition();
       const propInComp = await factory.createCompetitionProp(competition.id, { 
-        title: "Competition Prop" 
+        text: "Competition Prop" 
       });
       const propNotInComp = await factory.createProp({ 
         title: "Standalone Prop" 
