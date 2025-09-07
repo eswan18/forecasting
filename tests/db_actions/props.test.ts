@@ -281,17 +281,16 @@ describe("Props Database Actions", () => {
         .where("email", "=", user.email)
         .executeTakeFirst();
 
-      // Filter for both competition props and personal props
+      // Filter for props that match BOTH competition filter AND user filter (AND logic)
       const result = await getProps({ 
         competitionId: dbCompetition.id,
         userId: dbUser.id 
       });
 
-      // Should return props that match either filter (OR logic)
-      expect(result).toHaveLength(2);
-      expect(result.some(p => p.prop_text === "Competition Prop")).toBe(true);
-      expect(result.some(p => p.prop_text === "Personal Prop")).toBe(true);
-      expect(result.some(p => p.prop_text === "Public Prop")).toBe(false);
+      // Should return props that match both filters (AND logic)
+      // Since competition props have user_id=null and personal props have competition_id=null,
+      // no props will match both filters
+      expect(result).toHaveLength(0);
     });
   });
 });

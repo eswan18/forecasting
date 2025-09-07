@@ -35,8 +35,6 @@ export async function up(db: Kysely<any>): Promise<void> {
     .createTable("props")
     .addColumn("id", "serial", (col) => col.primaryKey())
     .addColumn("text", "text", (col) => col.notNull())
-    .addColumn("title", "varchar", (col) => col.notNull())
-    .addColumn("description", "text")
     .addColumn("category_id", "integer", (col) => col.references("categories.id"))
     .addColumn("year", "integer")
     .execute();
@@ -127,8 +125,6 @@ export async function up(db: Kysely<any>): Promise<void> {
           "categories.name as category_name", 
           "props.id as prop_id",
           "props.text as prop_text",
-          "props.title as prop_title",
-          "props.description as prop_description",
           "props.year",
           "resolutions.id as resolution_id",
           "resolutions.resolution",
@@ -154,7 +150,6 @@ export async function up(db: Kysely<any>): Promise<void> {
           "users.name as user_name",
           "props.id as prop_id", 
           "props.text as prop_text",
-          "props.title as prop_title",
           "props.year",
           "categories.id as category_id",
           "categories.name as category_name",
