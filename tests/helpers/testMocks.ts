@@ -29,20 +29,20 @@ export function mockLogger() {
 
 /**
  * Mock database connection to use test database instead of production
- * Returns the variable that should be set to the test database instance
+ * Returns an object with a setter for the test database instance
  */
-export function mockDatabase(): { originalDb: any } {
-  let originalDb: any;
+export function mockDatabase() {
+  const dbRef = { current: null as any };
   
   vi.mock("@/lib/database", async () => {
     const actual = await vi.importActual("@/lib/database");
     return {
       ...actual,
-      get db() { return originalDb; }
+      get db() { return dbRef.current; }
     };
   });
   
-  return { originalDb };
+  return dbRef;
 }
 
 /**

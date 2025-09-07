@@ -13,7 +13,7 @@ import {
 mockGetUserFromCookies();
 mockLogger();
 mockRevalidatePath();
-const { originalDb } = mockDatabase();
+const originalDb = mockDatabase();
 
 import { getUserFromCookies } from "@/lib/get-user";
 
@@ -26,7 +26,7 @@ describe("Competitions Database Actions", () => {
     factory = new TestDataFactory(testDb);
     
     // Replace the mocked database with our test database
-    originalDb = testDb;
+    originalDb.current = testDb;
   });
 
   describe("getCompetitions", () => {

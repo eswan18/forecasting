@@ -8,7 +8,7 @@ import { ERROR_CODES } from "@/lib/server-action-result";
 // Setup shared mocks
 mockGetUserFromCookies();
 mockLogger();
-const { originalDb } = mockDatabase();
+const originalDb = mockDatabase();
 
 import { getUserFromCookies } from "@/lib/get-user";
 
@@ -21,7 +21,7 @@ describe("Users Database Actions", () => {
     factory = new TestDataFactory(testDb);
     
     // Replace the mocked database with our test database
-    originalDb = testDb;
+    originalDb.current = testDb;
     
     // Note: Data cleanup is handled by the global setup.ts cleanupTestData function
     // No need to manually clean here as it would violate foreign key constraints
