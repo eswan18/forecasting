@@ -76,9 +76,12 @@ async function runMigrations(db: Kysely<Database>) {
 
   if (results) {
     console.log(`✅ Applied ${results.length} migrations successfully`);
-    results.forEach(({ status, migrationName }) => {
-      console.log(`  • ${migrationName}: ${status}`);
-    });
+    // Only log individual migrations if there are failures or in verbose mode
+    if (process.env.VERBOSE_TESTS === "true") {
+      results.forEach(({ status, migrationName }) => {
+        console.log(`  • ${migrationName}: ${status}`);
+      });
+    }
   }
 }
 

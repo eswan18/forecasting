@@ -63,7 +63,7 @@ describe("Testcontainer Standalone Test", () => {
     expect(Number(result[0].test_value)).toBe(1);
     expect(result[0].status).toBe('testcontainers_working');
     
-    console.log("📊 Connection test:", result[0]);
+    // Connection test successful - no need to log in non-verbose mode
   });
 
   skipIfNoDocker("should create tables and handle basic operations", async () => {
@@ -76,7 +76,7 @@ describe("Testcontainer Standalone Test", () => {
       .addColumn("created_at", "timestamptz", (col) => col.notNull().defaultTo("now()"))
       .execute();
 
-    console.log("✅ Created simple_users table");
+    // Table created successfully
 
     // Insert test data
     const insertedUsers = await db!
@@ -90,7 +90,7 @@ describe("Testcontainer Standalone Test", () => {
       .execute();
 
     expect(insertedUsers).toHaveLength(3);
-    console.log("✅ Inserted 3 test users");
+    // Test users inserted successfully
 
     // Query and verify data
     const allUsers = await db!
@@ -107,7 +107,7 @@ describe("Testcontainer Standalone Test", () => {
     // Test timestamps are working
     expect(allUsers[0].created_at).toBeInstanceOf(Date);
     
-    console.log("✅ Verified data integrity and timestamps");
+    // Data integrity verified
   });
 
   skipIfNoDocker("should handle database constraints", async () => {
@@ -118,7 +118,7 @@ describe("Testcontainer Standalone Test", () => {
         .execute()
     ).rejects.toThrow();
 
-    console.log("✅ Unique constraints working correctly");
+    // Unique constraints validated
   });
 
   skipIfNoDocker("should support transactions", async () => {
@@ -151,7 +151,7 @@ describe("Testcontainer Standalone Test", () => {
       .executeTakeFirst();
 
     expect(Number(finalCount!.count)).toBe(Number(initialCount!.count) + 1);
-    console.log("✅ Transactions working correctly");
+    // Transaction behavior validated
   });
 
   skipIfNoDocker("should demonstrate realistic test data patterns", async () => {
@@ -202,6 +202,6 @@ describe("Testcontainer Standalone Test", () => {
     expect(postsWithUsers[0].published).toBe(true);
     expect(postsWithUsers[0].username).toBe("testuser1");
 
-    console.log("✅ Complex queries and relationships working");
+    // Complex query patterns validated
   });
 });
