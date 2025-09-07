@@ -25,6 +25,9 @@ export default defineConfig({
     ],
     environment: "node",
     globals: true,
+    setupFiles: ["./tests/setup.ts"],
+    testTimeout: 60000, // 60 seconds for testcontainer startup
+    hookTimeout: 300000, // 5 minutes for setup/teardown hooks
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],

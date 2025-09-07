@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
+    "test:containers": "TEST_USE_CONTAINERS=true vitest run",
+    "test:containers:quick": "TEST_USE_CONTAINERS=true vitest run tests/integration/users.integration.test.ts",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
@@ -73,6 +75,7 @@
     "@storybook/test": "^8.6.14",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/postcss": "^4.1.7",
+    "@testcontainers/postgresql": "^11.5.1",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.15.18",
     "@types/pg": "^8.15.2",
@@ -88,6 +91,7 @@
     "postcss": "^8.5.3",
     "storybook": "^8.6.12",
     "tailwindcss": "^4.1.7",
+    "testcontainers": "^11.5.1",
     "typescript": "^5.8.2",
     "vitest": "^3.1.3"
   }
