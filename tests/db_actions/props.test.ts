@@ -50,8 +50,8 @@ describe("Props Database Actions", () => {
   describe("getProps", () => {
     it("should return all props when no filters applied", async () => {
       const user = await factory.createUser();
-      const prop1 = await factory.createProp({ title: "Prop 1" });
-      const prop2 = await factory.createProp({ title: "Prop 2" });
+      const prop1 = await factory.createProp({ text: "Prop 1" });
+      const prop2 = await factory.createProp({ text: "Prop 2" });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
         id: user.id,
@@ -74,7 +74,7 @@ describe("Props Database Actions", () => {
         text: "Competition Prop" 
       });
       const propNotInComp = await factory.createProp({ 
-        title: "Standalone Prop" 
+        text: "Standalone Prop" 
       });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
@@ -94,17 +94,17 @@ describe("Props Database Actions", () => {
       const result = await getProps({ competitionId: dbCompetition.id });
 
       expect(result).toHaveLength(1);
-      expect(result[0].title).toBe("Competition Prop");
+      expect(result[0].prop_text).toBe("Competition Prop");
     });
 
     it("should filter props outside competitions (null competition ID)", async () => {
       const user = await factory.createUser();
       const competition = await factory.createCompetition();
       const propInComp = await factory.createCompetitionProp(competition.id, { 
-        title: "Competition Prop" 
+        text: "Competition Prop" 
       });
       const propNotInComp = await factory.createProp({ 
-        title: "Standalone Prop" 
+        text: "Standalone Prop" 
       });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
@@ -117,7 +117,7 @@ describe("Props Database Actions", () => {
       const result = await getProps({ competitionId: null });
 
       expect(result).toHaveLength(1);
-      expect(result[0].title).toBe("Standalone Prop");
+      expect(result[0].prop_text).toBe("Standalone Prop");
     });
 
     it("should filter props by multiple competition IDs", async () => {
@@ -127,13 +127,13 @@ describe("Props Database Actions", () => {
       const comp3 = await factory.createCompetition({ name: "Competition 3" });
 
       const prop1 = await factory.createCompetitionProp(comp1.id, { 
-        title: "Prop in Comp 1" 
+        text: "Prop in Comp 1" 
       });
       const prop2 = await factory.createCompetitionProp(comp2.id, { 
-        title: "Prop in Comp 2" 
+        text: "Prop in Comp 2" 
       });
       const prop3 = await factory.createCompetitionProp(comp3.id, { 
-        title: "Prop in Comp 3" 
+        text: "Prop in Comp 3" 
       });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
@@ -161,22 +161,22 @@ describe("Props Database Actions", () => {
       });
 
       expect(result).toHaveLength(2);
-      expect(result.some(p => p.title === "Prop in Comp 1")).toBe(true);
-      expect(result.some(p => p.title === "Prop in Comp 2")).toBe(true);
-      expect(result.some(p => p.title === "Prop in Comp 3")).toBe(false);
+      expect(result.some(p => p.prop_text === "Prop in Comp 1")).toBe(true);
+      expect(result.some(p => p.prop_text === "Prop in Comp 2")).toBe(true);
+      expect(result.some(p => p.prop_text === "Prop in Comp 3")).toBe(false);
     });
 
     it("should filter props by single user ID (personal props)", async () => {
       const user1 = await factory.createUser();
       const user2 = await factory.createUser();
       const personalProp1 = await factory.createPersonalProp(user1.id, { 
-        title: "User 1 Personal Prop" 
+        text: "User 1 Personal Prop" 
       });
       const personalProp2 = await factory.createPersonalProp(user2.id, { 
-        title: "User 2 Personal Prop" 
+        text: "User 2 Personal Prop" 
       });
       const publicProp = await factory.createProp({ 
-        title: "Public Prop" 
+        text: "Public Prop" 
       });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
@@ -196,16 +196,16 @@ describe("Props Database Actions", () => {
       const result = await getProps({ userId: dbUser1.id });
 
       expect(result).toHaveLength(1);
-      expect(result[0].title).toBe("User 1 Personal Prop");
+      expect(result[0].prop_text).toBe("User 1 Personal Prop");
     });
 
     it("should filter props with null user ID (public props)", async () => {
       const user = await factory.createUser();
       const personalProp = await factory.createPersonalProp(user.id, { 
-        title: "Personal Prop" 
+        text: "Personal Prop" 
       });
       const publicProp = await factory.createProp({ 
-        title: "Public Prop" 
+        text: "Public Prop" 
       });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
@@ -218,16 +218,16 @@ describe("Props Database Actions", () => {
       const result = await getProps({ userId: null });
 
       expect(result).toHaveLength(1);
-      expect(result[0].title).toBe("Public Prop");
+      expect(result[0].prop_text).toBe("Public Prop");
     });
 
     it("should return props in ascending order by prop_id", async () => {
       const user = await factory.createUser();
       
       // Create props in different order
-      const prop2 = await factory.createProp({ title: "Second Prop" });
-      const prop1 = await factory.createProp({ title: "First Prop" });
-      const prop3 = await factory.createProp({ title: "Third Prop" });
+      const prop2 = await factory.createProp({ text: "Second Prop" });
+      const prop1 = await factory.createProp({ text: "First Prop" });
+      const prop3 = await factory.createProp({ text: "Third Prop" });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
         id: user.id,
@@ -252,13 +252,13 @@ describe("Props Database Actions", () => {
 
       // Create various prop types
       const compProp = await factory.createCompetitionProp(competition.id, { 
-        title: "Competition Prop" 
+        text: "Competition Prop" 
       });
       const personalProp = await factory.createPersonalProp(user.id, { 
-        title: "Personal Prop" 
+        text: "Personal Prop" 
       });
       const publicProp = await factory.createProp({ 
-        title: "Public Prop" 
+        text: "Public Prop" 
       });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
@@ -289,9 +289,9 @@ describe("Props Database Actions", () => {
 
       // Should return props that match either filter (OR logic)
       expect(result).toHaveLength(2);
-      expect(result.some(p => p.title === "Competition Prop")).toBe(true);
-      expect(result.some(p => p.title === "Personal Prop")).toBe(true);
-      expect(result.some(p => p.title === "Public Prop")).toBe(false);
+      expect(result.some(p => p.prop_text === "Competition Prop")).toBe(true);
+      expect(result.some(p => p.prop_text === "Personal Prop")).toBe(true);
+      expect(result.some(p => p.prop_text === "Public Prop")).toBe(false);
     });
   });
 });

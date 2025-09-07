@@ -25,8 +25,7 @@ export interface TestUser {
 
 export interface TestProp {
   id: string;
-  title: string;
-  description: string;
+  text: string;
   category_id: number | null;
   competition_id: number | null;
   user_id: number | null;
@@ -48,7 +47,7 @@ export interface TestForecast {
   id: string;
   user_id: string;
   prop_id: string;
-  probability: number;
+  forecast: number;
   created_at: Date;
   updated_at: Date;
 }
@@ -128,9 +127,7 @@ export class TestDataFactory {
 
   async createProp(overrides: Partial<TestProp> = {}): Promise<TestProp> {
     const defaults = {
-      title: `Test Proposition ${Math.random().toString(36).substring(7)}`,
       text: `Test proposition text ${Math.random().toString(36).substring(7)}`,
-      description: "A test proposition for forecasting",
       category_id: 1, // Default to first category (politics)
       competition_id: null,
       user_id: null,
@@ -142,13 +139,12 @@ export class TestDataFactory {
     const result = await this.db
       .insertInto("props")
       .values(propData)
-      .returning(["id", "title", "text", "description", "category_id", "competition_id", "user_id", "notes"])
+      .returning(["id", "text", "category_id", "competition_id", "user_id", "notes"])
       .executeTakeFirst();
 
     return {
       id: result!.id.toString(),
-      title: result!.title,
-      description: result!.description,
+      text: result!.text,
       category_id: result!.category_id,
       competition_id: result!.competition_id,
       user_id: result!.user_id,
@@ -167,7 +163,7 @@ export class TestDataFactory {
       id: `forecast_${Date.now()}_${Math.random().toString(36).substring(7)}`,
       user_id: userId,
       prop_id: propId,
-      probability: Math.round(Math.random() * 100) / 100, // Random probability between 0 and 1
+      forecast: Math.round(Math.random() * 100) / 100, // Random probability between 0 and 1
       created_at: new Date(),
       updated_at: new Date(),
     };
