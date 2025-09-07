@@ -1,14 +1,33 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { getTestDb } from "../helpers/testDatabase";
 import { TestDataFactory } from "../helpers/testFactories";
-import { mockGetUserFromCookies, mockLogger, mockDatabase } from "../helpers/testMocks";
 import { createUser, getUsers, getUserById, updateUser } from "@/lib/db_actions/users";
 import { ERROR_CODES } from "@/lib/server-action-result";
 
-// Setup shared mocks
-mockGetUserFromCookies();
-mockLogger();
-const originalDb = mockDatabase();
+// Mock getUserFromCookies since we're testing database actions in isolation
+vi.mock("@/lib/get-user", () => ({
+  getUserFromCookies: vi.fn(),
+}));
+
+// Mock logger to avoid console output during tests
+vi.mock("@/lib/logger", () => ({
+  logger: {
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
+// We need to replace the db import with our test database
+let originalDb: any;
+vi.mock("@/lib/database", async () => {
+  const actual = await vi.importActual("@/lib/database");
+  return {
+    ...actual,
+    get db() { return originalDb; }
+  };
+});
 
 import { getUserFromCookies } from "@/lib/get-user";
 
@@ -21,7 +40,15 @@ describe("Users Database Actions", () => {
     factory = new TestDataFactory(testDb);
     
     // Replace the mocked database with our test database
-    originalDb.current = testDb;
+    originalDb = testDb;
+    
+    // Set up default admin user for tests (can be overridden in individual tests)
+    vi.mocked(getUserFromCookies).mockResolvedValue({
+      id: 1,
+      name: "Admin User",
+      email: "admin@example.com", 
+      is_admin: true,
+    });
     
     // Note: Data cleanup is handled by the global setup.ts cleanupTestData function
     // No need to manually clean here as it would violate foreign key constraints
