@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { PostgreSqlContainer, StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import { Pool } from "pg";
-import { Kysely, PostgresDialect } from "kysely";
+import { Kysely, PostgresDialect, sql } from "kysely";
 
 // Only run these tests when containers are enabled
 const skipIfNoContainers = process.env.TEST_USE_CONTAINERS !== "true" ? it.skip : it;
@@ -49,7 +49,7 @@ describe("Testcontainer Basic Functionality", () => {
   }, 30000);
 
   skipIfNoContainers("should connect to PostgreSQL container", async () => {
-    const result = await db.selectFrom(db.dynamic.raw('(SELECT 1 as test_value)')).selectAll().execute();
+    const result = await db.selectFrom(sql`(SELECT 1 as test_value)`.as('test_query')).selectAll().execute();
     expect(result).toHaveLength(1);
     expect(result[0].test_value).toBe(1);
   });

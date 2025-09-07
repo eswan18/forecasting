@@ -9,19 +9,7 @@ describe("Users Integration Tests", () => {
   let testDb: any;
   let factory: TestDataFactory;
 
-  beforeAll(async () => {
-    if (process.env.TEST_USE_CONTAINERS === "true") {
-      console.log("Setting up test database...");
-      await setupTestDatabase();
-      console.log("Test database setup complete!");
-    }
-  }, 300000); // 5 minutes for first run
-
-  afterAll(async () => {
-    if (process.env.TEST_USE_CONTAINERS === "true") {
-      await cleanupTestDatabase();
-    }
-  }, 30000);
+  // Database setup handled by global tests/setup.ts
 
   beforeEach(async () => {
     if (process.env.TEST_USE_CONTAINERS === "true") {
@@ -133,9 +121,9 @@ describe("Users Integration Tests", () => {
     expect(user1.id).not.toBe(user2.id);
     expect(user1.email).not.toBe(user2.email);
 
-    // Verify both exist in database
+    // Verify both exist in database (plus admin user from seed data)
     const users = await testDb.selectFrom("users").selectAll().execute();
-    expect(users).toHaveLength(2);
+    expect(users).toHaveLength(3); // 2 test users + 1 admin user
   });
 
   skipIfNoContainers("should create admin user", async () => {

@@ -7,41 +7,52 @@ import path from "path";
 
 let globalContainer: StartedPostgreSqlContainer | null = null;
 let globalDb: Kysely<Database> | null = null;
+let setupPromise: Promise<Kysely<Database>> | null = null;
 
 export async function setupTestDatabase(): Promise<Kysely<Database>> {
   if (globalDb) {
     return globalDb;
   }
-
-  console.log("🐳 Starting PostgreSQL test container...");
   
-  // Start PostgreSQL container
-  globalContainer = await new PostgreSqlContainer("postgres:16-alpine")
-    .withDatabase("test_forecasting")
-    .withUsername("test_user")
-    .withPassword("test_password")
-    .withExposedPorts(5432)
-    .withStartupTimeout(120000) // 2 minutes max
-    .start();
+  // If setup is already in progress, wait for it
+  if (setupPromise) {
+    return await setupPromise;
+  }
+
+  // Create the setup promise to prevent race conditions
+  setupPromise = (async (): Promise<Kysely<Database>> => {
+    console.log("🐳 Starting PostgreSQL test container...");
     
-  console.log("✅ PostgreSQL container started");
+    // Start PostgreSQL container
+    globalContainer = await new PostgreSqlContainer("postgres:16-alpine")
+      .withDatabase("test_forecasting")
+      .withUsername("test_user")
+      .withPassword("test_password")
+      .withExposedPorts(5432)
+      .withStartupTimeout(120000) // 2 minutes max
+      .start();
+      
+    console.log("✅ PostgreSQL container started");
 
-  // Create database connection
-  const connectionString = globalContainer.getConnectionUri();
-  const dialect = new PostgresDialect({
-    pool: new Pool({ 
-      connectionString,
-      max: 10,
-      ssl: false // No SSL for test containers
-    }),
-  });
+    // Create database connection
+    const connectionString = globalContainer.getConnectionUri();
+    const dialect = new PostgresDialect({
+      pool: new Pool({ 
+        connectionString,
+        max: 10,
+        ssl: false // No SSL for test containers
+      }),
+    });
 
-  globalDb = new Kysely<Database>({ dialect });
+    globalDb = new Kysely<Database>({ dialect });
 
-  // Run migrations
-  await runMigrations(globalDb);
+    // Run migrations
+    await runMigrations(globalDb);
 
-  return globalDb;
+    return globalDb;
+  })();
+
+  return await setupPromise;
 }
 
 async function runMigrations(db: Kysely<Database>) {
@@ -81,6 +92,9 @@ export async function cleanupTestDatabase(): Promise<void> {
     await globalContainer.stop();
     globalContainer = null;
   }
+  
+  // Clear the setup promise so future tests can setup fresh
+  setupPromise = null;
 }
 
 export async function getTestDb(): Promise<Kysely<Database>> {
@@ -93,6 +107,7 @@ export async function getTestDb(): Promise<Kysely<Database>> {
 export async function cleanupTestData(db: Kysely<Database>): Promise<void> {
   // Clean up test data in proper order to respect foreign key constraints
   // Use try-catch to handle tables that may not exist in all test scenarios
+  // NOTE: We preserve seed data (categories, admin user) between tests
   const tables = [
     "forecasts",
     "resolutions", 
@@ -100,10 +115,9 @@ export async function cleanupTestData(db: Kysely<Database>): Promise<void> {
     "competitions",
     "password_resets",
     "invite_tokens", 
-    "suggested_props",
-    "feature_flags", // Must be before users due to foreign key
-    "users",
-    "logins" // Must be after users due to foreign key
+    "suggested_props"
+    // NOTE: We do NOT clean feature_flags, users, logins, categories 
+    // because these contain seed data that should persist between tests
   ];
   
   for (const table of tables) {
@@ -114,6 +128,39 @@ export async function cleanupTestData(db: Kysely<Database>): Promise<void> {
       if (!error.message?.includes('does not exist')) {
         throw error;
       }
+    }
+  }
+  
+  // Clean only test-created feature flags, preserving seed flags
+  try {
+    await db.deleteFrom("feature_flags")
+      .where("name", "not in", ["2025-forecasts", "personal-props"])
+      .execute();
+  } catch (error: any) {
+    if (!error.message?.includes('does not exist')) {
+      throw error;
+    }
+  }
+  
+  // Clean only test-created users, preserving admin user (ID 1)
+  try {
+    await db.deleteFrom("users")
+      .where("id", "!=", 1)
+      .execute();
+  } catch (error: any) {
+    if (!error.message?.includes('does not exist')) {
+      throw error;
+    }
+  }
+  
+  // Clean only test-created logins, preserving admin login
+  try {
+    await db.deleteFrom("logins")
+      .where("username", "!=", "admin")
+      .execute();
+  } catch (error: any) {
+    if (!error.message?.includes('does not exist')) {
+      throw error;
     }
   }
 }

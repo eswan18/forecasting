@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { getTestDb } from "../helpers/testDatabase";
 import { TestDataFactory } from "../helpers/testFactories";
 import { createUser, getUsers, getUserById, updateUser } from "@/lib/db_actions/users";
@@ -20,16 +20,14 @@ vi.mock("@/lib/logger", () => ({
 }));
 
 // We need to replace the db import with our test database
-vi.mock("@/lib/database", () => ({
-  db: {
-    // This will be replaced in beforeEach with the actual test db
-    selectFrom: vi.fn(),
-    insertInto: vi.fn(),
-    updateTable: vi.fn(),
-    deleteFrom: vi.fn(),
-    transaction: vi.fn(),
-  },
-}));
+let originalDb: any;
+vi.mock("@/lib/database", async () => {
+  const actual = await vi.importActual("@/lib/database");
+  return {
+    ...actual,
+    get db() { return originalDb; }
+  };
+});
 
 import { getUserFromCookies } from "@/lib/get-user";
 
@@ -40,6 +38,13 @@ describe("Users Database Actions", () => {
   beforeEach(async () => {
     testDb = await getTestDb();
     factory = new TestDataFactory(testDb);
+    
+    // Replace the mocked database with our test database
+    originalDb = testDb;
+    
+    // Clear any existing data
+    await testDb.deleteFrom("users").execute();
+    await testDb.deleteFrom("logins").execute();
   });
 
   describe("createUser", () => {
@@ -47,7 +52,8 @@ describe("Users Database Actions", () => {
       const userData = {
         name: "John Doe",
         email: "john@example.com",
-        password_hash: "hashed_password_123",
+        login_id: null, // Will be handled by createUser function
+        is_admin: false
       };
 
       const result = await createUser({ user: userData });
@@ -66,14 +72,14 @@ describe("Users Database Actions", () => {
       expect(createdUser).toBeDefined();
       expect(createdUser.name).toBe(userData.name);
       expect(createdUser.email).toBe(userData.email);
-      expect(createdUser.password_hash).toBe(userData.password_hash);
     });
 
     it("should handle duplicate email error", async () => {
       const userData = {
         name: "John Doe",
         email: "duplicate@example.com",
-        password_hash: "hashed_password_123",
+        login_id: null,
+        is_admin: false
       };
 
       // Create first user
@@ -84,7 +90,7 @@ describe("Users Database Actions", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
-      expect(result.errorCode).toBe(ERROR_CODES.VALIDATION_ERROR);
+      expect(result.code).toBe(ERROR_CODES.VALIDATION_ERROR);
       expect(result.error).toContain("already exists");
     });
   });
@@ -96,7 +102,7 @@ describe("Users Database Actions", () => {
       const result = await getUsers();
 
       expect(result.success).toBe(false);
-      expect(result.errorCode).toBe(ERROR_CODES.UNAUTHORIZED);
+      expect(result.code).toBe(ERROR_CODES.UNAUTHORIZED);
       expect(result.error).toContain("logged in");
     });
 
@@ -106,7 +112,7 @@ describe("Users Database Actions", () => {
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
         id: user1.id,
-        name: user1.username,
+        name: user1.username || user1.name,
         email: user1.email,
         is_admin: user1.is_admin,
       });
@@ -120,12 +126,12 @@ describe("Users Database Actions", () => {
     });
 
     it("should apply sorting when provided", async () => {
-      const user1 = await factory.createUser({ username: "alice" });
-      const user2 = await factory.createUser({ username: "bob" });
+      const user1 = await factory.createUser({ username: "alice", name: "alice" });
+      const user2 = await factory.createUser({ username: "bob", name: "bob" });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
         id: user1.id,
-        name: user1.username,
+        name: user1.username || user1.name,
         email: user1.email,
         is_admin: user1.is_admin,
       });
@@ -146,7 +152,7 @@ describe("Users Database Actions", () => {
       const result = await getUserById(1);
 
       expect(result.success).toBe(false);
-      expect(result.errorCode).toBe(ERROR_CODES.UNAUTHORIZED);
+      expect(result.code).toBe(ERROR_CODES.UNAUTHORIZED);
       expect(result.error).toContain("logged in");
     });
 
@@ -155,7 +161,7 @@ describe("Users Database Actions", () => {
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
         id: user.id,
-        name: user.username,
+        name: user.username || user.name,
         email: user.email,
         is_admin: user.is_admin,
       });
@@ -172,7 +178,7 @@ describe("Users Database Actions", () => {
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       expect(result.data?.email).toBe(user.email);
-      expect(result.data?.name).toBe(user.username);
+      expect(result.data?.name).toBe(user.name);
     });
 
     it("should return undefined when user not found", async () => {
@@ -180,7 +186,7 @@ describe("Users Database Actions", () => {
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
         id: user.id,
-        name: user.username,
+        name: user.username || user.name,
         email: user.email,
         is_admin: user.is_admin,
       });
@@ -197,7 +203,7 @@ describe("Users Database Actions", () => {
       const result = await updateUser({ id: 1, user: { name: "New Name" } });
 
       expect(result.success).toBe(false);
-      expect(result.errorCode).toBe(ERROR_CODES.UNAUTHORIZED);
+      expect(result.code).toBe(ERROR_CODES.UNAUTHORIZED);
       expect(result.error).toContain("own profile");
     });
 
@@ -220,7 +226,7 @@ describe("Users Database Actions", () => {
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
         id: dbUser1.id,
-        name: user1.username,
+        name: user1.username || user1.name,
         email: user1.email,
         is_admin: user1.is_admin,
       });
@@ -231,7 +237,7 @@ describe("Users Database Actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.errorCode).toBe(ERROR_CODES.UNAUTHORIZED);
+      expect(result.code).toBe(ERROR_CODES.UNAUTHORIZED);
       expect(result.error).toContain("own profile");
     });
 
@@ -246,7 +252,7 @@ describe("Users Database Actions", () => {
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
         id: dbUser.id,
-        name: user.username,
+        name: user.username || user.name,
         email: user.email,
         is_admin: user.is_admin,
       });
@@ -257,7 +263,7 @@ describe("Users Database Actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.errorCode).toBe(ERROR_CODES.VALIDATION_ERROR);
+      expect(result.code).toBe(ERROR_CODES.VALIDATION_ERROR);
       expect(result.error).toContain("cannot update");
     });
 
@@ -272,7 +278,7 @@ describe("Users Database Actions", () => {
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
         id: dbUser.id,
-        name: user.username,
+        name: user.username || user.name,
         email: user.email,
         is_admin: user.is_admin,
       });
@@ -309,7 +315,7 @@ describe("Users Database Actions", () => {
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
         id: dbUser2.id,
-        name: user2.username,
+        name: user2.username || user2.name,
         email: user2.email,
         is_admin: user2.is_admin,
       });
@@ -321,7 +327,7 @@ describe("Users Database Actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.errorCode).toBe(ERROR_CODES.VALIDATION_ERROR);
+      expect(result.code).toBe(ERROR_CODES.VALIDATION_ERROR);
       expect(result.error).toContain("already exists");
     });
   });
