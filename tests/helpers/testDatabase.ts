@@ -1,202 +1,87 @@
-import { PostgreSqlContainer, StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import { Pool } from "pg";
-import { Kysely, PostgresDialect, Migrator, FileMigrationProvider } from "kysely";
+import { Kysely, PostgresDialect } from "kysely";
 import { Database } from "@/types/db_types";
-import { promises as fs } from "fs";
-import path from "path";
 
-let globalContainer: StartedPostgreSqlContainer | null = null;
-let globalDb: Kysely<Database> | null = null;
-let setupPromise: Promise<Kysely<Database>> | null = null;
-
-export async function setupTestDatabase(): Promise<Kysely<Database>> {
-  if (globalDb) {
-    return globalDb;
-  }
+/**
+ * Get the test database connection that was set up by global setup
+ */
+export async function getTestDb(): Promise<Kysely<Database>> {
+  // Check if we're using containers
+  const useContainers = process.env.TEST_USE_CONTAINERS === "true";
   
-  // If setup is already in progress, wait for it
-  if (setupPromise) {
-    return await setupPromise;
+  if (!useContainers) {
+    throw new Error("TEST_USE_CONTAINERS is not set to 'true'. Cannot get test database.");
   }
 
-  // Create the setup promise to prevent race conditions
-  setupPromise = (async (): Promise<Kysely<Database>> => {
-    // Check if Docker is available before attempting to start container
-    try {
-      console.log("🐳 Starting PostgreSQL test container...");
-      
-      // Start PostgreSQL container
-      globalContainer = await new PostgreSqlContainer("postgres:16-alpine")
-        .withDatabase("test_forecasting")
-        .withUsername("test_user")
-        .withPassword("test_password")
-        .withExposedPorts(5432)
-        .withStartupTimeout(120000) // 2 minutes max
-        .start();
-        
-      console.log("✅ PostgreSQL container started");
-    } catch (error: any) {
-      // Provide helpful error messages for common Docker issues
-      if (error.message?.includes('Cannot connect to the Docker daemon')) {
-        throw new Error(
-          '❌ Docker daemon is not running. Please start Docker Desktop or your Docker service.\n' +
-          'To run tests without containers, use: npm run test (without TEST_USE_CONTAINERS=true)'
-        );
-      } else if (error.message?.includes('docker: command not found')) {
-        throw new Error(
-          '❌ Docker is not installed. Please install Docker Desktop.\n' +
-          'To run tests without containers, use: npm run test (without TEST_USE_CONTAINERS=true)'
-        );
-      } else if (error.message?.includes('permission denied')) {
-        throw new Error(
-          '❌ Permission denied accessing Docker. Please ensure your user is in the docker group.\n' +
-          'To run tests without containers, use: npm run test (without TEST_USE_CONTAINERS=true)'
-        );
-      } else if (error.message?.includes('timeout')) {
-        throw new Error(
-          '❌ Timeout starting PostgreSQL container. This may be due to slow network or system resources.\n' +
-          'Try again or use: npm run test (without TEST_USE_CONTAINERS=true)'
-        );
-      } else {
-        // Re-throw with additional context for unknown errors
-        throw new Error(
-          `❌ Failed to start PostgreSQL test container: ${error.message}\n` +
-          'To run tests without containers, use: npm run test (without TEST_USE_CONTAINERS=true)'
-        );
-      }
-    }
-
-    // Create database connection
-    const connectionString = globalContainer.getConnectionUri();
-    const dialect = new PostgresDialect({
-      pool: new Pool({ 
-        connectionString,
-        max: 10,
-        ssl: false // No SSL for test containers
-      }),
-    });
-
-    globalDb = new Kysely<Database>({ dialect });
-
-    // Run migrations
-    await runMigrations(globalDb);
-
-    return globalDb;
-  })();
-
-  return await setupPromise;
-}
-
-async function runMigrations(db: Kysely<Database>) {
-  console.log("🔄 Running database migrations...");
+  // Get the connection string from environment variable set by globalSetup.ts
+  const connectionString = process.env.__TEST_DATABASE_URL__;
   
-  const migrator = new Migrator({
-    db,
-    provider: new FileMigrationProvider({
-      fs,
-      path,
-      migrationFolder: path.join(process.cwd(), "migrations"),
+  if (!connectionString) {
+    throw new Error(
+      "Test database not initialized. Make sure globalSetup.ts ran successfully.\n" + 
+      "This usually means Docker is not available or global setup failed."
+    );
+  }
+
+  const dialect = new PostgresDialect({
+    pool: new Pool({ 
+      connectionString,
+      max: 10,
+      ssl: false
     }),
   });
 
-  const { error, results } = await migrator.migrateToLatest();
-
-  if (error) {
-    console.error("❌ Failed to migrate test database:", error);
-    throw error;
-  }
-
-  if (results) {
-    console.log(`✅ Applied ${results.length} migrations successfully`);
-    // Only log individual migrations if there are failures or in verbose mode
-    if (process.env.VERBOSE_TESTS === "true") {
-      results.forEach(({ status, migrationName }) => {
-        console.log(`  • ${migrationName}: ${status}`);
-      });
-    }
-  }
-}
-
-export async function cleanupTestDatabase(): Promise<void> {
-  if (globalDb) {
-    await globalDb.destroy();
-    globalDb = null;
-  }
-  
-  if (globalContainer) {
-    await globalContainer.stop();
-    globalContainer = null;
-  }
-  
-  // Clear the setup promise so future tests can setup fresh
-  setupPromise = null;
-}
-
-export async function getTestDb(): Promise<Kysely<Database>> {
-  if (!globalDb) {
-    throw new Error("Test database not initialized. Call setupTestDatabase() first.");
-  }
-  return globalDb;
+  return new Kysely<Database>({ dialect });
 }
 
 export async function cleanupTestData(db: Kysely<Database>): Promise<void> {
   // Clean up test data in proper order to respect foreign key constraints
-  // Use try-catch to handle tables that may not exist in all test scenarios
   // NOTE: We preserve seed data (categories, admin user) between tests
   
-  // First clean tables that reference users (foreign key constraints)
-  const dependentTables = [
-    "forecasts",
-    "resolutions", 
+  // Clean in dependency order (child tables first, parent tables last)
+  const cleanupOrder = [
+    // Leaf tables first (tables that other tables reference)
+    "forecasts",       // References users, props
+    "resolutions",     // References users, props
+    "password_resets", // References users
+    "invite_tokens",   // References users  
+    "suggested_props", // References users
+    
+    // Props references users, competitions, categories
     "props",
-    "competitions",
-    "password_resets",
-    "invite_tokens", 
-    "suggested_props"
+    
+    // Competitions (props reference this)
+    "competitions", 
+    
+    // Feature flags that are test-created only
+    { table: "feature_flags", where: ["name", "not in", ["2025-forecasts", "personal-props"]] },
+    
+    // Users (but preserve admin user)
+    { table: "users", where: ["id", "!=", 1] },
+    
+    // Logins (but preserve admin login)
+    { table: "logins", where: ["username", "!=", "admin"] }
   ];
   
-  for (const table of dependentTables) {
+  for (const item of cleanupOrder) {
     try {
-      await db.deleteFrom(table as any).execute();
+      if (typeof item === "string") {
+        // Simple table cleanup
+        await db.deleteFrom(item as any).execute();
+      } else {
+        // Conditional cleanup
+        const query = db.deleteFrom(item.table as any);
+        const [column, operator, value] = item.where;
+        await query.where(column as any, operator as any, value as any).execute();
+      }
     } catch (error: any) {
       // Ignore "relation does not exist" errors for optional tables
       if (!error.message?.includes('does not exist')) {
-        throw error;
+        // Log warnings for debugging but don't fail tests
+        if (process.env.VERBOSE_TESTS === "true") {
+          console.warn(`Warning cleaning ${typeof item === "string" ? item : item.table}:`, error.message);
+        }
       }
-    }
-  }
-  
-  // Clean only test-created feature flags, preserving seed flags
-  // This must be done before cleaning users due to foreign key constraint
-  try {
-    await db.deleteFrom("feature_flags")
-      .where("name", "not in", ["2025-forecasts", "personal-props"])
-      .execute();
-  } catch (error: any) {
-    if (!error.message?.includes('does not exist')) {
-      throw error;
-    }
-  }
-  
-  // Clean only test-created users, preserving admin user (ID 1)
-  try {
-    await db.deleteFrom("users")
-      .where("id", "!=", 1)
-      .execute();
-  } catch (error: any) {
-    if (!error.message?.includes('does not exist')) {
-      throw error;
-    }
-  }
-  
-  // Clean only test-created logins, preserving admin login
-  try {
-    await db.deleteFrom("logins")
-      .where("username", "!=", "admin")
-      .execute();
-  } catch (error: any) {
-    if (!error.message?.includes('does not exist')) {
-      throw error;
     }
   }
 }
