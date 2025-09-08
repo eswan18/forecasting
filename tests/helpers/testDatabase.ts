@@ -2,10 +2,19 @@ import { Pool } from "pg";
 import { Kysely, PostgresDialect } from "kysely";
 import { Database } from "@/types/db_types";
 
+// Singleton instance to prevent too many client connections
+let testDbInstance: Kysely<Database> | null = null;
+
 /**
  * Get the test database connection that was set up by global setup
+ * Uses a singleton pattern to prevent connection pool exhaustion
  */
 export async function getTestDb(): Promise<Kysely<Database>> {
+  // Return existing instance if available
+  if (testDbInstance) {
+    return testDbInstance;
+  }
+  
   // Check if we're using containers
   const useContainers = process.env.TEST_USE_CONTAINERS === "true";
   
@@ -26,60 +35,73 @@ export async function getTestDb(): Promise<Kysely<Database>> {
   const dialect = new PostgresDialect({
     pool: new Pool({ 
       connectionString,
-      max: 10,
+      max: 5, // Reduced from 10 to prevent connection exhaustion
       ssl: false
     }),
   });
 
-  return new Kysely<Database>({ dialect });
+  testDbInstance = new Kysely<Database>({ dialect });
+  return testDbInstance;
 }
 
 export async function cleanupTestData(db: Kysely<Database>): Promise<void> {
-  // Clean up test data in proper order to respect foreign key constraints
-  // NOTE: We preserve seed data (categories, admin user) between tests
+  // Clean up test data while preserving seed data (categories, admin user)
+  // Handle table cleanup individually to avoid transaction rollbacks on missing tables
   
-  // Clean in dependency order (child tables first, parent tables last)
-  const cleanupOrder = [
-    // Leaf tables first (tables that other tables reference)
-    "forecasts",       // References users, props
-    "resolutions",     // References users, props
-    "password_resets", // References users
-    "invite_tokens",   // References users  
-    "suggested_props", // References users
+  const cleanupOperations = [
+    // Clean in dependency order (child tables first, parent tables last)
+    { name: "forecasts", operation: () => db.deleteFrom("forecasts").execute() },
+    { name: "resolutions", operation: () => db.deleteFrom("resolutions").execute() },
+    { name: "password_resets", operation: () => db.deleteFrom("password_resets").execute() },
+    { name: "invite_tokens", operation: () => db.deleteFrom("invite_tokens").execute() },
+    { name: "suggested_props", operation: () => db.deleteFrom("suggested_props").execute() },
+    { name: "props", operation: () => db.deleteFrom("props").execute() },
     
-    // Props references users, competitions, categories
-    "props",
+    // Clean test users (preserve admin user with ID 1) - must be before logins since users reference logins
+    { name: "users", operation: () => db.deleteFrom("users").where("id", "!=", 1).execute() },
     
-    // Competitions (props reference this)
-    "competitions", 
+    // Clean test logins (preserve admin login) - must be after users since users reference logins
+    { name: "logins", operation: () => 
+      db.deleteFrom("logins")
+        .where("username", "!=", "admin")
+        .execute()
+    },
     
-    // Feature flags that are test-created only
-    { table: "feature_flags", where: ["name", "not in", ["2025-forecasts", "personal-props"]] },
+    // Clean test competitions (but preserve seed competitions with IDs 1 and 2)
+    { name: "competitions", operation: async () => {
+      const result = await db.deleteFrom("competitions").where("id", "not in", [1, 2]).executeTakeFirst();
+      if (process.env.VERBOSE_TESTS === "true") {
+        console.log(`Cleaned ${result.numDeletedRows || 0} test competitions`);
+      }
+      return result;
+    }},
     
-    // Users (but preserve admin user)
-    { table: "users", where: ["id", "!=", 1] },
-    
-    // Logins (but preserve admin login)
-    { table: "logins", where: ["username", "!=", "admin"] }
+    // Clean test-created feature flags (preserve seed flags)
+    { name: "feature_flags", operation: () => 
+      db.deleteFrom("feature_flags")
+        .where("name", "not in", ["2025-forecasts", "personal-props"])
+        .execute()
+    }
   ];
   
-  for (const item of cleanupOrder) {
+  // Execute each cleanup operation individually
+  for (const { name, operation } of cleanupOperations) {
     try {
-      if (typeof item === "string") {
-        // Simple table cleanup
-        await db.deleteFrom(item as any).execute();
-      } else {
-        // Conditional cleanup
-        const query = db.deleteFrom(item.table as any);
-        const [column, operator, value] = item.where;
-        await query.where(column as any, operator as any, value as any).execute();
-      }
+      await operation();
     } catch (error: any) {
-      // Ignore "relation does not exist" errors for optional tables
-      if (!error.message?.includes('does not exist')) {
-        // Log warnings for debugging but don't fail tests
+      // Handle missing tables gracefully
+      if (error.message?.includes('does not exist')) {
         if (process.env.VERBOSE_TESTS === "true") {
-          console.warn(`Warning cleaning ${typeof item === "string" ? item : item.table}:`, error.message);
+          console.log(`Skipping cleanup of ${name} (table does not exist)`);
+        }
+      } else if (error.code === '23503') { // Foreign key violation
+        if (process.env.VERBOSE_TESTS === "true") {
+          console.warn(`Foreign key constraint preventing cleanup of ${name}:`, error.message);
+        }
+      } else {
+        // Log other errors but don't fail tests
+        if (process.env.VERBOSE_TESTS === "true") {
+          console.warn(`Warning cleaning ${name}:`, error.message);
         }
       }
     }

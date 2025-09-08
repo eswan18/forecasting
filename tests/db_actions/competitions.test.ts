@@ -69,9 +69,12 @@ describe("Competitions Database Actions", () => {
 
       const result = await getCompetitions();
 
-      expect(result).toHaveLength(2);
+      expect(result).toHaveLength(4); // 2 seed competitions + 2 test competitions
       expect(result[0].name).toBe("Beta Competition"); // desc order
       expect(result[1].name).toBe("Alpha Competition");
+      // Seed competitions should also be present
+      expect(result.find(c => c.name === "2025 Public Competition")).toBeDefined();
+      expect(result.find(c => c.name === "2024 Public Competition")).toBeDefined();
     });
 
     it("should return empty array when no competitions exist", async () => {
@@ -86,7 +89,9 @@ describe("Competitions Database Actions", () => {
 
       const result = await getCompetitions();
 
-      expect(result).toHaveLength(0);
+      expect(result).toHaveLength(2); // Should have 2 seed competitions
+      expect(result.find(c => c.name === "2025 Public Competition")).toBeDefined();
+      expect(result.find(c => c.name === "2024 Public Competition")).toBeDefined();
     });
   });
 

@@ -36,7 +36,7 @@ export async function setup() {
     const dialect = new PostgresDialect({
       pool: new Pool({ 
         connectionString,
-        max: 10,
+        max: 5, // Reduced to prevent connection exhaustion with multiple test files
         ssl: false // No SSL for test containers
       }),
     });
