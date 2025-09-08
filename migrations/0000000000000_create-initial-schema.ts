@@ -4,23 +4,21 @@ import { sql } from "kysely";
 export async function up(db: Kysely<any>): Promise<void> {
   // Create core tables that are required by later migrations
   
-  // Categories table
   await db.schema
     .createTable("categories")
     .addColumn("id", "serial", (col) => col.primaryKey())
     .addColumn("name", "varchar", (col) => col.notNull().unique())
     .execute();
 
-  // Logins table (with is_salted that gets removed later)
   await db.schema
     .createTable("logins")
     .addColumn("id", "serial", (col) => col.primaryKey())
     .addColumn("username", "varchar", (col) => col.notNull().unique())
     .addColumn("password_hash", "varchar", (col) => col.notNull())
+    // This column gets removed later
     .addColumn("is_salted", "boolean", (col) => col.notNull().defaultTo(true))
     .execute();
 
-  // Users table
   await db.schema
     .createTable("users")
     .addColumn("id", "serial", (col) => col.primaryKey())
@@ -30,7 +28,6 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn("is_admin", "boolean", (col) => col.notNull().defaultTo(false))
     .execute();
 
-  // Props table (matching the expected structure)
   await db.schema
     .createTable("props")
     .addColumn("id", "serial", (col) => col.primaryKey())
@@ -39,7 +36,6 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn("year", "integer")
     .execute();
 
-  // Forecasts table (expected to have 'forecast' column not 'probability')
   await db.schema
     .createTable("forecasts")
     .addColumn("id", "serial", (col) => col.primaryKey())
@@ -48,7 +44,6 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn("forecast", "decimal", (col) => col.notNull())
     .execute();
 
-  // Resolutions table
   await db.schema
     .createTable("resolutions")
     .addColumn("id", "serial", (col) => col.primaryKey())
@@ -56,8 +51,6 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn("resolution", "boolean", (col) => col.notNull())
     .addColumn("resolved_at", "timestamptz", (col) => col.notNull())
     .execute();
-
-  // Note: invite_tokens table is created by migration 1732993480596_create-table-invite-secrets.ts
 
   // Insert basic categories
   await db.insertInto("categories")
@@ -93,7 +86,6 @@ export async function up(db: Kysely<any>): Promise<void> {
     })
     .execute();
 
-  // Create initial v_users view (with is_salted)
   await db.schema
     .createView("v_users")
     .as(
@@ -112,7 +104,6 @@ export async function up(db: Kysely<any>): Promise<void> {
     )
     .execute();
 
-  // Create initial v_props view (simple version before competitions exist)
   await db.schema
     .createView("v_props")  
     .as(
@@ -133,7 +124,6 @@ export async function up(db: Kysely<any>): Promise<void> {
     )
     .execute();
 
-  // Create initial v_forecasts view (simple version, timestamps added later)
   await db.schema
     .createView("v_forecasts")
     .as(
