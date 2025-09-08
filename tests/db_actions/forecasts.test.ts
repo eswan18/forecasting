@@ -1,14 +1,39 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { getTestDb } from "../helpers/testDatabase";
 import { TestDataFactory } from "../helpers/testFactories";
-import { mockGetUserFromCookies, mockLogger, mockDatabase, mockRevalidatePath } from "../helpers/testMocks";
 import { getForecasts, createForecast } from "@/lib/db_actions/forecasts";
 
-// Setup shared mocks
-mockGetUserFromCookies();
-mockLogger();
-mockRevalidatePath();
-const originalDb = mockDatabase();
+// Mock getUserFromCookies since we're testing database actions in isolation
+vi.mock("@/lib/get-user", () => ({
+  getUserFromCookies: vi.fn(),
+}));
+
+// Mock logger to avoid console output during tests
+vi.mock("@/lib/logger", () => ({
+  logger: {
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
+// Mock revalidatePath since we don't need to test cache revalidation
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+}));
+
+// We need to replace the db import with our test database
+let originalDb: any;
+vi.mock("@/lib/database", async () => {
+  const actual = await vi.importActual("@/lib/database");
+  return {
+    ...actual,
+    get db() { return originalDb; }
+  };
+});
+
+import { getUserFromCookies } from "@/lib/get-user";
 
 import { getUserFromCookies } from "@/lib/get-user";
 
@@ -21,7 +46,7 @@ describe("Forecasts Database Actions", () => {
     factory = new TestDataFactory(testDb);
     
     // Replace the mocked database with our test database
-    originalDb.current = testDb;
+    originalDb = testDb;
   });
 
   describe("getForecasts", () => {

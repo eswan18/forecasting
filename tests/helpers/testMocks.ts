@@ -29,20 +29,21 @@ export function mockLogger() {
 
 /**
  * Mock database connection to use test database instead of production
- * Returns an object with a setter for the test database instance
+ * NOTE: This shared mock has closure issues. Use inline database mocking in test files:
+ * 
+ * let originalDb: any;
+ * vi.mock("@/lib/database", async () => {
+ *   const actual = await vi.importActual("@/lib/database");
+ *   return {
+ *     ...actual,
+ *     get db() { return originalDb; }
+ *   };
+ * });
+ * 
+ * Then in beforeEach: originalDb = testDb;
  */
 export function mockDatabase() {
-  const dbRef = { current: null as any };
-  
-  vi.mock("@/lib/database", async () => {
-    const actual = await vi.importActual("@/lib/database");
-    return {
-      ...actual,
-      get db() { return dbRef.current; }
-    };
-  });
-  
-  return dbRef;
+  throw new Error("Use inline database mocking instead - see comment above");
 }
 
 /**

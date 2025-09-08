@@ -212,6 +212,9 @@ describe("Users Database Actions", () => {
 
   describe("updateUser", () => {
     it("should return unauthorized error when user not logged in", async () => {
+      // Override the default admin user mock to simulate no logged-in user
+      vi.mocked(getUserFromCookies).mockResolvedValue(null);
+      
       const result = await updateUser({ id: 1, user: { name: "New Name" } });
 
       expect(result.success).toBe(false);
