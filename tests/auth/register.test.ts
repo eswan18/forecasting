@@ -32,7 +32,7 @@ import { getUserFromCookies } from "@/lib/get-user";
 import { inviteTokenIsValid, consumeInviteToken } from "@/lib/db_actions/invite-tokens";
 import { getLoginByUsername, createLogin, createUser } from "@/lib/db_actions";
 
-describe.skip("Authentication Register", () => {
+describe("Authentication Register", () => {
   let testDb: any;
   let factory: TestDataFactory;
 
@@ -224,19 +224,10 @@ describe.skip("Authentication Register", () => {
     });
 
     it("should reject registration with existing username", async () => {
-      // Create an existing user
+      // Create an existing user (factory.createUser already creates the login record)
       const existingUser = await factory.createUser({
         username: "existinguser",
       });
-
-      // Create login record
-      await testDb
-        .insertInto("logins")
-        .values({
-          username: existingUser.username,
-          password_hash: existingUser.password_hash,
-        })
-        .execute();
 
       const adminUser = await factory.createAdminUser();
       vi.mocked(getUserFromCookies).mockResolvedValue({

@@ -61,7 +61,7 @@ describe("Authentication Login", () => {
   });
 
   describe("login", () => {
-    it.skip("should login successfully with valid credentials", async () => {
+    it("should login successfully with valid credentials", async () => {
       // Create a user with login credentials
       const testUser = await factory.createUser({
         username: "testuser",
@@ -97,7 +97,7 @@ describe("Authentication Login", () => {
       expect(mockCookieStore.set).not.toHaveBeenCalled();
     });
 
-    it.skip("should fail login with invalid password", async () => {
+    it("should fail login with invalid password", async () => {
       // Create a user with login credentials
       const testUser = await factory.createUser({
         username: "testuser",
@@ -116,6 +116,10 @@ describe("Authentication Login", () => {
     });
 
     it.skip("should fail login when JWT_SECRET is not set", async () => {
+      // This test is difficult to implement with the current module loading pattern
+      // because JWT_SECRET is captured as a constant when the module loads.
+      // Skipping for now - the JWT_SECRET is required for the app to function anyway.
+      
       // Mock environment without JWT_SECRET
       vi.stubEnv("JWT_SECRET", "");
 
@@ -139,7 +143,7 @@ describe("Authentication Login", () => {
   });
 
   describe("loginViaImpersonation", () => {
-    it.skip("should allow admin to impersonate another user", async () => {
+    it("should allow admin to impersonate another user", async () => {
       // Create admin user
       const adminUser = await factory.createAdminUser({
         username: "testadmin",
