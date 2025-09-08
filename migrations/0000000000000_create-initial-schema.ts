@@ -1,5 +1,11 @@
 import type { Kysely } from "kysely";
 import { sql } from "kysely";
+import argon2 from "argon2";
+import * as dotenv from "dotenv";
+
+// Load environment variables for password hashing
+dotenv.config({ path: ".env.local" });
+const SALT = process.env.ARGON2_SALT || "migration_salt";
 
 export async function up(db: Kysely<any>): Promise<void> {
   // Create core tables that are required by later migrations
@@ -64,12 +70,20 @@ export async function up(db: Kysely<any>): Promise<void> {
     .execute();
 
   // Insert foundational users that other migrations expect
-  // Create a basic login first
+  // Create the admin user with proper password hashing
+  
+  // Hash the admin password properly using the same logic as the app
+  const adminPassword = "admin123"; // Default admin password for development
+  const passwordHash = await argon2.hash(SALT + adminPassword, {
+    type: argon2.argon2id,
+  });
+  
+  // Create login record with properly hashed password
   const loginResult = await db
     .insertInto("logins")
     .values({
       username: "admin",
-      password_hash: "$argon2id$v=19$m=65536,t=3,p=4$placeholder_hash",
+      password_hash: passwordHash,
       is_salted: true
     })
     .returning("id")
