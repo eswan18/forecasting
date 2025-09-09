@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { getTestDb } from "../helpers/testDatabase";
 import { TestDataFactory } from "../helpers/testFactories";
-import { 
-  getCompetitions, 
-  getCompetitionById, 
-  createCompetition, 
-  updateCompetition 
+import {
+  getCompetitions,
+  getCompetitionById,
+  createCompetition,
+  updateCompetition,
 } from "@/lib/db_actions/competitions";
 
 // Mock getUserFromCookies since we're testing database actions in isolation
@@ -34,7 +34,9 @@ vi.mock("@/lib/database", async () => {
   const actual = await vi.importActual("@/lib/database");
   return {
     ...actual,
-    get db() { return originalDb; }
+    get db() {
+      return originalDb;
+    },
   };
 });
 
@@ -49,7 +51,7 @@ describe("Competitions Database Actions", () => {
   beforeEach(async () => {
     testDb = await getTestDb();
     factory = new TestDataFactory(testDb);
-    
+
     // Replace the mocked database with our test database
     originalDb = testDb;
   });
@@ -57,8 +59,12 @@ describe("Competitions Database Actions", () => {
   describe("getCompetitions", () => {
     it("should return all competitions ordered by name desc", async () => {
       const user = await factory.createUser();
-      const comp1 = await factory.createCompetition({ name: "Alpha Competition" });
-      const comp2 = await factory.createCompetition({ name: "Beta Competition" });
+      const comp1 = await factory.createCompetition({
+        name: "Alpha Competition",
+      });
+      const comp2 = await factory.createCompetition({
+        name: "Beta Competition",
+      });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
         id: user.id,
@@ -73,8 +79,12 @@ describe("Competitions Database Actions", () => {
       expect(result[0].name).toBe("Beta Competition"); // desc order
       expect(result[1].name).toBe("Alpha Competition");
       // Seed competitions should also be present
-      expect(result.find(c => c.name === "2025 Public Competition")).toBeDefined();
-      expect(result.find(c => c.name === "2024 Public Competition")).toBeDefined();
+      expect(
+        result.find((c) => c.name === "2025 Public Competition"),
+      ).toBeDefined();
+      expect(
+        result.find((c) => c.name === "2024 Public Competition"),
+      ).toBeDefined();
     });
 
     it("should return empty array when no competitions exist", async () => {
@@ -90,8 +100,12 @@ describe("Competitions Database Actions", () => {
       const result = await getCompetitions();
 
       expect(result).toHaveLength(2); // Should have 2 seed competitions
-      expect(result.find(c => c.name === "2025 Public Competition")).toBeDefined();
-      expect(result.find(c => c.name === "2024 Public Competition")).toBeDefined();
+      expect(
+        result.find((c) => c.name === "2025 Public Competition"),
+      ).toBeDefined();
+      expect(
+        result.find((c) => c.name === "2024 Public Competition"),
+      ).toBeDefined();
     });
   });
 
@@ -184,7 +198,7 @@ describe("Competitions Database Actions", () => {
       };
 
       await expect(
-        createCompetition({ competition: competitionData })
+        createCompetition({ competition: competitionData }),
       ).rejects.toThrow("Unauthorized: Only admins can create competitions");
     });
 
@@ -197,7 +211,7 @@ describe("Competitions Database Actions", () => {
       };
 
       await expect(
-        createCompetition({ competition: competitionData })
+        createCompetition({ competition: competitionData }),
       ).rejects.toThrow("Unauthorized: Only admins can create competitions");
     });
   });
@@ -227,9 +241,9 @@ describe("Competitions Database Actions", () => {
         name: "Updated Name",
       };
 
-      await updateCompetition({ 
-        id: dbCompetition.id, 
-        competition: updateData 
+      await updateCompetition({
+        id: dbCompetition.id,
+        competition: updateData,
       });
 
       // Verify competition was updated in database
@@ -264,7 +278,7 @@ describe("Competitions Database Actions", () => {
       };
 
       await expect(
-        updateCompetition({ id: dbCompetition.id, competition: updateData })
+        updateCompetition({ id: dbCompetition.id, competition: updateData }),
       ).rejects.toThrow("Unauthorized: Only admins can update competitions");
     });
 
@@ -284,7 +298,7 @@ describe("Competitions Database Actions", () => {
       };
 
       await expect(
-        updateCompetition({ id: dbCompetition.id, competition: updateData })
+        updateCompetition({ id: dbCompetition.id, competition: updateData }),
       ).rejects.toThrow("Unauthorized: Only admins can update competitions");
     });
   });

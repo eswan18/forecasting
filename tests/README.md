@@ -23,12 +23,14 @@ The testcontainers implementation provides:
 ### Test Coverage
 
 **Core Database Actions:**
+
 - `tests/db_actions/users.test.ts` - User CRUD operations and authorization
 - `tests/db_actions/forecasts.test.ts` - Forecast management and business logic
 - `tests/db_actions/competitions.test.ts` - Competition operations
 - `tests/db_actions/props.test.ts` - Proposition handling and filtering
 
 **Authentication & Authorization:**
+
 - `tests/auth/login.test.ts` - Login and impersonation workflows
 - `tests/auth/register.test.ts` - User registration and invite token validation
 
@@ -77,7 +79,7 @@ Key vitest configuration for testcontainers:
 ### Authentication
 
 - **Login**: Password verification, JWT token creation, session management
-- **Impersonation**: Admin-only user impersonation for support workflows  
+- **Impersonation**: Admin-only user impersonation for support workflows
 - **Registration**: User creation, invite token validation, password requirements
 
 ### Business Logic
@@ -126,18 +128,18 @@ Realistic test data generation:
 ```typescript
 const user = await factory.createUser({
   username: "testuser",
-  email: "test@example.com"
+  email: "test@example.com",
 });
 
 const competition = await factory.createCompetition({
   name: "Test Competition",
   start_date: new Date(),
-  end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+  end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
 });
 
 const prop = await factory.createCompetitionProp(competition.id);
-const forecast = await factory.createForecast(user.id, prop.id, { 
-  probability: 0.75 
+const forecast = await factory.createForecast(user.id, prop.id, {
+  probability: 0.75,
 });
 ```
 
@@ -155,7 +157,7 @@ Strategic mocking preserves test speed while enabling database testing:
 Potential areas for expansion:
 
 1. **Performance Testing**: Use containers for load testing database operations
-2. **Migration Testing**: Automated testing of migration rollbacks and schema changes  
+2. **Migration Testing**: Automated testing of migration rollbacks and schema changes
 3. **Concurrent Testing**: Multi-user scenarios and race condition testing
 4. **Data Migration**: Testing of data transformation scripts
 5. **Backup/Restore**: Testing of database backup and recovery procedures
@@ -163,16 +165,19 @@ Potential areas for expansion:
 ## Troubleshooting
 
 **Container startup issues:**
+
 - Ensure Docker daemon is running
 - Check available disk space and memory
 - Verify network connectivity for pulling PostgreSQL image
 
 **Test timeouts:**
+
 - Increase timeouts in vitest.config.ts if needed
 - Check for hanging database connections
 - Monitor container resource usage
 
 **Mock issues:**
+
 - Ensure mocks are set up before importing tested modules
 - Use vi.clearAllMocks() in beforeEach hooks
 - Check for mock leakage between test files

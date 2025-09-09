@@ -50,16 +50,18 @@ describe("Authentication Login", () => {
     testDb = await getTestDb();
     factory = new TestDataFactory(testDb);
     vi.clearAllMocks();
-    
+
     // Replace the mocked getLoginByUsername with our test database implementation
-    vi.mocked(getLoginByUsername).mockImplementation(async (username: string) => {
-      const result = await testDb
-        .selectFrom("logins")
-        .selectAll()
-        .where("username", "=", username)
-        .executeTakeFirst();
-      return result;
-    });
+    vi.mocked(getLoginByUsername).mockImplementation(
+      async (username: string) => {
+        const result = await testDb
+          .selectFrom("logins")
+          .selectAll()
+          .where("username", "=", username)
+          .executeTakeFirst();
+        return result;
+      },
+    );
   });
 
   describe("login", () => {
@@ -84,7 +86,7 @@ describe("Authentication Login", () => {
           httpOnly: true,
           maxAge: 108000,
           path: "/",
-        })
+        }),
       );
     });
 
@@ -121,7 +123,7 @@ describe("Authentication Login", () => {
       // This test is difficult to implement with the current module loading pattern
       // because JWT_SECRET is captured as a constant when the module loads.
       // Skipping for now - the JWT_SECRET is required for the app to function anyway.
-      
+
       // Mock environment without JWT_SECRET
       vi.stubEnv("JWT_SECRET", "");
 
@@ -166,9 +168,7 @@ describe("Authentication Login", () => {
         is_admin: true,
       });
 
-      await expect(
-        loginViaImpersonation("targetuser")
-      ).resolves.not.toThrow();
+      await expect(loginViaImpersonation("targetuser")).resolves.not.toThrow();
 
       expect(mockCookieStore.set).toHaveBeenCalledWith(
         "token",
@@ -177,7 +177,7 @@ describe("Authentication Login", () => {
           httpOnly: true,
           maxAge: 108000,
           path: "/",
-        })
+        }),
       );
     });
 
@@ -200,9 +200,9 @@ describe("Authentication Login", () => {
         is_admin: false,
       });
 
-      await expect(
-        loginViaImpersonation("targetuser")
-      ).rejects.toThrow("Not authorized.");
+      await expect(loginViaImpersonation("targetuser")).rejects.toThrow(
+        "Not authorized.",
+      );
 
       expect(mockCookieStore.set).not.toHaveBeenCalled();
     });
@@ -210,9 +210,9 @@ describe("Authentication Login", () => {
     it("should reject impersonation when not logged in", async () => {
       vi.mocked(getUserFromCookies).mockResolvedValue(null);
 
-      await expect(
-        loginViaImpersonation("targetuser")
-      ).rejects.toThrow("Not authorized.");
+      await expect(loginViaImpersonation("targetuser")).rejects.toThrow(
+        "Not authorized.",
+      );
 
       expect(mockCookieStore.set).not.toHaveBeenCalled();
     });
@@ -229,9 +229,9 @@ describe("Authentication Login", () => {
         is_admin: true,
       });
 
-      await expect(
-        loginViaImpersonation("nonexistentuser")
-      ).rejects.toThrow("Invalid username.");
+      await expect(loginViaImpersonation("nonexistentuser")).rejects.toThrow(
+        "Invalid username.",
+      );
 
       expect(mockCookieStore.set).not.toHaveBeenCalled();
     });

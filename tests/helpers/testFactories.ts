@@ -44,13 +44,25 @@ export interface TestForecast {
 }
 
 export class TestDataFactory {
-  constructor(private db: Kysely<Database>) { }
+  constructor(private db: Kysely<Database>) {}
 
-  async createUser(overrides: Partial<TestUser> & { username?: string; password?: string } = {}): Promise<TestUser> {
-    const username = overrides.username || `testuser_${Math.random().toString(36).substring(7)}`;
+  async createUser(
+    overrides: Partial<TestUser> & {
+      username?: string;
+      password?: string;
+    } = {},
+  ): Promise<TestUser> {
+    const username =
+      overrides.username ||
+      `testuser_${Math.random().toString(36).substring(7)}`;
     const password = overrides.password || "testpassword123";
-    const name = overrides.name || overrides.username || `testuser_${Math.random().toString(36).substring(7)}`;
-    const email = overrides.email || `test_${Math.random().toString(36).substring(7)}@example.com`;
+    const name =
+      overrides.name ||
+      overrides.username ||
+      `testuser_${Math.random().toString(36).substring(7)}`;
+    const email =
+      overrides.email ||
+      `test_${Math.random().toString(36).substring(7)}@example.com`;
     const isAdmin = overrides.is_admin || false;
 
     // Create login record directly with test database
@@ -58,7 +70,7 @@ export class TestDataFactory {
     const passwordHash = await argon2.hash(String(SALT) + password, {
       type: argon2.argon2id,
     });
-    
+
     const loginResult = await this.db
       .insertInto("logins")
       .values({ username, password_hash: passwordHash })
@@ -109,7 +121,9 @@ export class TestDataFactory {
     };
   }
 
-  async createCompetition(overrides: Partial<TestCompetition> = {}): Promise<TestCompetition> {
+  async createCompetition(
+    overrides: Partial<TestCompetition> = {},
+  ): Promise<TestCompetition> {
     const defaults = {
       name: `Test Competition ${Math.random().toString(36).substring(7)}`,
       forecasts_due_date: new Date(),
@@ -148,7 +162,14 @@ export class TestDataFactory {
     const result = await this.db
       .insertInto("props")
       .values(propData)
-      .returning(["id", "text", "category_id", "competition_id", "user_id", "notes"])
+      .returning([
+        "id",
+        "text",
+        "category_id",
+        "competition_id",
+        "user_id",
+        "notes",
+      ])
       .executeTakeFirst();
 
     return {
@@ -166,7 +187,7 @@ export class TestDataFactory {
   async createForecast(
     userId: string,
     propId: string,
-    overrides: Partial<TestForecast> = {}
+    overrides: Partial<TestForecast> = {},
   ): Promise<TestForecast> {
     const defaults = {
       user_id: parseInt(userId),
@@ -192,27 +213,38 @@ export class TestDataFactory {
     };
   }
 
-  async createAdminUser(overrides: Partial<TestUser> & { username?: string; password?: string } = {}): Promise<TestUser> {
+  async createAdminUser(
+    overrides: Partial<TestUser> & {
+      username?: string;
+      password?: string;
+    } = {},
+  ): Promise<TestUser> {
     return this.createUser({
       is_admin: true,
       username: `admin_${Math.random().toString(36).substring(7)}`,
-      ...overrides
+      ...overrides,
     });
   }
 
-  async createPersonalProp(userId: string, overrides: Partial<TestProp> = {}): Promise<TestProp> {
+  async createPersonalProp(
+    userId: string,
+    overrides: Partial<TestProp> = {},
+  ): Promise<TestProp> {
     return this.createProp({
       user_id: userId as any,
       competition_id: null,
-      ...overrides
+      ...overrides,
     });
   }
 
-  async createCompetitionProp(competitionId: string, overrides: Partial<TestProp> = {}): Promise<TestProp> {
+  async createCompetitionProp(
+    competitionId: string,
+    overrides: Partial<TestProp> = {},
+  ): Promise<TestProp> {
     return this.createProp({
       competition_id: competitionId as any,
       user_id: null,
-      ...overrides
+      ...overrides,
     });
   }
 }

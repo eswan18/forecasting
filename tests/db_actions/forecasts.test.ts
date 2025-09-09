@@ -29,7 +29,9 @@ vi.mock("@/lib/database", async () => {
   const actual = await vi.importActual("@/lib/database");
   return {
     ...actual,
-    get db() { return originalDb; }
+    get db() {
+      return originalDb;
+    },
   };
 });
 
@@ -44,7 +46,7 @@ describe("Forecasts Database Actions", () => {
   beforeEach(async () => {
     testDb = await getTestDb();
     factory = new TestDataFactory(testDb);
-    
+
     // Replace the mocked database with our test database
     originalDb = testDb;
   });
@@ -69,8 +71,12 @@ describe("Forecasts Database Actions", () => {
       const result = await getForecasts({});
 
       expect(result).toHaveLength(2);
-      expect(result.some(f => parseFloat(f.forecast.toString()) === 0.7)).toBe(true);
-      expect(result.some(f => parseFloat(f.forecast.toString()) === 0.3)).toBe(true);
+      expect(
+        result.some((f) => parseFloat(f.forecast.toString()) === 0.7),
+      ).toBe(true);
+      expect(
+        result.some((f) => parseFloat(f.forecast.toString()) === 0.3),
+      ).toBe(true);
     });
 
     it("should filter forecasts by userId", async () => {
@@ -108,7 +114,9 @@ describe("Forecasts Database Actions", () => {
       const propNotInComp = await factory.createProp();
 
       await factory.createForecast(user.id, propInComp.id, { forecast: 0.7 });
-      await factory.createForecast(user.id, propNotInComp.id, { forecast: 0.3 });
+      await factory.createForecast(user.id, propNotInComp.id, {
+        forecast: 0.3,
+      });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
         id: user.id,
@@ -137,7 +145,9 @@ describe("Forecasts Database Actions", () => {
       const propNotInComp = await factory.createProp();
 
       await factory.createForecast(user.id, propInComp.id, { forecast: 0.7 });
-      await factory.createForecast(user.id, propNotInComp.id, { forecast: 0.3 });
+      await factory.createForecast(user.id, propNotInComp.id, {
+        forecast: 0.3,
+      });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
         id: user.id,
@@ -167,8 +177,8 @@ describe("Forecasts Database Actions", () => {
         is_admin: user.is_admin,
       });
 
-      const result = await getForecasts({ 
-        sort: { expr: "forecast", modifiers: "asc" } 
+      const result = await getForecasts({
+        sort: { expr: "forecast", modifiers: "asc" },
       });
 
       expect(result).toHaveLength(2);
@@ -260,13 +270,15 @@ describe("Forecasts Database Actions", () => {
       await createForecast({ forecast: forecastData });
 
       // Try to create duplicate forecast
-      await expect(createForecast({ forecast: forecastData })).rejects.toThrow();
+      await expect(
+        createForecast({ forecast: forecastData }),
+      ).rejects.toThrow();
     });
 
     it("should prevent forecasts past due date for competition props", async () => {
       const user = await factory.createUser();
       const pastDate = new Date(Date.now() - 24 * 60 * 60 * 1000); // Yesterday
-      const competition = await factory.createCompetition({ 
+      const competition = await factory.createCompetition({
         end_date: pastDate,
       });
       const prop = await factory.createCompetitionProp(competition.id);
@@ -298,7 +310,7 @@ describe("Forecasts Database Actions", () => {
       };
 
       await expect(createForecast({ forecast: forecastData })).rejects.toThrow(
-        "Cannot create forecasts past the due date"
+        "Cannot create forecasts past the due date",
       );
     });
   });

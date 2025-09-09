@@ -29,7 +29,9 @@ vi.mock("@/lib/database", async () => {
   const actual = await vi.importActual("@/lib/database");
   return {
     ...actual,
-    get db() { return originalDb; }
+    get db() {
+      return originalDb;
+    },
   };
 });
 
@@ -44,7 +46,7 @@ describe("Props Database Actions", () => {
   beforeEach(async () => {
     testDb = await getTestDb();
     factory = new TestDataFactory(testDb);
-    
+
     // Replace the mocked database with our test database
     originalDb = testDb;
   });
@@ -65,18 +67,18 @@ describe("Props Database Actions", () => {
       const result = await getProps({});
 
       expect(result).toHaveLength(2);
-      expect(result.some(p => p.prop_text === "Prop 1")).toBe(true);
-      expect(result.some(p => p.prop_text === "Prop 2")).toBe(true);
+      expect(result.some((p) => p.prop_text === "Prop 1")).toBe(true);
+      expect(result.some((p) => p.prop_text === "Prop 2")).toBe(true);
     });
 
     it("should filter props by single competition ID", async () => {
       const user = await factory.createUser();
       const competition = await factory.createCompetition();
-      const propInComp = await factory.createCompetitionProp(competition.id, { 
-        text: "Competition Prop" 
+      const propInComp = await factory.createCompetitionProp(competition.id, {
+        text: "Competition Prop",
       });
-      const propNotInComp = await factory.createProp({ 
-        text: "Standalone Prop" 
+      const propNotInComp = await factory.createProp({
+        text: "Standalone Prop",
       });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
@@ -102,11 +104,11 @@ describe("Props Database Actions", () => {
     it("should filter props outside competitions (null competition ID)", async () => {
       const user = await factory.createUser();
       const competition = await factory.createCompetition();
-      const propInComp = await factory.createCompetitionProp(competition.id, { 
-        text: "Competition Prop" 
+      const propInComp = await factory.createCompetitionProp(competition.id, {
+        text: "Competition Prop",
       });
-      const propNotInComp = await factory.createProp({ 
-        text: "Standalone Prop" 
+      const propNotInComp = await factory.createProp({
+        text: "Standalone Prop",
       });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
@@ -128,14 +130,14 @@ describe("Props Database Actions", () => {
       const comp2 = await factory.createCompetition({ name: "Competition 2" });
       const comp3 = await factory.createCompetition({ name: "Competition 3" });
 
-      const prop1 = await factory.createCompetitionProp(comp1.id, { 
-        text: "Prop in Comp 1" 
+      const prop1 = await factory.createCompetitionProp(comp1.id, {
+        text: "Prop in Comp 1",
       });
-      const prop2 = await factory.createCompetitionProp(comp2.id, { 
-        text: "Prop in Comp 2" 
+      const prop2 = await factory.createCompetitionProp(comp2.id, {
+        text: "Prop in Comp 2",
       });
-      const prop3 = await factory.createCompetitionProp(comp3.id, { 
-        text: "Prop in Comp 3" 
+      const prop3 = await factory.createCompetitionProp(comp3.id, {
+        text: "Prop in Comp 3",
       });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
@@ -158,27 +160,27 @@ describe("Props Database Actions", () => {
         .where("name", "=", comp2.name)
         .executeTakeFirst();
 
-      const result = await getProps({ 
-        competitionId: [dbComp1.id, dbComp2.id] 
+      const result = await getProps({
+        competitionId: [dbComp1.id, dbComp2.id],
       });
 
       expect(result).toHaveLength(2);
-      expect(result.some(p => p.prop_text === "Prop in Comp 1")).toBe(true);
-      expect(result.some(p => p.prop_text === "Prop in Comp 2")).toBe(true);
-      expect(result.some(p => p.prop_text === "Prop in Comp 3")).toBe(false);
+      expect(result.some((p) => p.prop_text === "Prop in Comp 1")).toBe(true);
+      expect(result.some((p) => p.prop_text === "Prop in Comp 2")).toBe(true);
+      expect(result.some((p) => p.prop_text === "Prop in Comp 3")).toBe(false);
     });
 
     it("should filter props by single user ID (personal props)", async () => {
       const user1 = await factory.createUser();
       const user2 = await factory.createUser();
-      const personalProp1 = await factory.createPersonalProp(user1.id, { 
-        text: "User 1 Personal Prop" 
+      const personalProp1 = await factory.createPersonalProp(user1.id, {
+        text: "User 1 Personal Prop",
       });
-      const personalProp2 = await factory.createPersonalProp(user2.id, { 
-        text: "User 2 Personal Prop" 
+      const personalProp2 = await factory.createPersonalProp(user2.id, {
+        text: "User 2 Personal Prop",
       });
-      const publicProp = await factory.createProp({ 
-        text: "Public Prop" 
+      const publicProp = await factory.createProp({
+        text: "Public Prop",
       });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
@@ -203,11 +205,11 @@ describe("Props Database Actions", () => {
 
     it("should filter props with null user ID (public props)", async () => {
       const user = await factory.createUser();
-      const personalProp = await factory.createPersonalProp(user.id, { 
-        text: "Personal Prop" 
+      const personalProp = await factory.createPersonalProp(user.id, {
+        text: "Personal Prop",
       });
-      const publicProp = await factory.createProp({ 
-        text: "Public Prop" 
+      const publicProp = await factory.createProp({
+        text: "Public Prop",
       });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
@@ -225,7 +227,7 @@ describe("Props Database Actions", () => {
 
     it("should return props in ascending order by prop_id", async () => {
       const user = await factory.createUser();
-      
+
       // Create props in different order
       const prop2 = await factory.createProp({ text: "Second Prop" });
       const prop1 = await factory.createProp({ text: "First Prop" });
@@ -244,7 +246,7 @@ describe("Props Database Actions", () => {
       // Results should be ordered by prop_id ascending
       // The exact order depends on database-generated IDs, but they should be consistent
       for (let i = 1; i < result.length; i++) {
-        expect(result[i].prop_id).toBeGreaterThan(result[i-1].prop_id);
+        expect(result[i].prop_id).toBeGreaterThan(result[i - 1].prop_id);
       }
     });
 
@@ -253,14 +255,14 @@ describe("Props Database Actions", () => {
       const competition = await factory.createCompetition();
 
       // Create various prop types
-      const compProp = await factory.createCompetitionProp(competition.id, { 
-        text: "Competition Prop" 
+      const compProp = await factory.createCompetitionProp(competition.id, {
+        text: "Competition Prop",
       });
-      const personalProp = await factory.createPersonalProp(user.id, { 
-        text: "Personal Prop" 
+      const personalProp = await factory.createPersonalProp(user.id, {
+        text: "Personal Prop",
       });
-      const publicProp = await factory.createProp({ 
-        text: "Public Prop" 
+      const publicProp = await factory.createProp({
+        text: "Public Prop",
       });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
@@ -284,9 +286,9 @@ describe("Props Database Actions", () => {
         .executeTakeFirst();
 
       // Filter for props that match BOTH competition filter AND user filter (AND logic)
-      const result = await getProps({ 
+      const result = await getProps({
         competitionId: dbCompetition.id,
-        userId: dbUser.id 
+        userId: dbUser.id,
       });
 
       // Should return props that match both filters (AND logic)

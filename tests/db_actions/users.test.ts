@@ -1,7 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { getTestDb } from "../helpers/testDatabase";
 import { TestDataFactory } from "../helpers/testFactories";
-import { createUser, getUsers, getUserById, updateUser } from "@/lib/db_actions/users";
+import {
+  createUser,
+  getUsers,
+  getUserById,
+  updateUser,
+} from "@/lib/db_actions/users";
 import { ERROR_CODES } from "@/lib/server-action-result";
 
 // Mock getUserFromCookies since we're testing database actions in isolation
@@ -25,7 +30,9 @@ vi.mock("@/lib/database", async () => {
   const actual = await vi.importActual("@/lib/database");
   return {
     ...actual,
-    get db() { return originalDb; }
+    get db() {
+      return originalDb;
+    },
   };
 });
 
@@ -38,18 +45,18 @@ describe("Users Database Actions", () => {
   beforeEach(async () => {
     testDb = await getTestDb();
     factory = new TestDataFactory(testDb);
-    
+
     // Replace the mocked database with our test database
     originalDb = testDb;
-    
+
     // Set up default admin user for tests (can be overridden in individual tests)
     vi.mocked(getUserFromCookies).mockResolvedValue({
       id: 1,
       name: "Admin User",
-      email: "admin@example.com", 
+      email: "admin@example.com",
       is_admin: true,
     });
-    
+
     // Note: Data cleanup is handled by the global setup.ts cleanupTestData function
     // No need to manually clean here as it would violate foreign key constraints
   });
@@ -60,7 +67,7 @@ describe("Users Database Actions", () => {
         name: "John Doe",
         email: "john@example.com",
         login_id: null, // Will be handled by createUser function
-        is_admin: false
+        is_admin: false,
       };
 
       const result = await createUser({ user: userData });
@@ -86,7 +93,7 @@ describe("Users Database Actions", () => {
         name: "John Doe",
         email: "duplicate@example.com",
         login_id: null,
-        is_admin: false
+        is_admin: false,
       };
 
       // Create first user
@@ -129,13 +136,16 @@ describe("Users Database Actions", () => {
       expect(result.success).toBe(true);
       // Should include admin user (ID 1) plus the 2 test users
       expect(result.data).toHaveLength(3);
-      expect(result.data?.find(u => u.email === user1.email)).toBeDefined();
-      expect(result.data?.find(u => u.email === user2.email)).toBeDefined();
-      expect(result.data?.find(u => u.id === 1)).toBeDefined(); // Admin user
+      expect(result.data?.find((u) => u.email === user1.email)).toBeDefined();
+      expect(result.data?.find((u) => u.email === user2.email)).toBeDefined();
+      expect(result.data?.find((u) => u.id === 1)).toBeDefined(); // Admin user
     });
 
     it("should apply sorting when provided", async () => {
-      const user1 = await factory.createUser({ username: "alice", name: "alice" });
+      const user1 = await factory.createUser({
+        username: "alice",
+        name: "alice",
+      });
       const user2 = await factory.createUser({ username: "bob", name: "bob" });
 
       vi.mocked(getUserFromCookies).mockResolvedValue({
@@ -145,7 +155,9 @@ describe("Users Database Actions", () => {
         is_admin: user1.is_admin,
       });
 
-      const result = await getUsers({ sort: { expr: "name", modifiers: "asc" } });
+      const result = await getUsers({
+        sort: { expr: "name", modifiers: "asc" },
+      });
 
       expect(result.success).toBe(true);
       // Should include admin user (ID 1) plus the 2 test users
@@ -214,7 +226,7 @@ describe("Users Database Actions", () => {
     it("should return unauthorized error when user not logged in", async () => {
       // Override the default admin user mock to simulate no logged-in user
       vi.mocked(getUserFromCookies).mockResolvedValue(null);
-      
+
       const result = await updateUser({ id: 1, user: { name: "New Name" } });
 
       expect(result.success).toBe(false);
@@ -246,9 +258,9 @@ describe("Users Database Actions", () => {
         is_admin: user1.is_admin,
       });
 
-      const result = await updateUser({ 
-        id: dbUser2.id, 
-        user: { name: "New Name" } 
+      const result = await updateUser({
+        id: dbUser2.id,
+        user: { name: "New Name" },
       });
 
       expect(result.success).toBe(false);
@@ -272,9 +284,9 @@ describe("Users Database Actions", () => {
         is_admin: user.is_admin,
       });
 
-      const result = await updateUser({ 
-        id: dbUser.id, 
-        user: { is_admin: true } as any // Try to update admin status
+      const result = await updateUser({
+        id: dbUser.id,
+        user: { is_admin: true } as any, // Try to update admin status
       });
 
       expect(result.success).toBe(false);
@@ -300,7 +312,7 @@ describe("Users Database Actions", () => {
 
       const updateData = {
         name: "Updated Name",
-        email: "updated@example.com"
+        email: "updated@example.com",
       };
 
       const result = await updateUser({ id: dbUser.id, user: updateData });
@@ -336,9 +348,9 @@ describe("Users Database Actions", () => {
       });
 
       // Try to update user2's email to user1's email
-      const result = await updateUser({ 
-        id: dbUser2.id, 
-        user: { email: user1.email }
+      const result = await updateUser({
+        id: dbUser2.id,
+        user: { email: user1.email },
       });
 
       expect(result.success).toBe(false);

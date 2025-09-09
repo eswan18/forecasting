@@ -3,7 +3,8 @@ import { getTestDb, cleanupTestData } from "../helpers/testDatabase";
 import { TestDataFactory } from "../helpers/testFactories";
 
 // Only run these tests when containers are enabled
-const skipIfNoContainers = process.env.TEST_USE_CONTAINERS !== "true" ? it.skip : it;
+const skipIfNoContainers =
+  process.env.TEST_USE_CONTAINERS !== "true" ? it.skip : it;
 
 describe("Users Integration Tests", () => {
   let testDb: any;
@@ -26,11 +27,11 @@ describe("Users Integration Tests", () => {
     const email = "john@example.com";
 
     // Use factory which properly handles the test database
-    const createdUser = await factory.createUser({ 
-      username, 
-      password, 
-      name, 
-      email 
+    const createdUser = await factory.createUser({
+      username,
+      password,
+      name,
+      email,
     });
 
     expect(createdUser).toBeDefined();
@@ -63,7 +64,7 @@ describe("Users Integration Tests", () => {
     // Create first user using factory
     const firstUser = await factory.createUser({
       name: "Jane Doe",
-      email: "duplicate@example.com"
+      email: "duplicate@example.com",
     });
 
     expect(firstUser).toBeDefined();
@@ -72,8 +73,8 @@ describe("Users Integration Tests", () => {
     await expect(
       factory.createUser({
         name: "Jane Doe 2",
-        email: "duplicate@example.com"
-      })
+        email: "duplicate@example.com",
+      }),
     ).rejects.toThrow();
   });
 

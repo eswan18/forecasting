@@ -9,7 +9,7 @@ const SALT = process.env.ARGON2_SALT || "migration_salt";
 
 export async function up(db: Kysely<any>): Promise<void> {
   // Create core tables that are required by later migrations
-  
+
   await db.schema
     .createTable("categories")
     .addColumn("id", "serial", (col) => col.primaryKey())
@@ -38,53 +38,62 @@ export async function up(db: Kysely<any>): Promise<void> {
     .createTable("props")
     .addColumn("id", "serial", (col) => col.primaryKey())
     .addColumn("text", "text", (col) => col.notNull())
-    .addColumn("category_id", "integer", (col) => col.references("categories.id"))
+    .addColumn("category_id", "integer", (col) =>
+      col.references("categories.id"),
+    )
     .addColumn("year", "integer")
     .execute();
 
   await db.schema
     .createTable("forecasts")
     .addColumn("id", "serial", (col) => col.primaryKey())
-    .addColumn("user_id", "integer", (col) => col.notNull().references("users.id"))
-    .addColumn("prop_id", "integer", (col) => col.notNull().references("props.id"))
+    .addColumn("user_id", "integer", (col) =>
+      col.notNull().references("users.id"),
+    )
+    .addColumn("prop_id", "integer", (col) =>
+      col.notNull().references("props.id"),
+    )
     .addColumn("forecast", "decimal", (col) => col.notNull())
     .execute();
 
   await db.schema
     .createTable("resolutions")
     .addColumn("id", "serial", (col) => col.primaryKey())
-    .addColumn("prop_id", "integer", (col) => col.notNull().references("props.id"))
+    .addColumn("prop_id", "integer", (col) =>
+      col.notNull().references("props.id"),
+    )
     .addColumn("resolution", "boolean", (col) => col.notNull())
     .addColumn("resolved_at", "timestamptz", (col) => col.notNull())
     .execute();
 
   // Insert basic categories
-  await db.insertInto("categories")
+  await db
+    .insertInto("categories")
     .values([
       { name: "politics" },
-      { name: "technology" }, 
+      { name: "technology" },
       { name: "economics" },
       { name: "sports" },
-      { name: "science" }
+      { name: "science" },
     ])
     .execute();
 
   // Insert foundational users that other migrations expect
   // Create the admin user with proper password hashing
-  
+
   // Hash the admin password properly using the same logic as the app
   const adminPassword = "admin123"; // Default admin password for development
   const passwordHash = await argon2.hash(SALT + adminPassword, {
     type: argon2.argon2id,
   });
-  
+
   // Create login record with properly hashed password
   const loginResult = await db
     .insertInto("logins")
     .values({
       username: "admin",
       password_hash: passwordHash,
-      is_salted: true
+      is_salted: true,
     })
     .returning("id")
     .executeTakeFirst();
@@ -96,7 +105,7 @@ export async function up(db: Kysely<any>): Promise<void> {
       name: "System Admin",
       email: "admin@system.local",
       login_id: loginResult!.id,
-      is_admin: true
+      is_admin: true,
     })
     .execute();
 
@@ -113,13 +122,13 @@ export async function up(db: Kysely<any>): Promise<void> {
           "users.is_admin",
           "logins.id as login_id",
           "logins.username",
-          "logins.is_salted"
-        ])
+          "logins.is_salted",
+        ]),
     )
     .execute();
 
   await db.schema
-    .createView("v_props")  
+    .createView("v_props")
     .as(
       db
         .selectFrom("props")
@@ -127,14 +136,14 @@ export async function up(db: Kysely<any>): Promise<void> {
         .leftJoin("resolutions", "props.id", "resolutions.prop_id")
         .select([
           "categories.id as category_id",
-          "categories.name as category_name", 
+          "categories.name as category_name",
           "props.id as prop_id",
           "props.text as prop_text",
           "props.year",
           "resolutions.id as resolution_id",
           "resolutions.resolution",
-          "resolutions.resolved_at"
-        ])
+          "resolutions.resolved_at",
+        ]),
     )
     .execute();
 
@@ -145,22 +154,22 @@ export async function up(db: Kysely<any>): Promise<void> {
         .selectFrom("forecasts")
         .innerJoin("users", "forecasts.user_id", "users.id")
         .innerJoin("props", "forecasts.prop_id", "props.id")
-        .leftJoin("categories", "props.category_id", "categories.id") 
+        .leftJoin("categories", "props.category_id", "categories.id")
         .leftJoin("resolutions", "props.id", "resolutions.prop_id")
         .select([
           "forecasts.id as forecast_id",
           "forecasts.forecast",
           "users.id as user_id",
           "users.name as user_name",
-          "props.id as prop_id", 
+          "props.id as prop_id",
           "props.text as prop_text",
           "props.year",
           "categories.id as category_id",
           "categories.name as category_name",
-          "resolutions.id as resolution_id", 
+          "resolutions.id as resolution_id",
           "resolutions.resolution",
-          "resolutions.resolved_at"
-        ])
+          "resolutions.resolved_at",
+        ]),
     )
     .execute();
 }
@@ -170,7 +179,7 @@ export async function down(db: Kysely<any>): Promise<void> {
   await db.schema.dropView("v_forecasts").ifExists().execute();
   await db.schema.dropView("v_props").ifExists().execute();
   await db.schema.dropView("v_users").ifExists().execute();
-  
+
   // Drop tables in reverse order to handle foreign keys
   await db.schema.dropTable("forecasts").ifExists().execute();
   await db.schema.dropTable("resolutions").ifExists().execute();

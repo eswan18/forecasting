@@ -29,7 +29,10 @@ vi.mock("@/lib/db_actions", () => ({
 }));
 
 import { getUserFromCookies } from "@/lib/get-user";
-import { inviteTokenIsValid, consumeInviteToken } from "@/lib/db_actions/invite-tokens";
+import {
+  inviteTokenIsValid,
+  consumeInviteToken,
+} from "@/lib/db_actions/invite-tokens";
 import { getLoginByUsername, createLogin, createUser } from "@/lib/db_actions";
 
 describe("Authentication Register", () => {
@@ -40,38 +43,44 @@ describe("Authentication Register", () => {
     testDb = await getTestDb();
     factory = new TestDataFactory(testDb);
     vi.clearAllMocks();
-    
+
     // Replace the mocked db actions with our test database implementations
-    vi.mocked(getLoginByUsername).mockImplementation(async (username: string) => {
-      const result = await testDb
-        .selectFrom("logins")
-        .selectAll()
-        .where("username", "=", username)
-        .executeTakeFirst();
-      return result;
-    });
-    
-    vi.mocked(createLogin).mockImplementation(async ({ login }: { login: any }) => {
-      const result = await testDb
-        .insertInto("logins")
-        .values(login)
-        .returning("id")
-        .executeTakeFirst();
-      return result!.id;
-    });
-    
-    vi.mocked(createUser).mockImplementation(async ({ user }: { user: any }) => {
-      try {
+    vi.mocked(getLoginByUsername).mockImplementation(
+      async (username: string) => {
         const result = await testDb
-          .insertInto("users")
-          .values(user)
+          .selectFrom("logins")
+          .selectAll()
+          .where("username", "=", username)
+          .executeTakeFirst();
+        return result;
+      },
+    );
+
+    vi.mocked(createLogin).mockImplementation(
+      async ({ login }: { login: any }) => {
+        const result = await testDb
+          .insertInto("logins")
+          .values(login)
           .returning("id")
           .executeTakeFirst();
-        return { success: true, data: result!.id };
-      } catch (error: any) {
-        return { success: false, error: error.message };
-      }
-    });
+        return result!.id;
+      },
+    );
+
+    vi.mocked(createUser).mockImplementation(
+      async ({ user }: { user: any }) => {
+        try {
+          const result = await testDb
+            .insertInto("users")
+            .values(user)
+            .returning("id")
+            .executeTakeFirst();
+          return { success: true, data: result!.id };
+        } catch (error: any) {
+          return { success: false, error: error.message };
+        }
+      },
+    );
   });
 
   describe("registerNewUser", () => {
@@ -92,7 +101,9 @@ describe("Authentication Register", () => {
         email: "newuser@example.com",
       };
 
-      await expect(registerNewUserIfAuthorized(userData)).resolves.not.toThrow();
+      await expect(
+        registerNewUserIfAuthorized(userData),
+      ).resolves.not.toThrow();
 
       // Verify user was created
       const createdLogin = await testDb
@@ -137,7 +148,9 @@ describe("Authentication Register", () => {
         inviteToken: "valid_token_123",
       };
 
-      await expect(registerNewUserIfAuthorized(userData)).resolves.not.toThrow();
+      await expect(
+        registerNewUserIfAuthorized(userData),
+      ).resolves.not.toThrow();
 
       expect(inviteTokenIsValid).toHaveBeenCalledWith("valid_token_123");
       expect(consumeInviteToken).toHaveBeenCalledWith("valid_token_123");
@@ -165,7 +178,9 @@ describe("Authentication Register", () => {
         inviteToken: "valid_token_123",
       };
 
-      await expect(registerNewUserIfAuthorized(userData)).resolves.not.toThrow();
+      await expect(
+        registerNewUserIfAuthorized(userData),
+      ).resolves.not.toThrow();
 
       expect(inviteTokenIsValid).toHaveBeenCalledWith("valid_token_123");
       expect(consumeInviteToken).toHaveBeenCalledWith("valid_token_123");
@@ -189,7 +204,7 @@ describe("Authentication Register", () => {
       };
 
       await expect(registerNewUserIfAuthorized(userData)).rejects.toThrow(
-        "No invite token provided."
+        "No invite token provided.",
       );
     });
 
@@ -204,7 +219,7 @@ describe("Authentication Register", () => {
       };
 
       await expect(registerNewUserIfAuthorized(userData)).rejects.toThrow(
-        "No invite token provided."
+        "No invite token provided.",
       );
     });
 
@@ -221,7 +236,7 @@ describe("Authentication Register", () => {
       };
 
       await expect(registerNewUserIfAuthorized(userData)).rejects.toThrow(
-        "Invalid invite token."
+        "Invalid invite token.",
       );
 
       expect(consumeInviteToken).not.toHaveBeenCalled();
@@ -249,7 +264,7 @@ describe("Authentication Register", () => {
       };
 
       await expect(registerNewUserIfAuthorized(userData)).rejects.toThrow(
-        "Username already exists."
+        "Username already exists.",
       );
     });
 
@@ -270,7 +285,7 @@ describe("Authentication Register", () => {
       };
 
       await expect(registerNewUserIfAuthorized(userData)).rejects.toThrow(
-        "Username and password are required."
+        "Username and password are required.",
       );
     });
 
@@ -291,7 +306,7 @@ describe("Authentication Register", () => {
       };
 
       await expect(registerNewUserIfAuthorized(userData)).rejects.toThrow(
-        "Username and password are required."
+        "Username and password are required.",
       );
     });
 
@@ -312,7 +327,7 @@ describe("Authentication Register", () => {
       };
 
       await expect(registerNewUserIfAuthorized(userData)).rejects.toThrow(
-        "Password must be at least 8 characters long."
+        "Password must be at least 8 characters long.",
       );
     });
 

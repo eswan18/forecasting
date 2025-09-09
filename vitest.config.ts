@@ -31,12 +31,12 @@ export default defineConfig({
     hookTimeout: 300000, // 5 minutes for setup/teardown hooks
     // Force sequential execution when using containers to avoid database conflicts
     ...(process.env.TEST_USE_CONTAINERS === "true" && {
-      pool: 'forks',
+      pool: "forks",
       poolOptions: {
         forks: {
-          singleFork: true
-        }
-      }
+          singleFork: true,
+        },
+      },
     }),
     coverage: {
       provider: "v8",

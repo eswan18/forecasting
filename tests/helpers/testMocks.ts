@@ -30,7 +30,7 @@ export function mockLogger() {
 /**
  * Mock database connection to use test database instead of production
  * NOTE: This shared mock has closure issues. Use inline database mocking in test files:
- * 
+ *
  * let originalDb: any;
  * vi.mock("@/lib/database", async () => {
  *   const actual = await vi.importActual("@/lib/database");
@@ -39,7 +39,7 @@ export function mockLogger() {
  *     get db() { return originalDb; }
  *   };
  * });
- * 
+ *
  * Then in beforeEach: originalDb = testDb;
  */
 export function mockDatabase() {
