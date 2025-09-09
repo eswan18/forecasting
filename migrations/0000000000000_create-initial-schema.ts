@@ -73,18 +73,20 @@ export async function up(db: Kysely<any>): Promise<void> {
     ])
     .execute();
 
-  // We need a user with ID for a later migration.
-  const loginResult = await db.insertInto("logins")
+  // We need a user with ID 1 for a later migration.
+  const loginResult = await db
+    .insertInto("logins")
     .values({ username: "admin", password_hash: "nonsense" })
     .returning("id")
     .executeTakeFirstOrThrow();
   console.log(loginResult);
-  await db.insertInto("users")
+  await db
+    .insertInto("users")
     .values({
       name: "System Admin",
       email: "admin@system.local",
       is_admin: true,
-      login_id: loginResult.id
+      login_id: loginResult.id,
     })
     .execute();
 
