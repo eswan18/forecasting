@@ -1,4 +1,7 @@
-import "server-only";
+// Only enforce server-only in production, allow tests to import this
+if (process.env.NODE_ENV !== "test") {
+  require("server-only");
+}
 
 import argon2 from "argon2";
 import { createLogin, createUser, getLoginByUsername } from "@/lib/db_actions";
@@ -39,7 +42,13 @@ export async function registerNewUser({
   });
   const login = { username, password_hash: passwordHash };
   const loginId = await createLogin({ login });
+  
+  if (!loginId) {
+    throw new Error("Failed to create login record");
+  }
 
   const user = { name, email, login_id: loginId, is_admin: isAdmin };
-  return await createUser({ user });
+  const result = await createUser({ user });
+  
+  return result;
 }

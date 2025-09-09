@@ -61,12 +61,16 @@ describe("Authentication Register", () => {
     });
     
     vi.mocked(createUser).mockImplementation(async ({ user }: { user: any }) => {
-      const result = await testDb
-        .insertInto("users")
-        .values(user)
-        .returning("id")
-        .executeTakeFirst();
-      return result!.id;
+      try {
+        const result = await testDb
+          .insertInto("users")
+          .values(user)
+          .returning("id")
+          .executeTakeFirst();
+        return { success: true, data: result!.id };
+      } catch (error: any) {
+        return { success: false, error: error.message };
+      }
     });
   });
 

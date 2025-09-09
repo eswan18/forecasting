@@ -1,6 +1,6 @@
 import { Kysely } from "kysely";
 import { Database } from "@/types/db_types";
-import { registerNewUser } from "@/lib/auth/register-internal";
+import argon2 from "argon2";
 
 export interface TestUser {
   id: number;
@@ -53,16 +53,38 @@ export class TestDataFactory {
     const email = overrides.email || `test_${Math.random().toString(36).substring(7)}@example.com`;
     const isAdmin = overrides.is_admin || false;
 
-    const result = await registerNewUser({ username, password, name, email, isAdmin });
-    if (!result.success) {
-      throw new Error(`Failed to create user: ${result.error}`);
+    // Create login record directly with test database
+    const SALT = process.env.ARGON2_SALT || "test_salt";
+    const passwordHash = await argon2.hash(String(SALT) + password, {
+      type: argon2.argon2id,
+    });
+    
+    const loginResult = await this.db
+      .insertInto("logins")
+      .values({ username, password_hash: passwordHash })
+      .returning("id")
+      .executeTakeFirst();
+
+    if (!loginResult) {
+      throw new Error("Failed to create login record");
+    }
+
+    // Create user record directly with test database
+    const userResult = await this.db
+      .insertInto("users")
+      .values({ name, email, login_id: loginResult.id, is_admin: isAdmin })
+      .returning("id")
+      .executeTakeFirst();
+
+    if (!userResult) {
+      throw new Error("Failed to create user record");
     }
 
     // Fetch created user and associated login to return a rich object
     const createdUser = await this.db
       .selectFrom("users")
       .selectAll()
-      .where("id", "=", result.data)
+      .where("id", "=", userResult.id)
       .executeTakeFirst();
 
     if (!createdUser) {

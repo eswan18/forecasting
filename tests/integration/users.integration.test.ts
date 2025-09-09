@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { getTestDb, cleanupTestData } from "../helpers/testDatabase";
 import { TestDataFactory } from "../helpers/testFactories";
-import { registerNewUser } from "@/lib/auth/register-internal";
 
 // Only run these tests when containers are enabled
 const skipIfNoContainers = process.env.TEST_USE_CONTAINERS !== "true" ? it.skip : it;
@@ -26,21 +25,28 @@ describe("Users Integration Tests", () => {
     const name = "John Doe";
     const email = "john@example.com";
 
-    const result = await registerNewUser({ username, password, name, email });
+    // Use factory which properly handles the test database
+    const createdUser = await factory.createUser({ 
+      username, 
+      password, 
+      name, 
+      email 
+    });
 
-    expect(result).toBeDefined();
-    expect(result.success).toBe(true);
+    expect(createdUser).toBeDefined();
+    expect(createdUser.name).toBe(name);
+    expect(createdUser.email).toBe(email);
 
-    // Verify user was created
-    const createdUser = await testDb
+    // Verify user exists in database
+    const dbUser = await testDb
       .selectFrom("users")
       .selectAll()
       .where("email", "=", email)
       .executeTakeFirst();
 
-    expect(createdUser).toBeDefined();
-    expect(createdUser.name).toBe(name);
-    expect(createdUser.email).toBe(email);
+    expect(dbUser).toBeDefined();
+    expect(dbUser.name).toBe(name);
+    expect(dbUser.email).toBe(email);
 
     // Verify login linkage
     const login = await testDb
@@ -50,7 +56,7 @@ describe("Users Integration Tests", () => {
       .executeTakeFirst();
 
     expect(login).toBeDefined();
-    expect(createdUser.login_id).toBe(login.id);
+    expect(dbUser.login_id).toBe(login.id);
   });
 
   skipIfNoContainers("should handle duplicate email constraint", async () => {

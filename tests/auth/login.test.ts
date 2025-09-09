@@ -35,6 +35,8 @@ vi.mock("@/lib/get-user", () => ({
 // Mock the db_actions module - we'll replace the implementation in beforeEach
 vi.mock("@/lib/db_actions", () => ({
   getLoginByUsername: vi.fn(),
+  createLogin: vi.fn(),
+  createUser: vi.fn(),
 }));
 
 import { getUserFromCookies } from "@/lib/get-user";
