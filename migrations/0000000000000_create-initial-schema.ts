@@ -1,9 +1,6 @@
 import type { Kysely } from "kysely";
 import { sql } from "kysely";
 import argon2 from "argon2";
-import * as dotenv from "dotenv";
-
-const SALT = process.env.ARGON2_SALT;
 
 export async function up(db: Kysely<any>): Promise<void> {
   // Create core tables that are required by later migrations
@@ -76,34 +73,18 @@ export async function up(db: Kysely<any>): Promise<void> {
     ])
     .execute();
 
-  // Insert foundational users that other migrations expect
-  // Create the admin user with proper password hashing
-
-  // Hash the admin password properly using the same logic as the app
-  const adminPassword = "admin123"; // Default admin password for development
-  const passwordHash = await argon2.hash(SALT + adminPassword, {
-    type: argon2.argon2id,
-  });
-
-  // Create login record with properly hashed password
-  const loginResult = await db
-    .insertInto("logins")
-    .values({
-      username: "admin",
-      password_hash: passwordHash,
-      is_salted: true,
-    })
+  // We need a user with ID for a later migration.
+  const loginResult = await db.insertInto("logins")
+    .values({ username: "admin", password_hash: "nonsense" })
     .returning("id")
-    .executeTakeFirst();
-
-  // Create the admin user with ID 1 that migrations expect
-  await db
-    .insertInto("users")
+    .executeTakeFirstOrThrow();
+  console.log(loginResult);
+  await db.insertInto("users")
     .values({
       name: "System Admin",
       email: "admin@system.local",
-      login_id: loginResult!.id,
       is_admin: true,
+      login_id: loginResult.id
     })
     .execute();
 
