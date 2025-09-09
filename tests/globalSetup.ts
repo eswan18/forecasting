@@ -10,14 +10,13 @@ let globalContainer: any = null;
 let globalDb: Kysely<Database> | null = null;
 
 export async function setup() {
-  // Only setup testcontainers if Docker is available and TEST_USE_CONTAINERS is true
   const useContainers = process.env.TEST_USE_CONTAINERS === "true";
   
   if (!useContainers) {
     return;
   }
 
-  console.log("🚀 Setting up global PostgreSQL test container...");
+  console.log("Setting up global PostgreSQL test container...");
   
   try {
     // Start PostgreSQL container
@@ -29,7 +28,7 @@ export async function setup() {
       .withStartupTimeout(120000) // 2 minutes max
       .start();
       
-    console.log("✅ Global PostgreSQL container started");
+    console.log("Global PostgreSQL container started");
 
     // Create database connection
     const connectionString = globalContainer.getConnectionUri();
@@ -44,7 +43,7 @@ export async function setup() {
     globalDb = new Kysely<Database>({ dialect });
 
     // Run migrations
-    console.log("🔄 Running database migrations...");
+    console.log("Running database migrations...");
     
     const migrator = new Migrator({
       db: globalDb,
@@ -58,12 +57,12 @@ export async function setup() {
     const { error, results } = await migrator.migrateToLatest();
 
     if (error) {
-      console.error("❌ Failed to migrate test database:", error);
+      console.error("Failed to migrate test database:", error);
       throw error;
     }
 
     if (results) {
-      console.log(`✅ Applied ${results.length} migrations successfully`);
+      console.log(`Applied ${results.length} migrations successfully`);
       // Only log individual migrations in verbose mode
       if (process.env.VERBOSE_TESTS === "true") {
         results.forEach(({ status, migrationName }) => {
@@ -75,34 +74,34 @@ export async function setup() {
     // Store connection info in environment variables that tests can access
     process.env.__TEST_DATABASE_URL__ = connectionString;
     
-    console.log("🌟 Global test database setup complete");
+    console.log("Global test database setup complete");
 
   } catch (error: any) {
     // Provide helpful error messages for common Docker issues
     if (error.message?.includes('Cannot connect to the Docker daemon')) {
       throw new Error(
-        '❌ Docker daemon is not running. Please start Docker Desktop or your Docker service.\n' +
+        'Docker daemon is not running. Please start Docker Desktop or your Docker service.\n' +
         'To run tests without containers, use: npm run test (without TEST_USE_CONTAINERS=true)'
       );
     } else if (error.message?.includes('docker: command not found')) {
       throw new Error(
-        '❌ Docker is not installed. Please install Docker Desktop.\n' +
+        'Docker is not installed. Please install Docker Desktop.\n' +
         'To run tests without containers, use: npm run test (without TEST_USE_CONTAINERS=true)'
       );
     } else if (error.message?.includes('permission denied')) {
       throw new Error(
-        '❌ Permission denied accessing Docker. Please ensure your user is in the docker group.\n' +
+        'Permission denied accessing Docker. Please ensure your user is in the docker group.\n' +
         'To run tests without containers, use: npm run test (without TEST_USE_CONTAINERS=true)'
       );
     } else if (error.message?.includes('timeout')) {
       throw new Error(
-        '❌ Timeout starting PostgreSQL container. This may be due to slow network or system resources.\n' +
+        'Timeout starting PostgreSQL container. This may be due to slow network or system resources.\n' +
         'Try again or use: npm run test (without TEST_USE_CONTAINERS=true)'
       );
     } else {
       // Re-throw with additional context for unknown errors  
       throw new Error(
-        `❌ Failed to start PostgreSQL test container: ${error.message}\n` +
+        `Failed to start PostgreSQL test container: ${error.message}\n` +
         'To run tests without containers, use: npm run test (without TEST_USE_CONTAINERS=true)'
       );
     }
@@ -116,7 +115,7 @@ export async function teardown() {
     return;
   }
 
-  console.log("🧹 Cleaning up global test container...");
+  console.log("Cleaning up global test container...");
   
   if (globalDb) {
     await globalDb.destroy();
@@ -128,5 +127,5 @@ export async function teardown() {
     globalContainer = null;
   }
   
-  console.log("✅ Global cleanup complete");
+  console.log("Global cleanup complete");
 }
