@@ -1,13 +1,11 @@
 "use server";
 
-import * as dotenv from "dotenv";
 import { getUserFromCookies } from "../get-user";
 import {
   consumeInviteToken,
   inviteTokenIsValid,
 } from "../db_actions/invite-tokens";
 import { registerNewUser } from "./register-internal";
-dotenv.config({ path: ".env.local" });
 
 /**
  * Creates a new user with proper authorization checks.
