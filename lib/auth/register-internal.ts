@@ -13,11 +13,13 @@ export async function registerNewUser({
   password,
   name,
   email,
+  isAdmin = false,
 }: {
   username: string;
   password: string;
   name: string;
   email: string;
+  isAdmin?: boolean;
 }) {
   if (!username || !password) {
     throw new Error("Username and password are required.");
@@ -38,6 +40,6 @@ export async function registerNewUser({
   const login = { username, password_hash: passwordHash };
   const loginId = await createLogin({ login });
 
-  const user = { name, email, login_id: loginId, is_admin: false };
-  await createUser({ user });
+  const user = { name, email, login_id: loginId, is_admin: isAdmin };
+  return await createUser({ user });
 }

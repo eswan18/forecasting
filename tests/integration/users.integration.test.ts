@@ -1,7 +1,7 @@
-import argon2 from "argon2";
-import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { getTestDb, cleanupTestData } from "../helpers/testDatabase";
 import { TestDataFactory } from "../helpers/testFactories";
+import { registerNewUser } from "@/lib/auth/register-internal";
 
 // Only run these tests when containers are enabled
 const skipIfNoContainers = process.env.TEST_USE_CONTAINERS !== "true" ? it.skip : it;
@@ -21,48 +21,36 @@ describe("Users Integration Tests", () => {
   });
 
   skipIfNoContainers("should create user with real database", async () => {
-    // Create login first
-    const loginData = {
-      username: "johndoe",
-      password_hash: "hashed_password_123"
-    };
+    const username = "johndoe";
+    const password = "hashed_password_123";
+    const name = "John Doe";
+    const email = "john@example.com";
 
-    const loginResult = await testDb
-      .insertInto("logins")
-      .values(loginData)
-      .returning("id")
-      .executeTakeFirst();
-
-    expect(loginResult).toBeDefined();
-
-    // Then create user
-    const userData = {
-      name: "John Doe",
-      email: "john@example.com",
-      login_id: loginResult.id,
-      is_admin: false
-    };
-
-    const result = await testDb
-      .insertInto("users")
-      .values(userData)
-      .returning("id")
-      .executeTakeFirst();
+    const result = await registerNewUser({ username, password, name, email });
 
     expect(result).toBeDefined();
-    expect(result.id).toBeDefined();
+    expect(result.success).toBe(true);
 
     // Verify user was created
     const createdUser = await testDb
       .selectFrom("users")
       .selectAll()
-      .where("email", "=", userData.email)
+      .where("email", "=", email)
       .executeTakeFirst();
 
     expect(createdUser).toBeDefined();
-    expect(createdUser.name).toBe(userData.name);
-    expect(createdUser.email).toBe(userData.email);
-    expect(createdUser.login_id).toBe(loginResult.id);
+    expect(createdUser.name).toBe(name);
+    expect(createdUser.email).toBe(email);
+
+    // Verify login linkage
+    const login = await testDb
+      .selectFrom("logins")
+      .selectAll()
+      .where("username", "=", username)
+      .executeTakeFirst();
+
+    expect(login).toBeDefined();
+    expect(createdUser.login_id).toBe(login.id);
   });
 
   skipIfNoContainers("should handle duplicate email constraint", async () => {

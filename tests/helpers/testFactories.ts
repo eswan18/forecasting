@@ -1,14 +1,6 @@
 import { Kysely } from "kysely";
-import { Database, User, Prop, Competition, Forecast } from "@/types/db_types";
-import argon2 from "argon2";
-
-const SALT = process.env.ARGON2_SALT || "test_salt";
-
-async function hashPassword(password: string): Promise<string> {
-  return argon2.hash(SALT + password, {
-    type: argon2.argon2id,
-  });
-}
+import { Database } from "@/types/db_types";
+import { registerNewUser } from "@/lib/auth/register-internal";
 
 export interface TestUser {
   id: number;
@@ -20,7 +12,6 @@ export interface TestUser {
   updated_at: Date;
   // Include login info for convenience in tests
   username?: string;
-  password_hash?: string;
 }
 
 export interface TestProp {
@@ -53,50 +44,46 @@ export interface TestForecast {
 }
 
 export class TestDataFactory {
-  constructor(private db: Kysely<Database>) {}
+  constructor(private db: Kysely<Database>) { }
 
-  async createUser(overrides: Partial<TestUser> = {}): Promise<TestUser> {
+  async createUser(overrides: Partial<TestUser> & { username?: string; password?: string } = {}): Promise<TestUser> {
     const username = overrides.username || `testuser_${Math.random().toString(36).substring(7)}`;
-    const password_hash = overrides.password_hash || await hashPassword("testpassword123");
+    const password = overrides.password || "testpassword123";
+    const name = overrides.name || overrides.username || `testuser_${Math.random().toString(36).substring(7)}`;
     const email = overrides.email || `test_${Math.random().toString(36).substring(7)}@example.com`;
-    const name = overrides.name || username;
-    const is_admin = overrides.is_admin || false;
+    const isAdmin = overrides.is_admin || false;
 
-    // First create login record
-    const loginResult = await this.db
-      .insertInto("logins")
-      .values({
-        username,
-        password_hash
-      })
-      .returning("id")
-      .executeTakeFirst();
-
-    if (!loginResult) {
-      throw new Error("Failed to create login record");
+    const result = await registerNewUser({ username, password, name, email, isAdmin });
+    if (!result.success) {
+      throw new Error(`Failed to create user: ${result.error}`);
     }
 
-    // Then create user record
-    const userResult = await this.db
-      .insertInto("users")
-      .values({
-        name,
-        email,
-        login_id: loginResult.id,
-        is_admin
-      })
-      .returning(["id", "name", "email", "login_id", "is_admin", "created_at", "updated_at"])
+    // Fetch created user and associated login to return a rich object
+    const createdUser = await this.db
+      .selectFrom("users")
+      .selectAll()
+      .where("id", "=", result.data)
       .executeTakeFirst();
 
-    if (!userResult) {
-      throw new Error("Failed to create user record");
+    if (!createdUser) {
+      throw new Error("Created user not found in database");
     }
 
-    // Return combined data for convenience in tests
+    const login = await this.db
+      .selectFrom("logins")
+      .selectAll()
+      .where("id", "=", createdUser.login_id!)
+      .executeTakeFirst();
+
     return {
-      ...userResult,
-      username,
-      password_hash
+      id: createdUser.id,
+      name: createdUser.name,
+      email: createdUser.email,
+      login_id: createdUser.login_id,
+      is_admin: createdUser.is_admin,
+      created_at: createdUser.created_at,
+      updated_at: createdUser.updated_at,
+      username: login?.username,
     };
   }
 
@@ -107,8 +94,8 @@ export class TestDataFactory {
       end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
     };
 
-    const competitionData = { ...defaults, ...overrides };
-    
+    const competitionData = { ...defaults, ...overrides } as any;
+
     const result = await this.db
       .insertInto("competitions")
       .values(competitionData)
@@ -134,8 +121,8 @@ export class TestDataFactory {
       notes: null,
     };
 
-    const propData = { ...defaults, ...overrides };
-    
+    const propData = { ...defaults, ...overrides } as any;
+
     const result = await this.db
       .insertInto("props")
       .values(propData)
@@ -155,8 +142,8 @@ export class TestDataFactory {
   }
 
   async createForecast(
-    userId: string, 
-    propId: string, 
+    userId: string,
+    propId: string,
     overrides: Partial<TestForecast> = {}
   ): Promise<TestForecast> {
     const defaults = {
@@ -165,8 +152,8 @@ export class TestDataFactory {
       forecast: Math.round(Math.random() * 100) / 100, // Random probability between 0 and 1
     };
 
-    const forecastData = { ...defaults, ...overrides };
-    
+    const forecastData = { ...defaults, ...overrides } as any;
+
     const result = await this.db
       .insertInto("forecasts")
       .values(forecastData)
@@ -183,27 +170,27 @@ export class TestDataFactory {
     };
   }
 
-  async createAdminUser(overrides: Partial<TestUser> = {}): Promise<TestUser> {
-    return this.createUser({ 
-      is_admin: true, 
+  async createAdminUser(overrides: Partial<TestUser> & { username?: string; password?: string } = {}): Promise<TestUser> {
+    return this.createUser({
+      is_admin: true,
       username: `admin_${Math.random().toString(36).substring(7)}`,
-      ...overrides 
+      ...overrides
     });
   }
 
   async createPersonalProp(userId: string, overrides: Partial<TestProp> = {}): Promise<TestProp> {
-    return this.createProp({ 
-      user_id: userId,
+    return this.createProp({
+      user_id: userId as any,
       competition_id: null,
-      ...overrides 
+      ...overrides
     });
   }
 
   async createCompetitionProp(competitionId: string, overrides: Partial<TestProp> = {}): Promise<TestProp> {
-    return this.createProp({ 
-      competition_id: competitionId,
+    return this.createProp({
+      competition_id: competitionId as any,
       user_id: null,
-      ...overrides 
+      ...overrides
     });
   }
 }
