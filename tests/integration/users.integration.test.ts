@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
-import { setupTestDatabase, cleanupTestDatabase, getTestDb, cleanupTestData } from "../helpers/testDatabase";
+import { getTestDb, cleanupTestData } from "../helpers/testDatabase";
 import { TestDataFactory } from "../helpers/testFactories";
 
 // Only run these tests when containers are enabled
@@ -111,7 +111,7 @@ describe("Users Integration Tests", () => {
     // Verify password is hashed
     expect(user.password_hash).toBeDefined();
     expect(user.password_hash).not.toBe("testpassword123");
-    expect(user.password_hash.length).toBeGreaterThan(50); // Argon2 hashes are long
+    expect(user.password_hash?.length).toBeGreaterThan(50); // Argon2 hashes are long
   });
 
   skipIfNoContainers("should create multiple users", async () => {
