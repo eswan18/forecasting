@@ -55,6 +55,91 @@ Now, you can launch a fully-functional dev instance.
 npm run dev
 ```
 
+### Testing
+
+This project uses Vitest for testing with support for both unit tests and integration tests using real PostgreSQL databases via Testcontainers.
+
+#### Running Tests
+
+**Unit tests (no database):**
+```bash
+npm run test
+```
+
+**Integration tests with real database (requires Docker):**
+```bash
+npm run test:containers
+```
+
+**Quick container test verification:**
+```bash
+npm run test:containers:quick
+```
+
+#### Testcontainers Setup
+
+The project uses [Testcontainers](https://testcontainers.com/) to provide real PostgreSQL instances for database integration tests. This ensures tests run against the same database engine as production.
+
+**Requirements:**
+- Docker Desktop or Docker daemon running
+- Docker accessible from your user account
+
+**How it works:**
+1. **Global container**: Single PostgreSQL container shared across all test files
+2. **Real migrations**: Runs all database migrations on startup  
+3. **Test isolation**: Data cleanup between tests while preserving seed data
+4. **Sequential execution**: Tests run sequentially to prevent database conflicts
+5. **Auto-cleanup**: Container is destroyed after tests complete
+
+**Features:**
+- ✅ Real PostgreSQL 16 database (matches production)
+- ✅ Full migration suite applied automatically
+- ✅ Proper password hashing and authentication testing
+- ✅ Test data factories for creating users, forecasts, competitions
+- ✅ Foreign key constraint validation
+- ✅ Seed data preservation (admin user, categories, competitions)
+
+**Container Configuration:**
+```typescript
+// Automatic setup - no manual configuration needed
+Database: test_forecasting  
+User: test_user
+Password: test_password
+Port: Auto-assigned (5432 inside container)
+```
+
+**Test Structure:**
+```
+tests/
+├── helpers/
+│   ├── testDatabase.ts      # Database connection and cleanup
+│   └── testFactories.ts     # Data factories for test objects  
+├── db_actions/             # Database action tests
+├── auth/                   # Authentication flow tests
+└── integration/            # Cross-component integration tests
+```
+
+**Troubleshooting:**
+
+If container tests fail to start:
+
+```bash
+# Check Docker is running
+docker ps
+
+# If permission denied:
+# Make sure your user is in the docker group (Linux)
+# or Docker Desktop is running (Mac/Windows)
+
+# Run without containers as fallback:
+npm run test
+```
+
+**Performance:**
+- First run: ~3-5 minutes (downloads PostgreSQL image)
+- Subsequent runs: ~4-5 seconds (reuses container setup)
+- 106 tests covering full authentication and database operations
+
 ### Migrations
 
 #### How do I make a new migration?
