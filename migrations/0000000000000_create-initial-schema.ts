@@ -3,9 +3,7 @@ import { sql } from "kysely";
 import argon2 from "argon2";
 import * as dotenv from "dotenv";
 
-// Load environment variables for password hashing
-dotenv.config({ path: ".env.local" });
-const SALT = process.env.ARGON2_SALT || "migration_salt";
+const SALT = process.env.ARGON2_SALT;
 
 export async function up(db: Kysely<any>): Promise<void> {
   // Create core tables that are required by later migrations
