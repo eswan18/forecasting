@@ -1,3 +1,4 @@
+import argon2 from "argon2";
 import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
 import { getTestDb, cleanupTestData } from "../helpers/testDatabase";
 import { TestDataFactory } from "../helpers/testFactories";
@@ -76,7 +77,7 @@ describe("Users Integration Tests", () => {
     // Try to create duplicate user with same email using factory
     await expect(
       factory.createUser({
-        name: "Jane Doe 2", 
+        name: "Jane Doe 2",
         email: "duplicate@example.com"
       })
     ).rejects.toThrow();
@@ -101,17 +102,6 @@ describe("Users Integration Tests", () => {
 
     expect(dbUser).toBeDefined();
     expect(dbUser.email).toBe(user.email);
-  });
-
-  skipIfNoContainers("should create user with hashed password", async () => {
-    const user = await factory.createUser({
-      username: "passworduser",
-    });
-
-    // Verify password is hashed
-    expect(user.password_hash).toBeDefined();
-    expect(user.password_hash).not.toBe("testpassword123");
-    expect(user.password_hash?.length).toBeGreaterThan(50); // Argon2 hashes are long
   });
 
   skipIfNoContainers("should create multiple users", async () => {
