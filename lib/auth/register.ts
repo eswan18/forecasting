@@ -6,11 +6,11 @@ import {
   consumeInviteToken,
   inviteTokenIsValid,
 } from "../db_actions/invite-tokens";
-import { createUserWithCredentials } from "./register-internal";
+import { registerNewUser } from "./register-internal";
 dotenv.config({ path: ".env.local" });
 
 /// Create a new user.
-export async function registerNewUser({
+export async function registerNewUserIfAuthorized({
   username,
   password,
   name,
@@ -39,7 +39,7 @@ export async function registerNewUser({
     console.log("Confirmed valid invite token.");
   }
 
-  await createUserWithCredentials({ username, password, name, email });
+  await registerNewUser({ username, password, name, email });
 
   // Consume the invite token, if one was provided.
   if (inviteToken) {

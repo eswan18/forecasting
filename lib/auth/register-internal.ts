@@ -8,7 +8,7 @@ dotenv.config({ path: ".env.local" });
 
 const SALT = process.env.ARGON2_SALT;
 
-export async function createUserWithCredentials({
+export async function registerNewUser({
   username,
   password,
   name,

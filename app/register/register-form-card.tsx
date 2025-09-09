@@ -21,7 +21,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, LoaderCircle } from "lucide-react";
 
 import { z } from "zod";
-import { registerNewUser } from "@/lib/auth";
+import { registerNewUserIfAuthorized } from "@/lib/auth";
 
 const formSchema = z.object({
   username: z
@@ -61,7 +61,7 @@ export default function RegisterFormCard({
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    registerNewUser({ ...values, inviteToken })
+    registerNewUserIfAuthorized({ ...values, inviteToken })
       .then(() => {
         router.push("/login");
       })

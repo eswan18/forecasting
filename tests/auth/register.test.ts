@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { registerNewUser } from "@/lib/auth/register";
+import { registerNewUserIfAuthorized } from "@/lib/auth/register";
 import { getTestDb } from "../helpers/testDatabase";
 import { TestDataFactory } from "../helpers/testFactories";
 
@@ -88,7 +88,7 @@ describe("Authentication Register", () => {
         email: "newuser@example.com",
       };
 
-      await expect(registerNewUser(userData)).resolves.not.toThrow();
+      await expect(registerNewUserIfAuthorized(userData)).resolves.not.toThrow();
 
       // Verify user was created
       const createdLogin = await testDb
@@ -133,7 +133,7 @@ describe("Authentication Register", () => {
         inviteToken: "valid_token_123",
       };
 
-      await expect(registerNewUser(userData)).resolves.not.toThrow();
+      await expect(registerNewUserIfAuthorized(userData)).resolves.not.toThrow();
 
       expect(inviteTokenIsValid).toHaveBeenCalledWith("valid_token_123");
       expect(consumeInviteToken).toHaveBeenCalledWith("valid_token_123");
@@ -161,7 +161,7 @@ describe("Authentication Register", () => {
         inviteToken: "valid_token_123",
       };
 
-      await expect(registerNewUser(userData)).resolves.not.toThrow();
+      await expect(registerNewUserIfAuthorized(userData)).resolves.not.toThrow();
 
       expect(inviteTokenIsValid).toHaveBeenCalledWith("valid_token_123");
       expect(consumeInviteToken).toHaveBeenCalledWith("valid_token_123");
@@ -184,7 +184,7 @@ describe("Authentication Register", () => {
         email: "newuser@example.com",
       };
 
-      await expect(registerNewUser(userData)).rejects.toThrow(
+      await expect(registerNewUserIfAuthorized(userData)).rejects.toThrow(
         "No invite token provided."
       );
     });
@@ -199,7 +199,7 @@ describe("Authentication Register", () => {
         email: "newuser@example.com",
       };
 
-      await expect(registerNewUser(userData)).rejects.toThrow(
+      await expect(registerNewUserIfAuthorized(userData)).rejects.toThrow(
         "No invite token provided."
       );
     });
@@ -216,7 +216,7 @@ describe("Authentication Register", () => {
         inviteToken: "invalid_token_123",
       };
 
-      await expect(registerNewUser(userData)).rejects.toThrow(
+      await expect(registerNewUserIfAuthorized(userData)).rejects.toThrow(
         "Invalid invite token."
       );
 
@@ -244,7 +244,7 @@ describe("Authentication Register", () => {
         email: "newuser@example.com",
       };
 
-      await expect(registerNewUser(userData)).rejects.toThrow(
+      await expect(registerNewUserIfAuthorized(userData)).rejects.toThrow(
         "Username already exists."
       );
     });
@@ -265,7 +265,7 @@ describe("Authentication Register", () => {
         email: "newuser@example.com",
       };
 
-      await expect(registerNewUser(userData)).rejects.toThrow(
+      await expect(registerNewUserIfAuthorized(userData)).rejects.toThrow(
         "Username and password are required."
       );
     });
@@ -286,7 +286,7 @@ describe("Authentication Register", () => {
         email: "newuser@example.com",
       };
 
-      await expect(registerNewUser(userData)).rejects.toThrow(
+      await expect(registerNewUserIfAuthorized(userData)).rejects.toThrow(
         "Username and password are required."
       );
     });
@@ -307,7 +307,7 @@ describe("Authentication Register", () => {
         email: "newuser@example.com",
       };
 
-      await expect(registerNewUser(userData)).rejects.toThrow(
+      await expect(registerNewUserIfAuthorized(userData)).rejects.toThrow(
         "Password must be at least 8 characters long."
       );
     });
@@ -328,7 +328,7 @@ describe("Authentication Register", () => {
         email: "newuser@example.com",
       };
 
-      await registerNewUser(userData);
+      await registerNewUserIfAuthorized(userData);
 
       // Verify password was hashed
       const createdLogin = await testDb
