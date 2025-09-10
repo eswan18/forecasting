@@ -52,6 +52,13 @@ export async function cleanupTestData(db: Kysely<Database>): Promise<void> {
 
   const cleanupOperations = [
     // Clean in dependency order (child tables first, parent tables last)
+
+    // Clean ALL feature_flags FIRST (they reference users via foreign key)
+    {
+      name: "feature_flags",
+      operation: () => db.deleteFrom("feature_flags").execute(),
+    },
+
     {
       name: "forecasts",
       operation: () => db.deleteFrom("forecasts").execute(),
@@ -62,7 +69,7 @@ export async function cleanupTestData(db: Kysely<Database>): Promise<void> {
     },
     {
       name: "password_resets",
-      operation: () => db.deleteFrom("password_resets").execute(),
+      operation: () => db.deleteFrom("password_reset_tokens").execute(),
     },
     {
       name: "invite_tokens",
@@ -74,44 +81,23 @@ export async function cleanupTestData(db: Kysely<Database>): Promise<void> {
     },
     { name: "props", operation: () => db.deleteFrom("props").execute() },
 
-    // Clean test users (preserve admin user with ID 1) - must be before logins since users reference logins
-    {
-      name: "users",
-      operation: () => db.deleteFrom("users").where("id", "!=", 1).execute(),
-    },
-
-    // Clean test logins (preserve admin login) - must be after users since users reference logins
-    {
-      name: "logins",
-      operation: () =>
-        db.deleteFrom("logins").where("username", "!=", "admin").execute(),
-    },
-
     // Clean test competitions (but preserve seed competitions with IDs 1 and 2)
     {
       name: "competitions",
-      operation: async () => {
-        const result = await db
-          .deleteFrom("competitions")
-          .where("id", "not in", [1, 2])
-          .executeTakeFirst();
-        if (process.env.VERBOSE_TESTS === "true") {
-          console.log(
-            `Cleaned ${result.numDeletedRows || 0} test competitions`,
-          );
-        }
-        return result;
-      },
+      operation: () =>
+        db.deleteFrom("competitions").where("id", "not in", [1, 2]).execute(),
     },
 
-    // Clean test-created feature flags (preserve seed flags)
+    // Delete users after all tables that reference them are cleaned
     {
-      name: "feature_flags",
-      operation: () =>
-        db
-          .deleteFrom("feature_flags")
-          .where("name", "not in", ["2025-forecasts", "personal-props"])
-          .execute(),
+      name: "users",
+      operation: () => db.deleteFrom("users").execute(),
+    },
+
+    // Delete logins last (no more foreign key references)
+    {
+      name: "logins",
+      operation: () => db.deleteFrom("logins").execute(),
     },
   ];
 

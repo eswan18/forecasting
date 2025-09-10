@@ -134,7 +134,7 @@ describe("Authentication Login", () => {
     it("should allow admin to impersonate another user", async () => {
       // Create admin user.
       const adminUser = await factory.createAdminUser({
-        username: "testadmin",
+        username: "adminuser",
       });
 
       // Create target user to impersonate
