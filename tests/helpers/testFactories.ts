@@ -66,7 +66,7 @@ export class TestDataFactory {
     const isAdmin = overrides.is_admin || false;
 
     // Create login record directly with test database
-    const SALT = process.env.ARGON2_SALT || "test_salt";
+    const SALT = process.env.ARGON2_SALT;
     const passwordHash = await argon2.hash(String(SALT) + password, {
       type: argon2.argon2id,
     });
