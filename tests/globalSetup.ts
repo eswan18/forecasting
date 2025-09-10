@@ -82,7 +82,7 @@ export async function setup() {
     }
 
     // Store connection info in environment variables that tests can access
-    process.env.__TEST_DATABASE_URL__ = connectionString;
+    process.env.TEST_DATABASE_URL = connectionString;
 
     console.log("Global test database setup complete");
   } catch (error: any) {

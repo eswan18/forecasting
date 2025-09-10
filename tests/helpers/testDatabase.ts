@@ -25,7 +25,7 @@ export async function getTestDb(): Promise<Kysely<Database>> {
   }
 
   // Get the connection string from environment variable set by globalSetup.ts
-  const connectionString = process.env.__TEST_DATABASE_URL__;
+  const connectionString = process.env.TEST_DATABASE_URL;
 
   if (!connectionString) {
     throw new Error(
