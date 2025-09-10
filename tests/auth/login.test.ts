@@ -1,15 +1,22 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { login, loginViaImpersonation } from "@/lib/auth/login";
+import { vi, describe, it, expect, beforeEach, beforeAll } from "vitest";
 import { getTestDb } from "../helpers/testDatabase";
 import { TestDataFactory } from "../helpers/testFactories";
 
-// Mock environment variables
-vi.mock("process", () => ({
-  env: {
-    JWT_SECRET: "test_jwt_secret",
-    ARGON2_SALT: "test_salt",
-  },
-}));
+// Set environment variables before any imports that depend on them
+beforeAll(() => {
+  vi.stubEnv("JWT_SECRET", "test_jwt_secret");
+  vi.stubEnv("ARGON2_SALT", "test_salt");
+});
+
+// Import the login functions after setting up the environment
+let login: typeof import("@/lib/auth/login").login;
+let loginViaImpersonation: typeof import("@/lib/auth/login").loginViaImpersonation;
+
+beforeAll(async () => {
+  const loginModule = await import("@/lib/auth/login");
+  login = loginModule.login;
+  loginViaImpersonation = loginModule.loginViaImpersonation;
+});
 
 // Mock cookies
 const mockCookieStore = {
@@ -65,17 +72,24 @@ describe("Authentication Login", () => {
   });
 
   describe("login", () => {
+    beforeEach(async () => {
+      testDb = await getTestDb();
+      factory = new TestDataFactory(testDb);
+      vi.clearAllMocks();
+    });
+
     it("should login successfully with valid credentials", async () => {
       // Create a user with login credentials
       const testUser = await factory.createUser({
         username: "testuser",
+        password: "mypassword",
       });
 
       // The factory already created the login record and linked it to the user
 
       const result = await login({
         username: "testuser",
-        password: "testpassword123", // Raw password, factory hashed it
+        password: "mypassword",
       });
 
       expect(result.success).toBe(true);
@@ -97,7 +111,9 @@ describe("Authentication Login", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Invalid username or password.");
+      if (!result.success) {
+        expect(result.error).toBe("Invalid username or password.");
+      }
       expect(mockCookieStore.set).not.toHaveBeenCalled();
     });
 
@@ -115,38 +131,21 @@ describe("Authentication Login", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Invalid username or password.");
+      if (!result.success) {
+        expect(result.error).toBe("Invalid username or password.");
+      }
       expect(mockCookieStore.set).not.toHaveBeenCalled();
     });
 
-    it.skip("should fail login when JWT_SECRET is not set", async () => {
-      // This test is difficult to implement with the current module loading pattern
-      // because JWT_SECRET is captured as a constant when the module loads.
-      // Skipping for now - the JWT_SECRET is required for the app to function anyway.
-
-      // Mock environment without JWT_SECRET
-      vi.stubEnv("JWT_SECRET", "");
-
-      const testUser = await factory.createUser({
-        username: "testuser",
-      });
-
-      // The factory already created the login record and linked it to the user
-
-      const result = await login({
-        username: "testuser",
-        password: "testpassword123",
-      });
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBe("Internal error.");
-      expect(mockCookieStore.set).not.toHaveBeenCalled();
-
-      vi.unstubAllEnvs();
-    });
   });
 
   describe("loginViaImpersonation", () => {
+    beforeEach(async () => {
+      testDb = await getTestDb();
+      factory = new TestDataFactory(testDb);
+      vi.clearAllMocks();
+    });
+
     it("should allow admin to impersonate another user", async () => {
       // Create admin user
       const adminUser = await factory.createAdminUser({
@@ -162,10 +161,12 @@ describe("Authentication Login", () => {
 
       // Mock admin user session
       vi.mocked(getUserFromCookies).mockResolvedValue({
-        id: adminUser.login_id!,
-        name: adminUser.username,
+        id: adminUser.id,
+        name: adminUser.name,
         email: adminUser.email,
         is_admin: true,
+        login_id: adminUser.login_id,
+        username: adminUser.username || null,
       });
 
       await expect(loginViaImpersonation("targetuser")).resolves.not.toThrow();
@@ -194,10 +195,12 @@ describe("Authentication Login", () => {
 
       // Mock regular user session
       vi.mocked(getUserFromCookies).mockResolvedValue({
-        id: 1,
-        name: regularUser.username,
+        id: regularUser.id,
+        name: regularUser.name,
         email: regularUser.email,
         is_admin: false,
+        login_id: regularUser.login_id,
+        username: regularUser.username || null,
       });
 
       await expect(loginViaImpersonation("targetuser")).rejects.toThrow(
@@ -223,10 +226,12 @@ describe("Authentication Login", () => {
 
       // Mock admin user session
       vi.mocked(getUserFromCookies).mockResolvedValue({
-        id: 1,
-        name: adminUser.username,
+        id: adminUser.id,
+        name: adminUser.name,
         email: adminUser.email,
         is_admin: true,
+        login_id: adminUser.login_id,
+        username: adminUser.username || null,
       });
 
       await expect(loginViaImpersonation("nonexistentuser")).rejects.toThrow(
