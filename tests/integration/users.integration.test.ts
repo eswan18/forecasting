@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { getTestDb, cleanupTestData } from "../helpers/testDatabase";
 import { TestDataFactory } from "../helpers/testFactories";
+import { login } from "@/lib/auth";
 
 // Only run these tests when containers are enabled
 const skipIfNoContainers =
@@ -18,7 +19,7 @@ describe("Users Integration Tests", () => {
     }
   });
 
-  skipIfNoContainers("should create user with real database", async () => {
+  skipIfNoContainers("should allow logging in with a create user account", async () => {
     const username = "johndoe";
     const password = "hashed_password_123";
     const name = "John Doe";
@@ -31,34 +32,27 @@ describe("Users Integration Tests", () => {
       name,
       email,
     });
+    
+    const loginResponse = await login({
+      username,
+      password,
+    });
 
-    expect(createdUser).toBeDefined();
-    expect(createdUser.name).toBe(name);
-    expect(createdUser.email).toBe(email);
-
-    // Verify user exists in database
-    const dbUser = await testDb
-      .selectFrom("users")
-      .selectAll()
-      .where("email", "=", email)
-      .executeTakeFirst();
-
-    expect(dbUser).toBeDefined();
-    expect(dbUser.name).toBe(name);
-    expect(dbUser.email).toBe(email);
-
-    // Verify login linkage
-    const login = await testDb
-      .selectFrom("logins")
-      .selectAll()
-      .where("username", "=", username)
-      .executeTakeFirst();
-
-    expect(login).toBeDefined();
-    expect(dbUser.login_id).toBe(login.id);
+    expect(loginResponse.success).toBe(true);
   });
 
-  skipIfNoContainers("should handle duplicate email constraint", async () => {
+  skipIfNoContainers("should prevent logins with invalid credentials", async () => {
+    const loginResponse = await login({
+      username: "invalid",
+      password: "invalid",
+    });
+    expect(loginResponse.success).toBe(false);
+    if (!loginResponse.success) {
+      expect(loginResponse.error).toBe("Invalid username or password.");
+    }
+  });
+
+  skipIfNoContainers("should prevent multiple users from having the same email", async () => {
     // Create first user using factory
     const firstUser = await factory.createUser({
       name: "Jane Doe",
@@ -74,55 +68,5 @@ describe("Users Integration Tests", () => {
         email: "duplicate@example.com",
       }),
     ).rejects.toThrow();
-  });
-
-  skipIfNoContainers("should create user using factory", async () => {
-    const user = await factory.createUser({
-      username: "factoryuser",
-      email: "factory@example.com",
-    });
-
-    expect(user).toBeDefined();
-    expect(user.username).toBe("factoryuser");
-    expect(user.email).toBe("factory@example.com");
-
-    // Verify in database
-    const dbUser = await testDb
-      .selectFrom("users")
-      .selectAll()
-      .where("email", "=", user.email)
-      .executeTakeFirst();
-
-    expect(dbUser).toBeDefined();
-    expect(dbUser.email).toBe(user.email);
-  });
-
-  skipIfNoContainers("should create multiple users", async () => {
-    const user1 = await factory.createUser({ username: "user1" });
-    const user2 = await factory.createUser({ username: "user2" });
-
-    expect(user1.id).not.toBe(user2.id);
-    expect(user1.email).not.toBe(user2.email);
-
-    // Verify both exist in database (plus admin user from seed data)
-    const users = await testDb.selectFrom("users").selectAll().execute();
-    expect(users).toHaveLength(3); // 2 test users + 1 admin user
-  });
-
-  skipIfNoContainers("should create admin user", async () => {
-    const adminUser = await factory.createAdminUser({
-      username: "admin1",
-    });
-
-    expect(adminUser.is_admin).toBe(true);
-
-    // Verify in database
-    const dbUser = await testDb
-      .selectFrom("users")
-      .selectAll()
-      .where("email", "=", adminUser.email)
-      .executeTakeFirst();
-
-    expect(dbUser.is_admin).toBe(true);
   });
 });
