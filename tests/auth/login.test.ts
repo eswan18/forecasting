@@ -136,7 +136,6 @@ describe("Authentication Login", () => {
       }
       expect(mockCookieStore.set).not.toHaveBeenCalled();
     });
-
   });
 
   describe("loginViaImpersonation", () => {
