@@ -11,7 +11,6 @@ beforeAll(async () => {
   loginViaImpersonation = loginModule.loginViaImpersonation;
 });
 
-// Mock cookies
 const mockCookieStore = {
   set: vi.fn(),
   get: vi.fn(),
@@ -22,12 +21,10 @@ vi.mock("next/headers", () => ({
   cookies: vi.fn(() => Promise.resolve(mockCookieStore)),
 }));
 
-// Mock revalidatePath
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
-// Mock getUserFromCookies
 vi.mock("@/lib/get-user", () => ({
   getUserFromCookies: vi.fn(),
 }));
@@ -72,14 +69,12 @@ describe("Authentication Login", () => {
     });
 
     it("should login successfully with valid credentials", async () => {
-      // Create a user with login credentials
       const testUser = await factory.createUser({
         username: "testuser",
         password: "mypassword",
       });
 
-      // The factory already created the login record and linked it to the user
-
+      // Try to log in.
       const result = await login({
         username: "testuser",
         password: "mypassword",
@@ -111,13 +106,11 @@ describe("Authentication Login", () => {
     });
 
     it("should fail login with invalid password", async () => {
-      // Create a user with login credentials
       const testUser = await factory.createUser({
         username: "testuser",
       });
 
-      // The factory already created the login record and linked it to the user
-
+      // Try to log in.
       const result = await login({
         username: "testuser",
         password: "wrongpassword",
@@ -139,7 +132,7 @@ describe("Authentication Login", () => {
     });
 
     it("should allow admin to impersonate another user", async () => {
-      // Create admin user
+      // Create admin user.
       const adminUser = await factory.createAdminUser({
         username: "testadmin",
       });
