@@ -75,6 +75,7 @@ const forecast = await factory.createForecast(user.id.toString(), prop.id, {
 ## Troubleshooting
 
 **Container startup issues:**
+
 - Ensure Docker daemon is running
 - Check available disk space and memory
 - Verify network connectivity for pulling PostgreSQL image
