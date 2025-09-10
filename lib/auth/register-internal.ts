@@ -67,7 +67,7 @@ export async function registerNewUser({
     throw new Error("Password must be at least 8 characters long.");
   }
 
-  const passwordHash = await argon2.hash(String(SALT) + password, {
+  const passwordHash = await argon2.hash(SALT + password, {
     type: argon2.argon2id,
   });
   const login = { username, password_hash: passwordHash };

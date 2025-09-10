@@ -79,7 +79,6 @@ export async function up(db: Kysely<any>): Promise<void> {
     .values({ username: "admin", password_hash: "nonsense" })
     .returning("id")
     .executeTakeFirstOrThrow();
-  console.log(loginResult);
   await db
     .insertInto("users")
     .values({
