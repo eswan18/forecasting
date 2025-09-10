@@ -2,7 +2,6 @@ import { vi, describe, it, expect, beforeEach, beforeAll } from "vitest";
 import { getTestDb } from "../helpers/testDatabase";
 import { TestDataFactory } from "../helpers/testFactories";
 
-// Import the login functions - environment variables are now set in globalSetup.ts
 let login: typeof import("@/lib/auth/login").login;
 let loginViaImpersonation: typeof import("@/lib/auth/login").loginViaImpersonation;
 
