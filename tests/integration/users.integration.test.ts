@@ -1,7 +1,36 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi, beforeAll } from "vitest";
 import { getTestDb, cleanupTestData } from "../helpers/testDatabase";
 import { TestDataFactory } from "../helpers/testFactories";
-import { login } from "@/lib/auth";
+
+// Set environment variables before any imports that depend on them
+beforeAll(() => {
+  vi.stubEnv("JWT_SECRET", "test_jwt_secret");
+  vi.stubEnv("ARGON2_SALT", "test_salt");
+});
+
+// Mock cookies
+const mockCookieStore = {
+  set: vi.fn(),
+  get: vi.fn(),
+  delete: vi.fn(),
+};
+
+vi.mock("next/headers", () => ({
+  cookies: vi.fn(() => Promise.resolve(mockCookieStore)),
+}));
+
+// Mock revalidatePath
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+}));
+
+// Import the login function after setting up mocks
+let login: typeof import("@/lib/auth/login").login;
+
+beforeAll(async () => {
+  const loginModule = await import("@/lib/auth/login");
+  login = loginModule.login;
+});
 
 // Only run these tests when containers are enabled
 const skipIfNoContainers =
