@@ -19,20 +19,7 @@ The testcontainers implementation provides:
 - `tests/setup.ts` - Global test setup and teardown
 - `tests/helpers/testDatabase.ts` - Container lifecycle management and database utilities
 - `tests/helpers/testFactories.ts` - Test data factories for creating realistic test data
-
-### Test Coverage
-
-**Core Database Actions:**
-
-- `tests/db_actions/users.test.ts` - User CRUD operations and authorization
-- `tests/db_actions/forecasts.test.ts` - Forecast management and business logic
-- `tests/db_actions/competitions.test.ts` - Competition operations
-- `tests/db_actions/props.test.ts` - Proposition handling and filtering
-
-**Authentication & Authorization:**
-
-- `tests/auth/login.test.ts` - Login and impersonation workflows
-- `tests/auth/register.test.ts` - User registration and invite token validation
+- `tests/auth/login.test.ts` - Tests for login and impersonation workflows
 
 ## Usage
 
