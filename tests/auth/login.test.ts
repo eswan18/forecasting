@@ -2,13 +2,7 @@ import { vi, describe, it, expect, beforeEach, beforeAll } from "vitest";
 import { getTestDb } from "../helpers/testDatabase";
 import { TestDataFactory } from "../helpers/testFactories";
 
-// Set environment variables before any imports that depend on them
-beforeAll(() => {
-  vi.stubEnv("JWT_SECRET", "test_jwt_secret");
-  vi.stubEnv("ARGON2_SALT", "test_salt");
-});
-
-// Import the login functions after setting up the environment
+// Import the login functions - environment variables are now set in globalSetup.ts
 let login: typeof import("@/lib/auth/login").login;
 let loginViaImpersonation: typeof import("@/lib/auth/login").loginViaImpersonation;
 
