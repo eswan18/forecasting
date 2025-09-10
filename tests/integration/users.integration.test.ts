@@ -10,8 +10,6 @@ describe("Users Integration Tests", () => {
   let testDb: any;
   let factory: TestDataFactory;
 
-  // Database setup handled by global tests/setup.ts
-
   beforeEach(async () => {
     if (process.env.TEST_USE_CONTAINERS === "true") {
       testDb = await getTestDb();
