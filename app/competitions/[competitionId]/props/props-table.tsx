@@ -1,7 +1,6 @@
 "use client";
 
 import { VProp } from "@/types/db_types";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Tooltip,
@@ -9,6 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { CategoryBadge, ResolutionBadge } from "@/components/badges";
 
 interface PropCardProps {
   prop: VProp;
@@ -149,43 +149,3 @@ export function PropsTable({ props }: PropsTableProps) {
         </TooltipProvider>
     );
 }
-
-interface CategoryBadgeProps {
-  categoryName: string | null;
-}
-
-interface ResolutionBadgeProps {
-  resolution: boolean | null;
-}
-
-function CategoryBadge({ categoryName }: CategoryBadgeProps) {
-    if (!categoryName) {
-        return <span className="text-muted-foreground text-sm">—</span>;
-    }
-
-    return (
-        <Badge variant="outline" className="text-xs w-24 justify-center text-center">
-            {categoryName}
-        </Badge>
-    );
-}
-
-function ResolutionBadge({ resolution }: ResolutionBadgeProps) {
-    if (resolution === null) {
-        return (
-            <Badge variant="secondary" className="text-xs w-24 justify-center">
-                Unresolved
-            </Badge>
-        );
-    }
-
-    return (
-        <Badge
-            variant={resolution ? "default" : "destructive"}
-            className="text-xs w-24 justify-center"
-        >
-            {resolution ? "True" : "False"}
-        </Badge>
-    );
-}
-
