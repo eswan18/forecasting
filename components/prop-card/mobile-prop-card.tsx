@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CategoryBadge, ResolutionBadge } from "@/components/badges";
 import { ResolutionDialog } from "@/components/dialogs/resolution-dialog";
+import { PropEditDialog } from "@/components/dialogs/prop-edit-dialog";
 import { Edit2 } from "lucide-react";
 
 interface MobilePropCardProps {
@@ -20,6 +21,7 @@ export function MobilePropCard({
   allowEdits = false,
 }: MobilePropCardProps) {
   const [isResolutionDialogOpen, setIsResolutionDialogOpen] = useState(false);
+  const [isPropEditDialogOpen, setIsPropEditDialogOpen] = useState(false);
 
   return (
     <Card>
@@ -33,6 +35,7 @@ export function MobilePropCard({
               variant="ghost"
               size="sm"
               className="h-6 w-6 p-0 flex-shrink-0"
+              onClick={() => setIsPropEditDialogOpen(true)}
             >
               <Edit2 className="h-3 w-3" />
             </Button>
@@ -91,6 +94,12 @@ export function MobilePropCard({
         prop={prop}
         isOpen={isResolutionDialogOpen}
         onClose={() => setIsResolutionDialogOpen(false)}
+      />
+      
+      <PropEditDialog
+        prop={prop}
+        isOpen={isPropEditDialogOpen}
+        onClose={() => setIsPropEditDialogOpen(false)}
       />
     </Card>
   );

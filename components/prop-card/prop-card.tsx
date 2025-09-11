@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/tooltip";
 import { CategoryBadge, ResolutionBadge } from "@/components/badges";
 import { ResolutionDialog } from "@/components/dialogs/resolution-dialog";
+import { PropEditDialog } from "@/components/dialogs/prop-edit-dialog";
 import { Edit2 } from "lucide-react";
 
 interface PropCardProps {
@@ -25,6 +26,7 @@ export function PropCard({
   allowEdits = false,
 }: PropCardProps) {
   const [isResolutionDialogOpen, setIsResolutionDialogOpen] = useState(false);
+  const [isPropEditDialogOpen, setIsPropEditDialogOpen] = useState(false);
 
   return (
     <Card>
@@ -55,6 +57,7 @@ export function PropCard({
                   variant="ghost"
                   size="sm"
                   className="h-6 w-6 p-0 flex-shrink-0"
+                  onClick={() => setIsPropEditDialogOpen(true)}
                 >
                   <Edit2 className="h-3 w-3" />
                 </Button>
@@ -124,6 +127,12 @@ export function PropCard({
         prop={prop}
         isOpen={isResolutionDialogOpen}
         onClose={() => setIsResolutionDialogOpen(false)}
+      />
+      
+      <PropEditDialog
+        prop={prop}
+        isOpen={isPropEditDialogOpen}
+        onClose={() => setIsPropEditDialogOpen(false)}
       />
     </Card>
   );
