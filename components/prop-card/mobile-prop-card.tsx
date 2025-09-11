@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { VProp } from "@/types/db_types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CategoryBadge, ResolutionBadge } from "@/components/badges";
+import { ResolutionDialog } from "@/components/dialogs/resolution-dialog";
 import { Edit2 } from "lucide-react";
 
 interface MobilePropCardProps {
@@ -17,6 +19,8 @@ export function MobilePropCard({
   onResolutionClick,
   allowEdits = false,
 }: MobilePropCardProps) {
+  const [isResolutionDialogOpen, setIsResolutionDialogOpen] = useState(false);
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -66,6 +70,7 @@ export function MobilePropCard({
                 variant="ghost"
                 size="sm"
                 className="h-6 w-6 p-0 flex-shrink-0"
+                onClick={() => setIsResolutionDialogOpen(true)}
               >
                 <Edit2 className="h-3 w-3" />
               </Button>
@@ -81,6 +86,12 @@ export function MobilePropCard({
           </div>
         )}
       </CardContent>
+
+      <ResolutionDialog
+        prop={prop}
+        isOpen={isResolutionDialogOpen}
+        onClose={() => setIsResolutionDialogOpen(false)}
+      />
     </Card>
   );
 }

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { VProp } from "@/types/db_types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { CategoryBadge, ResolutionBadge } from "@/components/badges";
+import { ResolutionDialog } from "@/components/dialogs/resolution-dialog";
 import { Edit2 } from "lucide-react";
 
 interface PropCardProps {
@@ -22,6 +24,8 @@ export function PropCard({
   onResolutionClick,
   allowEdits = false,
 }: PropCardProps) {
+  const [isResolutionDialogOpen, setIsResolutionDialogOpen] = useState(false);
+
   return (
     <Card>
       <CardContent className="py-4 px-6">
@@ -107,6 +111,7 @@ export function PropCard({
                 variant="ghost"
                 size="sm"
                 className="h-6 w-6 p-0 flex-shrink-0"
+                onClick={() => setIsResolutionDialogOpen(true)}
               >
                 <Edit2 className="h-3 w-3" />
               </Button>
@@ -114,6 +119,12 @@ export function PropCard({
           </div>
         </div>
       </CardContent>
+
+      <ResolutionDialog
+        prop={prop}
+        isOpen={isResolutionDialogOpen}
+        onClose={() => setIsResolutionDialogOpen(false)}
+      />
     </Card>
   );
 }
