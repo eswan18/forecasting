@@ -1,24 +1,39 @@
 import { VProp } from "@/types/db_types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { CategoryBadge, ResolutionBadge } from "@/components/badges";
+import { Edit2 } from "lucide-react";
 
 interface MobilePropCardProps {
   prop: VProp;
   onCategoryClick?: (categoryName: string) => void;
   onResolutionClick?: (resolution: "resolved" | "unresolved") => void;
+  allowEdits?: boolean;
 }
 
 export function MobilePropCard({
   prop,
   onCategoryClick,
   onResolutionClick,
+  allowEdits = false,
 }: MobilePropCardProps) {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base leading-relaxed">
-          {prop.prop_text}
-        </CardTitle>
+        <div className="flex items-start gap-2">
+          <CardTitle className="text-base leading-relaxed flex-1">
+            {prop.prop_text}
+          </CardTitle>
+          {allowEdits && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 flex-shrink-0"
+            >
+              <Edit2 className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
         {prop.prop_notes && (
           <p className="text-sm text-muted-foreground">{prop.prop_notes}</p>
         )}
@@ -35,16 +50,27 @@ export function MobilePropCard({
               }
             />
           </div>
-          <ResolutionBadge
-            resolution={prop.resolution}
-            onClick={() => {
-              if (prop.resolution === null) {
-                onResolutionClick?.("unresolved");
-              } else {
-                onResolutionClick?.("resolved");
-              }
-            }}
-          />
+          <div className="flex items-center gap-2">
+            <ResolutionBadge
+              resolution={prop.resolution}
+              onClick={() => {
+                if (prop.resolution === null) {
+                  onResolutionClick?.("unresolved");
+                } else {
+                  onResolutionClick?.("resolved");
+                }
+              }}
+            />
+            {allowEdits && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 flex-shrink-0"
+              >
+                <Edit2 className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
         </div>
         {prop.resolution_notes && (
           <div className="w-full mt-2">

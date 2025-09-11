@@ -8,9 +8,10 @@ import { usePropsFilter } from "@/hooks/usePropsFilter";
 
 interface PropsTableProps {
   props: VProp[];
+  allowEdits?: boolean;
 }
 
-export function PropsTable({ props }: PropsTableProps) {
+export function PropsTable({ props, allowEdits = false }: PropsTableProps) {
   const {
     categories,
     selectedCategories,
@@ -66,6 +67,7 @@ export function PropsTable({ props }: PropsTableProps) {
                 onResolutionClick={(resolution) =>
                   setSelectedResolution(resolution)
                 }
+                allowEdits={allowEdits}
               />
             ))}
           </div>
@@ -83,6 +85,7 @@ export function PropsTable({ props }: PropsTableProps) {
               onResolutionClick={(resolution) =>
                 setSelectedResolution(resolution)
               }
+              allowEdits={allowEdits}
             />
           ))}
         </div>

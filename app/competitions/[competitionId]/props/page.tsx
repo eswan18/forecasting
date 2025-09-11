@@ -13,5 +13,5 @@ export default async function Page({
   const allowEdits = user?.is_admin || false;
   const propsAndResolutions = await getProps({ competitionId });
 
-  return <PropsTable props={propsAndResolutions} />;
+  return <PropsTable props={propsAndResolutions} allowEdits={allowEdits} />;
 }

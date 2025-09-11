@@ -1,46 +1,61 @@
 import { VProp } from "@/types/db_types";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { CategoryBadge, ResolutionBadge } from "@/components/badges";
+import { Edit2 } from "lucide-react";
 
 interface PropCardProps {
   prop: VProp;
   onCategoryClick?: (categoryName: string) => void;
   onResolutionClick?: (resolution: "resolved" | "unresolved") => void;
+  allowEdits?: boolean;
 }
 
 export function PropCard({
   prop,
   onCategoryClick,
   onResolutionClick,
+  allowEdits = false,
 }: PropCardProps) {
   return (
     <Card>
       <CardContent className="py-4 px-6">
         <div className="grid grid-cols-12 gap-4 items-start">
           <div className="col-span-6">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <p className="text-sm leading-relaxed font-medium">
-                  {prop.prop_text}
-                </p>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-sm">
-                <div className="space-y-1">
-                  <p className="font-medium">{prop.prop_text}</p>
-                  {prop.prop_notes && (
-                    <p className="text-xs opacity-90">
-                      <span className="font-medium">Notes:</span>{" "}
-                      {prop.prop_notes}
-                    </p>
-                  )}
-                </div>
-              </TooltipContent>
-            </Tooltip>
+            <div className="flex items-start gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <p className="text-sm leading-relaxed font-medium flex-1">
+                    {prop.prop_text}
+                  </p>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-sm">
+                  <div className="space-y-1">
+                    <p className="font-medium">{prop.prop_text}</p>
+                    {prop.prop_notes && (
+                      <p className="text-xs opacity-90">
+                        <span className="font-medium">Notes:</span>{" "}
+                        {prop.prop_notes}
+                      </p>
+                    )}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+              {allowEdits && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 flex-shrink-0"
+                >
+                  <Edit2 className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
           </div>
           <div className="col-span-3">
             <CategoryBadge
@@ -52,7 +67,7 @@ export function PropCard({
               }
             />
           </div>
-          <div className="col-span-3 flex justify-end">
+          <div className="col-span-3 flex justify-end items-start gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
                 <div>
@@ -87,6 +102,15 @@ export function PropCard({
                 </div>
               </TooltipContent>
             </Tooltip>
+            {allowEdits && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 flex-shrink-0"
+              >
+                <Edit2 className="h-3 w-3" />
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>
