@@ -1,148 +1,191 @@
 "use client";
 
 import { VProp } from "@/types/db_types";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+interface PropCardProps {
+  prop: VProp;
+}
+
+interface MobilePropCardProps {
+  prop: VProp;
+}
 
 interface PropsTableProps {
-  props: VProp[];
+    props: VProp[];
+}
+
+function PropCard({ prop }: PropCardProps) {
+    return (
+        <Card>
+            <CardContent className="py-4 px-6">
+                <div className="grid grid-cols-12 gap-4 items-start">
+                    <div className="col-span-6">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <p className="text-sm leading-relaxed font-medium">
+                                    {prop.prop_text}
+                                </p>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-sm">
+                                <div className="space-y-1">
+                                    <p className="font-medium">{prop.prop_text}</p>
+                                    {prop.prop_notes && (
+                                        <p className="text-xs opacity-90">
+                                            <span className="font-medium">Notes:</span> {prop.prop_notes}
+                                        </p>
+                                    )}
+                                </div>
+                            </TooltipContent>
+                        </Tooltip>
+                    </div>
+                    <div className="col-span-3">
+                        <CategoryBadge categoryName={prop.category_name} />
+                    </div>
+                    <div className="col-span-3 flex justify-end">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div>
+                                    <ResolutionBadge resolution={prop.resolution} />
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <div className="space-y-1">
+                                    <p className="font-medium">
+                                        Resolution: {prop.resolution === null ? "Unresolved" : prop.resolution ? "True" : "False"}
+                                    </p>
+                                    {prop.resolution_notes && (
+                                        <p className="text-xs opacity-90">
+                                            <span className="font-medium">Notes:</span> {prop.resolution_notes}
+                                        </p>
+                                    )}
+                                </div>
+                            </TooltipContent>
+                        </Tooltip>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function MobilePropCard({ prop }: MobilePropCardProps) {
+    return (
+        <Card>
+            <CardHeader className="pb-3">
+                <CardTitle className="text-base leading-relaxed">
+                    {prop.prop_text}
+                </CardTitle>
+                {prop.prop_notes && (
+                    <p className="text-sm text-muted-foreground">
+                        {prop.prop_notes}
+                    </p>
+                )}
+            </CardHeader>
+            <CardContent className="pt-0">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <CategoryBadge categoryName={prop.category_name} />
+                    </div>
+                    <ResolutionBadge resolution={prop.resolution} />
+                </div>
+                {prop.resolution_notes && (
+                    <div className="w-full mt-2">
+                        <p className="text-xs text-muted-foreground">
+                            <span className="font-medium">Resolution notes:</span>{" "}
+                            {prop.resolution_notes}
+                        </p>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
 }
 
 export function PropsTable({ props }: PropsTableProps) {
-  if (props.length === 0) {
-    return (
-      <div className="py-8">
-        <p className="text-center text-muted-foreground">
-          No propositions found for this competition.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold">Propositions ({props.length})</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Forecast on these propositions for the competition
-        </p>
-      </div>
-      
-      {/* Desktop Table */}
-      <div className="hidden @md:block">
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[50%]">Proposition</TableHead>
-                  <TableHead className="w-[20%]">Category</TableHead>
-                  <TableHead className="w-[15%]">Status</TableHead>
-                  <TableHead className="w-[15%]">Resolution</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {props.map((prop) => (
-                  <TableRow key={prop.prop_id}>
-                    <TableCell className="font-medium">
-                      <div className="space-y-1">
-                        <p className="text-sm leading-relaxed">{prop.prop_text}</p>
-                        {prop.prop_notes && (
-                          <p className="text-xs text-muted-foreground">
-                            {prop.prop_notes}
-                          </p>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {prop.category_name ? (
-                        <Badge variant="outline">{prop.category_name}</Badge>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <ResolutionStatus resolution={prop.resolution} />
-                    </TableCell>
-                    <TableCell>
-                      {prop.resolution_notes && (
-                        <p className="text-xs text-muted-foreground max-w-[200px] truncate">
-                          {prop.resolution_notes}
-                        </p>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Mobile Cards */}
-      <div className="@md:hidden space-y-4">
-        {props.map((prop) => (
-          <Card key={prop.prop_id}>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base leading-relaxed">
-                {prop.prop_text}
-              </CardTitle>
-              {prop.prop_notes && (
-                <p className="text-sm text-muted-foreground">
-                  {prop.prop_notes}
+    if (props.length === 0) {
+        return (
+            <div className="py-8">
+                <p className="text-center text-muted-foreground">
+                    No propositions found for this competition.
                 </p>
-              )}
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                <div className="flex flex-wrap items-center gap-2">
-                  {prop.category_name && (
-                    <Badge variant="outline" className="text-xs">
-                      {prop.category_name}
-                    </Badge>
-                  )}
-                </div>
-                <ResolutionStatus resolution={prop.resolution} />
-              </div>
-              {prop.resolution_notes && (
-                <div className="w-full mt-2">
-                  <p className="text-xs text-muted-foreground">
-                    <span className="font-medium">Resolution notes:</span>{" "}
-                    {prop.resolution_notes}
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
-}
+            </div>
+        );
+    }
 
-function ResolutionStatus({ resolution }: { resolution: boolean | null }) {
-  if (resolution === null) {
     return (
-      <Badge variant="secondary" className="text-xs">
-        Unresolved
-      </Badge>
-    );
-  }
+        <TooltipProvider>
+            <div className="flex flex-col gap-4">
+                <div className="mb-4">
+                    <h2 className="text-xl font-semibold">Propositions ({props.length})</h2>
+                    <p className="text-sm text-muted-foreground mt-1">
+                        Forecast on these propositions for the competition
+                    </p>
+                </div>
 
-  return (
-    <Badge
-      variant={resolution ? "default" : "destructive"}
-      className="text-xs"
-    >
-      {resolution ? "True" : "False"}
-    </Badge>
-  );
+                {/* Desktop Table */}
+                <div className="hidden md:block">
+                    <div className="flex flex-col gap-2">
+                        {props.map((prop) => (
+                            <PropCard key={prop.prop_id} prop={prop} />
+                        ))}
+                    </div>
+                </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden flex flex-col gap-4">
+                {props.map((prop) => (
+                    <MobilePropCard key={prop.prop_id} prop={prop} />
+                ))}
+            </div>
+            </div>
+        </TooltipProvider>
+    );
 }
+
+interface CategoryBadgeProps {
+  categoryName: string | null;
+}
+
+interface ResolutionBadgeProps {
+  resolution: boolean | null;
+}
+
+function CategoryBadge({ categoryName }: CategoryBadgeProps) {
+    if (!categoryName) {
+        return <span className="text-muted-foreground text-sm">—</span>;
+    }
+
+    return (
+        <Badge variant="outline" className="text-xs w-24 justify-center text-center">
+            {categoryName}
+        </Badge>
+    );
+}
+
+function ResolutionBadge({ resolution }: ResolutionBadgeProps) {
+    if (resolution === null) {
+        return (
+            <Badge variant="secondary" className="text-xs w-24 justify-center">
+                Unresolved
+            </Badge>
+        );
+    }
+
+    return (
+        <Badge
+            variant={resolution ? "default" : "destructive"}
+            className="text-xs w-24 justify-center"
+        >
+            {resolution ? "True" : "False"}
+        </Badge>
+    );
+}
+
