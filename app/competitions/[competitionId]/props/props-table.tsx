@@ -17,6 +17,8 @@ export function PropsTable({ props }: PropsTableProps) {
     setSelectedCategories,
     selectedResolution,
     setSelectedResolution,
+    searchText,
+    setSearchText,
     filteredProps,
     handleClearFilters,
   } = usePropsFilter({ props });
@@ -41,6 +43,8 @@ export function PropsTable({ props }: PropsTableProps) {
           onCategoryChange={setSelectedCategories}
           selectedResolution={selectedResolution}
           onResolutionChange={setSelectedResolution}
+          searchText={searchText}
+          onSearchChange={setSearchText}
           onClearFilters={handleClearFilters}
         />
 

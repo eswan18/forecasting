@@ -10,6 +10,7 @@ export function usePropsFilter({ props }: UsePropsFilterProps) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedResolution, setSelectedResolution] =
     useState<ResolutionFilterValue>("all");
+  const [searchText, setSearchText] = useState<string>("");
 
   // Get unique categories from props
   const categories = useMemo(() => {
@@ -37,13 +38,19 @@ export function usePropsFilter({ props }: UsePropsFilterProps) {
         (selectedResolution === "resolved" && prop.resolution !== null) ||
         (selectedResolution === "unresolved" && prop.resolution === null);
 
-      return categoryMatch && resolutionMatch;
+      // Search filter
+      const searchMatch =
+        searchText === "" ||
+        prop.prop_text.toLowerCase().includes(searchText.toLowerCase());
+
+      return categoryMatch && resolutionMatch && searchMatch;
     });
-  }, [props, selectedCategories, selectedResolution]);
+  }, [props, selectedCategories, selectedResolution, searchText]);
 
   const handleClearFilters = () => {
     setSelectedCategories([]);
     setSelectedResolution("all");
+    setSearchText("");
   };
 
   return {
@@ -52,6 +59,8 @@ export function usePropsFilter({ props }: UsePropsFilterProps) {
     setSelectedCategories,
     selectedResolution,
     setSelectedResolution,
+    searchText,
+    setSearchText,
     filteredProps,
     handleClearFilters,
   };
