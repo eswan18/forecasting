@@ -52,8 +52,6 @@ export async function cleanupTestData(db: Kysely<Database>): Promise<void> {
 
   const cleanupOperations = [
     // Clean in dependency order (child tables first, parent tables last)
-
-    // Clean ALL feature_flags FIRST (they reference users via foreign key)
     {
       name: "feature_flags",
       operation: () => db.deleteFrom("feature_flags").execute(),
@@ -81,20 +79,16 @@ export async function cleanupTestData(db: Kysely<Database>): Promise<void> {
     },
     { name: "props", operation: () => db.deleteFrom("props").execute() },
 
-    // Clean test competitions (but preserve seed competitions with IDs 1 and 2)
     {
       name: "competitions",
+      // Clean test competitions (but preserve seed competitions with IDs 1 and 2)
       operation: () =>
         db.deleteFrom("competitions").where("id", "not in", [1, 2]).execute(),
     },
-
-    // Delete users after all tables that reference them are cleaned
     {
       name: "users",
       operation: () => db.deleteFrom("users").execute(),
     },
-
-    // Delete logins last (no more foreign key references)
     {
       name: "logins",
       operation: () => db.deleteFrom("logins").execute(),
