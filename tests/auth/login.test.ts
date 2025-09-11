@@ -1,6 +1,7 @@
 import { vi, describe, it, expect, beforeEach, beforeAll } from "vitest";
 import { getTestDb } from "../helpers/testDatabase";
 import { TestDataFactory } from "../helpers/testFactories";
+import { shouldRunContainerTests, ifRunningContainerTestsIt } from "../helpers/testUtils";
 
 let login: typeof import("@/lib/auth/login").login;
 let loginViaImpersonation: typeof import("@/lib/auth/login").loginViaImpersonation;
@@ -44,31 +45,39 @@ describe("Authentication Login", () => {
   let factory: TestDataFactory;
 
   beforeEach(async () => {
-    testDb = await getTestDb();
-    factory = new TestDataFactory(testDb);
-    vi.clearAllMocks();
+    if (shouldRunContainerTests()) {
+      testDb = await getTestDb();
+      factory = new TestDataFactory(testDb);
+      vi.clearAllMocks();
 
-    // Replace the mocked getLoginByUsername with our test database implementation
-    vi.mocked(getLoginByUsername).mockImplementation(
-      async (username: string) => {
-        const result = await testDb
-          .selectFrom("logins")
-          .selectAll()
-          .where("username", "=", username)
-          .executeTakeFirst();
-        return result;
-      },
-    );
+      // Replace the mocked getLoginByUsername with our test database implementation
+      vi.mocked(getLoginByUsername).mockImplementation(
+        async (username: string) => {
+          const result = await testDb
+            .selectFrom("logins")
+            .selectAll()
+            .where("username", "=", username)
+            .executeTakeFirst();
+          return result;
+        },
+      );
+    } else {
+      vi.clearAllMocks();
+    }
   });
 
   describe("login", () => {
     beforeEach(async () => {
-      testDb = await getTestDb();
-      factory = new TestDataFactory(testDb);
-      vi.clearAllMocks();
+      if (shouldRunContainerTests()) {
+        testDb = await getTestDb();
+        factory = new TestDataFactory(testDb);
+        vi.clearAllMocks();
+      } else {
+        vi.clearAllMocks();
+      }
     });
 
-    it("should login successfully with valid credentials", async () => {
+    ifRunningContainerTestsIt("should login successfully with valid credentials", async () => {
       const testUser = await factory.createUser({
         username: "testuser",
         password: "mypassword",
@@ -92,7 +101,7 @@ describe("Authentication Login", () => {
       );
     });
 
-    it("should fail login with invalid username", async () => {
+    ifRunningContainerTestsIt("should fail login with invalid username", async () => {
       const result = await login({
         username: "nonexistent",
         password: "anypassword",
@@ -105,7 +114,7 @@ describe("Authentication Login", () => {
       expect(mockCookieStore.set).not.toHaveBeenCalled();
     });
 
-    it("should fail login with invalid password", async () => {
+    ifRunningContainerTestsIt("should fail login with invalid password", async () => {
       const testUser = await factory.createUser({
         username: "testuser",
       });
@@ -126,12 +135,16 @@ describe("Authentication Login", () => {
 
   describe("loginViaImpersonation", () => {
     beforeEach(async () => {
-      testDb = await getTestDb();
-      factory = new TestDataFactory(testDb);
-      vi.clearAllMocks();
+      if (shouldRunContainerTests()) {
+        testDb = await getTestDb();
+        factory = new TestDataFactory(testDb);
+        vi.clearAllMocks();
+      } else {
+        vi.clearAllMocks();
+      }
     });
 
-    it("should allow admin to impersonate another user", async () => {
+    ifRunningContainerTestsIt("should allow admin to impersonate another user", async () => {
       // Create admin user.
       const adminUser = await factory.createAdminUser({
         username: "adminuser",
@@ -167,7 +180,7 @@ describe("Authentication Login", () => {
       );
     });
 
-    it("should reject impersonation by non-admin user", async () => {
+    ifRunningContainerTestsIt("should reject impersonation by non-admin user", async () => {
       // Create regular user
       const regularUser = await factory.createUser({
         username: "regularuser",
@@ -195,7 +208,7 @@ describe("Authentication Login", () => {
       expect(mockCookieStore.set).not.toHaveBeenCalled();
     });
 
-    it("should reject impersonation when not logged in", async () => {
+    ifRunningContainerTestsIt("should reject impersonation when not logged in", async () => {
       vi.mocked(getUserFromCookies).mockResolvedValue(null);
 
       await expect(loginViaImpersonation("targetuser")).rejects.toThrow(
@@ -205,7 +218,7 @@ describe("Authentication Login", () => {
       expect(mockCookieStore.set).not.toHaveBeenCalled();
     });
 
-    it("should reject impersonation of non-existent user", async () => {
+    ifRunningContainerTestsIt("should reject impersonation of non-existent user", async () => {
       // Create admin user
       const adminUser = await factory.createAdminUser();
 
