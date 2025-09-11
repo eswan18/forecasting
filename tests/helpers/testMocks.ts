@@ -28,8 +28,7 @@ export function mockLogger() {
 }
 
 /**
- * Mock database connection to use test database instead of production
- * NOTE: This shared mock has closure issues. Use inline database mocking in test files:
+ * NOTE: Using a shared mock has closure issues. Use inline database mocking in test files:
  *
  * let originalDb: any;
  * vi.mock("@/lib/database", async () => {
