@@ -95,7 +95,7 @@ export function MobilePropCard({
         isOpen={isResolutionDialogOpen}
         onClose={() => setIsResolutionDialogOpen(false)}
       />
-      
+
       <PropEditDialog
         prop={prop}
         isOpen={isPropEditDialogOpen}

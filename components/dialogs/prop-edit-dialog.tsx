@@ -23,11 +23,7 @@ interface PropEditDialogProps {
   onClose: () => void;
 }
 
-export function PropEditDialog({
-  prop,
-  isOpen,
-  onClose,
-}: PropEditDialogProps) {
+export function PropEditDialog({ prop, isOpen, onClose }: PropEditDialogProps) {
   const [text, setText] = useState(prop.prop_text);
   const [notes, setNotes] = useState(prop.prop_notes || "");
   const [isLoading, setIsLoading] = useState(false);
@@ -119,10 +115,7 @@ export function PropEditDialog({
           <Button variant="outline" onClick={handleClose} disabled={isLoading}>
             Cancel
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={isLoading || !isTextValid}
-          >
+          <Button onClick={handleSubmit} disabled={isLoading || !isTextValid}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Update
           </Button>
