@@ -48,7 +48,7 @@ export function ResolutionFilter({
         <Button
           variant="outline"
           className={cn(
-            "h-9 justify-between w-full sm:min-w-[140px] sm:w-auto",
+            "h-8 text-xs sm:h-9 sm:text-sm justify-between w-full sm:min-w-[140px] sm:w-auto",
             hasActiveFilters && "border-primary bg-primary/5",
             className,
           )}

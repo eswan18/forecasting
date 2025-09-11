@@ -60,12 +60,12 @@ export function FiltersContainer({
       {/* Search and Clear - right aligned on desktop, full width on mobile */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           <Input
             placeholder="Search propositions..."
             value={searchText}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-9 w-full sm:w-64"
+            className="pl-9 w-full sm:w-64 h-8 text-xs sm:h-9 sm:text-sm"
           />
         </div>
 
@@ -74,7 +74,7 @@ export function FiltersContainer({
             variant="ghost"
             size="sm"
             onClick={onClearFilters}
-            className="h-8 px-2 text-muted-foreground hover:text-foreground self-start sm:self-auto"
+            className="h-7 px-2 text-xs sm:h-8 sm:text-sm text-muted-foreground hover:text-foreground self-start sm:self-auto"
           >
             <X className="h-4 w-4 mr-1" />
             Clear filters
