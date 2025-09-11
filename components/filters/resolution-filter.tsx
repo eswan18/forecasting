@@ -50,7 +50,7 @@ export function ResolutionFilter({
           className={cn(
             "h-9 justify-between min-w-[140px]",
             hasActiveFilters && "border-primary bg-primary/5",
-            className
+            className,
           )}
         >
           <div className="flex items-center gap-2">
@@ -65,7 +65,9 @@ export function ResolutionFilter({
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup
           value={selectedResolution}
-          onValueChange={(value) => onResolutionChange(value as ResolutionFilterValue)}
+          onValueChange={(value) =>
+            onResolutionChange(value as ResolutionFilterValue)
+          }
         >
           <DropdownMenuRadioItem value="all">
             All Resolutions

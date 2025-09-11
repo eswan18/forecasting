@@ -16,7 +16,8 @@ export function CategoryBadge({ categoryName, onClick }: CategoryBadgeProps) {
       variant="outline"
       className={cn(
         "text-xs w-24 justify-center text-center",
-        onClick && "cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
+        onClick &&
+          "cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors",
       )}
       onClick={onClick}
     >

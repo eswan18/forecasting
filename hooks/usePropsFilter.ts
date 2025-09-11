@@ -8,12 +8,17 @@ interface UsePropsFilterProps {
 
 export function usePropsFilter({ props }: UsePropsFilterProps) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedResolution, setSelectedResolution] = useState<ResolutionFilterValue>("all");
+  const [selectedResolution, setSelectedResolution] =
+    useState<ResolutionFilterValue>("all");
 
   // Get unique categories from props
   const categories = useMemo(() => {
     const uniqueCategories = Array.from(
-      new Set(props.map((prop) => prop.category_name).filter((name): name is string => Boolean(name)))
+      new Set(
+        props
+          .map((prop) => prop.category_name)
+          .filter((name): name is string => Boolean(name)),
+      ),
     );
     return uniqueCategories.sort();
   }, [props]);
@@ -22,12 +27,12 @@ export function usePropsFilter({ props }: UsePropsFilterProps) {
   const filteredProps = useMemo(() => {
     return props.filter((prop) => {
       // Category filter
-      const categoryMatch = 
-        selectedCategories.length === 0 || 
+      const categoryMatch =
+        selectedCategories.length === 0 ||
         (prop.category_name && selectedCategories.includes(prop.category_name));
 
       // Resolution filter
-      const resolutionMatch = 
+      const resolutionMatch =
         selectedResolution === "all" ||
         (selectedResolution === "resolved" && prop.resolution !== null) ||
         (selectedResolution === "unresolved" && prop.resolution === null);

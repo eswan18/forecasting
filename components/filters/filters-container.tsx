@@ -25,12 +25,18 @@ export function FiltersContainer({
   onClearFilters,
   className,
 }: FiltersContainerProps) {
-  const hasActiveFilters = 
-    (selectedCategories.length > 0 && selectedCategories.length < categories.length) ||
+  const hasActiveFilters =
+    (selectedCategories.length > 0 &&
+      selectedCategories.length < categories.length) ||
     selectedResolution !== "all";
 
   return (
-    <div className={cn("flex flex-wrap items-center gap-3 p-4 bg-muted/30 rounded-lg border", className)}>
+    <div
+      className={cn(
+        "flex flex-wrap items-center gap-3 p-4 bg-muted/30 rounded-lg border",
+        className,
+      )}
+    >
       <div className="flex flex-wrap items-center gap-3">
         <CategoryFilter
           categories={categories}
@@ -42,7 +48,7 @@ export function FiltersContainer({
           onResolutionChange={onResolutionChange}
         />
       </div>
-      
+
       {hasActiveFilters && (
         <Button
           variant="ghost"

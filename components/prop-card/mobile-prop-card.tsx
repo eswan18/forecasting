@@ -8,7 +8,11 @@ interface MobilePropCardProps {
   onResolutionClick?: (resolution: "resolved" | "unresolved") => void;
 }
 
-export function MobilePropCard({ prop, onCategoryClick, onResolutionClick }: MobilePropCardProps) {
+export function MobilePropCard({
+  prop,
+  onCategoryClick,
+  onResolutionClick,
+}: MobilePropCardProps) {
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -22,13 +26,17 @@ export function MobilePropCard({ prop, onCategoryClick, onResolutionClick }: Mob
       <CardContent className="pt-0">
         <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
           <div className="flex flex-wrap items-center gap-2">
-            <CategoryBadge 
-              categoryName={prop.category_name} 
-              onClick={prop.category_name ? () => onCategoryClick?.(prop.category_name!) : undefined}
+            <CategoryBadge
+              categoryName={prop.category_name}
+              onClick={
+                prop.category_name
+                  ? () => onCategoryClick?.(prop.category_name!)
+                  : undefined
+              }
             />
           </div>
-          <ResolutionBadge 
-            resolution={prop.resolution} 
+          <ResolutionBadge
+            resolution={prop.resolution}
             onClick={() => {
               if (prop.resolution === null) {
                 onResolutionClick?.("unresolved");

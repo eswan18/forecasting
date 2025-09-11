@@ -13,7 +13,11 @@ interface PropCardProps {
   onResolutionClick?: (resolution: "resolved" | "unresolved") => void;
 }
 
-export function PropCard({ prop, onCategoryClick, onResolutionClick }: PropCardProps) {
+export function PropCard({
+  prop,
+  onCategoryClick,
+  onResolutionClick,
+}: PropCardProps) {
   return (
     <Card>
       <CardContent className="py-4 px-6">
@@ -39,17 +43,21 @@ export function PropCard({ prop, onCategoryClick, onResolutionClick }: PropCardP
             </Tooltip>
           </div>
           <div className="col-span-3">
-            <CategoryBadge 
-              categoryName={prop.category_name} 
-              onClick={prop.category_name ? () => onCategoryClick?.(prop.category_name!) : undefined}
+            <CategoryBadge
+              categoryName={prop.category_name}
+              onClick={
+                prop.category_name
+                  ? () => onCategoryClick?.(prop.category_name!)
+                  : undefined
+              }
             />
           </div>
           <div className="col-span-3 flex justify-end">
             <Tooltip>
               <TooltipTrigger asChild>
                 <div>
-                  <ResolutionBadge 
-                    resolution={prop.resolution} 
+                  <ResolutionBadge
+                    resolution={prop.resolution}
                     onClick={() => {
                       if (prop.resolution === null) {
                         onResolutionClick?.("unresolved");

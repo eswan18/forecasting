@@ -56,7 +56,9 @@ export function CategoryFilter({
     return `${selectedCategories.length} Categories`;
   };
 
-  const hasActiveFilters = selectedCategories.length > 0 && selectedCategories.length < categories.length;
+  const hasActiveFilters =
+    selectedCategories.length > 0 &&
+    selectedCategories.length < categories.length;
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -66,7 +68,7 @@ export function CategoryFilter({
           className={cn(
             "h-9 justify-between min-w-[140px]",
             hasActiveFilters && "border-primary bg-primary/5",
-            className
+            className,
           )}
         >
           <div className="flex items-center gap-2">
@@ -80,9 +82,15 @@ export function CategoryFilter({
         <DropdownMenuLabel>Filter by Category</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuCheckboxItem
-          checked={selectedCategories.length === 0 || selectedCategories.length === categories.length}
+          checked={
+            selectedCategories.length === 0 ||
+            selectedCategories.length === categories.length
+          }
           onCheckedChange={() => {
-            if (selectedCategories.length === 0 || selectedCategories.length === categories.length) {
+            if (
+              selectedCategories.length === 0 ||
+              selectedCategories.length === categories.length
+            ) {
               handleSelectNone();
             } else {
               handleSelectAll();

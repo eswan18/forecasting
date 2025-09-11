@@ -9,11 +9,11 @@ interface ResolutionBadgeProps {
 export function ResolutionBadge({ resolution, onClick }: ResolutionBadgeProps) {
   if (resolution === null) {
     return (
-      <Badge 
-        variant="secondary" 
+      <Badge
+        variant="secondary"
         className={cn(
           "text-xs w-24 justify-center",
-          onClick && "cursor-pointer hover:bg-secondary/80 transition-colors"
+          onClick && "cursor-pointer hover:bg-secondary/80 transition-colors",
         )}
         onClick={onClick}
       >
@@ -29,7 +29,7 @@ export function ResolutionBadge({ resolution, onClick }: ResolutionBadgeProps) {
         "text-xs w-24 justify-center",
         onClick && "cursor-pointer transition-colors",
         onClick && resolution && "hover:bg-primary/90",
-        onClick && !resolution && "hover:bg-destructive/90"
+        onClick && !resolution && "hover:bg-destructive/90",
       )}
       onClick={onClick}
     >
