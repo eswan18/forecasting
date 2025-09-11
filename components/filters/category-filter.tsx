@@ -80,9 +80,9 @@ export function CategoryFilter({
         <DropdownMenuLabel>Filter by Category</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuCheckboxItem
-          checked={selectedCategories.length === categories.length}
+          checked={selectedCategories.length === 0 || selectedCategories.length === categories.length}
           onCheckedChange={() => {
-            if (selectedCategories.length === categories.length) {
+            if (selectedCategories.length === 0 || selectedCategories.length === categories.length) {
               handleSelectNone();
             } else {
               handleSelectAll();
