@@ -92,12 +92,9 @@ export function PropsTable({ props }: PropsTableProps) {
         {props.map((prop) => (
           <Card key={prop.prop_id}>
             <CardHeader className="pb-3">
-              <div className="flex items-start justify-between gap-2">
-                <CardTitle className="text-base leading-relaxed">
-                  {prop.prop_text}
-                </CardTitle>
-                <ResolutionStatus resolution={prop.resolution} />
-              </div>
+              <CardTitle className="text-base leading-relaxed">
+                {prop.prop_text}
+              </CardTitle>
               {prop.prop_notes && (
                 <p className="text-sm text-muted-foreground">
                   {prop.prop_notes}
@@ -105,21 +102,24 @@ export function PropsTable({ props }: PropsTableProps) {
               )}
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="flex flex-wrap items-center gap-2 text-sm">
-                {prop.category_name && (
-                  <Badge variant="outline" className="text-xs">
-                    {prop.category_name}
-                  </Badge>
-                )}
-                {prop.resolution_notes && (
-                  <div className="w-full mt-2">
-                    <p className="text-xs text-muted-foreground">
-                      <span className="font-medium">Resolution notes:</span>{" "}
-                      {prop.resolution_notes}
-                    </p>
-                  </div>
-                )}
+              <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                <div className="flex flex-wrap items-center gap-2">
+                  {prop.category_name && (
+                    <Badge variant="outline" className="text-xs">
+                      {prop.category_name}
+                    </Badge>
+                  )}
+                </div>
+                <ResolutionStatus resolution={prop.resolution} />
               </div>
+              {prop.resolution_notes && (
+                <div className="w-full mt-2">
+                  <p className="text-xs text-muted-foreground">
+                    <span className="font-medium">Resolution notes:</span>{" "}
+                    {prop.resolution_notes}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}
