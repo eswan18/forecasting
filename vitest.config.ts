@@ -25,6 +25,19 @@ export default defineConfig({
     ],
     environment: "node",
     globals: true,
+    globalSetup: ["./tests/globalSetup.ts"],
+    setupFiles: ["./tests/setup.ts"],
+    testTimeout: 60000, // 60 seconds for testcontainer startup
+    hookTimeout: 300000, // 5 minutes for setup/teardown hooks
+    // Force sequential execution when using containers to avoid database conflicts
+    ...(process.env.TEST_USE_CONTAINERS === "true" && {
+      pool: "forks",
+      poolOptions: {
+        forks: {
+          singleFork: true,
+        },
+      },
+    }),
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],

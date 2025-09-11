@@ -1,19 +1,51 @@
 "use server";
 
-import argon2 from "argon2";
-import { createLogin, createUser, getLoginByUsername } from "@/lib/db_actions";
-import * as dotenv from "dotenv";
 import { getUserFromCookies } from "../get-user";
 import {
   consumeInviteToken,
   inviteTokenIsValid,
 } from "../db_actions/invite-tokens";
-dotenv.config({ path: ".env.local" });
+import { registerNewUser } from "./register-internal";
 
-const SALT = process.env.ARGON2_SALT;
-
-/// Create a new user.
-export async function registerNewUser({
+/**
+ * Creates a new user with proper authorization checks.
+ *
+ * This server action validates that the requesting user has permission to create
+ * a new account. Authorization is granted if the requesting user is an admin OR
+ * a valid invite token is provided.
+ *
+ * @param params - The user registration parameters
+ * @param params.username - Unique username for login (required)
+ * @param params.password - Plain text password, must meet strength requirements (required)
+ * @param params.name - Display name for the user (required)
+ * @param params.email - Email address for the user (required)
+ * @param params.inviteToken - Optional invite token for non-admin registrations
+ *
+ * @throws {Error} When no invite token is provided and user is not admin
+ * @throws {Error} When provided invite token is invalid
+ * @throws {Error} When user registration fails (see registerNewUser for details)
+ *
+ * @example
+ * ```typescript
+ * // Admin creating user without token
+ * await registerNewUserIfAuthorized({
+ *   username: "newuser",
+ *   password: "securepass123",
+ *   name: "New User",
+ *   email: "new@example.com"
+ * });
+ *
+ * // Non-admin using invite token
+ * await registerNewUserIfAuthorized({
+ *   username: "inviteduser",
+ *   password: "securepass123",
+ *   name: "Invited User",
+ *   email: "invited@example.com",
+ *   inviteToken: "abc123"
+ * });
+ * ```
+ */
+export async function registerNewUserIfAuthorized({
   username,
   password,
   name,
@@ -42,32 +74,7 @@ export async function registerNewUser({
     console.log("Confirmed valid invite token.");
   }
 
-  if (!username || !password) {
-    throw new Error("Username and password are required.");
-  }
-
-  // Check if the username already exists.
-  const existingLogin = await getLoginByUsername(username);
-  if (existingLogin) {
-    throw new Error("Username already exists.");
-  }
-
-  // Make sure the password is valid: at least 8 characters.
-  if (password.length < 8) {
-    throw new Error("Password must be at least 8 characters long.");
-  }
-
-  // Create the login.
-  const passwordHash = await argon2.hash(SALT + password, {
-    type: argon2.argon2id,
-  });
-  const login = { username, password_hash: passwordHash };
-  const loginId = await createLogin({ login });
-
-  // Create the user.
-  const user = { name, email, login_id: loginId, is_admin: false };
-  await createUser({ user });
-  console.log(`User ${username} created.`);
+  await registerNewUser({ username, password, name, email });
 
   // Consume the invite token, if one was provided.
   if (inviteToken) {

@@ -47,7 +47,7 @@ export default function ForecastFieldForm({
     setLoading(true);
     // Convert string to number for the API calls
     const forecastValue = parseFloat(values.forecast);
-    
+
     if (!initialForecast) {
       // If there was no initial forecast, we're creating a new one.
       const forecast: NewForecast = {

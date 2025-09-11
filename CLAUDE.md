@@ -18,6 +18,8 @@ This is a Next.js forecasting application inspired by Philip Tetlock's Good Judg
 ### Testing
 
 - `npm run test` - Run all unit tests with Vitest
+- `npm run test:containers` - Run tests with real PostgreSQL containers (requires Docker, ~3-5min first run)
+- `npm run test:containers:quick` - Quick container test verification (single test file)
 - `npm run test:watch` - Run tests in watch mode
 - `npm run test:ui` - Run tests with Vitest UI
 - `npm run test:coverage` - Run tests with coverage report
@@ -27,6 +29,7 @@ This is a Next.js forecasting application inspired by Philip Tetlock's Good Judg
 **Testing Setup:**
 
 - Unit tests use Vitest with Node.js environment
+- Testcontainers integration available for database testing with real PostgreSQL instances
 - Test files: `**/*.{test,spec}.{ts,tsx}`
 - Coverage provided by V8 with HTML/JSON/text reports
 - UI components tested in Storybook (excluded from coverage)
