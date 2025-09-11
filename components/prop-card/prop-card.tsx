@@ -9,9 +9,11 @@ import { CategoryBadge, ResolutionBadge } from "@/components/badges";
 
 interface PropCardProps {
   prop: VProp;
+  onCategoryClick?: (categoryName: string) => void;
+  onResolutionClick?: (resolution: "resolved" | "unresolved") => void;
 }
 
-export function PropCard({ prop }: PropCardProps) {
+export function PropCard({ prop, onCategoryClick, onResolutionClick }: PropCardProps) {
   return (
     <Card>
       <CardContent className="py-4 px-6">
@@ -37,13 +39,25 @@ export function PropCard({ prop }: PropCardProps) {
             </Tooltip>
           </div>
           <div className="col-span-3">
-            <CategoryBadge categoryName={prop.category_name} />
+            <CategoryBadge 
+              categoryName={prop.category_name} 
+              onClick={prop.category_name ? () => onCategoryClick?.(prop.category_name!) : undefined}
+            />
           </div>
           <div className="col-span-3 flex justify-end">
             <Tooltip>
               <TooltipTrigger asChild>
                 <div>
-                  <ResolutionBadge resolution={prop.resolution} />
+                  <ResolutionBadge 
+                    resolution={prop.resolution} 
+                    onClick={() => {
+                      if (prop.resolution === null) {
+                        onResolutionClick?.("unresolved");
+                      } else {
+                        onResolutionClick?.("resolved");
+                      }
+                    }}
+                  />
                 </div>
               </TooltipTrigger>
               <TooltipContent>

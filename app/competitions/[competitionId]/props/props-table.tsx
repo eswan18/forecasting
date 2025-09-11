@@ -53,7 +53,12 @@ export function PropsTable({ props }: PropsTableProps) {
         <div className="hidden md:block">
           <div className="flex flex-col gap-2">
             {filteredProps.map((prop) => (
-              <PropCard key={prop.prop_id} prop={prop} />
+              <PropCard 
+                key={prop.prop_id} 
+                prop={prop} 
+                onCategoryClick={(categoryName) => setSelectedCategories([categoryName])}
+                onResolutionClick={(resolution) => setSelectedResolution(resolution)}
+              />
             ))}
           </div>
         </div>
@@ -61,7 +66,12 @@ export function PropsTable({ props }: PropsTableProps) {
         {/* Mobile Cards */}
         <div className="md:hidden flex flex-col gap-4">
           {filteredProps.map((prop) => (
-            <MobilePropCard key={prop.prop_id} prop={prop} />
+            <MobilePropCard 
+              key={prop.prop_id} 
+              prop={prop} 
+              onCategoryClick={(categoryName) => setSelectedCategories([categoryName])}
+              onResolutionClick={(resolution) => setSelectedResolution(resolution)}
+            />
           ))}
         </div>
 

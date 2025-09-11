@@ -4,9 +4,11 @@ import { CategoryBadge, ResolutionBadge } from "@/components/badges";
 
 interface MobilePropCardProps {
   prop: VProp;
+  onCategoryClick?: (categoryName: string) => void;
+  onResolutionClick?: (resolution: "resolved" | "unresolved") => void;
 }
 
-export function MobilePropCard({ prop }: MobilePropCardProps) {
+export function MobilePropCard({ prop, onCategoryClick, onResolutionClick }: MobilePropCardProps) {
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -20,9 +22,21 @@ export function MobilePropCard({ prop }: MobilePropCardProps) {
       <CardContent className="pt-0">
         <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
           <div className="flex flex-wrap items-center gap-2">
-            <CategoryBadge categoryName={prop.category_name} />
+            <CategoryBadge 
+              categoryName={prop.category_name} 
+              onClick={prop.category_name ? () => onCategoryClick?.(prop.category_name!) : undefined}
+            />
           </div>
-          <ResolutionBadge resolution={prop.resolution} />
+          <ResolutionBadge 
+            resolution={prop.resolution} 
+            onClick={() => {
+              if (prop.resolution === null) {
+                onResolutionClick?.("unresolved");
+              } else {
+                onResolutionClick?.("resolved");
+              }
+            }}
+          />
         </div>
         {prop.resolution_notes && (
           <div className="w-full mt-2">
