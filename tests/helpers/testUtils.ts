@@ -1,6 +1,8 @@
 import { it } from "vitest";
 
-export const ifRunningContainerTestsIt = shouldRunContainerTests() ? it : it.skip;
+export const ifRunningContainerTestsIt = shouldRunContainerTests()
+  ? it
+  : it.skip;
 /**
  * Checks if container tests should be run
  * @returns true if TEST_USE_CONTAINERS is "true", false otherwise
