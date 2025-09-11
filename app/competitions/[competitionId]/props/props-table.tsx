@@ -128,15 +128,6 @@ export function PropsTable({ props }: PropsTableProps) {
   return (
     <TooltipProvider>
       <div className="flex flex-col gap-4">
-        <div className="mb-4">
-          <h2 className="text-xl font-semibold">
-            Propositions ({props.length})
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Forecast on these propositions for the competition
-          </p>
-        </div>
-
         {/* Desktop Table */}
         <div className="hidden md:block">
           <div className="flex flex-col gap-2">
