@@ -1,54 +1,23 @@
 import { Kysely } from "kysely";
-import { Database } from "@/types/db_types";
+import { Database, User, Prop, Competition, Forecast } from "@/types/db_types";
 import argon2 from "argon2";
 
-export interface TestUser {
-  id: number;
-  name: string;
-  email: string;
-  login_id: number | null;
-  is_admin: boolean;
-  created_at: Date;
-  updated_at: Date;
-  // Include login info for convenience in tests
-  username?: string;
-}
+// Use existing types from the codebase instead of duplicating interfaces
+// Extend User with username field for convenience in tests
+export type TestUser = User & {
+  username: string | null;
+};
 
-export interface TestProp {
-  id: string;
-  text: string;
-  category_id: number | null;
-  competition_id: number | null;
-  user_id: number | null;
-  notes: string | null;
-  created_at: Date;
-  updated_at: Date;
-}
-
-export interface TestCompetition {
-  id: string;
-  name: string;
-  forecasts_due_date: Date;
-  end_date: Date;
-  created_at: Date;
-  updated_at: Date;
-}
-
-export interface TestForecast {
-  id: string;
-  user_id: string;
-  prop_id: string;
-  forecast: number;
-  created_at: Date;
-  updated_at: Date;
-}
+// These types match exactly with the database types
+export type TestProp = Prop;
+export type TestCompetition = Competition;
+export type TestForecast = Forecast;
 
 export class TestDataFactory {
   constructor(private db: Kysely<Database>) {}
 
   async createUser(
     overrides: Partial<TestUser> & {
-      username?: string;
       password?: string;
     } = {},
   ): Promise<TestUser> {
@@ -117,7 +86,7 @@ export class TestDataFactory {
       is_admin: createdUser.is_admin,
       created_at: createdUser.created_at,
       updated_at: createdUser.updated_at,
-      username: login?.username,
+      username: login?.username || null,
     };
   }
 
@@ -135,17 +104,10 @@ export class TestDataFactory {
     const result = await this.db
       .insertInto("competitions")
       .values(competitionData)
-      .returning(["id", "name", "forecasts_due_date", "end_date"])
+      .returningAll()
       .executeTakeFirst();
 
-    return {
-      id: result!.id.toString(),
-      name: result!.name,
-      forecasts_due_date: result!.forecasts_due_date,
-      end_date: result!.end_date,
-      created_at: new Date(),
-      updated_at: new Date(),
-    };
+    return result!;
   }
 
   async createProp(overrides: Partial<TestProp> = {}): Promise<TestProp> {
@@ -162,36 +124,20 @@ export class TestDataFactory {
     const result = await this.db
       .insertInto("props")
       .values(propData)
-      .returning([
-        "id",
-        "text",
-        "category_id",
-        "competition_id",
-        "user_id",
-        "notes",
-      ])
+      .returningAll()
       .executeTakeFirst();
 
-    return {
-      id: result!.id.toString(),
-      text: result!.text,
-      category_id: result!.category_id,
-      competition_id: result!.competition_id,
-      user_id: result!.user_id,
-      notes: result!.notes,
-      created_at: new Date(),
-      updated_at: new Date(),
-    };
+    return result!;
   }
 
   async createForecast(
-    userId: string,
-    propId: string,
+    userId: number,
+    propId: number,
     overrides: Partial<TestForecast> = {},
   ): Promise<TestForecast> {
     const defaults = {
-      user_id: parseInt(userId),
-      prop_id: parseInt(propId),
+      user_id: userId,
+      prop_id: propId,
       forecast: Math.round(Math.random() * 100) / 100, // Random probability between 0 and 1
     };
 
@@ -200,22 +146,14 @@ export class TestDataFactory {
     const result = await this.db
       .insertInto("forecasts")
       .values(forecastData)
-      .returning(["id", "user_id", "prop_id", "forecast"])
+      .returningAll()
       .executeTakeFirst();
 
-    return {
-      id: result!.id.toString(),
-      user_id: userId,
-      prop_id: propId,
-      forecast: result!.forecast,
-      created_at: new Date(),
-      updated_at: new Date(),
-    };
+    return result!;
   }
 
   async createAdminUser(
     overrides: Partial<TestUser> & {
-      username?: string;
       password?: string;
     } = {},
   ): Promise<TestUser> {
@@ -227,22 +165,22 @@ export class TestDataFactory {
   }
 
   async createPersonalProp(
-    userId: string,
+    userId: number,
     overrides: Partial<TestProp> = {},
   ): Promise<TestProp> {
     return this.createProp({
-      user_id: userId as any,
+      user_id: userId,
       competition_id: null,
       ...overrides,
     });
   }
 
   async createCompetitionProp(
-    competitionId: string,
+    competitionId: number,
     overrides: Partial<TestProp> = {},
   ): Promise<TestProp> {
     return this.createProp({
-      competition_id: competitionId as any,
+      competition_id: competitionId,
       user_id: null,
       ...overrides,
     });
