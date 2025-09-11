@@ -39,11 +39,13 @@ export function FiltersContainer({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-3 p-4 bg-muted/30 rounded-lg border",
+        "flex flex-col gap-3 p-4 bg-muted/30 rounded-lg border",
+        "sm:flex-row sm:items-center sm:justify-between",
         className,
       )}
     >
-      <div className="flex flex-wrap items-center gap-3">
+      {/* Filters - left aligned */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <CategoryFilter
           categories={categories}
           selectedCategories={selectedCategories}
@@ -55,14 +57,15 @@ export function FiltersContainer({
         />
       </div>
 
-      <div className="flex items-center gap-3 ml-auto">
+      {/* Search and Clear - right aligned on desktop, full width on mobile */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search propositions..."
             value={searchText}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-9 w-64"
+            className="pl-9 w-full sm:w-64"
           />
         </div>
 
@@ -71,7 +74,7 @@ export function FiltersContainer({
             variant="ghost"
             size="sm"
             onClick={onClearFilters}
-            className="h-8 px-2 text-muted-foreground hover:text-foreground"
+            className="h-8 px-2 text-muted-foreground hover:text-foreground self-start sm:self-auto"
           >
             <X className="h-4 w-4 mr-1" />
             Clear filters
