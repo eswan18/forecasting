@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { VProp } from "@/types/db_types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -9,6 +10,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { CategoryBadge, ResolutionBadge } from "@/components/badges";
+import { FiltersContainer, ResolutionFilterValue } from "@/components/filters";
 
 interface PropCardProps {
   prop: VProp;
@@ -115,6 +117,41 @@ function MobilePropCard({ prop }: MobilePropCardProps) {
 }
 
 export function PropsTable({ props }: PropsTableProps) {
+  // Filter state
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedResolution, setSelectedResolution] = useState<ResolutionFilterValue>("all");
+
+  // Get unique categories from props
+  const categories = useMemo(() => {
+    const uniqueCategories = Array.from(
+      new Set(props.map((prop) => prop.category_name).filter((name): name is string => Boolean(name)))
+    );
+    return uniqueCategories.sort();
+  }, [props]);
+
+  // Filter props based on selected filters
+  const filteredProps = useMemo(() => {
+    return props.filter((prop) => {
+      // Category filter
+      const categoryMatch = 
+        selectedCategories.length === 0 || 
+        (prop.category_name && selectedCategories.includes(prop.category_name));
+
+      // Resolution filter
+      const resolutionMatch = 
+        selectedResolution === "all" ||
+        (selectedResolution === "resolved" && prop.resolution !== null) ||
+        (selectedResolution === "unresolved" && prop.resolution === null);
+
+      return categoryMatch && resolutionMatch;
+    });
+  }, [props, selectedCategories, selectedResolution]);
+
+  const handleClearFilters = () => {
+    setSelectedCategories([]);
+    setSelectedResolution("all");
+  };
+
   if (props.length === 0) {
     return (
       <div className="py-8">
@@ -127,11 +164,28 @@ export function PropsTable({ props }: PropsTableProps) {
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-6">
+        {/* Filters */}
+        <FiltersContainer
+          categories={categories}
+          selectedCategories={selectedCategories}
+          onCategoryChange={setSelectedCategories}
+          selectedResolution={selectedResolution}
+          onResolutionChange={setSelectedResolution}
+          onClearFilters={handleClearFilters}
+        />
+
+        {/* Results count */}
+        {filteredProps.length !== props.length && (
+          <div className="text-sm text-muted-foreground">
+            Showing {filteredProps.length} of {props.length} propositions
+          </div>
+        )}
+
         {/* Desktop Table */}
         <div className="hidden md:block">
           <div className="flex flex-col gap-2">
-            {props.map((prop) => (
+            {filteredProps.map((prop) => (
               <PropCard key={prop.prop_id} prop={prop} />
             ))}
           </div>
@@ -139,10 +193,19 @@ export function PropsTable({ props }: PropsTableProps) {
 
         {/* Mobile Cards */}
         <div className="md:hidden flex flex-col gap-4">
-          {props.map((prop) => (
+          {filteredProps.map((prop) => (
             <MobilePropCard key={prop.prop_id} prop={prop} />
           ))}
         </div>
+
+        {/* No results message */}
+        {filteredProps.length === 0 && props.length > 0 && (
+          <div className="py-8">
+            <p className="text-center text-muted-foreground">
+              No propositions match the current filters.
+            </p>
+          </div>
+        )}
       </div>
     </TooltipProvider>
   );
