@@ -1,7 +1,6 @@
-import { getCompetitionById, getProps } from "@/lib/db_actions";
-import PropTable from "@/components/tables/prop-table";
+import { getProps } from "@/lib/db_actions";
 import { getUserFromCookies } from "@/lib/get-user";
-import ErrorPage from "@/components/pages/error-page";
+import { PropsTable } from "./props-table";
 
 export default async function Page({
   params,
@@ -10,18 +9,9 @@ export default async function Page({
 }) {
   const { competitionId: competitionIdString } = await params;
   const competitionId = parseInt(competitionIdString, 10);
-  const competition = await getCompetitionById(competitionId);
-  if (!competition) {
-    return <ErrorPage title="Competition not found" />;
-  }
   const user = await getUserFromCookies();
   const allowEdits = user?.is_admin || false;
   const propsAndResolutions = await getProps({ competitionId });
-  return (
-    <PropTable
-      data={propsAndResolutions}
-      editable={allowEdits}
-      competitionId={competitionId}
-    />
-  );
+
+  return <PropsTable props={propsAndResolutions} />;
 }
