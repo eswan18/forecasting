@@ -44,12 +44,12 @@ export default async function NavBar() {
       label: "Competitions",
       links: [
         {
-          href: "/competitions/1/forecasts",
+          href: "/competitions/1/props",
           label: "2024 Open",
           icon: <Medal size={16} />,
         },
         {
-          href: "/competitions/2/forecasts",
+          href: "/competitions/2/props",
           label: "2025 Open",
           icon: <Medal size={16} />,
         },

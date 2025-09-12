@@ -26,11 +26,13 @@ type Sort = {
 export async function getForecasts({
   userId,
   competitionId,
+  propId,
   resolution,
   sort,
 }: {
   userId?: number;
   competitionId?: number | null;
+  propId?: number;
   resolution?: (boolean | null)[];
   sort?: Sort;
 }): Promise<VForecast[]> {
@@ -38,6 +40,7 @@ export async function getForecasts({
   logger.debug("Getting forecasts", {
     userId,
     competitionId,
+    propId,
     resolution,
     currentUserId: currentUser?.id,
   });
@@ -60,6 +63,9 @@ export async function getForecasts({
       } else if (competitionId === null) {
         // If competitionID is null, we want to filter down to forecasts that are not in a competition.
         query = query.where("competition_id", "is", null);
+      }
+      if (propId !== undefined) {
+        query = query.where("prop_id", "=", propId);
       }
       if (resolution !== undefined) {
         const nonNullResolutions = resolution.filter((res) => res !== null);

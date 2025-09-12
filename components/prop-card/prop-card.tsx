@@ -10,7 +10,8 @@ import {
 import { CategoryBadge, ResolutionBadge } from "@/components/badges";
 import { ResolutionDialog } from "@/components/dialogs/resolution-dialog";
 import { PropEditDialog } from "@/components/dialogs/prop-edit-dialog";
-import { Edit2 } from "lucide-react";
+import { Edit2, ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 interface PropCardProps {
   prop: VProp;
@@ -44,24 +45,42 @@ export function PropCard({
                   <div className="space-y-1">
                     <p className="font-medium">{prop.prop_text}</p>
                     {prop.prop_notes && (
-                      <p className="text-xs opacity-90">
-                        <span className="font-medium">Notes:</span>{" "}
+                      <p className="text-xs text-muted-foreground/80 leading-relaxed">
                         {prop.prop_notes}
                       </p>
                     )}
                   </div>
                 </TooltipContent>
               </Tooltip>
-              {allowEdits && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 flex-shrink-0"
-                  onClick={() => setIsPropEditDialogOpen(true)}
-                >
-                  <Edit2 className="h-3 w-3" />
-                </Button>
-              )}
+              <div className="flex gap-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 flex-shrink-0"
+                      asChild
+                    >
+                      <Link href={`/props/${prop.prop_id}`}>
+                        <ExternalLink className="h-3 w-3" />
+                      </Link>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>View all forecasts for this prop</p>
+                  </TooltipContent>
+                </Tooltip>
+                {allowEdits && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 flex-shrink-0"
+                    onClick={() => setIsPropEditDialogOpen(true)}
+                  >
+                    <Edit2 className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
           <div className="col-span-3">
@@ -101,8 +120,7 @@ export function PropCard({
                         : "False"}
                   </p>
                   {prop.resolution_notes && (
-                    <p className="text-xs opacity-90">
-                      <span className="font-medium">Notes:</span>{" "}
+                    <p className="text-xs text-muted-foreground/80 leading-relaxed">
                       {prop.resolution_notes}
                     </p>
                   )}

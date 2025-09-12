@@ -34,7 +34,7 @@ export default async function Page({
   if (!user) {
     await loginAndRedirect({ url: `competitions/${competitionId}/scores` });
   }
-  const linkToForecasts = `/competitions/${competitionId}/forecasts`;
+  const linkToProps = `/competitions/${competitionId}/props`;
   return (
     <div className="w-full flex flex-col items-center">
       <Suspense
@@ -76,8 +76,8 @@ export default async function Page({
             The below scores should be considered very much subject to change; I
             resolved only the propositions that seemed most clear-cut. Check out
             your{" "}
-            <Link href={linkToForecasts} className="underline">
-              Forecasts page
+            <Link href={linkToProps} className="underline">
+              Props page
             </Link>{" "}
             to see which have been resolved.
           </AccordionContent>

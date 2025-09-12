@@ -13,6 +13,54 @@ import {
 } from "@/lib/server-action-result";
 import { logger } from "@/lib/logger";
 
+export async function getPropById(propId: number): Promise<VProp | null> {
+  const currentUser = await getUserFromCookies();
+
+  logger.debug("Getting prop by ID", {
+    propId,
+    currentUserId: currentUser?.id,
+  });
+
+  const startTime = Date.now();
+  try {
+    const result = await db.transaction().execute(async (trx) => {
+      await trx.executeQuery(
+        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
+          db,
+        ),
+      );
+
+      const prop = await trx
+        .selectFrom("v_props")
+        .selectAll()
+        .where("prop_id", "=", propId)
+        .executeTakeFirst();
+
+      return prop;
+    });
+
+    const duration = Date.now() - startTime;
+    logger.info(`Retrieved prop by ID`, {
+      operation: "getPropById",
+      table: "v_props",
+      duration,
+      propId,
+      found: !!result,
+    });
+
+    return result || null;
+  } catch (e) {
+    const duration = Date.now() - startTime;
+    logger.error("Error getting prop by ID", e as Error, {
+      operation: "getPropById",
+      table: "v_props",
+      duration,
+      propId,
+    });
+    throw e;
+  }
+}
+
 export async function getProps({
   competitionId,
   userId,
@@ -108,6 +156,7 @@ export async function getProps({
           return eb.or(ors);
         });
       }
+
       return await query.execute();
     });
 

@@ -18,9 +18,8 @@ export default function CompetitionTabs({ className }: { className?: string }) {
         router.push(`/competitions/${competitionId}/${newTab}`);
       }}
     >
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="props">Props</TabsTrigger>
-        <TabsTrigger value="forecasts">Forecasts</TabsTrigger>
         <TabsTrigger value="scores">Scores</TabsTrigger>
       </TabsList>
     </Tabs>
