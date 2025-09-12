@@ -1,0 +1,11 @@
+# .editorconfig
+root = true
+
+[*]
+indent_style = space
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.{js,jsx,ts,tsx,json}]
+indent_size = 2
+

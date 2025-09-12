@@ -1,7 +1,10 @@
 import { vi, describe, it, expect, beforeEach, beforeAll } from "vitest";
 import { getTestDb } from "../helpers/testDatabase";
 import { TestDataFactory } from "../helpers/testFactories";
-import { shouldRunContainerTests, ifRunningContainerTestsIt } from "../helpers/testUtils";
+import {
+  shouldRunContainerTests,
+  ifRunningContainerTestsIt,
+} from "../helpers/testUtils";
 
 let login: typeof import("@/lib/auth/login").login;
 let loginViaImpersonation: typeof import("@/lib/auth/login").loginViaImpersonation;
@@ -77,60 +80,69 @@ describe("Authentication Login", () => {
       }
     });
 
-    ifRunningContainerTestsIt("should login successfully with valid credentials", async () => {
-      const testUser = await factory.createUser({
-        username: "testuser",
-        password: "mypassword",
-      });
+    ifRunningContainerTestsIt(
+      "should login successfully with valid credentials",
+      async () => {
+        const testUser = await factory.createUser({
+          username: "testuser",
+          password: "mypassword",
+        });
 
-      // Try to log in.
-      const result = await login({
-        username: "testuser",
-        password: "mypassword",
-      });
+        // Try to log in.
+        const result = await login({
+          username: "testuser",
+          password: "mypassword",
+        });
 
-      expect(result.success).toBe(true);
-      expect(mockCookieStore.set).toHaveBeenCalledWith(
-        "token",
-        expect.any(String),
-        expect.objectContaining({
-          httpOnly: true,
-          maxAge: 108000,
-          path: "/",
-        }),
-      );
-    });
+        expect(result.success).toBe(true);
+        expect(mockCookieStore.set).toHaveBeenCalledWith(
+          "token",
+          expect.any(String),
+          expect.objectContaining({
+            httpOnly: true,
+            maxAge: 108000,
+            path: "/",
+          }),
+        );
+      },
+    );
 
-    ifRunningContainerTestsIt("should fail login with invalid username", async () => {
-      const result = await login({
-        username: "nonexistent",
-        password: "anypassword",
-      });
+    ifRunningContainerTestsIt(
+      "should fail login with invalid username",
+      async () => {
+        const result = await login({
+          username: "nonexistent",
+          password: "anypassword",
+        });
 
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error).toBe("Invalid username or password.");
-      }
-      expect(mockCookieStore.set).not.toHaveBeenCalled();
-    });
+        expect(result.success).toBe(false);
+        if (!result.success) {
+          expect(result.error).toBe("Invalid username or password.");
+        }
+        expect(mockCookieStore.set).not.toHaveBeenCalled();
+      },
+    );
 
-    ifRunningContainerTestsIt("should fail login with invalid password", async () => {
-      const testUser = await factory.createUser({
-        username: "testuser",
-      });
+    ifRunningContainerTestsIt(
+      "should fail login with invalid password",
+      async () => {
+        const testUser = await factory.createUser({
+          username: "testuser",
+        });
 
-      // Try to log in.
-      const result = await login({
-        username: "testuser",
-        password: "wrongpassword",
-      });
+        // Try to log in.
+        const result = await login({
+          username: "testuser",
+          password: "wrongpassword",
+        });
 
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error).toBe("Invalid username or password.");
-      }
-      expect(mockCookieStore.set).not.toHaveBeenCalled();
-    });
+        expect(result.success).toBe(false);
+        if (!result.success) {
+          expect(result.error).toBe("Invalid username or password.");
+        }
+        expect(mockCookieStore.set).not.toHaveBeenCalled();
+      },
+    );
   });
 
   describe("loginViaImpersonation", () => {
@@ -144,99 +156,113 @@ describe("Authentication Login", () => {
       }
     });
 
-    ifRunningContainerTestsIt("should allow admin to impersonate another user", async () => {
-      // Create admin user.
-      const adminUser = await factory.createAdminUser({
-        username: "adminuser",
-      });
+    ifRunningContainerTestsIt(
+      "should allow admin to impersonate another user",
+      async () => {
+        // Create admin user.
+        const adminUser = await factory.createAdminUser({
+          username: "adminuser",
+        });
 
-      // Create target user to impersonate
-      const targetUser = await factory.createUser({
-        username: "targetuser",
-      });
+        // Create target user to impersonate
+        const targetUser = await factory.createUser({
+          username: "targetuser",
+        });
 
-      // The factory already created the login records and linked them to the users
+        // The factory already created the login records and linked them to the users
 
-      // Mock admin user session
-      vi.mocked(getUserFromCookies).mockResolvedValue({
-        id: adminUser.id,
-        name: adminUser.name,
-        email: adminUser.email,
-        is_admin: true,
-        login_id: adminUser.login_id,
-        username: adminUser.username || null,
-      });
+        // Mock admin user session
+        vi.mocked(getUserFromCookies).mockResolvedValue({
+          id: adminUser.id,
+          name: adminUser.name,
+          email: adminUser.email,
+          is_admin: true,
+          login_id: adminUser.login_id,
+          username: adminUser.username || null,
+        });
 
-      await expect(loginViaImpersonation("targetuser")).resolves.not.toThrow();
+        await expect(
+          loginViaImpersonation("targetuser"),
+        ).resolves.not.toThrow();
 
-      expect(mockCookieStore.set).toHaveBeenCalledWith(
-        "token",
-        expect.any(String),
-        expect.objectContaining({
-          httpOnly: true,
-          maxAge: 108000,
-          path: "/",
-        }),
-      );
-    });
+        expect(mockCookieStore.set).toHaveBeenCalledWith(
+          "token",
+          expect.any(String),
+          expect.objectContaining({
+            httpOnly: true,
+            maxAge: 108000,
+            path: "/",
+          }),
+        );
+      },
+    );
 
-    ifRunningContainerTestsIt("should reject impersonation by non-admin user", async () => {
-      // Create regular user
-      const regularUser = await factory.createUser({
-        username: "regularuser",
-      });
+    ifRunningContainerTestsIt(
+      "should reject impersonation by non-admin user",
+      async () => {
+        // Create regular user
+        const regularUser = await factory.createUser({
+          username: "regularuser",
+        });
 
-      // Create target user
-      const targetUser = await factory.createUser({
-        username: "targetuser",
-      });
+        // Create target user
+        const targetUser = await factory.createUser({
+          username: "targetuser",
+        });
 
-      // Mock regular user session
-      vi.mocked(getUserFromCookies).mockResolvedValue({
-        id: regularUser.id,
-        name: regularUser.name,
-        email: regularUser.email,
-        is_admin: false,
-        login_id: regularUser.login_id,
-        username: regularUser.username || null,
-      });
+        // Mock regular user session
+        vi.mocked(getUserFromCookies).mockResolvedValue({
+          id: regularUser.id,
+          name: regularUser.name,
+          email: regularUser.email,
+          is_admin: false,
+          login_id: regularUser.login_id,
+          username: regularUser.username || null,
+        });
 
-      await expect(loginViaImpersonation("targetuser")).rejects.toThrow(
-        "Not authorized.",
-      );
+        await expect(loginViaImpersonation("targetuser")).rejects.toThrow(
+          "Not authorized.",
+        );
 
-      expect(mockCookieStore.set).not.toHaveBeenCalled();
-    });
+        expect(mockCookieStore.set).not.toHaveBeenCalled();
+      },
+    );
 
-    ifRunningContainerTestsIt("should reject impersonation when not logged in", async () => {
-      vi.mocked(getUserFromCookies).mockResolvedValue(null);
+    ifRunningContainerTestsIt(
+      "should reject impersonation when not logged in",
+      async () => {
+        vi.mocked(getUserFromCookies).mockResolvedValue(null);
 
-      await expect(loginViaImpersonation("targetuser")).rejects.toThrow(
-        "Not authorized.",
-      );
+        await expect(loginViaImpersonation("targetuser")).rejects.toThrow(
+          "Not authorized.",
+        );
 
-      expect(mockCookieStore.set).not.toHaveBeenCalled();
-    });
+        expect(mockCookieStore.set).not.toHaveBeenCalled();
+      },
+    );
 
-    ifRunningContainerTestsIt("should reject impersonation of non-existent user", async () => {
-      // Create admin user
-      const adminUser = await factory.createAdminUser();
+    ifRunningContainerTestsIt(
+      "should reject impersonation of non-existent user",
+      async () => {
+        // Create admin user
+        const adminUser = await factory.createAdminUser();
 
-      // Mock admin user session
-      vi.mocked(getUserFromCookies).mockResolvedValue({
-        id: adminUser.id,
-        name: adminUser.name,
-        email: adminUser.email,
-        is_admin: true,
-        login_id: adminUser.login_id,
-        username: adminUser.username || null,
-      });
+        // Mock admin user session
+        vi.mocked(getUserFromCookies).mockResolvedValue({
+          id: adminUser.id,
+          name: adminUser.name,
+          email: adminUser.email,
+          is_admin: true,
+          login_id: adminUser.login_id,
+          username: adminUser.username || null,
+        });
 
-      await expect(loginViaImpersonation("nonexistentuser")).rejects.toThrow(
-        "Invalid username.",
-      );
+        await expect(loginViaImpersonation("nonexistentuser")).rejects.toThrow(
+          "Invalid username.",
+        );
 
-      expect(mockCookieStore.set).not.toHaveBeenCalled();
-    });
+        expect(mockCookieStore.set).not.toHaveBeenCalled();
+      },
+    );
   });
 });
