@@ -19,7 +19,7 @@ export default async function Home() {
             <p className="text-sm">
               All propositions for 2024 have been resolved, and scores can be
               found on the{" "}
-              <Link href="/scores/2024" className="underline">
+              <Link href="/competitions/1/scores" className="underline">
                 2024 Scores page
               </Link>
               .
@@ -29,8 +29,11 @@ export default async function Home() {
             <p className="font-semibold">2025 Forecasts are locked in</p>
             <p className="text-sm">
               Check out the{" "}
-              <Link href="/forecasts/2025" className="underline">
-                Forecast Stats page
+              <Link
+                href="/competitions/2/forecasts/overview"
+                className="underline"
+              >
+                Competition Stats Overview page
               </Link>{" "}
               to see an overview of your fellow forecasters&apos; predictions.
             </p>

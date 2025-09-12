@@ -8,18 +8,19 @@ export default function CompetitionTabs({ className }: { className?: string }) {
   const pathname = usePathname();
   const pathParts = pathname.split("/");
   const competitionId = pathParts[2];
-  const subpage = pathParts[3];
+  const restOfPath = pathParts.slice(3).join("/");
 
   return (
     <Tabs
-      defaultValue={subpage}
+      defaultValue={restOfPath}
       className={className}
       onValueChange={(newTab) => {
         router.push(`/competitions/${competitionId}/${newTab}`);
       }}
     >
-      <TabsList className="grid w-full grid-cols-2">
+      <TabsList className="grid w-full grid-cols-3">
         <TabsTrigger value="props">Props</TabsTrigger>
+        <TabsTrigger value="forecasts/overview">Forecast Stats</TabsTrigger>
         <TabsTrigger value="scores">Scores</TabsTrigger>
       </TabsList>
     </Tabs>
