@@ -78,7 +78,7 @@ export function ResolutionDialog({
         <DialogHeader>
           <DialogTitle>Resolve Proposition</DialogTitle>
           <DialogDescription>
-            Set the resolution for: "{prop.prop_text}"
+            Set the resolution for: &ldquo;{prop.prop_text}&rdquo;
           </DialogDescription>
         </DialogHeader>
 
