@@ -4,7 +4,7 @@ export function EnvironmentBanner() {
   const env = getCurrentEnvironment();
 
   // Only show banner for non-production environments
-  if (env === "prod") {
+  if (env === "prod" || process.env.VERCEL === "1") {
     return null;
   }
 
