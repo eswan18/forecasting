@@ -10,7 +10,9 @@ This is a Next.js forecasting application inspired by Philip Tetlock's Good Judg
 
 ### Essential Commands
 
-- `npm run dev` - Start development server with Turbopack
+- `ENV=local npm run dev` - Start development server with local environment
+- `ENV=dev npm run dev` - Start development server with dev environment
+- `ENV=prod npm run dev` - Start development server with production environment
 - `npm run build` - Build production application
 - `npm run lint` - Run ESLint
 - `npm run start` - Start production server
@@ -87,7 +89,17 @@ This codebase follows a specific server action pattern documented in `/docs/serv
 1. Spin up local PostgreSQL: `docker compose --env-file .env.prod -f local-pg-container.yaml up`
 2. Set `DATABASE_URL='postgresql://ethan:ethan@localhost:2345/forecasting'` in `.env.local`
 3. Add required env vars: `JWT_SECRET`, `ARGON2_SALT`, `MAILGUN_API_KEY`
-4. Run `npm run dev`
+4. Run `ENV=local npm run dev`
+
+### Environment Management
+
+The app supports multiple environments with automatic configuration loading:
+
+- **Local**: `ENV=local npm run dev` - Uses `.env.local` (blue banner)
+- **Development**: `ENV=dev npm run dev` - Uses `.env.dev` (yellow banner)
+- **Production**: `ENV=prod npm run dev` - Uses `.env.prod` (no banner)
+
+Environment variables are loaded at startup via `instrumentation.ts` and the appropriate `.env` file is automatically selected. A colored banner at the top of the page indicates which environment is currently running.
 
 ### UI Framework
 

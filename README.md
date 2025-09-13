@@ -52,8 +52,17 @@ MAILGUN_API_KEY='abcxyz'
 Now, you can launch a fully-functional dev instance.
 
 ```bash
-npm run dev
+# For local development (uses .env.local)
+ENV=local npm run dev
+
+# For dev environment (uses .env.dev)
+ENV=dev npm run dev
+
+# For production environment (uses .env.prod)
+ENV=prod npm run dev
 ```
+
+The app will automatically load the appropriate `.env` file based on the `ENV` variable and show a colored banner at the top indicating which environment you're running in (except in prod).
 
 ### Testing
 
