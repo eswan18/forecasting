@@ -6,8 +6,10 @@ import { FiltersContainer } from "@/components/filters";
 import { PropCard, MobilePropCard } from "@/components/prop-card";
 import { usePropsFilter } from "@/hooks/usePropsFilter";
 
+type PropWithUserForecast = VProp & { user_forecast: number | null };
+
 interface PropsTableProps {
-  props: VProp[];
+  props: PropWithUserForecast[];
   allowEdits?: boolean;
 }
 
@@ -22,7 +24,7 @@ export function PropsTable({ props, allowEdits = false }: PropsTableProps) {
     setSearchText,
     filteredProps,
     handleClearFilters,
-  } = usePropsFilter({ props });
+  } = usePropsFilter({ props: props as VProp[] });
 
   if (props.length === 0) {
     return (
@@ -57,10 +59,39 @@ export function PropsTable({ props, allowEdits = false }: PropsTableProps) {
         {/* Desktop Table */}
         <div className="hidden md:block">
           <div className="flex flex-col gap-2">
-            {filteredProps.map((prop) => (
-              <PropCard
+            {filteredProps.map((prop) => {
+              const propWithForecast = props.find(
+                (p) => p.prop_id === prop.prop_id,
+              ) as PropWithUserForecast;
+              return (
+                <PropCard
+                  key={prop.prop_id}
+                  prop={prop}
+                  userForecast={propWithForecast?.user_forecast}
+                  onCategoryClick={(categoryName) =>
+                    setSelectedCategories([categoryName])
+                  }
+                  onResolutionClick={(resolution) =>
+                    setSelectedResolution(resolution)
+                  }
+                  allowEdits={allowEdits}
+                />
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="md:hidden flex flex-col gap-4">
+          {filteredProps.map((prop) => {
+            const propWithForecast = props.find(
+              (p) => p.prop_id === prop.prop_id,
+            ) as PropWithUserForecast;
+            return (
+              <MobilePropCard
                 key={prop.prop_id}
                 prop={prop}
+                userForecast={propWithForecast?.user_forecast}
                 onCategoryClick={(categoryName) =>
                   setSelectedCategories([categoryName])
                 }
@@ -69,25 +100,8 @@ export function PropsTable({ props, allowEdits = false }: PropsTableProps) {
                 }
                 allowEdits={allowEdits}
               />
-            ))}
-          </div>
-        </div>
-
-        {/* Mobile Cards */}
-        <div className="md:hidden flex flex-col gap-4">
-          {filteredProps.map((prop) => (
-            <MobilePropCard
-              key={prop.prop_id}
-              prop={prop}
-              onCategoryClick={(categoryName) =>
-                setSelectedCategories([categoryName])
-              }
-              onResolutionClick={(resolution) =>
-                setSelectedResolution(resolution)
-              }
-              allowEdits={allowEdits}
-            />
-          ))}
+            );
+          })}
         </div>
 
         {/* No results message */}

@@ -335,6 +335,65 @@ export async function getUnforecastedProps({
   }
 }
 
+export async function getPropsWithUserForecasts({
+  userId,
+  competitionId,
+}: {
+  userId: number;
+  competitionId: number;
+}): Promise<(VProp & { user_forecast: number | null })[]> {
+  const currentUser = await getUserFromCookies();
+  logger.debug("Getting props with user forecasts", {
+    userId,
+    competitionId,
+    currentUserId: currentUser?.id,
+  });
+
+  const startTime = Date.now();
+  try {
+    const results = await db.transaction().execute(async (trx) => {
+      await trx.executeQuery(
+        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
+          db,
+        ),
+      );
+
+      return await trx
+        .selectFrom("v_props")
+        .leftJoin("forecasts", (join) =>
+          join
+            .onRef("v_props.prop_id", "=", "forecasts.prop_id")
+            .on("forecasts.user_id", "=", userId),
+        )
+        .selectAll("v_props")
+        .select("forecasts.forecast as user_forecast")
+        .where("v_props.competition_id", "=", competitionId)
+        .execute();
+    });
+
+    const duration = Date.now() - startTime;
+    logger.debug(`Retrieved ${results.length} props with user forecasts`, {
+      operation: "getPropsWithUserForecasts",
+      table: "v_props",
+      duration,
+      userId,
+      competitionId,
+    });
+
+    return results;
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    logger.error("Failed to get props with user forecasts", error as Error, {
+      operation: "getPropsWithUserForecasts",
+      table: "v_props",
+      duration,
+      userId,
+      competitionId,
+    });
+    throw error;
+  }
+}
+
 export async function deleteForecast({ id }: { id: number }): Promise<void> {
   const currentUser = await getUserFromCookies();
   logger.debug("Deleting forecast", {
