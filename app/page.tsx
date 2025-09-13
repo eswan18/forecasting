@@ -75,7 +75,8 @@ export default async function Home() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  See the stats about everyone&apos;s 2025 forecasts and view (very early) rankings.
+                  See the stats about everyone&apos;s 2025 forecasts and view
+                  (very early) rankings.
                 </p>
                 <div className="flex gap-2">
                   <Button asChild variant="outline" className="flex-1">
