@@ -4,6 +4,8 @@ import { NewSuggestedProp } from "@/types/db_types";
 import { db } from "@/lib/database";
 import { getUserFromCookies } from "@/lib/get-user";
 import { logger } from "@/lib/logger";
+import { sql } from "kysely";
+import { revalidatePath } from "next/cache";
 
 export async function getSuggestedProps() {
   const currentUser = await getUserFromCookies();
@@ -95,6 +97,57 @@ export async function createSuggestedProp({
       operation: "createSuggestedProp",
       table: "suggested_props",
       suggesterUserId: prop.suggester_user_id,
+      duration,
+    });
+    throw error;
+  }
+}
+
+export async function deleteSuggestedProp({
+  id,
+}: {
+  id: number;
+}): Promise<void> {
+  const currentUser = await getUserFromCookies();
+  logger.debug("Deleting suggested prop", {
+    suggestedPropId: id,
+    currentUserId: currentUser?.id,
+  });
+
+  const startTime = Date.now();
+  try {
+    if (!currentUser?.is_admin) {
+      logger.warn("Unauthorized attempt to delete suggested prop", {
+        suggestedPropId: id,
+        currentUserId: currentUser?.id,
+      });
+      throw new Error("Unauthorized: only admins can delete suggested props");
+    }
+
+    await db.transaction().execute(async (trx) => {
+      await trx.executeQuery(
+        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
+          db,
+        ),
+      );
+      await trx.deleteFrom("suggested_props").where("id", "=", id).execute();
+    });
+
+    const duration = Date.now() - startTime;
+    logger.info("Suggested prop deleted successfully", {
+      operation: "deleteSuggestedProp",
+      table: "suggested_props",
+      suggestedPropId: id,
+      duration,
+    });
+
+    revalidatePath("/admin/suggested-props");
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    logger.error("Failed to delete suggested prop", error as Error, {
+      operation: "deleteSuggestedProp",
+      table: "suggested_props",
+      suggestedPropId: id,
       duration,
     });
     throw error;
