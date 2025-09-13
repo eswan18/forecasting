@@ -118,13 +118,12 @@ export default async function NavBar() {
               links.map((link) =>
                 isLink(link) ? (
                   <NavigationMenuItem key={link.href}>
-                    <Link href={link.href} passHref legacyBehavior>
-                      <NavigationMenuLink
-                        className={navigationMenuTriggerStyle()}
-                      >
-                        {link.label}
-                      </NavigationMenuLink>
-                    </Link>
+                    <NavigationMenuLink
+                      href={link.href}
+                      className={navigationMenuTriggerStyle()}
+                    >
+                      {link.label}
+                    </NavigationMenuLink>
                   </NavigationMenuItem>
                 ) : (
                   <DropdownNavbarItem key={link.label} group={link} />
@@ -154,14 +153,13 @@ async function DropdownNavbarItem({
         <ul className="p-2 bg-background">
           {links.map(({ href, label, icon }) => (
             <li key={href} className="flex flex-col items-center">
-              <Link href={href} passHref legacyBehavior>
-                <NavigationMenuLink
-                  className={`${navigationMenuTriggerStyle()} min-w-56`}
-                >
-                  {icon && <span className="mr-3">{icon}</span>}
-                  {label}
-                </NavigationMenuLink>
-              </Link>
+              <NavigationMenuLink
+                href={href}
+                className={`${navigationMenuTriggerStyle()} min-w-56`}
+              >
+                {icon && <span className="mr-3">{icon}</span>}
+                {label}
+              </NavigationMenuLink>
             </li>
           ))}
         </ul>

@@ -101,7 +101,7 @@ export default function RequestPasswordResetFormCard() {
           </form>
         </Form>
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          <Link href="/login" legacyBehavior>
+          <Link href="/login">
             <Button variant="link">Back to Login</Button>
           </Link>
         </p>

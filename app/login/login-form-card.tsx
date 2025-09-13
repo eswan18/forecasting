@@ -132,7 +132,7 @@ export default function LoginFormCard({ onLogin }: { onLogin?: () => void }) {
           <div className="mt-4 flex flex-col gap-y-4">
             <p className="text-center text-sm text-muted-foreground">
               Forgot your credentials?
-              <Link href="/reset-password" legacyBehavior>
+              <Link href="/reset-password">
                 <Button variant="link">Reset password</Button>
               </Link>
             </p>
