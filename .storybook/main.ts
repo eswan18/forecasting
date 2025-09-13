@@ -1,4 +1,4 @@
-import type { StorybookConfig } from "@storybook/experimental-nextjs-vite";
+import type { StorybookConfig } from "@storybook/react-vite";
 
 const config: StorybookConfig = {
   stories: [
@@ -8,22 +8,15 @@ const config: StorybookConfig = {
     "../app/**/*.stories.@(js|jsx|mjs|ts|tsx)",
   ],
   addons: [
-    "@storybook/addon-essentials",
     "@storybook/addon-onboarding",
     "@chromatic-com/storybook",
-    "@storybook/experimental-addon-test",
+    "@storybook/addon-vitest",
     "@storybook/addon-themes",
+    "@storybook/addon-docs",
   ],
   framework: {
-    name: "@storybook/experimental-nextjs-vite",
-    options: {
-      builder: {
-        viteConfigPath: undefined,
-      },
-    },
-  },
-  features: {
-    experimentalRSC: true,
+    name: "@storybook/react-vite",
+    options: {},
   },
   viteFinal: async (config) => {
     // Ensure proper alias resolution
@@ -32,6 +25,13 @@ const config: StorybookConfig = {
       ...config.resolve.alias,
       "@": new URL("../", import.meta.url).pathname,
     };
+
+    // Ensure React is available globally
+    config.define = {
+      ...config.define,
+      global: "globalThis",
+    };
+
     return config;
   },
 };
