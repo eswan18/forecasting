@@ -5,15 +5,21 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { FiltersContainer } from "@/components/filters";
 import { PropCard, MobilePropCard } from "@/components/prop-card";
 import { usePropsFilter } from "@/hooks/usePropsFilter";
+import CreateNewPropButton from "@/components/tables/prop-table/create-new-prop-button";
 
 type PropWithUserForecast = VProp & { user_forecast: number | null };
 
 interface PropsTableProps {
   props: PropWithUserForecast[];
   allowEdits?: boolean;
+  competitionId?: number;
 }
 
-export function PropsTable({ props, allowEdits = false }: PropsTableProps) {
+export function PropsTable({
+  props,
+  allowEdits = false,
+  competitionId,
+}: PropsTableProps) {
   const {
     categories,
     selectedCategories,
@@ -25,16 +31,6 @@ export function PropsTable({ props, allowEdits = false }: PropsTableProps) {
     filteredProps,
     handleClearFilters,
   } = usePropsFilter({ props: props as VProp[] });
-
-  if (props.length === 0) {
-    return (
-      <div className="py-8">
-        <p className="text-center text-muted-foreground">
-          No propositions found for this competition.
-        </p>
-      </div>
-    );
-  }
 
   return (
     <TooltipProvider>
@@ -51,10 +47,26 @@ export function PropsTable({ props, allowEdits = false }: PropsTableProps) {
           onClearFilters={handleClearFilters}
         />
 
+        {/* Add New Prop Button for Admins */}
+        {allowEdits && competitionId && (
+          <div className="flex justify-end">
+            <CreateNewPropButton defaultCompetitionId={competitionId} />
+          </div>
+        )}
+
         {/* Results count */}
         <div className="text-sm text-muted-foreground">
           Showing {filteredProps.length} of {props.length} propositions
         </div>
+
+        {/* No props message */}
+        {props.length === 0 && (
+          <div className="py-8">
+            <p className="text-center text-muted-foreground">
+              No propositions found for this competition.
+            </p>
+          </div>
+        )}
 
         {/* Desktop Table */}
         <div className="hidden md:block">

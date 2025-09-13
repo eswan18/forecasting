@@ -21,5 +21,11 @@ export default async function Page({
     competitionId,
   });
 
-  return <PropsTable props={propsWithForecasts} allowEdits={allowEdits} />;
+  return (
+    <PropsTable
+      props={propsWithForecasts}
+      allowEdits={allowEdits}
+      competitionId={competitionId}
+    />
+  );
 }

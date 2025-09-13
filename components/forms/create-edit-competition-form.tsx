@@ -19,12 +19,14 @@ import { useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Competition } from "@/types/db_types";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import DatePicker from "../ui/date-picker";
 
 const formSchema = z.object({
   name: z.string().min(8).max(1000),
   forecasts_due_date: z.date(),
   end_date: z.date(),
+  visible: z.boolean(),
 });
 
 /*
@@ -47,6 +49,7 @@ export function CreateEditCompetitionForm({
       name: initialCompetition?.name || "",
       forecasts_due_date: initialCompetition?.forecasts_due_date,
       end_date: initialCompetition?.end_date,
+      visible: initialCompetition?.visible ?? true,
     },
   });
 
@@ -148,6 +151,23 @@ export function CreateEditCompetitionForm({
                 />
               </FormControl>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="visible"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Visible to users</FormLabel>
+              </div>
             </FormItem>
           )}
         />
