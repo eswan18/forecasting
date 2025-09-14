@@ -1,6 +1,6 @@
 import { getPropsWithUserForecasts } from "@/lib/db_actions/forecasts";
 import { getUserFromCookies } from "@/lib/get-user";
-import { PropsTable } from "./props-table";
+import { PropsTable } from "@/components/props/props-table";
 
 export default async function Page({
   params,
@@ -24,7 +24,9 @@ export default async function Page({
   return (
     <PropsTable
       props={propsWithForecasts}
-      allowEdits={allowEdits}
+      canCreateProps={allowEdits} // Only admins can create competition props
+      canEditProps={allowEdits} // Only admins can edit competition props
+      canEditResolutions={allowEdits} // Only admins can resolve competition props
       competitionId={competitionId}
     />
   );

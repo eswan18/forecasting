@@ -1,10 +1,9 @@
 import { getPropsWithUserForecasts } from "@/lib/db_actions/forecasts";
 import { getUserFromCookies } from "@/lib/get-user";
-import { PropsTable } from "@/app/competitions/[competitionId]/props/props-table";
+import { PropsTable } from "@/components/props/props-table";
 
 export default async function Page() {
   const user = await getUserFromCookies();
-  const allowEdits = user?.is_admin || false;
 
   if (!user) {
     return <div>Please log in to view this page.</div>;
@@ -18,7 +17,9 @@ export default async function Page() {
   return (
     <PropsTable
       props={propsWithForecasts}
-      allowEdits={true} // All users can create/edit standalone props
+      canCreateProps={true} // All users can create standalone props
+      canEditProps={true} // All users can edit standalone props
+      canEditResolutions={user.is_admin} // Only admins can resolve props
       competitionId={null} // null for standalone props
     />
   );

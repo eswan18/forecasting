@@ -17,9 +17,9 @@ export default function StandaloneTabs({ className }: { className?: string }) {
       className={className}
     >
       <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="forecasts">
-          <Link href="/standalone/forecasts" className="w-full">
-            Forecasts
+        <TabsTrigger value="props">
+          <Link href="/standalone/props" className="w-full">
+            Props
           </Link>
         </TabsTrigger>
         <TabsTrigger value="calibration">

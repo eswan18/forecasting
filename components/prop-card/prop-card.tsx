@@ -24,7 +24,8 @@ interface PropCardProps {
   userForecast?: number | null;
   onCategoryClick?: (categoryName: string) => void;
   onResolutionClick?: (resolution: "resolved" | "unresolved") => void;
-  allowEdits?: boolean;
+  canEditProps?: boolean;
+  canEditResolutions?: boolean;
 }
 
 export function PropCard({
@@ -32,7 +33,8 @@ export function PropCard({
   userForecast,
   onCategoryClick,
   onResolutionClick,
-  allowEdits = false,
+  canEditProps = false,
+  canEditResolutions = false,
 }: PropCardProps) {
   const [isResolutionDialogOpen, setIsResolutionDialogOpen] = useState(false);
   const [isPropEditDialogOpen, setIsPropEditDialogOpen] = useState(false);
@@ -52,7 +54,7 @@ export function PropCard({
                     : undefined
                 }
               />
-              {allowEdits && (
+              {(canEditProps || canEditResolutions) && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -64,18 +66,22 @@ export function PropCard({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start">
-                    <DropdownMenuItem
-                      onClick={() => setIsPropEditDialogOpen(true)}
-                    >
-                      <Edit2 className="h-3 w-3 mr-2" />
-                      Edit Prop
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setIsResolutionDialogOpen(true)}
-                    >
-                      <Edit2 className="h-3 w-3 mr-2" />
-                      Edit Resolution
-                    </DropdownMenuItem>
+                    {canEditProps && (
+                      <DropdownMenuItem
+                        onClick={() => setIsPropEditDialogOpen(true)}
+                      >
+                        <Edit2 className="h-3 w-3 mr-2" />
+                        Edit Prop
+                      </DropdownMenuItem>
+                    )}
+                    {canEditResolutions && (
+                      <DropdownMenuItem
+                        onClick={() => setIsResolutionDialogOpen(true)}
+                      >
+                        <Edit2 className="h-3 w-3 mr-2" />
+                        Edit Resolution
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
