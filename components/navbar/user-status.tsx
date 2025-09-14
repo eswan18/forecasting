@@ -18,39 +18,48 @@ export function UserStatus() {
   const loggedIn = user && !isLoading && !error;
   const logout = useLogout("/login");
   return (
-    <div className="lg:w-48 flex justify-end items-end gap-2 pb-1">
+    <div className="flex items-center">
       {loggedIn ? (
-        <>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-9 w-9 ">
-                {user.is_admin ? <UserRoundPen /> : <User2 />}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>
-                {user.name} {user.is_admin ? "(Admin)" : ""}
-              </DropdownMenuLabel>
-              <Link href="/account">
-                <DropdownMenuItem className="px-4">
-                  <Settings size={14} className="mr-2" />
-                  <span>Account</span>
-                </DropdownMenuItem>
-              </Link>
-              <DropdownMenuItem onClick={logout} className="px-4">
-                <LogOut size={14} className="mr-2" />
-                <span>Log out</span>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" className="h-9 w-9">
+              {user.is_admin ? (
+                <UserRoundPen className="h-4 w-4" />
+              ) : (
+                <User2 className="h-4 w-4" />
+              )}
+              <span className="sr-only">User menu</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{user.name}</p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  {user.is_admin ? "Administrator" : "User"}
+                </p>
+              </div>
+            </DropdownMenuLabel>
+            <Link href="/account">
+              <DropdownMenuItem>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Account Settings</span>
               </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </>
+            </Link>
+            <DropdownMenuItem onClick={logout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Log out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       ) : isLoading ? (
-        <Button disabled variant="outline">
-          Loading...
+        <Button disabled variant="outline" size="sm">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          <span className="sr-only">Loading...</span>
         </Button>
       ) : (
         <Link href="/login">
-          <Button>Log in</Button>
+          <Button size="sm">Log in</Button>
         </Link>
       )}
     </div>

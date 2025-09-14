@@ -6,6 +6,7 @@ import {
   Migrator,
   FileMigrationProvider,
 } from "kysely";
+import { createMigrator } from "./helpers/migrator";
 import { Database } from "@/types/db_types";
 import { promises as fs } from "fs";
 import path from "path";
@@ -55,14 +56,7 @@ export async function setup() {
     // Run migrations
     console.log("Running database migrations...");
 
-    const migrator = new Migrator({
-      db: globalDb,
-      provider: new FileMigrationProvider({
-        fs,
-        path,
-        migrationFolder: path.join(process.cwd(), "migrations"),
-      }),
-    });
+    const migrator = createMigrator(globalDb);
 
     const { error, results } = await migrator.migrateToLatest();
 

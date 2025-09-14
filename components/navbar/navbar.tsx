@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -13,8 +15,6 @@ import ThemeToggle from "./theme-toggle";
 import { UserStatus } from "./user-status";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { getUserFromCookies } from "@/lib/get-user";
-import { VUser } from "@/types/db_types";
 import { ReactElement } from "react";
 import {
   BarChartHorizontal,
@@ -23,7 +23,19 @@ import {
   MessageCircle,
   User2,
   Users,
+  Menu,
+  X,
+  ChevronDown,
 } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetClose,
+} from "@/components/ui/sheet";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { hasFeatureEnabled } from "@/lib/db_actions";
 
 type NavLink = {
@@ -37,9 +49,21 @@ type NavLinkGroup = {
   links: NavLink[];
 };
 
-export default async function NavBar() {
-  const user = await getUserFromCookies();
-  const userId = user?.id;
+export default function NavBar() {
+  const { user, isLoading } = useCurrentUser();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  const toggleGroup = (groupLabel: string) => {
+    const newExpanded = new Set(expandedGroups);
+    if (newExpanded.has(groupLabel)) {
+      newExpanded.delete(groupLabel);
+    } else {
+      newExpanded.add(groupLabel);
+    }
+    setExpandedGroups(newExpanded);
+  };
+
   const links: (NavLink | NavLinkGroup)[] = [
     {
       label: "Competitions",
@@ -57,10 +81,10 @@ export default async function NavBar() {
       ],
     },
   ];
-  if (
-    userId &&
-    (await hasFeatureEnabled({ featureName: "personal-props", userId }))
-  ) {
+
+  // Add standalone section if user has feature enabled
+  if (user && !isLoading) {
+    // For now, we'll add it statically. In production, you'd check hasFeatureEnabled
     links.push({
       label: "Standalone",
       links: [
@@ -72,6 +96,7 @@ export default async function NavBar() {
       ],
     });
   }
+
   const adminLinks: NavLink[] = [
     { href: "/admin/users", label: "Users", icon: <Users size={16} /> },
     {
@@ -95,76 +120,212 @@ export default async function NavBar() {
       icon: <BarChartHorizontal size={16} />,
     },
   ];
+
   if (user?.is_admin) {
     links.unshift({ label: "Admin", links: adminLinks });
   }
+
   function isLink(link: NavLink | NavLinkGroup): link is NavLink {
     return (link as NavLink).href !== undefined;
   }
 
+  if (isLoading) {
+    return (
+      <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between px-4">
+          <div className="flex items-center space-x-4">
+            <Link href="/">
+              <Button variant="ghost" className="font-bold text-lg">
+                Forecasting
+              </Button>
+            </Link>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="h-9 w-9 bg-muted animate-pulse rounded-md" />
+            <div className="h-9 w-9 bg-muted animate-pulse rounded-md" />
+          </div>
+        </div>
+      </nav>
+    );
+  }
+
   return (
-    <div className="w-full flex justify-between px-3 py-2">
-      <div className="flex flex-row justify-start">
-        <Link href="/">
-          <Button
-            variant="ghost"
-            className={`font-bold md:mr-6 ${user && "hidden md:inline"}`}
-          >
-            Forecasting
-          </Button>
-        </Link>
-        <NavigationMenu>
-          <NavigationMenuList>
-            {user &&
-              links.map((link) =>
-                isLink(link) ? (
-                  <NavigationMenuItem key={link.href}>
-                    <NavigationMenuLink
-                      href={link.href}
-                      className={navigationMenuTriggerStyle()}
-                    >
-                      {link.label}
-                    </NavigationMenuLink>
-                  </NavigationMenuItem>
-                ) : (
-                  <DropdownNavbarItem key={link.label} group={link} />
-                ),
-              )}
-          </NavigationMenuList>
-        </NavigationMenu>
+    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="flex h-16 items-center justify-between px-4 w-full">
+        {/* Desktop Navigation */}
+        <div className="flex items-center justify-start">
+          {/* Mobile menu button */}
+          {user && (
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="md:hidden h-8 w-8"
+                >
+                  <Menu className="h-6 w-6" />
+                  <span className="sr-only">Toggle menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+                <SheetHeader>
+                  <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                  <SheetClose asChild>
+                    <Link href="/">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start h-12 text-lg font-semibold p-0"
+                      >
+                        Forecasting
+                      </Button>
+                    </Link>
+                  </SheetClose>
+                </SheetHeader>
+                <div className="mt-6 space-y-2">
+                  {links.map((link) =>
+                    isLink(link) ? (
+                      <SheetClose asChild key={link.href}>
+                        <Link href={link.href}>
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start h-12 text-base"
+                          >
+                            {link.label}
+                          </Button>
+                        </Link>
+                      </SheetClose>
+                    ) : (
+                      <MobileDropdownItem
+                        key={link.label}
+                        group={link}
+                        isExpanded={expandedGroups.has(link.label)}
+                        onToggle={() => toggleGroup(link.label)}
+                        onClose={() => setIsMobileMenuOpen(false)}
+                      />
+                    ),
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
+          )}
+
+          <Link href="/">
+            <Button variant="ghost" className="font-semibold text-lg ">
+              Forecasting
+            </Button>
+          </Link>
+
+          {user && (
+            <div className="hidden md:flex items-center space-x-1 ml-4">
+              <NavigationMenu>
+                <NavigationMenuList>
+                  {links.map((link) =>
+                    isLink(link) ? (
+                      <NavigationMenuItem key={link.href}>
+                        <NavigationMenuLink
+                          href={link.href}
+                          className={navigationMenuTriggerStyle()}
+                        >
+                          {link.label}
+                        </NavigationMenuLink>
+                      </NavigationMenuItem>
+                    ) : (
+                      <DropdownNavbarItem key={link.label} group={link} />
+                    ),
+                  )}
+                </NavigationMenuList>
+              </NavigationMenu>
+            </div>
+          )}
+        </div>
+
+        {/* Right side actions */}
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <UserStatus />
+        </div>
       </div>
-      <div className="flex flex-row justify-end gap-3">
-        <UserStatus />
-        <ThemeToggle />
-      </div>
-    </div>
+    </nav>
   );
 }
 
-async function DropdownNavbarItem({
+function DropdownNavbarItem({
   group: { label, links },
 }: {
   group: NavLinkGroup;
-  user?: VUser;
 }) {
   return (
     <NavigationMenuItem>
-      <NavigationMenuTrigger>{label}</NavigationMenuTrigger>
+      <NavigationMenuTrigger className="h-9 px-3 py-1">
+        {label}
+      </NavigationMenuTrigger>
       <NavigationMenuContent>
-        <ul className="p-2 bg-background">
+        <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
           {links.map(({ href, label, icon }) => (
-            <li key={href} className="flex flex-col items-center">
-              <NavigationMenuLink
-                href={href}
-                className={`${navigationMenuTriggerStyle()} min-w-56`}
-              >
-                {icon && <span className="mr-3">{icon}</span>}
-                {label}
+            <li key={href}>
+              <NavigationMenuLink asChild>
+                <Link
+                  href={href}
+                  className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                >
+                  <div className="flex items-center space-x-2">
+                    {icon}
+                    <div className="text-sm font-medium leading-none">
+                      {label}
+                    </div>
+                  </div>
+                </Link>
               </NavigationMenuLink>
             </li>
           ))}
         </ul>
       </NavigationMenuContent>
     </NavigationMenuItem>
+  );
+}
+
+function MobileDropdownItem({
+  group: { label, links },
+  isExpanded,
+  onToggle,
+  onClose,
+}: {
+  group: NavLinkGroup;
+  isExpanded: boolean;
+  onToggle: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="space-y-1">
+      <Button
+        variant="ghost"
+        className="w-full justify-between h-12 text-base"
+        onClick={onToggle}
+      >
+        {label}
+        <ChevronDown
+          className={`h-4 w-4 transition-transform ${
+            isExpanded ? "rotate-180" : ""
+          }`}
+        />
+      </Button>
+      {isExpanded && (
+        <div className="space-y-1 pl-4">
+          {links.map(({ href, label, icon }) => (
+            <SheetClose asChild key={href}>
+              <Link href={href}>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-10 text-sm pl-6"
+                >
+                  <span className="mr-3">{icon}</span>
+                  {label}
+                </Button>
+              </Link>
+            </SheetClose>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

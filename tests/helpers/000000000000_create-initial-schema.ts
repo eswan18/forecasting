@@ -1,6 +1,4 @@
 import type { Kysely } from "kysely";
-import { sql } from "kysely";
-import argon2 from "argon2";
 
 export async function up(db: Kysely<any>): Promise<void> {
   // Create core tables that are required by later migrations

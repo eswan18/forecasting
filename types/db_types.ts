@@ -28,6 +28,7 @@ export interface UsersTable {
   email: string;
   login_id: number | null;
   is_admin: boolean;
+  deactivated_at: Date | null;
   updated_at: Generated<Date>;
   created_at: Generated<Date>;
 }
@@ -203,8 +204,11 @@ export interface VUsersView {
   name: string;
   email: string;
   is_admin: boolean;
+  deactivated_at: Date | null;
   login_id: number | null;
   username: string | null;
+  created_at: Date;
+  updated_at: Date;
 }
 export type VUser = Selectable<VUsersView>;
 

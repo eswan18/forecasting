@@ -18,8 +18,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { VUser } from "@/types/db_types";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { getColumns } from "./columns";
@@ -45,14 +43,17 @@ export default function UsersTable({ data }: { data: VUser[] }) {
   });
 
   return (
-    <div className="rounded-md border w-full mt-8">
+    <div className="w-full min-w-[600px]">
       <Table>
-        <TableHeader className="bg-muted text-muted-foreground">
+        <TableHeader className="bg-muted/30">
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow key={headerGroup.id} className="border-b">
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead key={header.id}>
+                  <TableHead
+                    key={header.id}
+                    className="font-semibold text-muted-foreground text-xs sm:text-sm"
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -67,15 +68,17 @@ export default function UsersTable({ data }: { data: VUser[] }) {
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
+            table.getRowModel().rows.map((row, index) => (
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
+                className="border-b hover:bg-muted/20 transition-colors"
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell
                     key={cell.id}
                     align={(cell.column.columnDef.meta as any)?.align}
+                    className="py-3 sm:py-4 text-xs sm:text-sm"
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
@@ -84,45 +87,16 @@ export default function UsersTable({ data }: { data: VUser[] }) {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
+              <TableCell
+                colSpan={columns.length}
+                className="h-24 text-center text-muted-foreground text-sm"
+              >
+                No users found.
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
-    </div>
-  );
-}
-
-type ResolutionOption = "Yes" | "No" | "?";
-
-function ResolutionCheckboxFilter({
-  filterValue,
-  setFilterValue,
-  resolution,
-}: {
-  filterValue?: ResolutionOption[];
-  setFilterValue: (value: ResolutionOption[]) => void;
-  resolution: ResolutionOption;
-}) {
-  return (
-    <div className="flex flex-row justify-start items-center gap-1.5">
-      <Checkbox
-        id={resolution}
-        checked={filterValue?.includes(resolution) ?? false}
-        onCheckedChange={(checked) => {
-          const prev = filterValue ?? [];
-          setFilterValue(
-            checked
-              ? [...prev, resolution]
-              : prev.filter((v) => v !== resolution),
-          );
-        }}
-      />
-      <Label htmlFor={resolution} className="text-muted-foreground">
-        {resolution}
-      </Label>
     </div>
   );
 }

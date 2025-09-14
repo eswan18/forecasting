@@ -11,6 +11,7 @@ import {
   ERROR_CODES,
 } from "@/lib/server-action-result";
 import { logger } from "@/lib/logger";
+import { revalidatePath } from "next/cache";
 
 type Sort = {
   expr: OrderByExpression<Database, "v_users", VUser>;
@@ -113,6 +114,81 @@ export async function getUserById(
       duration,
     });
     return error("Failed to fetch user details", ERROR_CODES.DATABASE_ERROR);
+  }
+}
+
+export async function setUserActive({
+  userId,
+  active,
+}: {
+  userId: number;
+  active: boolean;
+}): Promise<ServerActionResult<VUser>> {
+  const currentUser = await getUserFromCookies();
+  logger.debug("Setting user active status", {
+    currentUserId: currentUser?.id,
+    targetUserId: userId,
+    active,
+  });
+
+  const startTime = Date.now();
+  try {
+    if (!currentUser) {
+      logger.warn("Unauthorized attempt to toggle user status");
+      return error(
+        "You must be logged in to modify user status",
+        ERROR_CODES.UNAUTHORIZED,
+      );
+    }
+
+    if (!currentUser.is_admin) {
+      logger.warn("Non-admin attempt to toggle user status", {
+        userId: currentUser.id,
+        targetUserId: userId,
+      });
+      return error(
+        "Only admins can modify user status",
+        ERROR_CODES.UNAUTHORIZED,
+      );
+    }
+
+    // Set the status: active = null, inactive = current timestamp
+    const newDeactivatedAt = active ? null : new Date();
+
+    // Update the user's status
+    await db
+      .updateTable("users")
+      .set({ deactivated_at: newDeactivatedAt })
+      .where("id", "=", userId)
+      .execute();
+
+    // Revalidate the relevant pages
+    revalidatePath("/admin/users");
+
+    // Fetch the updated user data
+    const updatedUserResult = await getUserById(userId);
+    if (!updatedUserResult.success) {
+      return updatedUserResult;
+    }
+
+    const duration = Date.now() - startTime;
+    logger.info("User status updated successfully", {
+      operation: "setUserActive",
+      userId,
+      active,
+      duration,
+    });
+
+    return success(updatedUserResult.data!);
+  } catch (err) {
+    const duration = Date.now() - startTime;
+    logger.error("Failed to update user status", err as Error, {
+      operation: "setUserActive",
+      userId,
+      active,
+      duration,
+    });
+    return error("Failed to update user status", ERROR_CODES.DATABASE_ERROR);
   }
 }
 
