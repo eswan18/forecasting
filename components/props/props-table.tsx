@@ -11,13 +11,17 @@ type PropWithUserForecast = VProp & { user_forecast: number | null };
 
 interface PropsTableProps {
   props: PropWithUserForecast[];
-  allowEdits?: boolean;
-  competitionId?: number;
+  canCreateProps?: boolean;
+  canEditProps?: boolean;
+  canEditResolutions?: boolean;
+  competitionId?: number | null;
 }
 
 export function PropsTable({
   props,
-  allowEdits = false,
+  canCreateProps = false,
+  canEditProps = false,
+  canEditResolutions = false,
   competitionId,
 }: PropsTableProps) {
   const {
@@ -47,10 +51,10 @@ export function PropsTable({
           onClearFilters={handleClearFilters}
         />
 
-        {/* Add New Prop Button for Admins */}
-        {allowEdits && competitionId && (
+        {/* Add New Prop Button */}
+        {canCreateProps && (
           <div className="flex justify-end">
-            <CreateNewPropButton defaultCompetitionId={competitionId} />
+            <CreateNewPropButton defaultCompetitionId={competitionId || null} />
           </div>
         )}
 
@@ -86,7 +90,8 @@ export function PropsTable({
                   onResolutionClick={(resolution) =>
                     setSelectedResolution(resolution)
                   }
-                  allowEdits={allowEdits}
+                  canEditProps={canEditProps}
+                  canEditResolutions={canEditResolutions}
                 />
               );
             })}
@@ -110,7 +115,8 @@ export function PropsTable({
                 onResolutionClick={(resolution) =>
                   setSelectedResolution(resolution)
                 }
-                allowEdits={allowEdits}
+                canEditProps={canEditProps}
+                canEditResolutions={canEditResolutions}
               />
             );
           })}

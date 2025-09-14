@@ -13,10 +13,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { CategoryBadge, ResolutionBadge } from "@/components/badges";
 import { ResolutionDialog } from "@/components/dialogs/resolution-dialog";
 import { PropEditDialog } from "@/components/dialogs/prop-edit-dialog";
-import { Edit2, ExternalLink, MoreVertical } from "lucide-react";
+import { Edit2, ExternalLink, MoreVertical, ChevronDown } from "lucide-react";
 import Link from "next/link";
 
 interface PropCardProps {
@@ -24,7 +29,8 @@ interface PropCardProps {
   userForecast?: number | null;
   onCategoryClick?: (categoryName: string) => void;
   onResolutionClick?: (resolution: "resolved" | "unresolved") => void;
-  allowEdits?: boolean;
+  canEditProps?: boolean;
+  canEditResolutions?: boolean;
 }
 
 export function PropCard({
@@ -32,76 +38,84 @@ export function PropCard({
   userForecast,
   onCategoryClick,
   onResolutionClick,
-  allowEdits = false,
+  canEditProps = false,
+  canEditResolutions = false,
 }: PropCardProps) {
   const [isResolutionDialogOpen, setIsResolutionDialogOpen] = useState(false);
   const [isPropEditDialogOpen, setIsPropEditDialogOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <Card>
-      <CardContent className="py-4 px-6">
-        <div className="grid grid-cols-[1fr_auto] gap-6 items-start">
-          {/* Left side */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <CategoryBadge
-                categoryName={prop.category_name}
-                onClick={
-                  prop.category_name
-                    ? () => onCategoryClick?.(prop.category_name!)
-                    : undefined
-                }
-              />
-              {allowEdits && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 flex-shrink-0"
-                    >
-                      <MoreVertical className="h-3 w-3" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
-                    <DropdownMenuItem
-                      onClick={() => setIsPropEditDialogOpen(true)}
-                    >
-                      <Edit2 className="h-3 w-3 mr-2" />
-                      Edit Prop
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setIsResolutionDialogOpen(true)}
-                    >
-                      <Edit2 className="h-3 w-3 mr-2" />
-                      Edit Resolution
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+      <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+        <CardContent className="pt-4 pb-2 px-6">
+          <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 items-center">
+            <div className="flex justify-between col-span-3 mb-2">
+              <div className="flex items-center gap-2">
+                <CategoryBadge
+                  categoryName={prop.category_name}
+                  onClick={
+                    prop.category_name
+                      ? () => onCategoryClick?.(prop.category_name!)
+                      : undefined
+                  }
+                />
+                {(canEditProps || canEditResolutions) && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 flex-shrink-0"
+                      >
+                        <MoreVertical className="h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      {canEditProps && (
+                        <DropdownMenuItem
+                          onClick={() => setIsPropEditDialogOpen(true)}
+                        >
+                          <Edit2 className="h-3 w-3 mr-2" />
+                          Edit Prop
+                        </DropdownMenuItem>
+                      )}
+                      {canEditResolutions && (
+                        <DropdownMenuItem
+                          onClick={() => setIsResolutionDialogOpen(true)}
+                        >
+                          <Edit2 className="h-3 w-3 mr-2" />
+                          Edit Resolution
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 flex-shrink-0"
+                asChild
+              >
+                <Link href={`/props/${prop.prop_id}`}>
+                  <ExternalLink className="h-3 w-3" />
+                </Link>
+              </Button>
             </div>
-            <div className="flex items-start gap-2">
+            {/* second row */}
+            <div className="flex items-start gap-2 min-w-0">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <p className="text-sm leading-relaxed font-medium flex-1 break-words">
-                    {prop.prop_text}{" "}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 flex-shrink-0"
-                      asChild
-                    >
-                      <Link href={`/props/${prop.prop_id}`}>
-                        <ExternalLink className="h-3 w-3" />
-                      </Link>
-                    </Button>
+                  <p className="text-sm leading-relaxed font-medium flex-1 truncate min-w-0">
+                    {prop.prop_text}
                   </p>
                 </TooltipTrigger>
-                <TooltipContent className="max-w-sm">
+                <TooltipContent className="max-w-md">
                   <div className="space-y-1">
                     <p className="font-medium break-words">{prop.prop_text}</p>
                     {prop.prop_notes && (
-                      <p className="text-xs text-muted-foreground/80 leading-relaxed break-words">
+                      <p className="text-xs text-primary-foreground/80 leading-relaxed break-words">
                         {prop.prop_notes}
                       </p>
                     )}
@@ -109,63 +123,84 @@ export function PropCard({
                 </TooltipContent>
               </Tooltip>
             </div>
+
+            <div className="text-lg font-medium text-foreground text-center">
+              {userForecast !== null && userForecast !== undefined
+                ? userForecast.toFixed(2)
+                : "—"}
+            </div>
+            <div className="flex items-center gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <ResolutionBadge
+                      resolution={prop.resolution}
+                      onClick={() => {
+                        if (prop.resolution === null) {
+                          onResolutionClick?.("unresolved");
+                        } else {
+                          onResolutionClick?.("resolved");
+                        }
+                      }}
+                    />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-md">
+                  <div className="space-y-1">
+                    <p className="font-medium">
+                      Resolution:{" "}
+                      {prop.resolution === null
+                        ? "Unresolved"
+                        : prop.resolution
+                          ? "True"
+                          : "False"}
+                    </p>
+                    {prop.resolution_notes && (
+                      <p className="text-xs text-primary-foreground/80 leading-relaxed break-words">
+                        {prop.resolution_notes}
+                      </p>
+                    )}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            {/* third row */}
+            <div>{/* this space in the grid is empty. */}</div>
+            <div className="text-xs text-muted-foreground text-center">
+              Your Forecast
+            </div>
+            <div className="text-xs text-muted-foreground text-center">
+              Resolution
+            </div>
           </div>
 
-          {/* Right side */}
-          <div className="flex items-center justify-center gap-4 h-full">
-            <div className="text-center">
-              <div className="text-xs text-muted-foreground mb-1">
-                Your Forecast
-              </div>
-              <div className="text-lg font-medium text-foreground">
-                {userForecast !== null && userForecast !== undefined
-                  ? `${Math.round(userForecast * 100)}%`
-                  : "—"}
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-xs text-muted-foreground mb-1">
-                Resolution
-              </div>
-              <div className="flex items-center justify-end gap-2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div>
-                      <ResolutionBadge
-                        resolution={prop.resolution}
-                        onClick={() => {
-                          if (prop.resolution === null) {
-                            onResolutionClick?.("unresolved");
-                          } else {
-                            onResolutionClick?.("resolved");
-                          }
-                        }}
-                      />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div className="space-y-1">
-                      <p className="font-medium">
-                        Resolution:{" "}
-                        {prop.resolution === null
-                          ? "Unresolved"
-                          : prop.resolution
-                            ? "True"
-                            : "False"}
-                      </p>
-                      {prop.resolution_notes && (
-                        <p className="text-xs text-muted-foreground/80 leading-relaxed break-words">
-                          {prop.resolution_notes}
-                        </p>
-                      )}
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </div>
+          {/* Expand/Collapse trigger */}
+          <div className="flex justify-center">
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-5 w-10 p-0 mb-1">
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform duration-200 ${
+                    isExpanded ? "rotate-180" : ""
+                  }`}
+                />
+              </Button>
+            </CollapsibleTrigger>
           </div>
-        </div>
-      </CardContent>
+
+          <CollapsibleContent>
+            <div className="pt-4 border-t space-y-3">
+              <p className="text-sm leading-relaxed break-words">
+                <span className="text-muted-foreground">Prop: </span>
+                {prop.prop_text}
+              </p>
+              <p className="text-sm leading-relaxed break-words">
+                <span className="text-muted-foreground">Notes: </span>
+                {prop.prop_notes}
+              </p>
+            </div>
+          </CollapsibleContent>
+        </CardContent>
+      </Collapsible>
 
       <ResolutionDialog
         prop={prop}

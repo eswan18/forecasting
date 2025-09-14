@@ -340,7 +340,7 @@ export async function getPropsWithUserForecasts({
   competitionId,
 }: {
   userId: number;
-  competitionId: number;
+  competitionId: number | null;
 }): Promise<(VProp & { user_forecast: number | null })[]> {
   const currentUser = await getUserFromCookies();
   logger.debug("Getting props with user forecasts", {
@@ -358,7 +358,7 @@ export async function getPropsWithUserForecasts({
         ),
       );
 
-      return await trx
+      let query = trx
         .selectFrom("v_props")
         .leftJoin("forecasts", (join) =>
           join
@@ -366,9 +366,16 @@ export async function getPropsWithUserForecasts({
             .on("forecasts.user_id", "=", userId),
         )
         .selectAll("v_props")
-        .select("forecasts.forecast as user_forecast")
-        .where("v_props.competition_id", "=", competitionId)
-        .execute();
+        .select("forecasts.forecast as user_forecast");
+
+      // Handle standalone props (competitionId = null)
+      if (competitionId === null) {
+        query = query.where("v_props.competition_id", "is", null);
+      } else {
+        query = query.where("v_props.competition_id", "=", competitionId);
+      }
+
+      return await query.execute();
     });
 
     const duration = Date.now() - startTime;
