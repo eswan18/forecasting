@@ -18,7 +18,7 @@ export default function CreateNewPropButton({
   defaultUserId,
 }: {
   className?: string;
-  defaultCompetitionId?: number;
+  defaultCompetitionId?: number | null;
   defaultUserId?: number;
 }) {
   const [open, setOpen] = useState(false);

@@ -12,7 +12,7 @@ type PropWithUserForecast = VProp & { user_forecast: number | null };
 interface PropsTableProps {
   props: PropWithUserForecast[];
   allowEdits?: boolean;
-  competitionId?: number;
+  competitionId?: number | null;
 }
 
 export function PropsTable({
@@ -47,10 +47,10 @@ export function PropsTable({
           onClearFilters={handleClearFilters}
         />
 
-        {/* Add New Prop Button for Admins */}
-        {allowEdits && competitionId && (
+        {/* Add New Prop Button */}
+        {allowEdits && (
           <div className="flex justify-end">
-            <CreateNewPropButton defaultCompetitionId={competitionId} />
+            <CreateNewPropButton defaultCompetitionId={competitionId || null} />
           </div>
         )}
 

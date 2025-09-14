@@ -89,8 +89,8 @@ export default function NavBar() {
       label: "Standalone",
       links: [
         {
-          href: `/standalone/forecasts`,
-          label: "Standalone Forecasts",
+          href: `/standalone/props`,
+          label: "Standalone Props",
           icon: <User2 size={16} />,
         },
       ],
