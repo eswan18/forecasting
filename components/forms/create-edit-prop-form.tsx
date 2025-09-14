@@ -67,7 +67,7 @@ export function CreateEditPropForm({
 }: {
   initialProp?: VProp;
   defaultUserId?: number;
-  defaultCompetitionId?: number;
+  defaultCompetitionId?: number | null;
   onSubmit?: () => void;
 }) {
   const [loading, setLoading] = useState(true);
