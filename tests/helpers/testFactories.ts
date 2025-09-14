@@ -84,6 +84,7 @@ export class TestDataFactory {
       email: createdUser.email,
       login_id: createdUser.login_id,
       is_admin: createdUser.is_admin,
+      deactivated_at: createdUser.deactivated_at,
       created_at: createdUser.created_at,
       updated_at: createdUser.updated_at,
       username: login?.username || null,

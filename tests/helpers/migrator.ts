@@ -48,7 +48,7 @@ export function createMigrator(db: Kysely<any>) {
       loader: async () => {
         // Your bootstrap file can live anywhere outside migrations/
         // It should export { up, down } that match Kysely’s Migration.
-        const mod = await import("./000000000000_create-initial-schema.ts");
+        const mod = await import("./000000000000_create-initial-schema");
         // If you exported default, use mod.default
         return mod as unknown as Migration;
       },
