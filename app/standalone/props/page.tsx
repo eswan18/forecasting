@@ -21,6 +21,7 @@ export default async function Page() {
       canEditProps={true} // All users can edit standalone props
       canEditResolutions={user.is_admin} // Only admins can resolve props
       competitionId={null} // null for standalone props
+      defaultUserId={user.id} // Pass user ID for personal props
     />
   );
 }

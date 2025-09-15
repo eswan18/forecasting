@@ -15,6 +15,7 @@ interface PropsTableProps {
   canEditProps?: boolean;
   canEditResolutions?: boolean;
   competitionId?: number | null;
+  defaultUserId?: number;
 }
 
 export function PropsTable({
@@ -23,6 +24,7 @@ export function PropsTable({
   canEditProps = false,
   canEditResolutions = false,
   competitionId,
+  defaultUserId,
 }: PropsTableProps) {
   const {
     categories,
@@ -54,7 +56,10 @@ export function PropsTable({
         {/* Add New Prop Button */}
         {canCreateProps && (
           <div className="flex justify-end">
-            <CreateNewPropButton defaultCompetitionId={competitionId || null} />
+            <CreateNewPropButton
+              defaultCompetitionId={competitionId || null}
+              defaultUserId={defaultUserId}
+            />
           </div>
         )}
 
