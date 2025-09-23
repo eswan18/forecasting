@@ -5,7 +5,13 @@ import Link from "next/link";
 import { AlertTriangle, Eye, EyeOff, Lock, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -88,7 +94,9 @@ export default function LoginFormCard({ onLogin }: { onLogin?: () => void }) {
               name="username"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel className="text-sm font-medium">Username</FormLabel>
+                  <FormLabel className="text-sm font-medium">
+                    Username
+                  </FormLabel>
                   <FormControl>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -109,7 +117,9 @@ export default function LoginFormCard({ onLogin }: { onLogin?: () => void }) {
               name="password"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel className="text-sm font-medium">Password</FormLabel>
+                  <FormLabel className="text-sm font-medium">
+                    Password
+                  </FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -136,9 +146,9 @@ export default function LoginFormCard({ onLogin }: { onLogin?: () => void }) {
                 </FormItem>
               )}
             />
-            <Button 
-              type="submit" 
-              className="w-full h-11 text-base font-medium" 
+            <Button
+              type="submit"
+              className="w-full h-11 text-base font-medium"
               disabled={loading}
             >
               {loading ? (
@@ -159,23 +169,27 @@ export default function LoginFormCard({ onLogin }: { onLogin?: () => void }) {
             )}
           </form>
         </Form>
-        
+
         <div className="space-y-4">
           <Separator />
-          
+
           <div className="space-y-3 text-center">
             <p className="text-sm text-muted-foreground">
               Forgot your password?
               <Link href="/reset-password" className="ml-1">
-                <Button variant="link" className="h-auto p-0 text-sm font-normal text-primary hover:underline">
+                <Button
+                  variant="link"
+                  className="h-auto p-0 text-sm font-normal text-primary hover:underline"
+                >
                   Reset it here
                 </Button>
               </Link>
             </p>
-            
+
             <div className="rounded-lg bg-muted/50 p-3">
               <p className="text-xs text-muted-foreground">
-                Don&apos;t have an account? You&apos;ll need an invite link from Ethan to register.
+                Don&apos;t have an account? You&apos;ll need an invite link from
+                Ethan to register.
               </p>
             </div>
           </div>

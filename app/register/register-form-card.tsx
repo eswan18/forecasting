@@ -16,9 +16,24 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, LoaderCircle, Eye, EyeOff, Lock, User, UserPlus, Mail } from "lucide-react";
+import {
+  AlertTriangle,
+  LoaderCircle,
+  Eye,
+  EyeOff,
+  Lock,
+  User,
+  UserPlus,
+  Mail,
+} from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 import { z } from "zod";
@@ -100,7 +115,9 @@ export default function RegisterFormCard({
               name="username"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel className="text-sm font-medium">Username</FormLabel>
+                  <FormLabel className="text-sm font-medium">
+                    Username
+                  </FormLabel>
                   <FormControl>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -121,7 +138,9 @@ export default function RegisterFormCard({
               name="password"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel className="text-sm font-medium">Password</FormLabel>
+                  <FormLabel className="text-sm font-medium">
+                    Password
+                  </FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -153,14 +172,16 @@ export default function RegisterFormCard({
               name="name"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel className="text-sm font-medium">Display name</FormLabel>
+                  <FormLabel className="text-sm font-medium">
+                    Display name
+                  </FormLabel>
                   <FormControl>
                     <div className="relative">
                       <UserPlus className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input 
-                        placeholder="Enter your full name" 
+                      <Input
+                        placeholder="Enter your full name"
                         className="pl-10 h-11"
-                        {...field} 
+                        {...field}
                       />
                     </div>
                   </FormControl>
@@ -192,9 +213,9 @@ export default function RegisterFormCard({
                 </FormItem>
               )}
             />
-            <Button 
-              type="submit" 
-              className="w-full h-11 text-base font-medium" 
+            <Button
+              type="submit"
+              className="w-full h-11 text-base font-medium"
               disabled={loading}
             >
               {loading ? (
@@ -215,15 +236,18 @@ export default function RegisterFormCard({
             )}
           </form>
         </Form>
-        
+
         <div className="space-y-4">
           <Separator />
-          
+
           <div className="text-center">
             <p className="text-sm text-muted-foreground">
               Already have an account?
               <Link href="/login" className="ml-1">
-                <Button variant="link" className="h-auto p-0 text-sm font-normal text-primary hover:underline">
+                <Button
+                  variant="link"
+                  className="h-auto p-0 text-sm font-normal text-primary hover:underline"
+                >
                   Sign in here
                 </Button>
               </Link>
