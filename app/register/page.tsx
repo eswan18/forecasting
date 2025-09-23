@@ -18,8 +18,10 @@ export default async function RegisterPage({
     );
   }
   return (
-    <div className="flex items-center justify-center pt-4">
-      <RegisterFormCard inviteToken={token} />
+    <div className="flex flex-col items-center justify-start pt-16 pb-8 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-md">
+        <RegisterFormCard inviteToken={token} />
+      </div>
     </div>
   );
 }
