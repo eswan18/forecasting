@@ -18,8 +18,10 @@ export default async function LoginPage({
     redirect(redirectUrl);
   };
   return (
-    <div className="flex items-center justify-center mt-48">
-      <LoginFormCard onLogin={revalidateOnLogin} />
+    <div className="flex flex-col items-center justify-start pt-16 pb-8 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-md">
+        <LoginFormCard onLogin={revalidateOnLogin} />
+      </div>
     </div>
   );
 }

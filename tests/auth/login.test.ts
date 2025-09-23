@@ -179,6 +179,9 @@ describe("Authentication Login", () => {
           is_admin: true,
           login_id: adminUser.login_id,
           username: adminUser.username || null,
+          deactivated_at: null,
+          updated_at: new Date(),
+          created_at: new Date(),
         });
 
         await expect(
@@ -218,6 +221,9 @@ describe("Authentication Login", () => {
           is_admin: false,
           login_id: regularUser.login_id,
           username: regularUser.username || null,
+          deactivated_at: null,
+          updated_at: new Date(),
+          created_at: new Date(),
         });
 
         await expect(loginViaImpersonation("targetuser")).rejects.toThrow(
@@ -255,6 +261,9 @@ describe("Authentication Login", () => {
           is_admin: true,
           login_id: adminUser.login_id,
           username: adminUser.username || null,
+          deactivated_at: null,
+          updated_at: new Date(),
+          created_at: new Date(),
         });
 
         await expect(loginViaImpersonation("nonexistentuser")).rejects.toThrow(
