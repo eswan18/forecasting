@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, LoaderCircle } from "lucide-react";
+import { AlertTriangle, LoaderCircle, FileText, Tag, Trophy, Users, Hash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useServerAction } from "@/hooks/use-server-action";
 import {
@@ -134,15 +134,22 @@ export function CreateEditPropForm({
   }
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="text"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Prop</FormLabel>
+            <FormItem className="space-y-2">
+              <FormLabel className="text-sm font-medium flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Proposition Text
+              </FormLabel>
               <FormControl>
-                <Textarea {...field} className="text-sm min-h-20" />
+                <Textarea 
+                  {...field} 
+                  className="text-sm min-h-24 resize-none" 
+                  placeholder="Enter the proposition text here. Be clear and specific about what you're asking people to forecast."
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -152,13 +159,17 @@ export function CreateEditPropForm({
           control={form.control}
           name="notes"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Notes</FormLabel>
+            <FormItem className="space-y-2">
+              <FormLabel className="text-sm font-medium flex items-center gap-2">
+                <Hash className="h-4 w-4" />
+                Notes (Optional)
+              </FormLabel>
               <FormControl>
                 <Textarea
                   {...field}
                   value={field.value ?? undefined}
-                  className="text-sm min-h-20"
+                  className="text-sm min-h-20 resize-none"
+                  placeholder="Add any additional context, clarification, or background information."
                 />
               </FormControl>
               <FormMessage />
@@ -170,8 +181,11 @@ export function CreateEditPropForm({
           name="category_id"
           render={({ field }) => {
             return (
-              <FormItem>
-                <FormLabel>Category</FormLabel>
+              <FormItem className="space-y-2">
+                <FormLabel className="text-sm font-medium flex items-center gap-2">
+                  <Tag className="h-4 w-4" />
+                  Category
+                </FormLabel>
                 <Select
                   {...field}
                   value={field.value === null ? "null" : String(field.value)}
@@ -180,7 +194,7 @@ export function CreateEditPropForm({
                   }
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-11">
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                   </FormControl>
@@ -203,8 +217,11 @@ export function CreateEditPropForm({
           name="competition_id"
           render={({ field }) => {
             return (
-              <FormItem>
-                <FormLabel>Competition</FormLabel>
+              <FormItem className="space-y-2">
+                <FormLabel className="text-sm font-medium flex items-center gap-2">
+                  <Trophy className="h-4 w-4" />
+                  Competition
+                </FormLabel>
                 <Select
                   {...field}
                   value={field.value === null ? "null" : String(field.value)}
@@ -213,7 +230,7 @@ export function CreateEditPropForm({
                   }
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-11">
                       <SelectValue placeholder="Select a competition" />
                     </SelectTrigger>
                   </FormControl>
@@ -239,8 +256,11 @@ export function CreateEditPropForm({
           name="user_id"
           render={({ field }) => {
             return (
-              <FormItem>
-                <FormLabel>Public/Personal</FormLabel>
+              <FormItem className="space-y-2">
+                <FormLabel className="text-sm font-medium flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Visibility
+                </FormLabel>
                 <Select
                   {...field}
                   value={field.value === null ? "null" : String(field.value)}
@@ -249,8 +269,8 @@ export function CreateEditPropForm({
                   }
                 >
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a type" />
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Select visibility" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -269,27 +289,27 @@ export function CreateEditPropForm({
             );
           }}
         />
-        {createPropAction.isLoading || updatePropAction.isLoading ? (
-          <Button type="submit" disabled className="w-full">
-            <LoaderCircle className="animate-spin" />
-          </Button>
-        ) : (
-          <Button type="submit" className="w-full">
-            {initialProp ? "Update" : "Create"}
-          </Button>
-        )}
+        <Button 
+          type="submit" 
+          disabled={createPropAction.isLoading || updatePropAction.isLoading}
+          className="w-full h-11 text-base font-medium"
+        >
+          {createPropAction.isLoading || updatePropAction.isLoading ? (
+            <>
+              <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+              {initialProp ? "Updating..." : "Creating..."}
+            </>
+          ) : (
+            <>{initialProp ? "Update Proposition" : "Create Proposition"}</>
+          )}
+        </Button>
         {(createPropAction.error || updatePropAction.error) && (
-          <Alert
-            variant="destructive"
-            className="m-4 w-auto flex flex-row justify-start items-center"
-          >
-            <AlertTriangle className="h-8 w-8 mr-4 inline" />
-            <div className="ml-4">
-              <AlertTitle>Submission Error</AlertTitle>
-              <AlertDescription>
-                {createPropAction.error || updatePropAction.error}
-              </AlertDescription>
-            </div>
+          <Alert variant="destructive" className="mt-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Submission failed</AlertTitle>
+            <AlertDescription>
+              {createPropAction.error || updatePropAction.error}
+            </AlertDescription>
           </Alert>
         )}
       </form>

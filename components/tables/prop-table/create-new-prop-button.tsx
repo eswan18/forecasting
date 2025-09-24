@@ -32,7 +32,7 @@ export default function CreateNewPropButton({
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader>
+        <DialogHeader className="mb-4">
           <DialogTitle>Create new prop</DialogTitle>
         </DialogHeader>
         <CreateEditPropForm
