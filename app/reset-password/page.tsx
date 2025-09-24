@@ -8,12 +8,14 @@ export default async function ResetPasswordPage({
 }) {
   const { username, token } = await searchParams;
   return (
-    <div className="flex items-center justify-center mt-48">
-      {username && token ? (
-        <ResetPasswordFormCard username={username} token={token} />
-      ) : (
-        <RequestPasswordResetFormCard />
-      )}
+    <div className="flex flex-col items-center justify-start pt-16 pb-8 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-md">
+        {username && token ? (
+          <ResetPasswordFormCard username={username} token={token} />
+        ) : (
+          <RequestPasswordResetFormCard />
+        )}
+      </div>
     </div>
   );
 }
