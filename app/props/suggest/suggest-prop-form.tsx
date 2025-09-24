@@ -153,7 +153,10 @@ export function SuggestPropForm() {
                   Submitting...
                 </Button>
               ) : (
-                <Button type="submit" className="flex-1 text-sm sm:text-base h-11 font-medium">
+                <Button
+                  type="submit"
+                  className="flex-1 text-sm sm:text-base h-11 font-medium"
+                >
                   Submit Proposition
                 </Button>
               )}

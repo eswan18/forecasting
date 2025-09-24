@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, LoaderCircle, Trophy, Calendar, CalendarClock, Eye } from "lucide-react";
+import {
+  AlertTriangle,
+  LoaderCircle,
+  Trophy,
+  Calendar,
+  CalendarClock,
+  Eye,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { createCompetition, updateCompetition } from "@/lib/db_actions";
 import { Button } from "@/components/ui/button";
@@ -117,8 +124,8 @@ export function CreateEditCompetitionForm({
                 Competition Name
               </FormLabel>
               <FormControl>
-                <Input 
-                  {...field} 
+                <Input
+                  {...field}
                   className="h-11"
                   placeholder="Enter competition name"
                 />
@@ -187,8 +194,8 @@ export function CreateEditCompetitionForm({
             </FormItem>
           )}
         />
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           disabled={loading}
           className="w-full h-11 text-base font-medium"
         >
@@ -198,7 +205,9 @@ export function CreateEditCompetitionForm({
               {initialCompetition ? "Updating..." : "Creating..."}
             </>
           ) : (
-            <>{initialCompetition ? "Update Competition" : "Create Competition"}</>
+            <>
+              {initialCompetition ? "Update Competition" : "Create Competition"}
+            </>
           )}
         </Button>
         {error && (

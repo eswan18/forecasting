@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, LoaderCircle, FileText, Tag, Trophy, Users, Hash } from "lucide-react";
+import {
+  AlertTriangle,
+  LoaderCircle,
+  FileText,
+  Tag,
+  Trophy,
+  Users,
+  Hash,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useServerAction } from "@/hooks/use-server-action";
 import {
@@ -145,9 +153,9 @@ export function CreateEditPropForm({
                 Proposition Text
               </FormLabel>
               <FormControl>
-                <Textarea 
-                  {...field} 
-                  className="text-sm min-h-24 resize-none" 
+                <Textarea
+                  {...field}
+                  className="text-sm min-h-24 resize-none"
                   placeholder="Enter the proposition text here. Be clear and specific about what you're asking people to forecast."
                 />
               </FormControl>
@@ -289,8 +297,8 @@ export function CreateEditPropForm({
             );
           }}
         />
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           disabled={createPropAction.isLoading || updatePropAction.isLoading}
           className="w-full h-11 text-base font-medium"
         >
