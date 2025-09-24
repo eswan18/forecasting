@@ -72,7 +72,7 @@
     "@storybook/addon-docs": "^9.1.5",
     "@storybook/addon-onboarding": "^9.1.5",
     "@storybook/addon-themes": "^9.1.5",
-    "@storybook/addon-vitest": "9.1.5",
+    "@storybook/addon-vitest": "^9.1.8",
     "@storybook/react": "^9.1.5",
     "@storybook/react-vite": "^9.1.5",
     "@tailwindcss/forms": "^0.5.10",
