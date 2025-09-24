@@ -15,7 +15,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, LoaderCircle } from "lucide-react";
+import { AlertTriangle, LoaderCircle, FileText, Hash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 import { z } from "zod";
@@ -86,7 +86,7 @@ export function SuggestPropForm() {
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="w-full max-w-2xl mx-auto shadow-xl border-0 bg-card/50 backdrop-blur-sm">
       <CardHeader className="text-center">
         <CardTitle className="text-xl sm:text-2xl font-semibold">
           Suggest a Proposition
@@ -103,7 +103,8 @@ export function SuggestPropForm() {
               name="propText"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm sm:text-base font-medium">
+                  <FormLabel className="text-sm sm:text-base font-medium flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
                     Prop Text
                   </FormLabel>
                   <FormControl>
@@ -124,7 +125,8 @@ export function SuggestPropForm() {
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm sm:text-base font-medium">
+                  <FormLabel className="text-sm sm:text-base font-medium flex items-center gap-2">
+                    <Hash className="h-4 w-4" />
                     Additional Notes (Optional)
                   </FormLabel>
                   <FormControl>
@@ -151,7 +153,10 @@ export function SuggestPropForm() {
                   Submitting...
                 </Button>
               ) : (
-                <Button type="submit" className="flex-1 text-sm sm:text-base">
+                <Button
+                  type="submit"
+                  className="flex-1 text-sm sm:text-base h-11 font-medium"
+                >
                   Submit Proposition
                 </Button>
               )}

@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, LoaderCircle } from "lucide-react";
+import {
+  AlertTriangle,
+  LoaderCircle,
+  Trophy,
+  Calendar,
+  CalendarClock,
+  Eye,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { createCompetition, updateCompetition } from "@/lib/db_actions";
 import { Button } from "@/components/ui/button";
@@ -106,15 +113,22 @@ export function CreateEditCompetitionForm({
   }
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Name</FormLabel>
+            <FormItem className="space-y-2">
+              <FormLabel className="text-sm font-medium flex items-center gap-2">
+                <Trophy className="h-4 w-4" />
+                Competition Name
+              </FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input
+                  {...field}
+                  className="h-11"
+                  placeholder="Enter competition name"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -124,8 +138,11 @@ export function CreateEditCompetitionForm({
           control={form.control}
           name="forecasts_due_date"
           render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Forecasts Due</FormLabel>
+            <FormItem className="flex flex-col space-y-2">
+              <FormLabel className="text-sm font-medium flex items-center gap-2">
+                <CalendarClock className="h-4 w-4" />
+                Forecasts Due Date
+              </FormLabel>
               <FormControl>
                 <DatePicker
                   value={field.value}
@@ -141,8 +158,11 @@ export function CreateEditCompetitionForm({
           control={form.control}
           name="end_date"
           render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Competition End</FormLabel>
+            <FormItem className="flex flex-col space-y-2">
+              <FormLabel className="text-sm font-medium flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Competition End Date
+              </FormLabel>
               <FormControl>
                 <DatePicker
                   value={field.value}
@@ -166,30 +186,35 @@ export function CreateEditCompetitionForm({
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel>Visible to users</FormLabel>
+                <FormLabel className="text-sm font-medium flex items-center gap-2">
+                  <Eye className="h-4 w-4" />
+                  Visible to users
+                </FormLabel>
               </div>
             </FormItem>
           )}
         />
-        {loading ? (
-          <Button type="submit" disabled className="w-full">
-            <LoaderCircle className="animate-spin" />
-          </Button>
-        ) : (
-          <Button type="submit" className="w-full">
-            {initialCompetition ? "Update" : "Create"}
-          </Button>
-        )}
+        <Button
+          type="submit"
+          disabled={loading}
+          className="w-full h-11 text-base font-medium"
+        >
+          {loading ? (
+            <>
+              <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+              {initialCompetition ? "Updating..." : "Creating..."}
+            </>
+          ) : (
+            <>
+              {initialCompetition ? "Update Competition" : "Create Competition"}
+            </>
+          )}
+        </Button>
         {error && (
-          <Alert
-            variant="destructive"
-            className="m-4 w-auto flex flex-row justify-start items-center"
-          >
-            <AlertTriangle className="h-8 w-8 mr-4 inline" />
-            <div className="ml-4">
-              <AlertTitle>Submission Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </div>
+          <Alert variant="destructive" className="mt-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Submission failed</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
       </form>

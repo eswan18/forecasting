@@ -4,7 +4,13 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Form,
@@ -16,7 +22,7 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Lock, User, Eye, EyeOff } from "lucide-react";
 import { executePasswordReset } from "@/lib/db_actions";
 import { LoaderCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -35,6 +41,7 @@ export default function ResetPasswordFormCard({
 }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
@@ -64,17 +71,32 @@ export default function ResetPasswordFormCard({
       });
   }
   return (
-    <Card className="w-full max-w-md mx-4">
-      <CardHeader>
-        <CardTitle className="text-xl">Reset Password</CardTitle>
+    <Card className="w-full shadow-xl border-0 bg-card/50 backdrop-blur-sm">
+      <CardHeader className="space-y-4 pb-6">
+        <div className="text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+            <Lock className="h-6 w-6 text-primary" />
+          </div>
+          <CardTitle className="text-2xl font-bold">Reset Password</CardTitle>
+          <CardDescription className="text-muted-foreground">
+            Enter your new password for {username}
+          </CardDescription>
+        </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-6">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <FormItem>
-              <FormLabel>Username</FormLabel>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormItem className="space-y-2">
+              <FormLabel className="text-sm font-medium">Username</FormLabel>
               <FormControl>
-                <Input disabled value={username} />
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    disabled
+                    value={username}
+                    className="pl-10 h-11 bg-muted"
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -82,39 +104,56 @@ export default function ResetPasswordFormCard({
               control={form.control}
               name="password"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>New Password</FormLabel>
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-sm font-medium">
+                    New Password
+                  </FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="correct-horse-battery-staple"
-                      autoCapitalize="off"
-                      type="password"
-                      {...field}
-                    />
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter your new password"
+                        autoCapitalize="off"
+                        className="pl-10 pr-10 h-11"
+                        {...field}
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            {loading ? (
-              <div className="w-full flex justify-center">
-                <LoaderCircle className="animate-spin" />
-              </div>
-            ) : (
-              <Button type="submit" className="w-full">
-                Reset Password
-              </Button>
-            )}
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full h-11 text-base font-medium"
+            >
+              {loading ? (
+                <>
+                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                  Resetting...
+                </>
+              ) : (
+                "Reset Password"
+              )}
+            </Button>
             {error && (
-              <Alert
-                variant="destructive"
-                className="m-4 w-auto flex flex-row justify-start items-center"
-              >
-                <AlertTriangle className="h-8 w-8 mr-4 inline" />
-                <div className="ml-4">
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>{error}</AlertDescription>
-                </div>
+              <Alert variant="destructive" className="mt-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Reset failed</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
           </form>

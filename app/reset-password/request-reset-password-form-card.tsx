@@ -4,11 +4,18 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, User, Mail } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
 import { z } from "zod";
 import {
   Form,
@@ -53,58 +60,85 @@ export default function RequestPasswordResetFormCard() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-4">
-      <CardHeader>
-        <CardTitle className="text-xl">Request Password Reset</CardTitle>
+    <Card className="w-full shadow-xl border-0 bg-card/50 backdrop-blur-sm">
+      <CardHeader className="space-y-4 pb-6">
+        <div className="text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+            <Mail className="h-6 w-6 text-primary" />
+          </div>
+          <CardTitle className="text-2xl font-bold">Reset Password</CardTitle>
+          <CardDescription className="text-muted-foreground">
+            Enter your username to receive a password reset email
+          </CardDescription>
+        </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-6">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="username"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Username</FormLabel>
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-sm font-medium">
+                    Username
+                  </FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="bobbytables"
-                      autoCapitalize="off"
-                      {...field}
-                    />
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        placeholder="Enter your username"
+                        autoCapitalize="off"
+                        className="pl-10 h-11"
+                        {...field}
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            {loading ? (
-              <div className="w-full flex justify-center">
-                <LoaderCircle className="animate-spin" />
-              </div>
-            ) : (
-              <Button type="submit" className="w-full">
-                Send Reset Email
-              </Button>
-            )}
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full h-11 text-base font-medium"
+            >
+              {loading ? (
+                <>
+                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                "Send Reset Email"
+              )}
+            </Button>
             {error && (
-              <Alert
-                variant="destructive"
-                className="m-4 w-auto flex flex-row justify-start items-center"
-              >
-                <AlertTriangle className="h-8 w-8 mr-4 inline" />
-                <div className="ml-4">
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>{error}</AlertDescription>
-                </div>
+              <Alert variant="destructive" className="mt-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Request failed</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
           </form>
         </Form>
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          <Link href="/login">
-            <Button variant="link">Back to Login</Button>
-          </Link>
-        </p>
+
+        <div className="space-y-4">
+          <Separator />
+
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">
+              Remember your password?
+              <Link href="/login" className="ml-1">
+                <Button
+                  variant="link"
+                  className="h-auto p-0 text-sm font-normal text-primary hover:underline"
+                >
+                  Back to Login
+                </Button>
+              </Link>
+            </p>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
