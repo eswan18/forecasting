@@ -341,7 +341,9 @@ export async function getPropsWithUserForecasts({
 }: {
   userId: number;
   competitionId: number | null;
-}): Promise<(VProp & { user_forecast: number | null })[]> {
+}): Promise<
+  (VProp & { user_forecast: number | null; user_forecast_id: number | null })[]
+> {
   const currentUser = await getUserFromCookies();
   logger.debug("Getting props with user forecasts", {
     userId,
@@ -366,7 +368,8 @@ export async function getPropsWithUserForecasts({
             .on("forecasts.user_id", "=", userId),
         )
         .selectAll("v_props")
-        .select("forecasts.forecast as user_forecast");
+        .select("forecasts.forecast as user_forecast")
+        .select("forecasts.id as user_forecast_id");
 
       // Handle standalone props (competitionId = null)
       if (competitionId === null) {

@@ -11,6 +11,7 @@ import {
 import { CategoryBadge, ResolutionBadge } from "@/components/badges";
 import { ResolutionDialog } from "@/components/dialogs/resolution-dialog";
 import { PropEditDialog } from "@/components/dialogs/prop-edit-dialog";
+import { ForecastDialog } from "@/components/dialogs/forecast-dialog";
 import { Edit2, ExternalLink, MoreVertical } from "lucide-react";
 import Link from "next/link";
 import {
@@ -22,6 +23,7 @@ import {
 interface MobilePropCardProps {
   prop: VProp;
   userForecast?: number | null;
+  userForecastId?: number | null;
   onCategoryClick?: (categoryName: string) => void;
   onResolutionClick?: (resolution: "resolved" | "unresolved") => void;
   canEditProps?: boolean;
@@ -31,6 +33,7 @@ interface MobilePropCardProps {
 export function MobilePropCard({
   prop,
   userForecast,
+  userForecastId,
   onCategoryClick,
   onResolutionClick,
   canEditProps = false,
@@ -38,6 +41,7 @@ export function MobilePropCard({
 }: MobilePropCardProps) {
   const [isResolutionDialogOpen, setIsResolutionDialogOpen] = useState(false);
   const [isPropEditDialogOpen, setIsPropEditDialogOpen] = useState(false);
+  const [isForecastDialogOpen, setIsForecastDialogOpen] = useState(false);
 
   return (
     <Card>
@@ -120,9 +124,37 @@ export function MobilePropCard({
             Resolution
           </div>
           <div className="text-lg font-medium text-foreground">
-            {userForecast !== null && userForecast !== undefined
-              ? `${Math.round(userForecast * 100)}%`
-              : "—"}
+            {userForecast !== null && userForecast !== undefined ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    className="cursor-pointer hover:text-foreground/80"
+                    onClick={() => setIsForecastDialogOpen(true)}
+                  >
+                    {`${Math.round(userForecast * 100)}%`}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Click to edit forecast</p>
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 hover:bg-muted/50"
+                    onClick={() => setIsForecastDialogOpen(true)}
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Add forecast</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
           <div className="flex items-center justify-end gap-2">
             <ResolutionBadge
@@ -159,6 +191,24 @@ export function MobilePropCard({
         prop={prop}
         isOpen={isPropEditDialogOpen}
         onClose={() => setIsPropEditDialogOpen(false)}
+      />
+
+      <ForecastDialog
+        prop={prop}
+        initialForecast={
+          userForecast !== null && userForecast !== undefined && userForecastId
+            ? {
+                id: userForecastId,
+                forecast: userForecast,
+                prop_id: prop.prop_id,
+                user_id: 0, // Will be set properly by the form
+                created_at: new Date(), // Placeholder
+                updated_at: new Date(), // Placeholder
+              }
+            : undefined
+        }
+        isOpen={isForecastDialogOpen}
+        onClose={() => setIsForecastDialogOpen(false)}
       />
     </Card>
   );

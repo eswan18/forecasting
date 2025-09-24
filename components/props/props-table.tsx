@@ -7,7 +7,10 @@ import { PropCard, MobilePropCard } from "@/components/prop-card";
 import { usePropsFilter } from "@/hooks/usePropsFilter";
 import CreateNewPropButton from "@/components/tables/prop-table/create-new-prop-button";
 
-type PropWithUserForecast = VProp & { user_forecast: number | null };
+type PropWithUserForecast = VProp & {
+  user_forecast: number | null;
+  user_forecast_id: number | null;
+};
 
 interface PropsTableProps {
   props: PropWithUserForecast[];
@@ -89,6 +92,7 @@ export function PropsTable({
                   key={prop.prop_id}
                   prop={prop}
                   userForecast={propWithForecast?.user_forecast}
+                  userForecastId={propWithForecast?.user_forecast_id}
                   onCategoryClick={(categoryName) =>
                     setSelectedCategories([categoryName])
                   }
@@ -114,6 +118,7 @@ export function PropsTable({
                 key={prop.prop_id}
                 prop={prop}
                 userForecast={propWithForecast?.user_forecast}
+                userForecastId={propWithForecast?.user_forecast_id}
                 onCategoryClick={(categoryName) =>
                   setSelectedCategories([categoryName])
                 }

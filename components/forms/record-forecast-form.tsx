@@ -7,6 +7,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
@@ -14,10 +15,11 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Forecast, ForecastUpdate, NewForecast, VProp } from "@/types/db_types";
 import { Button } from "@/components/ui/button";
-import { Check, LoaderCircle } from "lucide-react";
+import { AlertTriangle, LoaderCircle, TrendingUp } from "lucide-react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { createForecast, updateForecast } from "@/lib/db_actions";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const formSchema = z.object({
   forecast: z.number({ message: "You must choose a number" }).min(0).max(1),
@@ -26,112 +28,110 @@ const formSchema = z.object({
 export function RecordForecastForm({
   prop,
   initialForecast,
+  onSuccess,
 }: {
   prop: VProp;
   initialForecast?: Forecast;
+  onSuccess?: () => void;
 }) {
   const { user } = useCurrentUser();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { forecast: initialForecast?.forecast ?? 0 },
+    defaultValues: { forecast: initialForecast?.forecast ?? 0.5 },
   });
   const { toast } = useToast();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    if (!initialForecast) {
-      // If there was no initial forecast, we're creating a new one.
-      const forecast: NewForecast = {
-        prop_id: prop.prop_id,
-        user_id: user!.id,
-        forecast: values.forecast,
-      };
-      try {
-        await createForecast({ forecast }).then(() => {
-          toast({ title: "Forecast recorded!" });
-        });
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : "An error occurred";
-        toast({
-          title: "Error recording forecast",
-          description: msg,
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
+    setError(null);
+
+    try {
+      if (!initialForecast) {
+        // Creating a new forecast
+        const forecast: NewForecast = {
+          prop_id: prop.prop_id,
+          user_id: user!.id,
+          forecast: values.forecast,
+        };
+        await createForecast({ forecast });
+        toast({ title: "Forecast recorded!" });
+      } else {
+        // Updating existing forecast
+        const forecast: ForecastUpdate = {
+          forecast: values.forecast,
+        };
+        await updateForecast({ id: initialForecast.id, forecast });
+        toast({ title: "Forecast updated!" });
       }
-    } else {
-      // If there was an initial forecast, we're updating it.
-      const forecast: ForecastUpdate = {
-        forecast: values.forecast,
-      };
-      try {
-        await updateForecast({ id: initialForecast.id, forecast }).then(() => {
-          toast({ title: "Forecast updated!" });
-        });
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : "An error occurred";
-        toast({
-          title: "Error updating forecast",
-          description: msg,
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
+      onSuccess?.();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "An error occurred";
+      setError(msg);
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-6 grid-flow-col content-end gap-y-2 gap-x-1">
-          <div className="col-span-4 mr-2 flex flex-col">
-            <span className="text-sm">{prop.prop_text}</span>
-            {prop.prop_notes && (
-              <span className="text-muted-foreground italic break-words text-xs mt-1">
-                {prop.prop_notes}
-              </span>
-            )}
-          </div>
-          <FormField
-            control={form.control}
-            name="forecast"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="forecast"
+          render={({ field }) => (
+            <FormItem className="space-y-2">
+              <FormLabel className="text-sm font-medium flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Forecast Probability
+              </FormLabel>
+              <FormControl>
+                <div className="space-y-2">
                   <Input
                     type="number"
                     min={0}
                     max={1}
-                    inputMode="decimal"
-                    step="any"
+                    step="0.01"
+                    className="h-11 text-base"
+                    placeholder="0.50"
                     {...field}
-                    // Interestingly, this makes the input uncontrolled and suppresses a
-                    // warning, but doesn't seem to break the form's behavior.
-                    value={undefined}
+                    onChange={(e) =>
+                      field.onChange(parseFloat(e.target.value) || 0)
+                    }
                   />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {loading ? (
-            <Button variant="outline" disabled size="icon">
-              <LoaderCircle className="animate-spin" />
-            </Button>
-          ) : (
-            <Button
-              type="submit"
-              variant="outline"
-              size="icon"
-              disabled={form.formState.isDirty ? undefined : true}
-            >
-              <Check size={16} />
-            </Button>
+                  <div className="text-xs text-muted-foreground">
+                    Enter a probability between 0.00 and 1.00
+                  </div>
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
-        </div>
+        />
+
+        <Button
+          type="submit"
+          disabled={loading}
+          className="w-full h-11 text-base font-medium"
+        >
+          {loading ? (
+            <>
+              <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+              {initialForecast ? "Updating..." : "Recording..."}
+            </>
+          ) : (
+            <>{initialForecast ? "Update Forecast" : "Record Forecast"}</>
+          )}
+        </Button>
+
+        {error && (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
       </form>
     </Form>
   );
