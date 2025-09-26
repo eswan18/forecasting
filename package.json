@@ -49,6 +49,7 @@
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "dotenv": "^17.2.2",
+    "form-data": "^4.0.4",
     "jsonwebtoken": "^9.0.2",
     "kysely": "^0.28.2",
     "lucide-react": "^0.544.0",
