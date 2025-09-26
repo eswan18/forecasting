@@ -29,6 +29,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
+  username: z.string(),
   password: z.string().min(8).max(30),
 });
 
@@ -44,6 +45,10 @@ export default function ResetPasswordFormCard({
   const [showPassword, setShowPassword] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      username,
+      password: "",
+    },
   });
   const { toast } = useToast();
   const router = useRouter();
@@ -86,20 +91,28 @@ export default function ResetPasswordFormCard({
       <CardContent className="space-y-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormItem className="space-y-2">
-              <FormLabel className="text-sm font-medium">Username</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    disabled
-                    value={username}
-                    className="pl-10 h-11 bg-muted"
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-sm font-medium">
+                    Username
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        disabled
+                        className="pl-10 h-11 bg-muted"
+                        {...field}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="password"
@@ -114,7 +127,7 @@ export default function ResetPasswordFormCard({
                       <Input
                         type={showPassword ? "text" : "password"}
                         placeholder="Enter your new password"
-                        autoCapitalize="off"
+                        autoCapitalize="none"
                         className="pl-10 pr-10 h-11"
                         {...field}
                       />

@@ -42,6 +42,9 @@ export default function RequestPasswordResetFormCard() {
   const [loading, setLoading] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      username: "",
+    },
   });
   const router = useRouter();
 
@@ -88,7 +91,7 @@ export default function RequestPasswordResetFormCard() {
                       <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
                         placeholder="Enter your username"
-                        autoCapitalize="off"
+                        autoCapitalize="none"
                         className="pl-10 h-11"
                         {...field}
                       />
