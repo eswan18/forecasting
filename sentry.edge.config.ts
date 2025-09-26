@@ -5,12 +5,21 @@
 
 import * as Sentry from "@sentry/nextjs";
 
+function parseSampleRate(value: string | undefined, fallback: number): number {
+  const n = value === undefined ? NaN : parseFloat(value);
+  if (!Number.isFinite(n) || n < 0 || n > 1) return fallback;
+  return n;
+}
+
+const defaultTraceRate = process.env.NODE_ENV === "production" ? 0.2 : 1;
+
 Sentry.init({
-  dsn: "https://42fb7fde7d5842831f2324ed33c7f50f@o4509062063587328.ingest.us.sentry.io/4509062066012160",
+  dsn: process.env.SENTRY_DSN || undefined,
 
-  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
-  tracesSampleRate: 1,
+  tracesSampleRate: parseSampleRate(
+    process.env.SENTRY_TRACES_SAMPLE_RATE,
+    defaultTraceRate,
+  ),
 
-  // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: false,
+  debug: process.env.NODE_ENV !== "production",
 });

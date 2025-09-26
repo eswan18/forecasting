@@ -9,6 +9,7 @@ export async function logout() {
   cookieStore.set("token", "", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
     maxAge: 0, // expires immediately
     path: "/",
   });
