@@ -5,24 +5,27 @@
 import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
-  dsn: "https://42fb7fde7d5842831f2324ed33c7f50f@o4509062063587328.ingest.us.sentry.io/4509062066012160",
+  dsn: process.env.SENTRY_DSN || undefined,
 
   // Add optional integrations for additional features
   integrations: [Sentry.replayIntegration()],
 
-  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
-  tracesSampleRate: 1,
+  // Use env-configurable sampling; default to 1 in dev and lower in prod
+  tracesSampleRate: process.env.SENTRY_TRACES_SAMPLE_RATE
+    ? Number(process.env.SENTRY_TRACES_SAMPLE_RATE)
+    : process.env.NODE_ENV === "production"
+      ? 0.2
+      : 1,
 
-  // Define how likely Replay events are sampled.
-  // This sets the sample rate to be 10%. You may want this to be 100% while
-  // in development and sample at a lower rate in production
-  replaysSessionSampleRate: 0.1,
+  // Replay sampling
+  replaysSessionSampleRate: process.env.SENTRY_REPLAYS_SESSION_SAMPLE_RATE
+    ? Number(process.env.SENTRY_REPLAYS_SESSION_SAMPLE_RATE)
+    : 0.1,
+  replaysOnErrorSampleRate: process.env.SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE
+    ? Number(process.env.SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE)
+    : 1.0,
 
-  // Define how likely Replay events are sampled when an error occurs.
-  replaysOnErrorSampleRate: 1.0,
-
-  // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: false,
+  debug: process.env.NODE_ENV !== "production",
 });
 
 // Export the required hook for Sentry navigation instrumentation

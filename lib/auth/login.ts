@@ -55,7 +55,8 @@ export async function login({
   cookieStore.set("token", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    maxAge: 108000, // 3 hours
+    maxAge: 10800, // 3 hours
+    sameSite: "lax",
     path: "/",
   });
   revalidatePath("/");
@@ -86,7 +87,8 @@ export async function loginViaImpersonation(username: string) {
   cookieStore.set("token", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    maxAge: 108000, // 3 hours
+    maxAge: 10800, // 3 hours
+    sameSite: "lax",
     path: "/",
   });
   revalidatePath("/");
