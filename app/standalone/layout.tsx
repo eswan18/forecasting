@@ -10,7 +10,7 @@ export default async function CompetitionLayout({
 }) {
   const user = await getUserFromCookies();
   if (!user) {
-    await loginAndRedirect({ url: "/standalone/forecasts" });
+    await loginAndRedirect({ url: "/standalone/props" });
   }
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
