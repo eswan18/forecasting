@@ -4,14 +4,21 @@
 
 import * as Sentry from "@sentry/nextjs";
 
+function parseSampleRate(value: string | undefined, fallback: number): number {
+  const n = value === undefined ? NaN : parseFloat(value);
+  if (!Number.isFinite(n) || n < 0 || n > 1) return fallback;
+  return n;
+}
+
+const defaultTraceRate = process.env.NODE_ENV === "production" ? 0.2 : 1;
+
 Sentry.init({
   dsn: process.env.SENTRY_DSN || undefined,
 
-  tracesSampleRate: process.env.SENTRY_TRACES_SAMPLE_RATE
-    ? Number(process.env.SENTRY_TRACES_SAMPLE_RATE)
-    : process.env.NODE_ENV === "production"
-      ? 0.2
-      : 1,
+  tracesSampleRate: parseSampleRate(
+    process.env.SENTRY_TRACES_SAMPLE_RATE,
+    defaultTraceRate,
+  ),
 
   debug: process.env.NODE_ENV !== "production",
 });
