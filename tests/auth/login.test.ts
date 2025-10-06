@@ -100,7 +100,8 @@ describe("Authentication Login", () => {
           expect.any(String),
           expect.objectContaining({
             httpOnly: true,
-            maxAge: 108000,
+            maxAge: 10800,
+            sameSite: "lax",
             path: "/",
           }),
         );
@@ -193,7 +194,8 @@ describe("Authentication Login", () => {
           expect.any(String),
           expect.objectContaining({
             httpOnly: true,
-            maxAge: 108000,
+            maxAge: 10800,
+            sameSite: "lax",
             path: "/",
           }),
         );
