@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import {
   AlertTriangle,
   LoaderCircle,
@@ -12,12 +12,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useServerAction } from "@/hooks/use-server-action";
-import {
-  createProp,
-  getCategories,
-  getCompetitions,
-  updateProp,
-} from "@/lib/db_actions";
+import { createProp, updateProp } from "@/lib/db_actions";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -32,7 +27,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Category, Competition, VProp } from "@/types/db_types";
+import { VProp } from "@/types/db_types";
 import {
   Select,
   SelectContent,
@@ -40,7 +35,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getUserFromCookies } from "@/lib/get-user";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useCategories } from "@/hooks/useCategories";
+import { useCompetitions } from "@/hooks/useCompetitions";
 
 const formSchema = z
   .object({
@@ -78,11 +75,19 @@ export function CreateEditPropForm({
   defaultCompetitionId?: number | null;
   onSubmit?: () => void;
 }) {
-  const [loading, setLoading] = useState(true);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [competitions, setCompetitions] = useState<Competition[]>([]);
-  const [canEditPublicProps, setCanEditPublicProps] = useState(false);
+  const {
+    data: categories,
+    error: categoriesError,
+    isLoading: categoriesIsLoading,
+  } = useCategories();
+  const {
+    data: competitions,
+    error: competitionsError,
+    isLoading: competitionsIsLoading,
+  } = useCompetitions();
+  const { user: currentUser } = useCurrentUser();
   const { toast } = useToast();
+  const fetchErrorNotifiedRef = useRef(false);
   const initialUserId = initialProp?.prop_user_id || defaultUserId;
 
   const createPropAction = useServerAction(createProp, {
@@ -110,18 +115,49 @@ export function CreateEditPropForm({
     },
   });
   useEffect(() => {
-    getCategories().then(async (categories) => {
-      setCategories(categories);
-      const competitions = await getCompetitions();
-      setCompetitions(competitions);
-      setLoading(false);
-    });
-    getUserFromCookies().then((user) => {
-      if (user && user.is_admin) {
-        setCanEditPublicProps(true); // Admins can edit public props
-      }
-    });
-  }, []);
+    const currentError = categoriesError ?? competitionsError;
+
+    if (!currentError) {
+      fetchErrorNotifiedRef.current = false;
+      return;
+    }
+
+    if (fetchErrorNotifiedRef.current) {
+      return;
+    }
+
+    if (
+      categoriesError?.status === 401 ||
+      competitionsError?.status === 401
+    ) {
+      toast({
+        title: "Unauthorized",
+        description: "You must be signed in to manage propositions.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "We couldn&apos;t load supporting data for the form.",
+        variant: "destructive",
+      });
+    }
+
+    fetchErrorNotifiedRef.current = true;
+  }, [categoriesError, competitionsError, toast]);
+
+  const canEditPublicProps = currentUser?.is_admin ?? false;
+
+  const isInitialCategoriesLoading =
+    categoriesIsLoading && !categories && !categoriesError;
+  const isInitialCompetitionsLoading =
+    competitionsIsLoading && !competitions && !competitionsError;
+  const isOptionsLoading = isInitialCategoriesLoading || isInitialCompetitionsLoading;
+  const isUnauthorized =
+    categoriesError?.status === 401 || competitionsError?.status === 401;
+  const loadError = categoriesError ?? competitionsError;
+  const categoryOptions = categories ?? [];
+  const competitionOptions = competitions ?? [];
 
   async function handleSubmit(values: z.infer<typeof formSchema>) {
     if (initialProp) {
@@ -133,16 +169,37 @@ export function CreateEditPropForm({
       await createPropAction.execute({ prop: values });
     }
   }
-  if (loading || createPropAction.isLoading || updatePropAction.isLoading) {
+  if (isOptionsLoading || createPropAction.isLoading || updatePropAction.isLoading) {
     return (
       <div className="flex justify-center items-center h-40">
         <LoaderCircle className="animate-spin" />
       </div>
     );
   }
+  if (isUnauthorized) {
+    return (
+      <Alert variant="destructive" className="mt-4">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertTitle>Unauthorized</AlertTitle>
+        <AlertDescription>
+          You must be signed in to manage propositions.
+        </AlertDescription>
+      </Alert>
+    );
+  }
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        {loadError && (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Supporting data unavailable</AlertTitle>
+            <AlertDescription>
+              We couldn&apos;t load some supporting data for this form. You may need to
+              refresh the page.
+            </AlertDescription>
+          </Alert>
+        )}
         <FormField
           control={form.control}
           name="text"
@@ -208,7 +265,7 @@ export function CreateEditPropForm({
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="null">None</SelectItem>
-                    {categories.map((category) => (
+                    {categoryOptions.map((category) => (
                       <SelectItem key={category.id} value={String(category.id)}>
                         {category.name}
                       </SelectItem>
@@ -244,7 +301,7 @@ export function CreateEditPropForm({
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="null">None</SelectItem>
-                    {competitions.map((competition) => (
+                    {competitionOptions.map((competition) => (
                       <SelectItem
                         key={competition.id}
                         value={String(competition.id)}
