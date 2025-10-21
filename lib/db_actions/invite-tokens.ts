@@ -4,6 +4,13 @@ import { getUserFromCookies } from "../get-user";
 import { randomBytes } from "crypto";
 import { db } from "@/lib/database";
 import { logger } from "@/lib/logger";
+import { InviteToken } from "@/types/db_types";
+import {
+  ServerActionResult,
+  success,
+  error,
+  ERROR_CODES,
+} from "@/lib/server-action-result";
 
 export async function generateInviteToken({ notes }: { notes?: string }) {
   const currentUser = await getUserFromCookies();
@@ -145,5 +152,100 @@ export async function consumeInviteToken(token: string) {
       duration,
     });
     throw error;
+  }
+}
+
+export async function getInviteTokens(): Promise<
+  ServerActionResult<InviteToken[]>
+> {
+  const currentUser = await getUserFromCookies();
+  logger.debug("Getting invite tokens", {
+    currentUserId: currentUser?.id,
+  });
+
+  const startTime = Date.now();
+  try {
+    if (!currentUser?.is_admin) {
+      logger.warn("Unauthorized attempt to get invite tokens", {
+        currentUserId: currentUser?.id,
+      });
+      return error(
+        "You must be an admin to view invite tokens",
+        ERROR_CODES.UNAUTHORIZED,
+      );
+    }
+
+    const inviteTokens = await db
+      .selectFrom("invite_tokens")
+      .selectAll()
+      .orderBy("created_at", "desc")
+      .execute();
+
+    const duration = Date.now() - startTime;
+    logger.debug(`Retrieved ${inviteTokens.length} invite tokens`, {
+      operation: "getInviteTokens",
+      table: "invite_tokens",
+      duration,
+    });
+
+    return success(inviteTokens);
+  } catch (err) {
+    const duration = Date.now() - startTime;
+    logger.error("Failed to get invite tokens", err as Error, {
+      operation: "getInviteTokens",
+      table: "invite_tokens",
+      duration,
+    });
+    return error(
+      "Failed to retrieve invite tokens",
+      ERROR_CODES.DATABASE_ERROR,
+    );
+  }
+}
+
+export async function deleteInviteToken({
+  id,
+}: {
+  id: number;
+}): Promise<ServerActionResult<void>> {
+  const currentUser = await getUserFromCookies();
+  logger.debug("Deleting invite token", {
+    currentUserId: currentUser?.id,
+    inviteTokenId: id,
+  });
+
+  const startTime = Date.now();
+  try {
+    if (!currentUser?.is_admin) {
+      logger.warn("Unauthorized attempt to delete invite token", {
+        currentUserId: currentUser?.id,
+        inviteTokenId: id,
+      });
+      return error(
+        "You must be an admin to delete invite tokens",
+        ERROR_CODES.UNAUTHORIZED,
+      );
+    }
+
+    await db.deleteFrom("invite_tokens").where("id", "=", id).execute();
+
+    const duration = Date.now() - startTime;
+    logger.info("Invite token deleted successfully", {
+      operation: "deleteInviteToken",
+      table: "invite_tokens",
+      inviteTokenId: id,
+      duration,
+    });
+
+    return success(undefined);
+  } catch (err) {
+    const duration = Date.now() - startTime;
+    logger.error("Failed to delete invite token", err as Error, {
+      operation: "deleteInviteToken",
+      table: "invite_tokens",
+      inviteTokenId: id,
+      duration,
+    });
+    return error("Failed to delete invite token", ERROR_CODES.DATABASE_ERROR);
   }
 }
