@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, UserPlus, CheckCircle, XCircle } from "lucide-react";
 import { getInviteTokens } from "@/lib/db_actions";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
+import { InviteUserButton } from "../invite-user-button";
 
 export default async function Page() {
   const result = await getInviteTokens();
@@ -27,17 +28,14 @@ export default async function Page() {
             </div>
             <div className="min-w-0">
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                Invite Management
+                Invite Tokens
               </h1>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                Manage invitation tokens and track usage
-              </p>
             </div>
           </div>
 
           <div className="flex items-center justify-between">
             <div className="flex gap-2 sm:gap-4">
-              {/* TODO: Add create invite button */}
+              <InviteUserButton className="w-full sm:w-auto flex items-center justify-center gap-2 text-sm sm:text-base" />
             </div>
           </div>
         </div>

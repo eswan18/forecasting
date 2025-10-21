@@ -1,6 +1,6 @@
 import UsersTable from "./users-table";
-import { getUsers } from "@/lib/db_actions";
-import { InviteUserButton } from "./invite-user-button";
+import { getUsers, getInviteTokens } from "@/lib/db_actions";
+import { InviteUserButton } from "../invite-user-button";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, UserPlus, Mail } from "lucide-react";
@@ -10,6 +10,9 @@ export default async function Page() {
   const result = await getUsers();
   const users = handleServerActionResult(result);
 
+  const inviteTokensResult = await getInviteTokens();
+  const inviteTokens = handleServerActionResult(inviteTokensResult);
+
   users.sort((a, b) => a.id - b.id);
 
   const activeUsers = users.filter(
@@ -18,7 +21,9 @@ export default async function Page() {
   const inactiveUsers = users.filter(
     (user) => user.deactivated_at !== null,
   ).length;
-  const unusedInvites = 0; // TODO: Fetch real count
+  const unusedInvites = inviteTokens.filter(
+    (token) => token.used_at === null,
+  ).length;
 
   return (
     <main className="flex flex-col py-4 px-4 sm:py-6 sm:px-6 lg:py-8 lg:px-8 xl:py-12 xl:px-24">
@@ -33,9 +38,6 @@ export default async function Page() {
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
                 User Management
               </h1>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                Manage user accounts, permissions, and access
-              </p>
             </div>
           </div>
 
@@ -84,7 +86,10 @@ export default async function Page() {
             </CardContent>
           </Card>
 
-          <Link href="/admin/invite-tokens" className="sm:col-span-2 lg:col-span-1">
+          <Link
+            href="/admin/invite-tokens"
+            className="sm:col-span-2 lg:col-span-1"
+          >
             <Card className="border-0 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
                 <div className="flex items-center justify-between">
