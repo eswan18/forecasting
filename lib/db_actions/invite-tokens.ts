@@ -202,3 +202,50 @@ export async function getInviteTokens(): Promise<
     );
   }
 }
+
+export async function deleteInviteToken({
+  id,
+}: {
+  id: number;
+}): Promise<ServerActionResult<void>> {
+  const currentUser = await getUserFromCookies();
+  logger.debug("Deleting invite token", {
+    currentUserId: currentUser?.id,
+    inviteTokenId: id,
+  });
+
+  const startTime = Date.now();
+  try {
+    if (!currentUser?.is_admin) {
+      logger.warn("Unauthorized attempt to delete invite token", {
+        currentUserId: currentUser?.id,
+        inviteTokenId: id,
+      });
+      return error(
+        "You must be an admin to delete invite tokens",
+        ERROR_CODES.UNAUTHORIZED,
+      );
+    }
+
+    await db.deleteFrom("invite_tokens").where("id", "=", id).execute();
+
+    const duration = Date.now() - startTime;
+    logger.info("Invite token deleted successfully", {
+      operation: "deleteInviteToken",
+      table: "invite_tokens",
+      inviteTokenId: id,
+      duration,
+    });
+
+    return success(undefined);
+  } catch (err) {
+    const duration = Date.now() - startTime;
+    logger.error("Failed to delete invite token", err as Error, {
+      operation: "deleteInviteToken",
+      table: "invite_tokens",
+      inviteTokenId: id,
+      duration,
+    });
+    return error("Failed to delete invite token", ERROR_CODES.DATABASE_ERROR);
+  }
+}
