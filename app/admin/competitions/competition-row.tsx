@@ -129,7 +129,7 @@ export default function CompetitionRow({
               {competition.visible ? (
                 <Eye className="h-4 w-4" />
               ) : (
-                <EyeOff className="h-4 w-4 text-gray-400" />
+                <EyeOff className="h-4 w-4" />
               )}
             </Button>
           </div>

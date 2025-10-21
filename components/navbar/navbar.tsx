@@ -36,7 +36,7 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { hasFeatureEnabled } from "@/lib/db_actions";
+import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 
 type NavLink = {
   href: string;
@@ -51,6 +51,7 @@ type NavLinkGroup = {
 
 export default function NavBar() {
   const { user, isLoading } = useCurrentUser();
+  const { enabled: hasPersonalPropsEnabled } = useFeatureFlag("personal-props");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
@@ -83,8 +84,7 @@ export default function NavBar() {
   ];
 
   // Add standalone section if user has feature enabled
-  if (user && !isLoading) {
-    // For now, we'll add it statically. In production, you'd check hasFeatureEnabled
+  if (user && !isLoading && hasPersonalPropsEnabled) {
     links.push({
       label: "Standalone",
       links: [
