@@ -4,6 +4,7 @@ import { InviteUserButton } from "./invite-user-button";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, UserPlus, Mail } from "lucide-react";
+import Link from "next/link";
 
 export default async function Page() {
   const result = await getUsers();
@@ -83,21 +84,23 @@ export default async function Page() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 sm:col-span-2 lg:col-span-1">
-            <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
-              <div className="flex items-center justify-between">
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm font-medium text-purple-600 dark:text-purple-400">
-                    Unused Invites
-                  </p>
-                  <p className="text-xl sm:text-2xl font-bold text-purple-900 dark:text-purple-100">
-                    {unusedInvites}
-                  </p>
+          <Link href="/admin/invites" className="sm:col-span-2 lg:col-span-1">
+            <Card className="border-0 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
+                <div className="flex items-center justify-between">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-purple-600 dark:text-purple-400">
+                      Unused Invites
+                    </p>
+                    <p className="text-xl sm:text-2xl font-bold text-purple-900 dark:text-purple-100">
+                      {unusedInvites}
+                    </p>
+                  </div>
+                  <Mail className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500 flex-shrink-0" />
                 </div>
-                <Mail className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500 flex-shrink-0" />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Users Table */}
