@@ -19,16 +19,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getColumns } from "./columns";
+import { InviteToken } from "@/types/db_types";
 
-type Invite = {
-  id: number;
-  token: string;
-  used: boolean;
-  notes: string | null;
-  created_at: Date;
-};
-
-export default function InvitesTable({ data }: { data: Invite[] }) {
+export default function InvitesTable({ data }: { data: InviteToken[] }) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const columns = getColumns();

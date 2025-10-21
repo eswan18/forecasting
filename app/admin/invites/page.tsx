@@ -1,50 +1,20 @@
 import InvitesTable from "./invites-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, UserPlus, CheckCircle, XCircle } from "lucide-react";
+import { getInviteTokens } from "@/lib/db_actions";
+import { handleServerActionResult } from "@/lib/server-action-helpers";
 
 export default async function Page() {
-  // TODO: Fetch real data
-  const invites = [
-    {
-      id: 1,
-      token: "abc123def456ghi789jkl012mno345pqr678",
-      used: false,
-      notes: "For Sarah from engineering team",
-      created_at: new Date("2024-01-15"),
-    },
-    {
-      id: 2,
-      token: "xyz987wvu654tsr321qpo098nml765kji432",
-      used: true,
-      notes: "Marketing department invite",
-      created_at: new Date("2024-01-20"),
-    },
-    {
-      id: 3,
-      token: "def456ghi789jkl012mno345pqr678stu901",
-      used: false,
-      notes: "Conference attendee",
-      created_at: new Date("2024-02-01"),
-    },
-    {
-      id: 4,
-      token: "ghi789jkl012mno345pqr678stu901vwx234",
-      used: true,
-      notes: null,
-      created_at: new Date("2024-02-05"),
-    },
-    {
-      id: 5,
-      token: "jkl012mno345pqr678stu901vwx234yza567",
-      used: false,
-      notes: "Beta tester group",
-      created_at: new Date("2024-02-10"),
-    },
-  ];
+  const result = await getInviteTokens();
+  const invites = handleServerActionResult(result);
 
   const totalInvites = invites.length;
-  const usedInvites = invites.filter((invite) => invite.used).length;
-  const unusedInvites = invites.filter((invite) => !invite.used).length;
+  const usedInvites = invites.filter(
+    (invite) => invite.used_at !== null,
+  ).length;
+  const unusedInvites = invites.filter(
+    (invite) => invite.used_at === null,
+  ).length;
 
   return (
     <main className="flex flex-col py-4 px-4 sm:py-6 sm:px-6 lg:py-8 lg:px-8 xl:py-12 xl:px-24">
