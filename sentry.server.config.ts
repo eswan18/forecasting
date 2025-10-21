@@ -12,13 +12,15 @@ function parseSampleRate(value: string | undefined, fallback: number): number {
 
 const defaultTraceRate = process.env.NODE_ENV === "production" ? 0.2 : 1;
 
-Sentry.init({
-  dsn: process.env.SENTRY_DSN || undefined,
+if (process.env.SENTRY_ENABLED !== "false") {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN || undefined,
 
-  tracesSampleRate: parseSampleRate(
-    process.env.SENTRY_TRACES_SAMPLE_RATE,
-    defaultTraceRate,
-  ),
+    tracesSampleRate: parseSampleRate(
+      process.env.SENTRY_TRACES_SAMPLE_RATE,
+      defaultTraceRate,
+    ),
 
-  debug: process.env.NODE_ENV !== "production",
-});
+    debug: process.env.NODE_ENV !== "production",
+  });
+}
