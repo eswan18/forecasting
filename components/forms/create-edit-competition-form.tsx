@@ -7,7 +7,6 @@ import {
   Trophy,
   Calendar,
   CalendarClock,
-  Eye,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { createCompetition, updateCompetition } from "@/lib/db_actions";
@@ -33,7 +32,6 @@ const formSchema = z.object({
   name: z.string().min(8).max(1000),
   forecasts_due_date: z.date(),
   end_date: z.date(),
-  visible: z.boolean(),
 });
 
 /*
@@ -56,7 +54,6 @@ export function CreateEditCompetitionForm({
       name: initialCompetition?.name || "",
       forecasts_due_date: initialCompetition?.forecasts_due_date,
       end_date: initialCompetition?.end_date,
-      visible: initialCompetition?.visible ?? true,
     },
   });
 
@@ -67,14 +64,16 @@ export function CreateEditCompetitionForm({
       if (initialCompetition) {
         await updateCompetition({
           id: initialCompetition.id,
-          competition: { ...values },
+          competition: { ...values, visible: initialCompetition.visible },
         }).then(() => {
           toast({
             title: "Competition Updated!",
           });
         });
       } else {
-        await createCompetition({ competition: values }).then(() => {
+        await createCompetition({
+          competition: { ...values, visible: true },
+        }).then(() => {
           toast({
             title: "Competition Created!",
           });
@@ -171,26 +170,6 @@ export function CreateEditCompetitionForm({
                 />
               </FormControl>
               <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="visible"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel className="text-sm font-medium flex items-center gap-2">
-                  <Eye className="h-4 w-4" />
-                  Visible to users
-                </FormLabel>
-              </div>
             </FormItem>
           )}
         />

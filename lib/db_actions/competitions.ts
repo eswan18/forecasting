@@ -185,3 +185,59 @@ export async function createCompetition({
     throw error;
   }
 }
+
+export async function toggleCompetitionVisibility({
+  id,
+  visible,
+}: {
+  id: number;
+  visible: boolean;
+}) {
+  const currentUser = await getUserFromCookies();
+  logger.debug("Toggling competition visibility", {
+    competitionId: id,
+    visible,
+    currentUserId: currentUser?.id,
+  });
+
+  const startTime = Date.now();
+  try {
+    if (!currentUser?.is_admin) {
+      logger.warn("Unauthorized attempt to toggle competition visibility", {
+        competitionId: id,
+        currentUserId: currentUser?.id,
+      });
+      throw new Error(
+        "Unauthorized: Only admins can toggle competition visibility",
+      );
+    }
+
+    await db
+      .updateTable("competitions")
+      .set({ visible })
+      .where("id", "=", id)
+      .execute();
+
+    const duration = Date.now() - startTime;
+    logger.info("Competition visibility toggled successfully", {
+      operation: "toggleCompetitionVisibility",
+      table: "competitions",
+      competitionId: id,
+      visible,
+      duration,
+    });
+
+    revalidatePath("/competitions");
+    revalidatePath("/admin/competitions");
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    logger.error("Failed to toggle competition visibility", error as Error, {
+      operation: "toggleCompetitionVisibility",
+      table: "competitions",
+      competitionId: id,
+      visible,
+      duration,
+    });
+    throw error;
+  }
+}
