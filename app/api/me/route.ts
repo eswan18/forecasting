@@ -8,4 +8,3 @@ export async function GET() {
   const user = await getUserFromCookies();
   return NextResponse.json(user);
 }
-

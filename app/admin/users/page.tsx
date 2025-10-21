@@ -3,7 +3,7 @@ import { getUsers } from "@/lib/db_actions";
 import { InviteUserButton } from "./invite-user-button";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, UserPlus } from "lucide-react";
+import { Users, UserPlus, Mail } from "lucide-react";
 
 export default async function Page() {
   const result = await getUsers();
@@ -14,7 +14,10 @@ export default async function Page() {
   const activeUsers = users.filter(
     (user) => user.deactivated_at === null,
   ).length;
-  const totalUsers = users.length;
+  const inactiveUsers = users.filter(
+    (user) => user.deactivated_at !== null,
+  ).length;
+  const unusedInvites = 0; // TODO: Fetch real count
 
   return (
     <main className="flex flex-col py-4 px-4 sm:py-6 sm:px-6 lg:py-8 lg:px-8 xl:py-12 xl:px-24">
@@ -44,22 +47,6 @@ export default async function Page() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          <Card className="border-0 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
-            <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
-              <div className="flex items-center justify-between">
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400">
-                    Total Users
-                  </p>
-                  <p className="text-xl sm:text-2xl font-bold text-blue-900 dark:text-blue-100">
-                    {totalUsers}
-                  </p>
-                </div>
-                <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500 flex-shrink-0" />
-              </div>
-            </CardContent>
-          </Card>
-
           <Card className="border-0 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
             <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
               <div className="flex items-center justify-between">
@@ -78,7 +65,7 @@ export default async function Page() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 sm:col-span-2 lg:col-span-1">
+          <Card className="border-0 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900">
             <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
@@ -86,12 +73,28 @@ export default async function Page() {
                     Inactive Users
                   </p>
                   <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    {totalUsers - activeUsers}
+                    {inactiveUsers}
                   </p>
                 </div>
                 <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-400 rounded-full flex items-center justify-center flex-shrink-0">
                   <div className="w-2 h-2 sm:w-3 sm:h-3 bg-white rounded-full"></div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 sm:col-span-2 lg:col-span-1">
+            <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
+              <div className="flex items-center justify-between">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-purple-600 dark:text-purple-400">
+                    Unused Invites
+                  </p>
+                  <p className="text-xl sm:text-2xl font-bold text-purple-900 dark:text-purple-100">
+                    {unusedInvites}
+                  </p>
+                </div>
+                <Mail className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
