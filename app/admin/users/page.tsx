@@ -84,7 +84,7 @@ export default async function Page() {
             </CardContent>
           </Card>
 
-          <Link href="/admin/invites" className="sm:col-span-2 lg:col-span-1">
+          <Link href="/admin/invite-tokens" className="sm:col-span-2 lg:col-span-1">
             <Card className="border-0 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
                 <div className="flex items-center justify-between">
