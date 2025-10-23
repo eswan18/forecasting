@@ -16,19 +16,21 @@ export default function CreateNewPropButton({
   className,
   defaultCompetitionId,
   defaultUserId,
+  iconOnly = false,
 }: {
   className?: string;
   defaultCompetitionId?: number | null;
   defaultUserId?: number;
+  iconOnly?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  className = cn("gap-2", className);
+  className = cn(iconOnly ? "" : "gap-2", className);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" className={className}>
-          <span>New prop</span>
-          <PlusCircle />
+          <PlusCircle className="h-4 w-4" />
+          {!iconOnly && <span>New prop</span>}
         </Button>
       </DialogTrigger>
       <DialogContent>

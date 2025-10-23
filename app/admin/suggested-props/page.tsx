@@ -22,6 +22,7 @@ import {
   CheckCircle,
   XCircle,
   Trash,
+  MessageCircle,
 } from "lucide-react";
 
 // Helper function to parse prop text and notes
@@ -83,7 +84,16 @@ export default function SuggestedProps() {
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-4xl">
-        <PageHeading title="Suggested Props" />
+        <PageHeading
+          title="Suggested Props"
+          breadcrumbs={{
+            Home: "/",
+            Admin: "/admin",
+            "Suggested Props": "/admin/suggested-props",
+          }}
+          icon={MessageCircle}
+          iconGradient="bg-gradient-to-br from-indigo-500 to-purple-600"
+        />
 
         {loading ? (
           <Card>

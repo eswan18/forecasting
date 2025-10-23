@@ -24,7 +24,6 @@ import {
   User2,
   Users,
   Menu,
-  X,
   ChevronDown,
 } from "lucide-react";
 import {
@@ -70,12 +69,12 @@ export default function NavBar() {
       label: "Competitions",
       links: [
         {
-          href: "/competitions/1/props",
+          href: "/competitions/1",
           label: "2024 Open",
           icon: <Medal size={16} />,
         },
         {
-          href: "/competitions/2/props",
+          href: "/competitions/2",
           label: "2025 Open",
           icon: <Medal size={16} />,
         },
@@ -89,7 +88,7 @@ export default function NavBar() {
       label: "Standalone",
       links: [
         {
-          href: `/standalone/props`,
+          href: `/standalone`,
           label: "Standalone Props",
           icon: <User2 size={16} />,
         },

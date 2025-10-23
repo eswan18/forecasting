@@ -25,7 +25,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class">
           <EnvironmentBanner />
           <NavBar />
-          {children}
+          <div className="w-full max-w-6xl mx-auto">{children}</div>
           <Toaster />
         </ThemeProvider>
         <Analytics />

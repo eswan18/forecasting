@@ -9,6 +9,7 @@ import { VUser } from "@/types/db_types";
 import { InaccessiblePage } from "@/components/inaccessible-page";
 import ErrorPage from "@/components/pages/error-page";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
+import { ClipboardCheck } from "lucide-react";
 
 export default async function ForecastProgressPage({
   params,
@@ -66,8 +67,19 @@ export default async function ForecastProgressPage({
   });
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
-      <div className="w-full max-w-lg">
-        <PageHeading title={`${competition?.name}: Forecast Progress`} />
+      <div className="w-full">
+        <PageHeading
+          title={`${competition?.name}: Forecast Progress`}
+          breadcrumbs={{
+            Home: "/",
+            Admin: "/admin",
+            "Forecast Progress": "/admin/forecast-progress",
+            [competition?.name || "Competition"]:
+              `/admin/forecast-progress/${competitionId}`,
+          }}
+          icon={ClipboardCheck}
+          iconGradient="bg-gradient-to-br from-cyan-500 to-blue-600"
+        />
         <table className="w-full mt-8">
           <thead>
             <tr>

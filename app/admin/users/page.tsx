@@ -3,8 +3,9 @@ import { getUsers, getInviteTokens } from "@/lib/db_actions";
 import { InviteUserButton } from "../invite-user-button";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, UserPlus, Mail } from "lucide-react";
+import { Users, Mail } from "lucide-react";
 import Link from "next/link";
+import PageHeading from "@/components/page-heading";
 
 export default async function Page() {
   const result = await getUsers();
@@ -28,23 +29,21 @@ export default async function Page() {
   return (
     <main className="flex flex-col py-4 px-4 sm:py-6 sm:px-6 lg:py-8 lg:px-8 xl:py-12 xl:px-24">
       <div className="w-full max-w-6xl mx-auto space-y-6 sm:space-y-8">
-        {/* Header Section */}
-        <div className="flex flex-col space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Users className="h-5 w-5 text-white" />
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                User Management
-              </h1>
-            </div>
-          </div>
+        <PageHeading
+          title="User Management"
+          breadcrumbs={{
+            Home: "/",
+            Admin: "/admin",
+            Users: "/admin/users",
+          }}
+          icon={Users}
+          iconGradient="bg-gradient-to-br from-blue-500 to-purple-600"
+          className="mb-2"
+        />
 
-          <div className="flex items-center justify-between">
-            <div className="flex gap-2 sm:gap-4">
-              <InviteUserButton className="w-full sm:w-auto flex items-center justify-center gap-2 text-sm sm:text-base" />
-            </div>
+        <div className="flex items-center justify-between">
+          <div className="flex gap-2 sm:gap-4">
+            <InviteUserButton className="w-full sm:w-auto flex items-center justify-center gap-2 text-sm sm:text-base" />
           </div>
         </div>
 

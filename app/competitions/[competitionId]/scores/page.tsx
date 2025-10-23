@@ -18,6 +18,8 @@ import { ScoreChartsCard } from "./score-charts-card";
 import { getUserFromCookies } from "@/lib/get-user";
 import SkeletonCard from "./skeleton-card";
 import ErrorPage from "@/components/pages/error-page";
+import { Medal } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export default async function Page({
   params,
@@ -36,7 +38,22 @@ export default async function Page({
   }
   const linkToProps = `/competitions/${competitionId}/props`;
   return (
-    <div className="w-full flex flex-col items-center">
+    <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full">
+      <PageHeading
+        title={`${competition.name} - Scores`}
+        breadcrumbs={{
+          Competitions: "/competitions",
+          [competition.name]: `/competitions/${competition.id}`,
+          Scores: `/competitions/${competition.id}/scores`,
+        }}
+        icon={Medal}
+        iconGradient="bg-gradient-to-br from-green-700 to-cyan-400"
+      />
+      {!competition.visible && (
+        <Badge variant="secondary" className="text-xs">
+          Not Visible to Users
+        </Badge>
+      )}
       <Suspense
         fallback={
           <SkeletonCard className="w-full max-w-lg flex flex-col bg-background h-[32rem]" />
@@ -83,7 +100,7 @@ export default async function Page({
           </AccordionContent>
         </AccordionItem>
       </Accordion>
-    </div>
+    </main>
   );
 }
 

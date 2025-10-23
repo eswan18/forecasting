@@ -1,6 +1,6 @@
 import { getForecasts, getPropById } from "@/lib/db_actions";
 import { getUserFromCookies } from "@/lib/get-user";
-import { Loader2 } from "lucide-react";
+import { CircleQuestionMark, Loader2 } from "lucide-react";
 import { Suspense } from "react";
 import PageHeading from "@/components/page-heading";
 import ErrorPage from "@/components/pages/error-page";
@@ -55,7 +55,15 @@ async function PropPageContent({
 
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
-      <PageHeading title="Prop Details" />
+      <PageHeading
+        title={prop.prop_text}
+        breadcrumbs={{
+          Home: "/",
+          Props: "/props",
+        }}
+        icon={CircleQuestionMark}
+        iconGradient="bg-gradient-to-br from-purple-500 to-pink-600"
+      />
 
       <div className="w-full max-w-4xl space-y-6">
         {/* Prop Details Card */}

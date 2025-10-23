@@ -12,7 +12,7 @@ export default function CompetitionStartEnd({
 }) {
   const competitionState = getCompetitionState(competition);
   return (
-    <div className="flex flex-row flex-wrap items-center justify-center gap-x-4 sm:gap-x-8 gap-y-2 mb-4 text-sm">
+    <div className="flex flex-row flex-wrap items-center justify-start gap-x-4 sm:gap-x-8 gap-y-2 mb-4 text-sm">
       <p>
         <span className="text-muted-foreground">
           {competitionState === "unstarted" ? "Begins" : "Began"}

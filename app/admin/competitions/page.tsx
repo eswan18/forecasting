@@ -3,6 +3,7 @@ import CompetitionRow from "./competition-row";
 import CreateCompetitionButton from "./create-competition-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy } from "lucide-react";
+import PageHeading from "@/components/page-heading";
 
 export default async function Page() {
   const competitions = await getCompetitions();
@@ -43,23 +44,21 @@ export default async function Page() {
   return (
     <main className="flex flex-col py-4 px-4 sm:py-6 sm:px-6 lg:py-8 lg:px-8 xl:py-12 xl:px-24">
       <div className="w-full max-w-6xl mx-auto space-y-6 sm:space-y-8">
-        {/* Header Section */}
-        <div className="flex flex-col space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Trophy className="h-5 w-5 text-white" />
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                Competitions
-              </h1>
-            </div>
-          </div>
+        <PageHeading
+          title="Competitions"
+          breadcrumbs={{
+            Home: "/",
+            Admin: "/admin",
+            Competitions: "/admin/competitions",
+          }}
+          icon={Trophy}
+          iconGradient="bg-gradient-to-br from-orange-500 to-red-600"
+          className="mb-2"
+        />
 
-          <div className="flex items-center justify-between">
-            <div className="flex gap-2 sm:gap-4">
-              <CreateCompetitionButton className="w-full sm:w-auto flex items-center justify-center gap-2 text-sm sm:text-base" />
-            </div>
+        <div className="flex items-center justify-between">
+          <div className="flex gap-2 sm:gap-4">
+            <CreateCompetitionButton className="w-full sm:w-auto flex items-center justify-center gap-2 text-sm sm:text-base" />
           </div>
         </div>
 

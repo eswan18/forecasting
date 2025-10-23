@@ -4,6 +4,7 @@ import { Mail, UserPlus, CheckCircle, XCircle } from "lucide-react";
 import { getInviteTokens } from "@/lib/db_actions";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
 import { InviteUserButton } from "../invite-user-button";
+import PageHeading from "@/components/page-heading";
 
 export default async function Page() {
   const result = await getInviteTokens();
@@ -20,23 +21,21 @@ export default async function Page() {
   return (
     <main className="flex flex-col py-4 px-4 sm:py-6 sm:px-6 lg:py-8 lg:px-8 xl:py-12 xl:px-24">
       <div className="w-full max-w-6xl mx-auto space-y-6 sm:space-y-8">
-        {/* Header Section */}
-        <div className="flex flex-col space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Mail className="h-5 w-5 text-white" />
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                Invite Tokens
-              </h1>
-            </div>
-          </div>
+        <PageHeading
+          title="Invite Tokens"
+          breadcrumbs={{
+            Home: "/",
+            Admin: "/admin",
+            "Invite Tokens": "/admin/invite-tokens",
+          }}
+          icon={Mail}
+          iconGradient="bg-gradient-to-br from-purple-500 to-pink-600"
+          className="mb-2"
+        />
 
-          <div className="flex items-center justify-between">
-            <div className="flex gap-2 sm:gap-4">
-              <InviteUserButton className="w-full sm:w-auto flex items-center justify-center gap-2 text-sm sm:text-base" />
-            </div>
+        <div className="flex items-center justify-between">
+          <div className="flex gap-2 sm:gap-4">
+            <InviteUserButton className="w-full sm:w-auto flex items-center justify-center gap-2 text-sm sm:text-base" />
           </div>
         </div>
 
