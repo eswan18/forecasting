@@ -86,11 +86,11 @@ export function PropTableWithFilterBar({
         {filteredProps.length > 0 ? (
           <div className="flex flex-col justify-start items-center gap-6">
             {filteredProps.map((prop) => (
-                <PropCard
-                  key={prop.prop_id}
-                  prop={prop}
-                  userForecast={prop.user_forecast ?? undefined}
-                />
+              <PropCard
+                key={prop.prop_id}
+                prop={prop}
+                userForecast={prop.user_forecast ?? undefined}
+              />
             ))}
           </div>
         ) : (

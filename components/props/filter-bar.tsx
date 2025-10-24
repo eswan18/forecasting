@@ -38,7 +38,11 @@ export function FilterBar({
 }: FilterBarProps) {
   // Get unique categories
   const categories = useMemo(() => {
-    const cats = new Set(props.map((p) => p.category_name).filter((name): name is string => Boolean(name)));
+    const cats = new Set(
+      props
+        .map((p) => p.category_name)
+        .filter((name): name is string => Boolean(name)),
+    );
     return Array.from(cats).sort();
   }, [props]);
 
