@@ -12,6 +12,7 @@ import { LogOut, Settings, User2, UserRoundPen } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { useLogout } from "@/hooks/useLogout";
+import { Spinner } from "@/components/ui/spinner";
 
 export function UserStatus() {
   const { user, isLoading, error } = useCurrentUser();
@@ -54,7 +55,7 @@ export function UserStatus() {
         </DropdownMenu>
       ) : isLoading ? (
         <Button disabled variant="outline" size="sm">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          <Spinner className="h-4 w-4" />
           <span className="sr-only">Loading...</span>
         </Button>
       ) : (

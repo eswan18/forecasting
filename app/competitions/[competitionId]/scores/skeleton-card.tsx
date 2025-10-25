@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 
 export default async function SkeletonCard({
   className,
@@ -10,7 +10,7 @@ export default async function SkeletonCard({
     <Card className={className}>
       <CardContent className="h-full">
         <div className="flex justify-center items-center h-full">
-          <Loader2 className="w-24 h-24 animate-spin text-muted-foreground" />
+          <Spinner className="w-24 h-24 text-muted-foreground" />
         </div>
       </CardContent>
     </Card>

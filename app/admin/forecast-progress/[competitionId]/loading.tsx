@@ -1,5 +1,5 @@
 import PageHeading from "@/components/page-heading";
-import { Loader2 } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 
 export default async function Loading() {
   return (
@@ -7,7 +7,7 @@ export default async function Loading() {
       <div className="w-full max-w-lg">
         <PageHeading title="Forecast Progress"></PageHeading>
         <div className="flex justify-center items-center h-[32rem]">
-          <Loader2 className="w-24 h-24 animate-spin text-muted-foreground" />
+          <Spinner className="w-24 h-24 text-muted-foreground" />
         </div>
       </div>
     </main>

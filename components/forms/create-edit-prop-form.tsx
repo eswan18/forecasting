@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react";
 import {
   AlertTriangle,
-  LoaderCircle,
   FileText,
   Tag,
   Trophy,
   Users,
   Hash,
 } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
 import { useServerAction } from "@/hooks/use-server-action";
 import {
@@ -136,7 +136,7 @@ export function CreateEditPropForm({
   if (loading || createPropAction.isLoading || updatePropAction.isLoading) {
     return (
       <div className="flex justify-center items-center h-40">
-        <LoaderCircle className="animate-spin" />
+        <Spinner />
       </div>
     );
   }
@@ -304,7 +304,7 @@ export function CreateEditPropForm({
         >
           {createPropAction.isLoading || updatePropAction.isLoading ? (
             <>
-              <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+              <Spinner className="mr-2 h-4 w-4" />
               {initialProp ? "Updating..." : "Creating..."}
             </>
           ) : (

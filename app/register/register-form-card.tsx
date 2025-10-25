@@ -26,7 +26,6 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   AlertTriangle,
-  LoaderCircle,
   Eye,
   EyeOff,
   Lock,
@@ -34,6 +33,7 @@ import {
   UserPlus,
   Mail,
 } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { Separator } from "@/components/ui/separator";
 
 import { z } from "zod";
@@ -220,7 +220,7 @@ export default function RegisterFormCard({
             >
               {loading ? (
                 <>
-                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                  <Spinner className="mr-2 h-4 w-4" />
                   Creating account...
                 </>
               ) : (

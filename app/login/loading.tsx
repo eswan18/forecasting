@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 
 export default async function Loading() {
   return (
@@ -9,7 +9,7 @@ export default async function Loading() {
           <CardTitle className="text-xl">Login</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-center h-48">
-          <Loader2 className="w-24 h-24 animate-spin text-muted-foreground" />
+          <Spinner className="w-24 h-24 text-muted-foreground" />
         </CardContent>
       </Card>
     </div>

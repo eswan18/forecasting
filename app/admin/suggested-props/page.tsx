@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import PageHeading from "@/components/page-heading";
 import { getSuggestedProps, deleteSuggestedProp } from "@/lib/db_actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Dialog,
   DialogContent,
@@ -98,7 +98,7 @@ export default function SuggestedProps() {
         {loading ? (
           <Card>
             <CardContent className="text-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <Spinner className="h-8 w-8 mx-auto" />
               <p className="text-muted-foreground mt-4">
                 Loading suggested props...
               </p>

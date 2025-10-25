@@ -15,7 +15,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Forecast, ForecastUpdate, NewForecast, VProp } from "@/types/db_types";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, LoaderCircle, TrendingUp } from "lucide-react";
+import { AlertTriangle, TrendingUp } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { createForecast, updateForecast } from "@/lib/db_actions";
 import { useToast } from "@/hooks/use-toast";
@@ -117,7 +118,7 @@ export function RecordForecastForm({
         >
           {loading ? (
             <>
-              <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+              <Spinner className="mr-2 h-4 w-4" />
               {initialForecast ? "Updating..." : "Recording..."}
             </>
           ) : (

@@ -15,7 +15,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, LoaderCircle, FileText, Hash } from "lucide-react";
+import { AlertTriangle, FileText, Hash } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
 
 import { z } from "zod";
@@ -149,7 +150,7 @@ export function SuggestPropForm() {
                   disabled
                   className="flex-1 text-sm sm:text-base"
                 >
-                  <LoaderCircle className="animate-spin mr-2 h-4 w-4" />
+                  <Spinner className="mr-2 h-4 w-4" />
                   Submitting...
                 </Button>
               ) : (

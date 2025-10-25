@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertTriangle, Lock, User, Eye, EyeOff } from "lucide-react";
 import { executePasswordReset } from "@/lib/db_actions";
-import { LoaderCircle } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
@@ -155,7 +155,7 @@ export default function ResetPasswordFormCard({
             >
               {loading ? (
                 <>
-                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                  <Spinner className="mr-2 h-4 w-4" />
                   Resetting...
                 </>
               ) : (

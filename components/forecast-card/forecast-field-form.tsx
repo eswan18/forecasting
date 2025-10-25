@@ -16,7 +16,8 @@ import { ForecastUpdate, NewForecast, VForecast } from "@/types/db_types";
 import { createForecast, updateForecast } from "@/lib/db_actions";
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
-import { LoaderCircle, Save } from "lucide-react";
+import { Save } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 
 const formSchema = z.object({
   forecast: z
@@ -118,7 +119,7 @@ export default function ForecastFieldForm({
                 </FormControl>
                 {loading ? (
                   <Button variant="outline" disabled size="icon">
-                    <LoaderCircle className="animate-spin" />
+                    <Spinner />
                   </Button>
                 ) : form.formState.isDirty ? (
                   <Button type="submit" size="icon">

@@ -16,7 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { updateLogin, updateUser } from "@/lib/db_actions";
-import { AlertTriangle, LoaderCircle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { Label } from "@/components/ui/label";
@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { updateLoginPassword } from "@/lib/auth";
 import { useServerAction } from "@/hooks/use-server-action";
+import { Spinner } from "@/components/ui/spinner";
 
 export function AccountDetails() {
   const { user, isLoading, mutate } = useCurrentUser();
@@ -121,7 +122,7 @@ function UserDetailsSection({
           {updateUserAction.isLoading ? (
             <div className="grid grid-cols-4 gap-4">
               <div className="col-start-2 col-span-2 flex flex-row justify-center">
-                <LoaderCircle className="animate-spin" />
+                <Spinner />
               </div>
             </div>
           ) : (
@@ -259,7 +260,7 @@ function ChangeUsernameForm({ onSuccess }: { onSuccess: () => void }) {
           />
           {loading ? (
             <div className="col-start-2 col-span-2 flex flex-row justify-center w-32">
-              <LoaderCircle className="animate-spin" />
+              <Spinner />
             </div>
           ) : (
             <Button
@@ -344,7 +345,7 @@ function ChangePasswordForm({ onSuccess }: { onSuccess: () => void }) {
           />
           {loading ? (
             <div className="col-start-2 col-span-2 flex flex-row justify-center w-32">
-              <LoaderCircle className="animate-spin" />
+              <Spinner />
             </div>
           ) : (
             <Button type="submit" className="w-32">

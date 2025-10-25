@@ -26,7 +26,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { LoaderCircle } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { login, LoginResponse } from "@/lib/auth";
 
 const formSchema = z.object({
@@ -153,7 +153,7 @@ export default function LoginFormCard({ onLogin }: { onLogin?: () => void }) {
             >
               {loading ? (
                 <>
-                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                  <Spinner className="mr-2 h-4 w-4" />
                   Signing in...
                 </>
               ) : (

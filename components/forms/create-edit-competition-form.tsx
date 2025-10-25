@@ -1,13 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import {
-  AlertTriangle,
-  LoaderCircle,
-  Trophy,
-  Calendar,
-  CalendarClock,
-} from "lucide-react";
+import { AlertTriangle, Trophy, Calendar, CalendarClock } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
 import { createCompetition, updateCompetition } from "@/lib/db_actions";
 import { Button } from "@/components/ui/button";
@@ -106,7 +101,7 @@ export function CreateEditCompetitionForm({
   if (loading) {
     return (
       <div className="flex justify-center items-center h-40">
-        <LoaderCircle className="animate-spin" />
+        <Spinner />
       </div>
     );
   }
@@ -180,7 +175,7 @@ export function CreateEditCompetitionForm({
         >
           {loading ? (
             <>
-              <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+              <Spinner className="mr-2 h-4 w-4" />
               {initialCompetition ? "Updating..." : "Creating..."}
             </>
           ) : (

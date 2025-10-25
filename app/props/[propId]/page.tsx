@@ -1,6 +1,6 @@
 import { getForecasts, getPropById } from "@/lib/db_actions";
 import { getUserFromCookies } from "@/lib/get-user";
-import { CircleQuestionMark, Loader2 } from "lucide-react";
+import { CircleQuestionMark } from "lucide-react";
 import { Suspense } from "react";
 import PageHeading from "@/components/page-heading";
 import ErrorPage from "@/components/pages/error-page";
@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ForecastsList from "./forecasts-list";
 import ForecastDensityChart from "./forecast-density-chart";
 import PropDetailsWithActions from "./prop-details-with-actions";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function PropPage({
   params,
@@ -18,7 +19,7 @@ export default function PropPage({
     <Suspense
       fallback={
         <div className="flex justify-center items-center h-64">
-          <Loader2 className="w-24 h-24 animate-spin text-muted-foreground" />
+          <Spinner className="w-24 h-24 text-muted-foreground" />
         </div>
       }
     >

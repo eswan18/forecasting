@@ -10,10 +10,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { generateInviteToken } from "@/lib/db_actions/invite-tokens";
 import { useState } from "react";
-import { Clipboard, LoaderCircle } from "lucide-react";
+import { Clipboard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 
 export function InviteUserButton({ className }: { className?: string }) {
   const [inviteCode, setInviteCode] = useState<string | null>(null);
@@ -50,7 +51,7 @@ export function InviteUserButton({ className }: { className?: string }) {
         </DialogHeader>
         <div className="w-full flex justify-center">
           {loading ? (
-            <LoaderCircle className="animate-spin" />
+            <Spinner />
           ) : (
             inviteCode === null && (
               <div className="flex flex-col gap-y-4">
