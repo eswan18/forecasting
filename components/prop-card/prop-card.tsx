@@ -12,7 +12,7 @@ interface PropCardProps {
 
 export function PropCard({ prop, userForecast }: PropCardProps) {
   return (
-    <Card className="group hover:shadow-lg transition-shadow duration-200 w-full lg:w-4xl">
+    <Card className="group hover:shadow-lg transition-shadow duration-200 w-full lg:max-w-4xl">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-3 mb-4">
           <Badge variant="secondary" className="text-xs font-medium">
@@ -22,13 +22,13 @@ export function PropCard({ prop, userForecast }: PropCardProps) {
             <ExternalLink className="h-4 w-4" />
           </Link>
         </div>
-        <h3 className="text-lg font-semibold leading-tight text-balance mb-0">
+        <h3 className="text-lg font-semibold leading-tight text-balance mb-0 wrap-anywhere">
           {prop.prop_text}
         </h3>
       </CardHeader>
       <CardContent className="space-y-4">
         {prop.prop_notes && (
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed wrap-anywhere">
             {prop.prop_notes}
           </p>
         )}
