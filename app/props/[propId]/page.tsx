@@ -5,9 +5,9 @@ import { Suspense } from "react";
 import PageHeading from "@/components/page-heading";
 import ErrorPage from "@/components/pages/error-page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import ForecastsList from "./forecasts-list";
 import ForecastDensityChart from "./forecast-density-chart";
+import PropDetailsWithActions from "./prop-details-with-actions";
 
 export default function PropPage({
   params,
@@ -67,42 +67,10 @@ async function PropPageContent({
 
       <div className="w-full max-w-4xl space-y-6">
         {/* Prop Details Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">{prop.prop_text}</CardTitle>
-            <div className="flex gap-2 flex-wrap">
-              {prop.category_name && (
-                <Badge variant="secondary">{prop.category_name}</Badge>
-              )}
-              <Badge variant={prop.resolution === null ? "outline" : "default"}>
-                {prop.resolution === null
-                  ? "Unresolved"
-                  : prop.resolution
-                    ? "True"
-                    : "False"}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {prop.prop_notes && (
-              <div className="mt-3 pt-3 border-t border-border/50">
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {prop.prop_notes}
-                </p>
-              </div>
-            )}
-            {prop.resolution_notes && (
-              <div className="mt-3 pt-3 border-t border-border/50">
-                <p className="text-xs font-medium text-muted-foreground/70 mb-1">
-                  Resolution Notes
-                </p>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {prop.resolution_notes}
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <PropDetailsWithActions
+          prop={prop}
+          canResolve={user.is_admin || prop.prop_user_id === user.id}
+        />
 
         {/* Forecast Density Chart */}
         <Card>
