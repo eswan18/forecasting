@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { VProp } from "@/types/db_types";
-import { ResolutionBadge } from "../badges";
 
 interface PropCardProps {
   prop: VProp;
