@@ -48,7 +48,7 @@ export default async function Page({
       )}
       <Suspense
         fallback={
-          <SkeletonCard className="w-full max-w-lg flex flex-col bg-background h-[32rem]" />
+          <SkeletonCard className="w-full flex flex-col bg-background h-[64rem]" />
         }
       >
         <ScoreChartsCardSection competitionId={competitionId} />

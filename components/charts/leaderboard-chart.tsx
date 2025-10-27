@@ -30,7 +30,9 @@ export default function LeaderboardChart({
 
   // Get category scores for each user
   const getUserCategoryScores = (userId: number) => {
-    return scores.categoryScores.filter((score) => score.userId === userId);
+    return scores.categoryScores
+      .filter((score) => score.userId === userId)
+      .sort((a, b) => a.categoryId - b.categoryId);
   };
 
   if (sortedUsers.length === 0) {
