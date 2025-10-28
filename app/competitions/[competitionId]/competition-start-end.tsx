@@ -2,6 +2,7 @@
 
 import { Competition } from "@/types/db_types";
 import { formatInTimeZone } from "date-fns-tz";
+import { getCompetitionState } from "@/lib/competition-status";
 
 const DATE_FORMAT = "MMM d, yyyy";
 
@@ -27,18 +28,4 @@ export default function CompetitionStartEnd({
       </p>
     </div>
   );
-}
-
-function getCompetitionState(competition: {
-  forecasts_due_date: Date;
-  end_date: Date;
-}): "unstarted" | "ongoing" | "ended" {
-  const now = new Date();
-  if (competition.forecasts_due_date > now) {
-    return "unstarted";
-  }
-  if (competition.end_date < now) {
-    return "ended";
-  }
-  return "ongoing";
 }

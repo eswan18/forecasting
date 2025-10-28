@@ -14,7 +14,10 @@ export function PropCard({ prop, userForecast }: PropCardProps) {
     <Card className="group hover:shadow-lg transition-shadow duration-200 w-full lg:max-w-4xl">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-3 mb-4">
-          <Badge variant="secondary" className="text-xs font-medium">
+          <Badge
+            variant="secondary"
+            className="text-xs font-medium -translate-x-1"
+          >
             {prop.category_name}
           </Badge>
           <Link href={`/props/${prop.prop_id}`}>

@@ -1,6 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-
-type CompetitionStatus = "upcoming" | "active" | "ended";
+import { CompetitionStatus } from "@/lib/competition-status";
 
 interface CompetitionStatusBadgeProps {
   status: CompetitionStatus;

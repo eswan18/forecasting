@@ -61,7 +61,7 @@ export default function PageHeading({
             {React.createElement(icon, { className: "h-5 w-5 text-white" })}
           </div>
         )}
-        <div className="min-w-0 flex items-center gap-2">
+        <div className="min-w-0 flex items-center gap-x-4">
           <h1 className="text-2xl font-bold inline">{title}</h1>
           {children}
         </div>

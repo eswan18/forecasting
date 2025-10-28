@@ -22,24 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { formatDate, formatDateTime } from "@/lib/time-utils";
 import { CompetitionStatusBadge } from "./competition-status-badge";
 import { toggleCompetitionVisibility } from "@/lib/db_actions";
-
-/**
- * Get the status of a competition based on current date
- * Returns "upcoming", "active", or "ended"
- */
-function getCompetitionStatus(
-  forecastsDueDate: Date,
-  endDate: Date,
-  currentDate: Date = new Date(),
-): "upcoming" | "active" | "ended" {
-  if (currentDate < forecastsDueDate) {
-    return "upcoming";
-  } else if (currentDate <= endDate) {
-    return "active";
-  } else {
-    return "ended";
-  }
-}
+import { getCompetitionStatusFromObject } from "@/lib/competition-status";
 
 export default function CompetitionRow({
   competition,
@@ -54,10 +37,7 @@ export default function CompetitionRow({
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
-  const status = getCompetitionStatus(
-    competition.forecasts_due_date,
-    competition.end_date,
-  );
+  const status = getCompetitionStatusFromObject(competition);
 
   const handleVisibilityToggle = async () => {
     const newVisibility = !competition.visible;
@@ -96,7 +76,7 @@ export default function CompetitionRow({
               </Link>
             </h3>
             <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-              <Link href={`/competitions/${competition.id}/props`}>
+              <Link href={`/competitions/${competition.id}`}>
                 <ExternalLink className="h-4 w-4" />
               </Link>
             </Button>

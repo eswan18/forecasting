@@ -14,24 +14,7 @@ import { Trophy, BarChart3, List } from "lucide-react";
 import { CompetitionStatusBadge } from "@/app/admin/competitions/competition-status-badge";
 import { Competition } from "@/types/db_types";
 import { formatDate } from "@/lib/time-utils";
-
-/**
- * Get the status of a competition based on current date
- * Returns "upcoming", "active", or "ended"
- */
-function getCompetitionStatus(
-  forecastsDueDate: Date,
-  endDate: Date,
-  currentDate: Date = new Date(),
-): "upcoming" | "active" | "ended" {
-  if (currentDate < forecastsDueDate) {
-    return "upcoming";
-  } else if (currentDate <= endDate) {
-    return "active";
-  } else {
-    return "ended";
-  }
-}
+import { getCompetitionStatusFromObject } from "@/lib/competition-status";
 
 export default async function CompetitionsPage() {
   const user = await getUserFromCookies();
@@ -63,10 +46,7 @@ export default async function CompetitionsPage() {
 
         <div className="grid grid-cols-1 gap-6">
           {competitions.map((competition) => {
-            const status = getCompetitionStatus(
-              competition.forecasts_due_date,
-              competition.end_date,
-            );
+            const status = getCompetitionStatusFromObject(competition);
 
             return (
               <Card

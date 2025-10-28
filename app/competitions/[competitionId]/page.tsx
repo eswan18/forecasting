@@ -2,6 +2,7 @@ import PageHeading from "@/components/page-heading";
 import { getPropsWithUserForecasts } from "@/lib/db_actions/forecasts";
 import { getUserFromCookies } from "@/lib/get-user";
 import { PropsTable } from "@/components/props/props-table";
+import { ForecastablePropsTable } from "@/components/forecastable-props-table";
 import { Trophy, BarChart3, ChartLine } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { getCompetitionById } from "@/lib/db_actions";
 import ErrorPage from "@/components/pages/error-page";
 import { InaccessiblePage } from "@/components/inaccessible-page";
 import Link from "next/link";
+import { getCompetitionStatus } from "@/lib/competition-status";
 
 export default async function Page({
   params,
@@ -33,7 +35,8 @@ export default async function Page({
   if (!competition) {
     return <ErrorPage title="Competition not found" />;
   }
-  if (!competition.visible && !user.is_admin) {
+  const pageIsVisible = competition.visible || user.is_admin;
+  if (!pageIsVisible) {
     return (
       <InaccessiblePage
         title="Competition Not Available"
@@ -42,15 +45,21 @@ export default async function Page({
     );
   }
 
+  const competitionStatus = getCompetitionStatus(
+    competition.forecasts_due_date,
+    competition.end_date,
+  );
+  const competitionForecastsAreOpen = competitionStatus === "upcoming";
   const propsWithForecasts = await getPropsWithUserForecasts({
     userId: user.id,
     competitionId,
   });
+  const pageTitle = competitionForecastsAreOpen ? `${competition.name} - Make Your Forecasts` : competition.name;
 
   return (
     <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full">
       <PageHeading
-        title={competition.name}
+        title={pageTitle}
         breadcrumbs={{
           Home: "/",
           Competitions: "/competitions",
@@ -59,35 +68,51 @@ export default async function Page({
         icon={Trophy}
         iconGradient="bg-gradient-to-br from-yellow-500 to-orange-600"
         className="mb-2"
-      />
-      {!competition.visible && (
-        <Badge variant="secondary" className="text-xs">
-          Not Visible to Users
-        </Badge>
-      )}
+      >
+        {!competition.visible && (
+          <Badge variant="destructive" className="text-xs">
+            Not Visible to Users
+          </Badge>
+        )}
+      </PageHeading>
       <CompetitionStartEnd competition={competition} />
-      {/* Navigation Links */}
-      <div className="flex flex-wrap gap-3 mb-8">
-        <Link href={`/competitions/${competitionId}/scores`}>
-          <Button variant="outline" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            View Scores
-          </Button>
-        </Link>
-        <Link href={`/competitions/${competitionId}/forecast-stats`}>
-          <Button variant="outline" className="flex items-center gap-2">
-            <ChartLine className="h-4 w-4" />
-            Forecasts Stats
-          </Button>
-        </Link>
-      </div>
-      <PropsTable
-        props={propsWithForecasts}
-        canCreateProps={allowEdits} // Only admins can create competition props
-        canEditProps={allowEdits} // Only admins can edit competition props
-        canEditResolutions={allowEdits} // Only admins can resolve competition props
-        competitionId={competitionId}
-      />
+
+      {competitionForecastsAreOpen ? (
+        <>
+          {/* Show PropsToForecastTable when forecasts are open */}
+          <ForecastablePropsTable
+            props={propsWithForecasts}
+            canCreateProps={allowEdits} // Only admins can create competition props
+            competitionId={competitionId}
+            defaultUserId={user.id}
+          />
+        </>
+      ) : (
+        <>
+          {/* Navigation Links */}
+          <div className="flex flex-wrap gap-3 mb-8">
+            <Link href={`/competitions/${competitionId}/scores`}>
+              <Button variant="outline" className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                View Scores
+              </Button>
+            </Link>
+            <Link href={`/competitions/${competitionId}/forecast-stats`}>
+              <Button variant="outline" className="flex items-center gap-2">
+                <ChartLine className="h-4 w-4" />
+                Forecasts Stats
+              </Button>
+            </Link>
+          </div>
+          <PropsTable
+            props={propsWithForecasts}
+            canCreateProps={allowEdits} // Only admins can create competition props
+            canEditProps={allowEdits} // Only admins can edit competition props
+            canEditResolutions={allowEdits} // Only admins can resolve competition props
+            competitionId={competitionId}
+          />
+        </>
+      )}
     </main>
   );
 }
