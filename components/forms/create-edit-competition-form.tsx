@@ -24,6 +24,7 @@ import DatePicker from "../ui/date-picker";
 
 const formSchema = z.object({
   name: z.string().min(8).max(1000),
+  forecasts_open_date: z.date(),
   forecasts_close_date: z.date(),
   end_date: z.date(),
 });
@@ -46,6 +47,7 @@ export function CreateEditCompetitionForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: initialCompetition?.name || "",
+      forecasts_open_date: initialCompetition?.forecasts_open_date ?? undefined,
       forecasts_close_date: initialCompetition?.forecasts_close_date,
       end_date: initialCompetition?.end_date,
     },
@@ -127,6 +129,27 @@ export function CreateEditCompetitionForm({
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="forecasts_open_date"
+          render={({ field }) => (
+            <FormItem className="flex flex-col space-y-2">
+              <FormLabel className="text-sm font-medium flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Forecasts Open Date
+              </FormLabel>
+              <FormControl>
+                <DatePicker
+                  value={field.value ?? undefined}
+                  onChange={field.onChange}
+                  timeZone="UTC"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="forecasts_close_date"
