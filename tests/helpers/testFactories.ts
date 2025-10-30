@@ -96,7 +96,7 @@ export class TestDataFactory {
   ): Promise<TestCompetition> {
     const defaults = {
       name: `Test Competition ${Math.random().toString(36).substring(7)}`,
-      forecasts_due_date: new Date(),
+      forecasts_close_date: new Date(),
       end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
     };
 

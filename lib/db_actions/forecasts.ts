@@ -134,13 +134,13 @@ export async function createForecast({
       const prop = await trx
         .selectFrom("v_props")
         .where("prop_id", "=", forecast.prop_id)
-        .select("competition_forecasts_due_date")
+        .select("competition_forecasts_close_date")
         .executeTakeFirst();
-      const dueDate = prop?.competition_forecasts_due_date;
-      if (dueDate && dueDate <= new Date()) {
+      const closeDate = prop?.competition_forecasts_close_date;
+      if (closeDate && closeDate <= new Date()) {
         logger.warn("Attempted to create forecast past due date", {
           propId: forecast.prop_id,
-          dueDate: dueDate.toISOString(),
+          dueDate: closeDate.toISOString(),
         });
         throw new Error("Cannot create forecasts past the due date");
       }
@@ -223,13 +223,13 @@ export async function updateForecast({
       const prop = await trx
         .selectFrom("v_props")
         .where("prop_id", "=", id)
-        .select("competition_forecasts_due_date")
+        .select("competition_forecasts_close_date")
         .executeTakeFirst();
-      const dueDate = prop?.competition_forecasts_due_date;
-      if (dueDate && dueDate <= new Date()) {
+      const closeDate = prop?.competition_forecasts_close_date;
+      if (closeDate && closeDate <= new Date()) {
         logger.warn("Attempted to update forecast past due date", {
           forecastId: id,
-          dueDate: dueDate.toISOString(),
+          dueDate: closeDate.toISOString(),
         });
         throw new Error("Cannot create forecasts past the due date");
       }

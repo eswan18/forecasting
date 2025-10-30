@@ -20,12 +20,11 @@ import { useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Competition } from "@/types/db_types";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import DatePicker from "../ui/date-picker";
 
 const formSchema = z.object({
   name: z.string().min(8).max(1000),
-  forecasts_due_date: z.date(),
+  forecasts_close_date: z.date(),
   end_date: z.date(),
 });
 
@@ -47,7 +46,7 @@ export function CreateEditCompetitionForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: initialCompetition?.name || "",
-      forecasts_due_date: initialCompetition?.forecasts_due_date,
+      forecasts_close_date: initialCompetition?.forecasts_close_date,
       end_date: initialCompetition?.end_date,
     },
   });
@@ -130,7 +129,7 @@ export function CreateEditCompetitionForm({
         />
         <FormField
           control={form.control}
-          name="forecasts_due_date"
+          name="forecasts_close_date"
           render={({ field }) => (
             <FormItem className="flex flex-col space-y-2">
               <FormLabel className="text-sm font-medium flex items-center gap-2">

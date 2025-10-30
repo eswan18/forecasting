@@ -123,11 +123,11 @@ export default function CompetitionRow({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-help">
-                    Forecasts due {formatDate(competition.forecasts_due_date)}
+                    Forecasts due {formatDate(competition.forecasts_close_date)}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{formatDateTime(competition.forecasts_due_date)}</p>
+                  <p>{formatDateTime(competition.forecasts_close_date)}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

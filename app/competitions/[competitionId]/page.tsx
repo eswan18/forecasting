@@ -46,7 +46,7 @@ export default async function Page({
   }
 
   const competitionStatus = getCompetitionStatus(
-    competition.forecasts_due_date,
+    competition.forecasts_close_date,
     competition.end_date,
   );
   const competitionForecastsAreOpen = competitionStatus === "upcoming";

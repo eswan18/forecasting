@@ -18,7 +18,7 @@ export default function CompetitionStartEnd({
         <span className="text-muted-foreground">
           {competitionState === "unstarted" ? "Begins" : "Began"}
         </span>{" "}
-        {formatInTimeZone(competition.forecasts_due_date, "UTC", DATE_FORMAT)}
+        {formatInTimeZone(competition.forecasts_close_date, "UTC", DATE_FORMAT)}
       </p>
       <p>
         <span className="text-muted-foreground">

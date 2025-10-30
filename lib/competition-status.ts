@@ -12,11 +12,11 @@ export type CompetitionStatus = "upcoming" | "active" | "ended";
  * Returns "upcoming", "active", or "ended"
  */
 export function getCompetitionStatus(
-  forecastsDueDate: Date,
+  forecastsCloseDate: Date,
   endDate: Date,
   currentDate: Date = new Date(),
 ): CompetitionStatus {
-  if (currentDate < forecastsDueDate) {
+  if (currentDate < forecastsCloseDate) {
     return "upcoming";
   } else if (currentDate <= endDate) {
     return "active";
@@ -31,13 +31,13 @@ export function getCompetitionStatus(
  */
 export function getCompetitionStatusFromObject(
   competition: {
-    forecasts_due_date: Date;
+    forecasts_close_date: Date;
     end_date: Date;
   },
   currentDate: Date = new Date(),
 ): CompetitionStatus {
   return getCompetitionStatus(
-    competition.forecasts_due_date,
+    competition.forecasts_close_date,
     competition.end_date,
     currentDate,
   );
@@ -48,7 +48,7 @@ export function getCompetitionStatusFromObject(
  * @deprecated Use getCompetitionStatus or getCompetitionStatusFromObject instead
  */
 export function getCompetitionState(competition: {
-  forecasts_due_date: Date;
+  forecasts_close_date: Date;
   end_date: Date;
 }): "unstarted" | "ongoing" | "ended" {
   const status = getCompetitionStatusFromObject(competition);
