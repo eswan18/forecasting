@@ -54,7 +54,9 @@ export default async function Page({
     userId: user.id,
     competitionId,
   });
-  const pageTitle = competitionForecastsAreOpen ? `${competition.name} - Make Your Forecasts` : competition.name;
+  const pageTitle = competitionForecastsAreOpen
+    ? `${competition.name} - Make Your Forecasts`
+    : competition.name;
 
   return (
     <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full">

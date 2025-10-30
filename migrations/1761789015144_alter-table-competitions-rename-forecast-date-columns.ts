@@ -138,5 +138,3 @@ export async function down(db: Kysely<any>): Promise<void> {
 			LEFT JOIN competitions ON props.competition_id = competitions.id;
 	`.execute(db);
 }
-
-
