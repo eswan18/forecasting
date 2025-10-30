@@ -10,6 +10,23 @@ import { getUserFromCookies } from "../get-user";
 import { revalidatePath } from "next/cache";
 import { logger } from "@/lib/logger";
 
+function validateCompetitionDates({
+  forecasts_open_date,
+  forecasts_close_date,
+  end_date,
+}: {
+  forecasts_open_date: Date;
+  forecasts_close_date: Date;
+  end_date: Date;
+}) {
+  if (forecasts_open_date >= forecasts_close_date) {
+    throw new Error("Open date must be before close date");
+  }
+  if (forecasts_close_date >= end_date) {
+    throw new Error("Close date must be before end date");
+  }
+}
+
 export async function getCompetitionById(
   id: number,
 ): Promise<Competition | undefined> {
@@ -114,6 +131,38 @@ export async function updateCompetition({
       throw new Error("Unauthorized: Only admins can update competitions");
     }
 
+    // If any of the date fields are being changed, validate ordering using the
+    // new values overlaid on the existing row.
+    if (
+      "forecasts_open_date" in competition ||
+      "forecasts_close_date" in competition ||
+      "end_date" in competition
+    ) {
+      const existing = await db
+        .selectFrom("competitions")
+        .select(["forecasts_open_date", "forecasts_close_date", "end_date"])
+        .where("id", "=", id)
+        .executeTakeFirst();
+      if (!existing) {
+        throw new Error("Competition not found");
+      }
+      const openDate =
+        (competition as any).forecasts_open_date ??
+        existing.forecasts_open_date;
+      const closeDate =
+        (competition as any).forecasts_close_date ??
+        existing.forecasts_close_date;
+      const endDate = (competition as any).end_date ?? existing.end_date;
+      if (openDate == null) {
+        throw new Error("Forecasts open date is required");
+      }
+      validateCompetitionDates({
+        forecasts_open_date: openDate,
+        forecasts_close_date: closeDate,
+        end_date: endDate,
+      });
+    }
+
     await db
       .updateTable("competitions")
       .set(competition)
@@ -161,6 +210,16 @@ export async function createCompetition({
       });
       throw new Error("Unauthorized: Only admins can create competitions");
     }
+
+    // Validate dates on create
+    if (competition.forecasts_open_date == null) {
+      throw new Error("Forecasts open date is required");
+    }
+    validateCompetitionDates({
+      forecasts_open_date: competition.forecasts_open_date,
+      forecasts_close_date: competition.forecasts_close_date,
+      end_date: competition.end_date,
+    });
 
     await db.insertInto("competitions").values(competition).execute();
 
