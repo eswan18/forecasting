@@ -153,9 +153,6 @@ export async function updateCompetition({
         (competition as any).forecasts_close_date ??
         existing.forecasts_close_date;
       const endDate = (competition as any).end_date ?? existing.end_date;
-      if (openDate == null) {
-        throw new Error("Forecasts open date is required");
-      }
       validateCompetitionDates({
         forecasts_open_date: openDate,
         forecasts_close_date: closeDate,
@@ -212,9 +209,6 @@ export async function createCompetition({
     }
 
     // Validate dates on create
-    if (competition.forecasts_open_date == null) {
-      throw new Error("Forecasts open date is required");
-    }
     validateCompetitionDates({
       forecasts_open_date: competition.forecasts_open_date,
       forecasts_close_date: competition.forecasts_close_date,

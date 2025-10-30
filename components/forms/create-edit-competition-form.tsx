@@ -77,7 +77,7 @@ export function CreateEditCompetitionForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: initialCompetition?.name || "",
-      forecasts_open_date: initialCompetition?.forecasts_open_date ?? undefined,
+      forecasts_open_date: initialCompetition?.forecasts_open_date,
       forecasts_close_date: initialCompetition?.forecasts_close_date,
       end_date: initialCompetition?.end_date,
     },
