@@ -145,7 +145,7 @@ export interface CompetitionsTable {
   id: Generated<number>;
   name: string;
   forecasts_close_date: Date;
-  forecasts_open_date: Date | null;
+  forecasts_open_date: Date;
   end_date: Date;
   visible: boolean;
   updated_at: Generated<Date>;
