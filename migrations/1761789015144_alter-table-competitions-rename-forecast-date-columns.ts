@@ -12,10 +12,12 @@ export async function up(db: Kysely<any>): Promise<void> {
     .renameColumn("forecasts_due_date", "forecasts_close_date")
     .execute();
 
-  // 3) Add competitions.forecasts_open_date (nullable)
+  // 3) Add competitions.forecasts_open_date (non-null, default to Unix epoch)
   await db.schema
     .alterTable("competitions")
-    .addColumn("forecasts_open_date", "timestamptz")
+    .addColumn("forecasts_open_date", "timestamptz", (col) =>
+      col.notNull().defaultTo(sql`to_timestamp(0)`),
+    )
     .execute();
 
   // 4) Recreate views that reference competitions.* to use the new column name
