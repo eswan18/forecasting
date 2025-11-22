@@ -417,7 +417,7 @@ export async function createProp({
       ];
     }
 
-    if (!prop.category_id && prop.user_id === null) {
+    if (prop.category_id == null && prop.user_id === null) {
       validationErrors.category_id = ["Category is required"];
     }
 
