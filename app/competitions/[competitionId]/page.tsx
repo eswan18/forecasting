@@ -46,10 +46,11 @@ export default async function Page({
   }
 
   const competitionStatus = getCompetitionStatus(
+    competition.forecasts_open_date,
     competition.forecasts_close_date,
     competition.end_date,
   );
-  const competitionForecastsAreOpen = competitionStatus === "upcoming";
+  const competitionForecastsAreOpen = competitionStatus === "forecasts-open";
   const propsWithForecasts = await getPropsWithUserForecasts({
     userId: user.id,
     competitionId,
