@@ -94,9 +94,13 @@ export class TestDataFactory {
   async createCompetition(
     overrides: Partial<TestCompetition> = {},
   ): Promise<TestCompetition> {
+    const closeDate = overrides.forecasts_close_date || new Date();
     const defaults = {
       name: `Test Competition ${Math.random().toString(36).substring(7)}`,
-      forecasts_due_date: new Date(),
+      forecasts_open_date: new Date(
+        closeDate.getTime() - 7 * 24 * 60 * 60 * 1000,
+      ), // 7 days before close date
+      forecasts_close_date: closeDate,
       end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
     };
 

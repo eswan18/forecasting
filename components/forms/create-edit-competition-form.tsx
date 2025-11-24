@@ -20,14 +20,44 @@ import { useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Competition } from "@/types/db_types";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import DatePicker from "../ui/date-picker";
 
-const formSchema = z.object({
-  name: z.string().min(8).max(1000),
-  forecasts_due_date: z.date(),
-  end_date: z.date(),
-});
+const formSchema = z
+  .object({
+    name: z.string().min(8).max(1000),
+    forecasts_open_date: z.date(),
+    forecasts_close_date: z.date(),
+    end_date: z.date(),
+  })
+  .superRefine((values, ctx) => {
+    const { forecasts_open_date, forecasts_close_date, end_date } = values;
+
+    if (forecasts_open_date >= forecasts_close_date) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Open date must be before close date",
+        path: ["forecasts_open_date"],
+      });
+      ctx.addIssue({
+        code: "custom",
+        message: "Close date must be after open date",
+        path: ["forecasts_close_date"],
+      });
+    }
+
+    if (forecasts_close_date >= end_date) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Close date must be before end date",
+        path: ["forecasts_close_date"],
+      });
+      ctx.addIssue({
+        code: "custom",
+        message: "End date must be after close date",
+        path: ["end_date"],
+      });
+    }
+  });
 
 /*
  * Form for creating or editing a competition..
@@ -47,7 +77,8 @@ export function CreateEditCompetitionForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: initialCompetition?.name || "",
-      forecasts_due_date: initialCompetition?.forecasts_due_date,
+      forecasts_open_date: initialCompetition?.forecasts_open_date,
+      forecasts_close_date: initialCompetition?.forecasts_close_date,
       end_date: initialCompetition?.end_date,
     },
   });
@@ -130,7 +161,28 @@ export function CreateEditCompetitionForm({
         />
         <FormField
           control={form.control}
-          name="forecasts_due_date"
+          name="forecasts_open_date"
+          render={({ field }) => (
+            <FormItem className="flex flex-col space-y-2">
+              <FormLabel className="text-sm font-medium flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Forecasts Open Date
+              </FormLabel>
+              <FormControl>
+                <DatePicker
+                  value={field.value ?? undefined}
+                  onChange={field.onChange}
+                  timeZone="UTC"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="forecasts_close_date"
           render={({ field }) => (
             <FormItem className="flex flex-col space-y-2">
               <FormLabel className="text-sm font-medium flex items-center gap-2">

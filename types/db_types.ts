@@ -144,7 +144,8 @@ export type InviteTokenUpdate = Updateable<InviteTokensTable>;
 export interface CompetitionsTable {
   id: Generated<number>;
   name: string;
-  forecasts_due_date: Date;
+  forecasts_close_date: Date;
+  forecasts_open_date: Date;
   end_date: Date;
   visible: boolean;
   updated_at: Generated<Date>;
@@ -165,7 +166,8 @@ export interface VPropsView {
   category_name: string | null;
   competition_id: number | null;
   competition_name: string | null;
-  competition_forecasts_due_date: Date | null;
+  competition_forecasts_close_date: Date | null;
+  competition_forecasts_open_date: Date | null;
   resolution_id: number | null;
   resolution: boolean | null;
   resolution_user_id: number | null;
@@ -178,7 +180,8 @@ export interface VForecastsView {
   category_name: string | null;
   competition_id: number | null;
   competition_name: string | null;
-  competition_forecasts_due_date: Date | null;
+  competition_forecasts_close_date: Date | null;
+  competition_forecasts_open_date: Date | null;
   forecast_id: number;
   forecast: number;
   forecast_created_at: Date;

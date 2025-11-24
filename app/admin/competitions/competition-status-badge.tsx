@@ -11,20 +11,13 @@ export function CompetitionStatusBadge({
   const getStatusConfig = (status: CompetitionStatus) => {
     switch (status) {
       case "upcoming":
-        return {
-          label: "Upcoming",
-          variant: "outline" as const,
-        };
-      case "active":
-        return {
-          label: "Active",
-          variant: "default" as const,
-        };
+        return { label: "Upcoming", variant: "outline" as const };
+      case "forecasts-open":
+        return { label: "Forecasts open", variant: "default" as const };
+      case "forecasts-closed":
+        return { label: "Forecasts closed", variant: "secondary" as const };
       case "ended":
-        return {
-          label: "Ended",
-          variant: "secondary" as const,
-        };
+        return { label: "Ended", variant: "secondary" as const };
     }
   };
 

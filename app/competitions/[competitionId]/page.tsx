@@ -46,15 +46,18 @@ export default async function Page({
   }
 
   const competitionStatus = getCompetitionStatus(
-    competition.forecasts_due_date,
+    competition.forecasts_open_date,
+    competition.forecasts_close_date,
     competition.end_date,
   );
-  const competitionForecastsAreOpen = competitionStatus === "upcoming";
+  const competitionForecastsAreOpen = competitionStatus === "forecasts-open";
   const propsWithForecasts = await getPropsWithUserForecasts({
     userId: user.id,
     competitionId,
   });
-  const pageTitle = competitionForecastsAreOpen ? `${competition.name} - Make Your Forecasts` : competition.name;
+  const pageTitle = competitionForecastsAreOpen
+    ? `${competition.name} - Make Your Forecasts`
+    : competition.name;
 
   return (
     <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full">

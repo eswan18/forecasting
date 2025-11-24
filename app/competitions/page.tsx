@@ -66,7 +66,7 @@ export default async function CompetitionsPage() {
                     <div className="text-sm text-muted-foreground space-y-1">
                       <p>
                         <span className="font-medium">Forecasts due:</span>{" "}
-                        {formatDate(competition.forecasts_due_date)}
+                        {formatDate(competition.forecasts_close_date)}
                       </p>
                       <p>
                         <span className="font-medium">Ends:</span>{" "}
@@ -113,7 +113,7 @@ export default async function CompetitionsPage() {
                     <div className="text-sm text-muted-foreground space-y-1">
                       <p>
                         <span className="font-medium">Forecasts due:</span>{" "}
-                        {formatDate(competition.forecasts_due_date)}
+                        {formatDate(competition.forecasts_close_date)}
                       </p>
                       <p>
                         <span className="font-medium">Ends:</span>{" "}
