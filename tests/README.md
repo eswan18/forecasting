@@ -62,6 +62,7 @@ const user = await factory.createUser({
 
 const competition = await factory.createCompetition({
   name: "Test Competition",
+  forecasts_open_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
   forecasts_close_date: new Date(),
   end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
 });
