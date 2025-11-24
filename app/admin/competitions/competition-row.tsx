@@ -123,24 +123,38 @@ export default function CompetitionRow({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-help">
-                    Forecasts due {formatDate(competition.forecasts_close_date)}
+                    {status === "upcoming" && (
+                      <>
+                        Forecasts open{" "}
+                        {formatDate(competition.forecasts_open_date)}
+                      </>
+                    )}
+                    {status === "forecasts-open" && (
+                      <>
+                        Forecasts close{" "}
+                        {formatDate(competition.forecasts_close_date)}
+                      </>
+                    )}
+                    {status === "forecasts-closed" && (
+                      <>Ends {formatDate(competition.end_date)}</>
+                    )}
+                    {status === "ended" && (
+                      <>Ended {formatDate(competition.end_date)}</>
+                    )}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{formatDateTime(competition.forecasts_close_date)}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <span>•</span>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="cursor-help">
-                    Ends {formatDate(competition.end_date)}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{formatDateTime(competition.end_date)}</p>
+                  <div className="space-y-1">
+                    <p>
+                      Forecasts Open:{" "}
+                      {formatDateTime(competition.forecasts_open_date)}
+                    </p>
+                    <p>
+                      Forecasts Close:{" "}
+                      {formatDateTime(competition.forecasts_close_date)}
+                    </p>
+                    <p>Ends: {formatDateTime(competition.end_date)}</p>
+                  </div>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
