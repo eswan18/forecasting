@@ -25,7 +25,7 @@ export function getCompetitionStatus(
     return "upcoming";
   } else if (currentDate < forecastsCloseDate) {
     return "forecasts-open";
-  } else if (currentDate <= endDate) {
+  } else if (currentDate < endDate) {
     return "forecasts-closed";
   } else {
     return "ended";
