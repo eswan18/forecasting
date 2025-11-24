@@ -37,6 +37,7 @@ export default defineConfig({
           singleFork: true,
         },
       },
+      fileParallelism: false, // Disable parallel file execution for testcontainers
     }),
     coverage: {
       provider: "v8",
