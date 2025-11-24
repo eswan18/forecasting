@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -36,6 +36,9 @@ import {
 } from "@/components/ui/sheet";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useFeatureFlag } from "@/hooks/useFeatureFlag";
+import { getCompetitions } from "@/lib/db_actions/competitions";
+import { Competition } from "@/types/db_types";
+import { getCompetitionStatusFromObject } from "@/lib/competition-status";
 
 type NavLink = {
   href: string;
@@ -53,6 +56,26 @@ export default function NavBar() {
   const { enabled: hasPersonalPropsEnabled } = useFeatureFlag("personal-props");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [competitions, setCompetitions] = useState<Competition[]>([]);
+
+  useEffect(() => {
+    if (!isLoading) {
+      getCompetitions().then((allCompetitions) => {
+        // Filter to visible competitions only (unless user is admin)
+        let filteredCompetitions = user?.is_admin
+          ? allCompetitions
+          : allCompetitions.filter((comp) => comp.visible);
+
+        // Filter out competitions where forecasts haven't opened yet
+        filteredCompetitions = filteredCompetitions.filter((comp) => {
+          const status = getCompetitionStatusFromObject(comp);
+          return status !== "upcoming";
+        });
+
+        setCompetitions(filteredCompetitions);
+      });
+    }
+  }, [isLoading, user?.is_admin]);
 
   const toggleGroup = (groupLabel: string) => {
     const newExpanded = new Set(expandedGroups);
@@ -64,23 +87,19 @@ export default function NavBar() {
     setExpandedGroups(newExpanded);
   };
 
-  const links: (NavLink | NavLinkGroup)[] = [
-    {
+  const links: (NavLink | NavLinkGroup)[] = [];
+
+  // Add competitions section if there are any competitions
+  if (competitions.length > 0) {
+    links.push({
       label: "Competitions",
-      links: [
-        {
-          href: "/competitions/1",
-          label: "2024 Open",
-          icon: <Medal size={16} />,
-        },
-        {
-          href: "/competitions/2",
-          label: "2025 Open",
-          icon: <Medal size={16} />,
-        },
-      ],
-    },
-  ];
+      links: competitions.map((competition) => ({
+        href: `/competitions/${competition.id}`,
+        label: competition.name,
+        icon: <Medal size={16} />,
+      })),
+    });
+  }
 
   // Add standalone section if user has feature enabled
   if (user && !isLoading && hasPersonalPropsEnabled) {
