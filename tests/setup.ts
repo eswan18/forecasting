@@ -18,20 +18,21 @@ if (useContainers) {
 
     const db = await getTestDb();
     const test = getCurrentTest();
+    if (!test) {
+      throw new Error("No test found");
+    }
 
-    if (test) {
-      // Get the tracker instance for this specific test
-      const tracker = getTrackerForTest(test);
-      if (tracker) {
-        const trackedIds = tracker.getTrackedIds();
+    // Get the tracker instance for this specific test
+    const tracker = getTrackerForTest(test);
+    if (tracker) {
+      const trackedIds = tracker.getTrackedIds();
 
-        // Clean up only the tracked IDs for this test
-        await cleanupTestData(db, trackedIds);
+      // Clean up only the tracked IDs for this test
+      await cleanupTestData(db, trackedIds);
 
-        // Clear the tracked IDs and remove from registry to prevent memory leaks
-        tracker.clear();
-        clearTrackerForTest(test);
-      }
+      // Clear the tracked IDs and remove from registry to prevent memory leaks
+      tracker.clear();
+      clearTrackerForTest(test);
     }
     // If test context isn't available, there's nothing to clean up
   });
