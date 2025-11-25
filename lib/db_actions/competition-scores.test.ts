@@ -145,6 +145,7 @@ describe("getCompetitionScores", () => {
           })
           .returning("id")
           .executeTakeFirst();
+        if (resolution1) tracker.trackId("resolutions", resolution1.id);
 
         const resolution2 = await testDb
           .insertInto("resolutions")
@@ -157,6 +158,7 @@ describe("getCompetitionScores", () => {
           })
           .returning("id")
           .executeTakeFirst();
+        if (resolution2) tracker.trackId("resolutions", resolution2.id);
 
         const resolution3 = await testDb
           .insertInto("resolutions")
@@ -169,15 +171,10 @@ describe("getCompetitionScores", () => {
           })
           .returning("id")
           .executeTakeFirst();
-
-        // Track resolutions for cleanup
-        if (resolution1) tracker.trackId("resolutions", resolution1.id);
-        if (resolution2) tracker.trackId("resolutions", resolution2.id);
         if (resolution3) tracker.trackId("resolutions", resolution3.id);
 
         // Note: When props are resolved, ALL users who forecast on those props get scores
         // So both user1 and user2 should appear in the scores
-
         const result = await getCompetitionScores({
           competitionId: competition.id,
         });
