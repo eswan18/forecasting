@@ -1,7 +1,7 @@
 import { Pool } from "pg";
 import { Kysely, PostgresDialect } from "kysely";
 import { Database } from "@/types/db_types";
-import { TrackedIds, TrackedInsert } from "./testIdTracker";
+import { TrackedIds } from "./testIdTracker";
 
 // Singleton instance to prevent too many client connections
 let testDbInstance: Kysely<Database> | null = null;
@@ -50,7 +50,7 @@ export async function getTestDb(): Promise<Kysely<Database>> {
 /**
  * Clean up test data using tracked IDs.
  * Only deletes IDs that were tracked for the current test, enabling parallel test execution.
- * Deletes in reverse order of insertion (stack-based) to guarantee safe foreign key handling.
+ * Deletes in strict reverse order of insertion (stack-based) to guarantee safe foreign key handling.
  */
 export async function cleanupTestData(
   db: Kysely<Database>,
@@ -65,48 +65,45 @@ export async function cleanupTestData(
   // This guarantees that child records are deleted before parent records
   const reversed = [...trackedInserts].reverse();
 
-  // Group inserts by table for efficient batch deletion
-  const byTable = new Map<string, number[]>();
+  // Delete each insert one by one in reverse order
   for (const insert of reversed) {
     // Skip seed competitions (IDs 1 and 2)
-    if (insert.table === "competitions" && (insert.id === 1 || insert.id === 2)) {
+    if (
+      insert.table === "competitions" &&
+      (insert.id === 1 || insert.id === 2)
+    ) {
       continue;
     }
-
-    if (!byTable.has(insert.table)) {
-      byTable.set(insert.table, []);
-    }
-    byTable.get(insert.table)!.push(insert.id);
-  }
-
-  // Delete each table's records
-  for (const [tableName, ids] of byTable.entries()) {
-    if (ids.length === 0) continue;
 
     try {
       // Use type assertion since Kysely doesn't have perfect type safety for dynamic table names
       await (db as any)
-        .deleteFrom(tableName)
-        .where("id", "in", ids)
+        .deleteFrom(insert.table)
+        .where("id", "=", insert.id)
         .execute();
     } catch (error: any) {
       // Handle missing tables gracefully
       if (error.message?.includes("does not exist")) {
         if (process.env.VERBOSE_TESTS === "true") {
-          console.log(`Skipping cleanup of ${tableName} (table does not exist)`);
+          console.log(
+            `Skipping cleanup of ${insert.table} (table does not exist)`,
+          );
         }
       } else if (error.code === "23503") {
         // Foreign key violation - this shouldn't happen with reverse order, but log it
         if (process.env.VERBOSE_TESTS === "true") {
           console.warn(
-            `Foreign key constraint preventing cleanup of ${tableName}:`,
+            `Foreign key constraint preventing cleanup of ${insert.table} (id: ${insert.id}):`,
             error.message,
           );
         }
       } else {
         // Log other errors but don't fail tests
         if (process.env.VERBOSE_TESTS === "true") {
-          console.warn(`Warning cleaning ${tableName}:`, error.message);
+          console.warn(
+            `Warning cleaning ${insert.table} (id: ${insert.id}):`,
+            error.message,
+          );
         }
       }
     }
