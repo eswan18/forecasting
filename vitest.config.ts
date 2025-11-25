@@ -29,18 +29,10 @@ export default defineConfig({
     setupFiles: ["./tests/setup.ts"],
     testTimeout: 60000, // 60 seconds for testcontainer startup
     hookTimeout: 300000, // 5 minutes for setup/teardown hooks
-    // Parallelism is now enabled even with containers thanks to ID tracking
+    // Parallelism enabled: multiple test files run in parallel
     // Each test only cleans up its own tracked IDs, allowing safe parallel execution
-    // To disable parallelism if needed, set TEST_SEQUENTIAL=true
-    ...(process.env.TEST_SEQUENTIAL === "true" && {
-      pool: "forks",
-      poolOptions: {
-        forks: {
-          singleFork: true,
-        },
-      },
-      fileParallelism: false,
-    }),
+    // Tests within the same file run sequentially to avoid mock/state conflicts
+    fileParallelism: true,
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
