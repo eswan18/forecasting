@@ -63,20 +63,16 @@ export async function cleanupTestData(
   const reversed = [...trackedInserts].reverse();
 
   for (const insert of reversed) {
-    if (
-      insert.table === "competitions" &&
-      (insert.id === 1 || insert.id === 2)
-    ) {
-      continue;
-    }
-
     try {
       await (db as any)
         .deleteFrom(insert.table)
         .where("id", "=", insert.id)
         .execute();
     } catch (error) {
-      // Silently ignore errors during cleanup
+      console.error(
+        `Error deleting ${insert.table} with id ${insert.id}:`,
+        error,
+      );
     }
   }
 }
