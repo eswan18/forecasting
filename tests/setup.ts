@@ -32,14 +32,7 @@ if (useContainers) {
         tracker.clear();
         clearTrackerForTest(test);
       }
-    } else {
-      // Fallback: try legacy approach if test context isn't available
-      const { testIdTracker } = await import("./helpers/testIdTracker");
-      const trackedIds = testIdTracker.getTrackedIds();
-      if (Object.keys(trackedIds).length > 0) {
-        await cleanupTestData(db, trackedIds);
-        testIdTracker.clearCurrentTest();
-      }
     }
+    // If test context isn't available, there's nothing to clean up
   });
 }
