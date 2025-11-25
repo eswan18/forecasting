@@ -7,7 +7,6 @@ const useContainers = process.env.TEST_USE_CONTAINERS === "true";
 if (useContainers) {
   // Clean up test data after each test to ensure isolation
   // Note: Container setup/teardown is now handled by globalSetup.ts
-  // We use afterEach instead of beforeEach to clean up only the data created by the current test
   afterEach(async () => {
     const { getTestDb, cleanupTestData } = await import(
       "./helpers/testDatabase"
@@ -34,6 +33,5 @@ if (useContainers) {
       tracker.clear();
       clearTrackerForTest(test);
     }
-    // If test context isn't available, there's nothing to clean up
   });
 }
