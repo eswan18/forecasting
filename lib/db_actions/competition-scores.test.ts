@@ -5,6 +5,7 @@ import {
   shouldRunContainerTests,
   ifRunningContainerTestsIt,
 } from "../../tests/helpers/testUtils";
+import { getTestTracker } from "../../tests/helpers/testIdTracker";
 
 let getCompetitionScores: typeof import("./competition-scores").getCompetitionScores;
 
@@ -99,6 +100,13 @@ describe("getCompetitionScores", () => {
           .returning("id")
           .executeTakeFirst();
 
+        // Track categories for cleanup
+        const tracker = getTestTracker();
+        if (politicsCategory)
+          tracker.trackId("categories", politicsCategory.id);
+        if (economicsCategory)
+          tracker.trackId("categories", economicsCategory.id);
+
         // Create props in different categories
         const prop1 = await factory.createCompetitionProp(competition.id, {
           category_id: politicsCategory!.id,
@@ -125,7 +133,7 @@ describe("getCompetitionScores", () => {
         await factory.createForecast(user2.id, prop3.id, { forecast: 0.5 }); // user2 prediction: 50%
 
         // Create resolutions (actual outcomes)
-        await testDb
+        const resolution1 = await testDb
           .insertInto("resolutions")
           .values({
             prop_id: prop1.id,
@@ -134,9 +142,10 @@ describe("getCompetitionScores", () => {
             notes: "Test resolution",
             user_id: user1.id,
           })
-          .execute();
+          .returning("id")
+          .executeTakeFirst();
 
-        await testDb
+        const resolution2 = await testDb
           .insertInto("resolutions")
           .values({
             prop_id: prop2.id,
@@ -145,9 +154,10 @@ describe("getCompetitionScores", () => {
             notes: "Test resolution",
             user_id: user1.id,
           })
-          .execute();
+          .returning("id")
+          .executeTakeFirst();
 
-        await testDb
+        const resolution3 = await testDb
           .insertInto("resolutions")
           .values({
             prop_id: prop3.id,
@@ -156,7 +166,13 @@ describe("getCompetitionScores", () => {
             notes: "Test resolution",
             user_id: user1.id,
           })
-          .execute();
+          .returning("id")
+          .executeTakeFirst();
+
+        // Track resolutions for cleanup
+        if (resolution1) tracker.trackId("resolutions", resolution1.id);
+        if (resolution2) tracker.trackId("resolutions", resolution2.id);
+        if (resolution3) tracker.trackId("resolutions", resolution3.id);
 
         // Note: When props are resolved, ALL users who forecast on those props get scores
         // So both user1 and user2 should appear in the scores
@@ -243,7 +259,7 @@ describe("getCompetitionScores", () => {
         await factory.createForecast(user.id, prop.id, { forecast: 0.8 });
 
         // Actual outcome: it happened (true)
-        await testDb
+        const resolution = await testDb
           .insertInto("resolutions")
           .values({
             prop_id: prop.id,
@@ -252,7 +268,13 @@ describe("getCompetitionScores", () => {
             notes: "Test resolution",
             user_id: user.id,
           })
-          .execute();
+          .returning("id")
+          .executeTakeFirst();
+
+        // Track resolution for cleanup
+        if (resolution) {
+          getTestTracker().trackId("resolutions", resolution.id);
+        }
 
         const result = await getCompetitionScores({
           competitionId: competition.id,
