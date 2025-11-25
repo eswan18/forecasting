@@ -29,9 +29,6 @@ export default defineConfig({
     setupFiles: ["./tests/setup.ts"],
     testTimeout: 60000, // 60 seconds for testcontainer startup
     hookTimeout: 300000, // 5 minutes for setup/teardown hooks
-    // Parallelism enabled: multiple test files run in parallel
-    // Each test only cleans up its own tracked IDs, allowing safe parallel execution
-    // Tests within the same file run sequentially to avoid mock/state conflicts
     fileParallelism: true,
     coverage: {
       provider: "v8",
