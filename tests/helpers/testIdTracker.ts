@@ -84,22 +84,18 @@ function getTestId(test: any): string | null {
  * Stores the tracker keyed by test ID for later retrieval.
  */
 export function getTestTracker(): TestIdTracker {
-  try {
-    const test = getCurrentTest();
-    if (test) {
-      const testId = getTestId(test);
-      if (testId) {
-        if (!trackerRegistry.has(testId)) {
-          trackerRegistry.set(testId, new TestIdTracker());
-        }
-        return trackerRegistry.get(testId)!;
-      }
-    }
-  } catch (error) {
-    // getCurrentTest() might not be available in all contexts
+  const test = getCurrentTest();
+  if (!test) {
+    throw new Error("No test found");
   }
-  // Fallback: create a temporary tracker (will be cleaned up immediately)
-  return new TestIdTracker();
+  const testId = getTestId(test);
+  if (!testId) {
+    throw new Error("No test ID found");
+  }
+  if (!trackerRegistry.has(testId)) {
+    trackerRegistry.set(testId, new TestIdTracker());
+  }
+  return trackerRegistry.get(testId)!;
 }
 
 /**

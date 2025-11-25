@@ -1,15 +1,8 @@
 import { PostgreSqlContainer } from "@testcontainers/postgresql";
 import { Pool } from "pg";
-import {
-  Kysely,
-  PostgresDialect,
-  Migrator,
-  FileMigrationProvider,
-} from "kysely";
+import { Kysely, PostgresDialect } from "kysely";
 import { createMigrator } from "./helpers/migrator";
 import { Database } from "@/types/db_types";
-import { promises as fs } from "fs";
-import path from "path";
 
 // Set test environment variables before any modules that depend on them are imported
 // This ensures consistent test values across all test files
