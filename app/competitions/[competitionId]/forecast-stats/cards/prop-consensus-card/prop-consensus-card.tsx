@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getCategories, getForecasts, getProps } from "@/lib/db_actions";
+import { getCategories, getForecasts } from "@/lib/db_actions";
 import PropConsensusContent from "./prop-consensus-content";
 
 export default async function PropConsensusCard({
@@ -14,7 +14,6 @@ export default async function PropConsensusCard({
   competitionId: number;
 }) {
   const forecasts = await getForecasts({ competitionId });
-  const props = await getProps({ competitionId });
   const categories = await getCategories();
   return (
     <Card className="w-full">
@@ -25,11 +24,7 @@ export default async function PropConsensusCard({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <PropConsensusContent
-          props={props}
-          forecasts={forecasts}
-          categories={categories}
-        />
+        <PropConsensusContent forecasts={forecasts} categories={categories} />
       </CardContent>
     </Card>
   );

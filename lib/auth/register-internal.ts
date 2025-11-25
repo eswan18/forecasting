@@ -1,8 +1,4 @@
-// Only enforce server-only in production, allow tests to import this
-if (process.env.NODE_ENV !== "test") {
-  require("server-only");
-}
-
+import "server-only";
 import argon2 from "argon2";
 import { createLogin, createUser, getLoginByUsername } from "@/lib/db_actions";
 

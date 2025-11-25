@@ -21,8 +21,6 @@ interface PropsTableProps {
 export function PropsTable({
   props,
   canCreateProps = false,
-  canEditProps = false,
-  canEditResolutions = false,
   competitionId,
   defaultUserId,
 }: PropsTableProps) {
@@ -31,8 +29,6 @@ export function PropsTable({
       {/* Prop Table with Filter Bar */}
       <PropTableWithFilterBar
         props={props}
-        canEditProps={canEditProps}
-        canEditResolutions={canEditResolutions}
         canCreateProps={canCreateProps}
         competitionId={competitionId}
         defaultUserId={defaultUserId}

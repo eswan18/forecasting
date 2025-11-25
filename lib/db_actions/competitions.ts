@@ -82,7 +82,7 @@ export async function getCompetitions(): Promise<Competition[]> {
 
   const startTime = Date.now();
   try {
-    let query = db
+    const query = db
       .selectFrom("competitions")
       .orderBy("name", "desc")
       .selectAll();

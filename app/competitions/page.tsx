@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Trophy, BarChart3, List } from "lucide-react";
 import { CompetitionStatusBadge } from "@/app/admin/competitions/competition-status-badge";
-import { Competition } from "@/types/db_types";
 import { formatDate } from "@/lib/time-utils";
 import { getCompetitionStatusFromObject } from "@/lib/competition-status";
 

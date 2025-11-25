@@ -34,7 +34,9 @@ import { Spinner } from "@/components/ui/spinner";
 export function AccountDetails() {
   const { user, isLoading, mutate } = useCurrentUser();
   async function mutateUser(updatedUser: UserUpdate) {
-    user && mutate({ ...user, ...updatedUser });
+    if (user) {
+      mutate({ ...user, ...updatedUser });
+    }
   }
   return (
     <div className="mt-4 space-y-12">
@@ -236,7 +238,9 @@ function ChangeUsernameForm({ onSuccess }: { onSuccess: () => void }) {
     } else {
       setError("");
       form.reset(values);
-      user && mutate({ ...user, username: values.username });
+      if (user) {
+        mutate({ ...user, username: values.username });
+      }
       onSuccess();
     }
     setLoading(false);

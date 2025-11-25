@@ -123,7 +123,9 @@ function AddUserFeatureFlagWidget({
         }* for user ${selectedUser.name}`,
       });
     });
-    onChoice && onChoice();
+    if (onChoice) {
+      onChoice();
+    }
   };
   return (
     <div className="flex flex-col gap-4 items-start">

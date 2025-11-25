@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach } from "vitest";
+import { vi, describe, expect, beforeEach } from "vitest";
 import { getTestDb } from "../../tests/helpers/testDatabase";
 import { TestDataFactory } from "../../tests/helpers/testFactories";
 import {

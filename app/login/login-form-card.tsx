@@ -69,7 +69,9 @@ export default function LoginFormCard({ onLogin }: { onLogin?: () => void }) {
       setError(response.error);
     } else {
       setError("");
-      onLogin && onLogin();
+      if (onLogin) {
+        onLogin();
+      }
     }
     setLoading(false);
   }

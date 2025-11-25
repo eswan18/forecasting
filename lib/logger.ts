@@ -8,7 +8,7 @@ export interface LogContext {
   table?: string;
   recordId?: number | string;
   duration?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 class Logger {
@@ -68,8 +68,8 @@ class Logger {
     // Send to Sentry in production
     if (!this.isDevelopment && error) {
       Sentry.captureException(error, {
-        tags: context,
-        extra: context,
+        tags: context as Record<string, string | number | boolean>,
+        extra: context as Record<string, unknown>,
       });
     }
   }

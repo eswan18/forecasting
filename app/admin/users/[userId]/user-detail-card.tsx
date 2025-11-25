@@ -13,22 +13,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  ArrowLeft,
-  User,
-  Mail,
-  Shield,
-  Calendar,
-  Clock,
-  UserCheck,
-  UserX,
-} from "lucide-react";
+import { ArrowLeft, User, Mail, Shield, UserCheck, UserX } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { setUserActive } from "@/lib/db_actions/users";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
 import { toast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface UserDetailCardProps {
@@ -36,7 +26,6 @@ interface UserDetailCardProps {
 }
 
 export default function UserDetailCard({ user }: UserDetailCardProps) {
-  const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const isActive = user.deactivated_at === null;
@@ -64,6 +53,7 @@ export default function UserDetailCard({ user }: UserDetailCardProps) {
 
       // No need to manually refresh - revalidatePath handles it
     } catch (error) {
+      console.error(error);
       toast({
         title: "Error",
         description: "Failed to update user status",
@@ -91,7 +81,7 @@ export default function UserDetailCard({ user }: UserDetailCardProps) {
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+              <div className="w-16 h-16 bg-linear-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
                 {user.username
                   ? user.username.charAt(0).toUpperCase()
                   : user.name.charAt(0).toUpperCase()}

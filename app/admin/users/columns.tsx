@@ -171,6 +171,7 @@ function UserStatusCell({ user }: { user: VUser }) {
 
       // No need to manually refresh - revalidatePath handles it
     } catch (error) {
+      console.error(error);
       toast({
         title: "Error",
         description: "Failed to update user status",

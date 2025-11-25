@@ -13,8 +13,6 @@ type PropWithUserForecast = VProp & {
 
 interface PropTableWithFilterBarProps {
   props: PropWithUserForecast[];
-  canEditProps?: boolean;
-  canEditResolutions?: boolean;
   canCreateProps?: boolean;
   competitionId?: number | null;
   defaultUserId?: number;
@@ -22,8 +20,6 @@ interface PropTableWithFilterBarProps {
 
 export function PropTableWithFilterBar({
   props,
-  canEditProps = false,
-  canEditResolutions = false,
   canCreateProps = false,
   competitionId,
   defaultUserId,

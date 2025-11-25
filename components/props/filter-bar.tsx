@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { VProp } from "@/types/db_types";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";

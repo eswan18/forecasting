@@ -124,6 +124,7 @@ function TokenActionsCell({
       setDeleteDialogOpen(false);
       router.refresh();
     } catch (error) {
+      console.error(error);
       toast({
         title: "Error",
         description: "Failed to delete invite token.",

@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Category } from "@/types/db_types";
 import { CompetitionScore } from "@/lib/db_actions";
 
@@ -68,7 +68,7 @@ export default function LeaderboardChart({
         </div>
       </div>
       <div className="flex flex-col gap-y-4 w-full">
-        {sortedUsers.map((userScore, index) => {
+        {sortedUsers.map((userScore) => {
           const userCategoryScores = getUserCategoryScores(userScore.userId);
           return (
             <Card key={userScore.userId} className="w-full">

@@ -13,17 +13,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Calendar,
-  User,
-  MessageSquare,
-  CheckCircle,
-  XCircle,
-  Trash,
-  MessageCircle,
-} from "lucide-react";
+import { User, MessageSquare, Trash, MessageCircle } from "lucide-react";
 
 // Helper function to parse prop text and notes
 function parsePropText(propText: string) {

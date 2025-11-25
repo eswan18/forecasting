@@ -1,6 +1,6 @@
 import InvitesTable from "./invites-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, UserPlus, CheckCircle, XCircle } from "lucide-react";
+import { Mail, CheckCircle, XCircle } from "lucide-react";
 import { getInviteTokens } from "@/lib/db_actions";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
 import { InviteUserButton } from "../invite-user-button";

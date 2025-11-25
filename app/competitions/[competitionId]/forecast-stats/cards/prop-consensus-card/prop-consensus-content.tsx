@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Category, VForecast, VProp } from "@/types/db_types";
+import { Category, VForecast } from "@/types/db_types";
 import { FC, useState } from "react";
 import { PropStatistics, propStatisticsForForecasts } from "./stats";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
@@ -24,11 +24,9 @@ import { Tooltip } from "recharts";
 export default function PropConsensusContent({
   categories,
   forecasts,
-  props,
 }: {
   categories: Category[];
   forecasts: VForecast[];
-  props: VProp[];
 }) {
   const [selectedCategory, setSelectedCategory] = useState(categories[0]);
   const forecastsInScope = forecasts.filter(
@@ -130,16 +128,14 @@ interface TooltipPayload {
 const CustomTooltip = ({
   active,
   payload,
-  label,
 }: {
   active?: boolean;
   payload?: TooltipPayload[];
-  label?: string;
 }) => {
   if (active && payload && payload.length) {
     const stats = payload[0].payload;
     return (
-      <div className="grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
+      <div className="grid min-w-32 items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
         <span className="font-semibold">{payload[0].payload.prop_text}</span>
         <div className="grid grid-cols-2 w-full">
           <p className="text-muted-foreground">Mean</p>

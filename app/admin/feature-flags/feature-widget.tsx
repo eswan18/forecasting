@@ -118,7 +118,9 @@ function AddDefaultFeatureFlagWidget({
   const flag = { name: featureName, user_id: null };
   const saveDefaultFlag = (enabled: boolean) => {
     createFeatureFlag({ featureFlag: { ...flag, enabled } });
-    onChoice && onChoice();
+    if (onChoice) {
+      onChoice();
+    }
   };
   return (
     <div className="flex flex-row gap-4 items-center">

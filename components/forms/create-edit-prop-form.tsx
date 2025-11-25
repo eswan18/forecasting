@@ -10,7 +10,6 @@ import {
   Hash,
 } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
-import { useToast } from "@/hooks/use-toast";
 import { useServerAction } from "@/hooks/use-server-action";
 import {
   createProp,
@@ -82,7 +81,6 @@ export function CreateEditPropForm({
   const [categories, setCategories] = useState<Category[]>([]);
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [canEditPublicProps, setCanEditPublicProps] = useState(false);
-  const { toast } = useToast();
   const initialUserId = initialProp?.prop_user_id || defaultUserId;
 
   const createPropAction = useServerAction(createProp, {

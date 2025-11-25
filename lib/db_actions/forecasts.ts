@@ -16,7 +16,7 @@ import { logger } from "@/lib/logger";
 export type VForecastsOrderByExpression = OrderByExpression<
   Database,
   "v_forecasts",
-  {}
+  VForecast
 >;
 type Sort = {
   expr: VForecastsOrderByExpression;

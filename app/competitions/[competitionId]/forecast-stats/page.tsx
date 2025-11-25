@@ -10,7 +10,7 @@ import ErrorPage from "@/components/pages/error-page";
 import { getCompetitionById } from "@/lib/db_actions";
 import { InaccessiblePage } from "@/components/inaccessible-page";
 import PageHeading from "@/components/page-heading";
-import { ArrowUpDown, ChartLine, TrendingUpDown, Trophy } from "lucide-react";
+import { ChartLine } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default async function Page({

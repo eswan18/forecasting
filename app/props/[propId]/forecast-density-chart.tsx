@@ -93,7 +93,7 @@ function calculateBandwidth(data: number[]): number {
 export default function ForecastDensityChart({
   forecasts,
 }: ForecastDensityChartProps) {
-  const { chartData, domain } = useMemo(() => {
+  const { chartData } = useMemo(() => {
     if (forecasts.length === 0) return { chartData: [], domain: [0, 1] };
 
     const forecastValues = forecasts.map((f) => f.forecast);

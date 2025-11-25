@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach, beforeAll } from "vitest";
+import { vi, describe, expect, beforeEach, beforeAll } from "vitest";
 import { getTestDb } from "../helpers/testDatabase";
 import { TestDataFactory } from "../helpers/testFactories";
 import {
@@ -83,7 +83,7 @@ describe("Authentication Login", () => {
     ifRunningContainerTestsIt(
       "should login successfully with valid credentials",
       async () => {
-        const testUser = await factory.createUser({
+        await factory.createUser({
           username: "testuser",
           password: "mypassword",
         });
@@ -127,7 +127,7 @@ describe("Authentication Login", () => {
     ifRunningContainerTestsIt(
       "should fail login with invalid password",
       async () => {
-        const testUser = await factory.createUser({
+        await factory.createUser({
           username: "testuser",
         });
 
@@ -166,7 +166,7 @@ describe("Authentication Login", () => {
         });
 
         // Create target user to impersonate
-        const targetUser = await factory.createUser({
+        await factory.createUser({
           username: "targetuser",
         });
 
@@ -211,7 +211,7 @@ describe("Authentication Login", () => {
         });
 
         // Create target user
-        const targetUser = await factory.createUser({
+        await factory.createUser({
           username: "targetuser",
         });
 

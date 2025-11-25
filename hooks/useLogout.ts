@@ -11,7 +11,9 @@ export function useLogout(redirectTo?: string) {
     await logout();
     console.log("Logged out");
     await mutate();
-    redirectTo && router.push(redirectTo);
+    if (redirectTo) {
+      router.push(redirectTo);
+    }
   };
 
   return doLogout;

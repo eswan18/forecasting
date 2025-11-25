@@ -218,7 +218,6 @@ export default function NavBar() {
                         group={link}
                         isExpanded={expandedGroups.has(link.label)}
                         onToggle={() => toggleGroup(link.label)}
-                        onClose={() => setIsMobileMenuOpen(false)}
                       />
                     ),
                   )}
@@ -306,12 +305,10 @@ function MobileDropdownItem({
   group: { label, links },
   isExpanded,
   onToggle,
-  onClose,
 }: {
   group: NavLinkGroup;
   isExpanded: boolean;
   onToggle: () => void;
-  onClose: () => void;
 }) {
   return (
     <div className="space-y-1">
