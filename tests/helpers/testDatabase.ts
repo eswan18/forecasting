@@ -1,7 +1,7 @@
 import { Pool } from "pg";
 import { Kysely, PostgresDialect } from "kysely";
 import { Database } from "@/types/db_types";
-import { TrackedIds } from "./testIdTracker";
+import { TrackedIds, TrackedInsert } from "./testIdTracker";
 
 // Singleton instance to prevent too many client connections
 let testDbInstance: Kysely<Database> | null = null;
@@ -50,137 +50,63 @@ export async function getTestDb(): Promise<Kysely<Database>> {
 /**
  * Clean up test data using tracked IDs.
  * Only deletes IDs that were tracked for the current test, enabling parallel test execution.
+ * Deletes in reverse order of insertion (stack-based) to guarantee safe foreign key handling.
  */
 export async function cleanupTestData(
   db: Kysely<Database>,
-  trackedIds: TrackedIds,
+  trackedInserts: TrackedIds,
 ): Promise<void> {
-  // If no tracked IDs, nothing to clean up
-  if (Object.keys(trackedIds).length === 0) {
+  // If no tracked inserts, nothing to clean up
+  if (trackedInserts.length === 0) {
     return;
   }
 
-  // Clean in dependency order (child tables first, parent tables last)
-  // This ensures foreign key constraints are respected
+  // Reverse the array to delete in reverse order of insertion
+  // This guarantees that child records are deleted before parent records
+  const reversed = [...trackedInserts].reverse();
 
-  const cleanupOperations = [
-    // Child tables first
-    {
-      name: "forecasts",
-      operation: () => {
-        const ids = trackedIds["forecasts"];
-        if (!ids || ids.length === 0) return Promise.resolve();
-        return db.deleteFrom("forecasts").where("id", "in", ids).execute();
-      },
-    },
-    {
-      name: "resolutions",
-      operation: () => {
-        const ids = trackedIds["resolutions"];
-        if (!ids || ids.length === 0) return Promise.resolve();
-        return db.deleteFrom("resolutions").where("id", "in", ids).execute();
-      },
-    },
-    {
-      name: "feature_flags",
-      operation: () => {
-        const ids = trackedIds["feature_flags"];
-        if (!ids || ids.length === 0) return Promise.resolve();
-        return db.deleteFrom("feature_flags").where("id", "in", ids).execute();
-      },
-    },
-    {
-      name: "password_reset_tokens",
-      operation: () => {
-        const ids = trackedIds["password_reset_tokens"];
-        if (!ids || ids.length === 0) return Promise.resolve();
-        return db
-          .deleteFrom("password_reset_tokens")
-          .where("id", "in", ids)
-          .execute();
-      },
-    },
-    {
-      name: "suggested_props",
-      operation: () => {
-        const ids = trackedIds["suggested_props"];
-        if (!ids || ids.length === 0) return Promise.resolve();
-        return db
-          .deleteFrom("suggested_props")
-          .where("id", "in", ids)
-          .execute();
-      },
-    },
-    {
-      name: "props",
-      operation: () => {
-        const ids = trackedIds["props"];
-        if (!ids || ids.length === 0) return Promise.resolve();
-        return db.deleteFrom("props").where("id", "in", ids).execute();
-      },
-    },
-    {
-      name: "competitions",
-      operation: () => {
-        const ids = trackedIds["competitions"];
-        if (!ids || ids.length === 0) return Promise.resolve();
-        // Filter out seed competitions (IDs 1 and 2) just to be safe
-        const idsToDelete = ids.filter((id) => id !== 1 && id !== 2);
-        if (idsToDelete.length === 0) return Promise.resolve();
-        return db
-          .deleteFrom("competitions")
-          .where("id", "in", idsToDelete)
-          .execute();
-      },
-    },
-    {
-      name: "users",
-      operation: () => {
-        const ids = trackedIds["users"];
-        if (!ids || ids.length === 0) return Promise.resolve();
-        return db.deleteFrom("users").where("id", "in", ids).execute();
-      },
-    },
-    {
-      name: "logins",
-      operation: () => {
-        const ids = trackedIds["logins"];
-        if (!ids || ids.length === 0) return Promise.resolve();
-        return db.deleteFrom("logins").where("id", "in", ids).execute();
-      },
-    },
-    {
-      name: "invite_tokens",
-      operation: () => {
-        const ids = trackedIds["invite_tokens"];
-        if (!ids || ids.length === 0) return Promise.resolve();
-        return db.deleteFrom("invite_tokens").where("id", "in", ids).execute();
-      },
-    },
-  ];
+  // Group inserts by table for efficient batch deletion
+  const byTable = new Map<string, number[]>();
+  for (const insert of reversed) {
+    // Skip seed competitions (IDs 1 and 2)
+    if (insert.table === "competitions" && (insert.id === 1 || insert.id === 2)) {
+      continue;
+    }
 
-  // Execute each cleanup operation individually
-  for (const { name, operation } of cleanupOperations) {
+    if (!byTable.has(insert.table)) {
+      byTable.set(insert.table, []);
+    }
+    byTable.get(insert.table)!.push(insert.id);
+  }
+
+  // Delete each table's records
+  for (const [tableName, ids] of byTable.entries()) {
+    if (ids.length === 0) continue;
+
     try {
-      await operation();
+      // Use type assertion since Kysely doesn't have perfect type safety for dynamic table names
+      await (db as any)
+        .deleteFrom(tableName)
+        .where("id", "in", ids)
+        .execute();
     } catch (error: any) {
       // Handle missing tables gracefully
       if (error.message?.includes("does not exist")) {
         if (process.env.VERBOSE_TESTS === "true") {
-          console.log(`Skipping cleanup of ${name} (table does not exist)`);
+          console.log(`Skipping cleanup of ${tableName} (table does not exist)`);
         }
       } else if (error.code === "23503") {
-        // Foreign key violation - this shouldn't happen with proper ordering, but log it
+        // Foreign key violation - this shouldn't happen with reverse order, but log it
         if (process.env.VERBOSE_TESTS === "true") {
           console.warn(
-            `Foreign key constraint preventing cleanup of ${name}:`,
+            `Foreign key constraint preventing cleanup of ${tableName}:`,
             error.message,
           );
         }
       } else {
         // Log other errors but don't fail tests
         if (process.env.VERBOSE_TESTS === "true") {
-          console.warn(`Warning cleaning ${name}:`, error.message);
+          console.warn(`Warning cleaning ${tableName}:`, error.message);
         }
       }
     }

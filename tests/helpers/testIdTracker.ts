@@ -1,37 +1,47 @@
 import { getCurrentTest } from "@vitest/runner";
 
 /**
- * Tracks database IDs created during a test for selective cleanup.
- * Each test gets its own tracked IDs to enable parallel test execution.
+ * Represents a single tracked database insert.
  */
-export interface TrackedIds {
-  [tableName: string]: number[];
+export interface TrackedInsert {
+  table: string;
+  id: number;
 }
+
+/**
+ * Stack of tracked inserts in insertion order.
+ * Cleanup will reverse this array to delete in reverse order (guaranteed safe).
+ */
+export type TrackedIds = TrackedInsert[];
 
 /**
  * Per-test tracker instance.
  * Each test should have its own instance, stored in the test context.
+ * Tracks inserts as a stack so cleanup can work in reverse order.
  */
 export class TestIdTracker {
-  private trackedIds: TrackedIds = {};
+  private trackedInserts: TrackedIds = [];
 
   /**
    * Track an ID for a specific table.
+   * Inserts are tracked in order, so cleanup can reverse the order for safe deletion.
    */
   trackId(tableName: string, id: number): void {
-    if (!this.trackedIds[tableName]) {
-      this.trackedIds[tableName] = [];
-    }
-    if (!this.trackedIds[tableName].includes(id)) {
-      this.trackedIds[tableName].push(id);
+    // Avoid duplicates (though this shouldn't happen in practice)
+    const exists = this.trackedInserts.some(
+      (insert) => insert.table === tableName && insert.id === id,
+    );
+    if (!exists) {
+      this.trackedInserts.push({ table: tableName, id });
     }
   }
 
   /**
-   * Get all tracked IDs for this test.
+   * Get all tracked inserts in insertion order.
+   * For cleanup, reverse this array to delete in reverse order.
    */
   getTrackedIds(): TrackedIds {
-    return this.trackedIds;
+    return this.trackedInserts;
   }
 
   /**
@@ -39,7 +49,7 @@ export class TestIdTracker {
    * Should be called after cleanup to prevent memory leaks.
    */
   clear(): void {
-    this.trackedIds = {};
+    this.trackedInserts = [];
   }
 }
 
