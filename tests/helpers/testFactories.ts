@@ -1,7 +1,7 @@
 import { Kysely } from "kysely";
 import { Database, User, Prop, Competition, Forecast } from "@/types/db_types";
 import argon2 from "argon2";
-import { testIdTracker } from "./testIdTracker";
+import { getTestTracker } from "./testIdTracker";
 
 // Use existing types from the codebase instead of duplicating interfaces
 // Extend User with username field for convenience in tests
@@ -15,10 +15,15 @@ export type TestCompetition = Competition;
 export type TestForecast = Forecast;
 
 export class TestDataFactory {
-  constructor(
-    private db: Kysely<Database>,
-    private tracker = testIdTracker,
-  ) {}
+  constructor(private db: Kysely<Database>) {}
+
+  /**
+   * Get the tracker for the current test.
+   * Each test gets its own tracker instance.
+   */
+  private getTracker() {
+    return getTestTracker();
+  }
 
   async createUser(
     overrides: Partial<TestUser> & {
@@ -55,7 +60,7 @@ export class TestDataFactory {
     }
 
     // Track the login ID
-    this.tracker.trackId("logins", loginResult.id);
+    this.getTracker().trackId("logins", loginResult.id);
 
     // Create user record directly with test database
     const userResult = await this.db
@@ -69,7 +74,7 @@ export class TestDataFactory {
     }
 
     // Track the user ID
-    this.tracker.trackId("users", userResult.id);
+    this.getTracker().trackId("users", userResult.id);
 
     // Fetch created user and associated login to return a rich object
     const createdUser = await this.db
@@ -128,7 +133,7 @@ export class TestDataFactory {
 
     // Track the competition ID (but exclude seed competitions with IDs 1 and 2)
     if (result.id !== 1 && result.id !== 2) {
-      this.tracker.trackId("competitions", result.id);
+      this.getTracker().trackId("competitions", result.id);
     }
 
     return result;
@@ -156,7 +161,7 @@ export class TestDataFactory {
     }
 
     // Track the prop ID
-    this.tracker.trackId("props", result.id);
+    this.getTracker().trackId("props", result.id);
 
     return result;
   }
@@ -185,7 +190,7 @@ export class TestDataFactory {
     }
 
     // Track the forecast ID
-    this.tracker.trackId("forecasts", result.id);
+    this.getTracker().trackId("forecasts", result.id);
 
     return result;
   }

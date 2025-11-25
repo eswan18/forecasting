@@ -12,26 +12,29 @@ if (useContainers) {
     const { getTestDb, cleanupTestData } = await import(
       "./helpers/testDatabase"
     );
-    const { testIdTracker } = await import("./helpers/testIdTracker");
+    const { getTrackerForTest, clearTrackerForTest } = await import(
+      "./helpers/testIdTracker"
+    );
 
     const db = await getTestDb();
     const test = getCurrentTest();
 
     if (test) {
-      // Get tracked IDs for the current test
-      // Use task ID if available (more reliable in parallel execution)
-      const testId = test.task?.id
-        ? test.task.id.toString()
-        : `${test.file?.name || "unknown"}:${test.name}`;
-      const trackedIds = testIdTracker.getTrackedIdsForTest(testId);
+      // Get the tracker instance for this specific test
+      const tracker = getTrackerForTest(test);
+      if (tracker) {
+        const trackedIds = tracker.getTrackedIds();
 
-      // Clean up only the tracked IDs for this test
-      await cleanupTestData(db, trackedIds);
+        // Clean up only the tracked IDs for this test
+        await cleanupTestData(db, trackedIds);
 
-      // Clear the tracked IDs to prevent memory leaks
-      testIdTracker.clearTest(testId);
+        // Clear the tracked IDs and remove from registry to prevent memory leaks
+        tracker.clear();
+        clearTrackerForTest(test);
+      }
     } else {
-      // Fallback: try to get tracked IDs for current test context
+      // Fallback: try legacy approach if test context isn't available
+      const { testIdTracker } = await import("./helpers/testIdTracker");
       const trackedIds = testIdTracker.getTrackedIds();
       if (Object.keys(trackedIds).length > 0) {
         await cleanupTestData(db, trackedIds);
