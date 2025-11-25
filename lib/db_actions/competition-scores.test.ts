@@ -5,7 +5,6 @@ import {
   shouldRunContainerTests,
   ifRunningContainerTestsIt,
 } from "../../tests/helpers/testUtils";
-import { getTestTracker } from "../../tests/helpers/testIdTracker";
 
 let getCompetitionScores: typeof import("./competition-scores").getCompetitionScores;
 
@@ -79,8 +78,6 @@ describe("getCompetitionScores", () => {
     ifRunningContainerTestsIt(
       "should aggregate scores correctly for multiple users and categories",
       async () => {
-        const tracker = getTestTracker();
-
         const user1 = await factory.createUser({ username: "user1" });
         const user2 = await factory.createUser({ username: "user2" });
         vi.mocked(getUserFromCookies).mockResolvedValue(user1);
@@ -90,37 +87,27 @@ describe("getCompetitionScores", () => {
         });
 
         // Create categories
-        const politicsCategory = await testDb
-          .insertInto("categories")
-          .values({ name: "Politics" })
-          .returning("id")
-          .executeTakeFirst();
-        if (politicsCategory) {
-          tracker.trackId("categories", politicsCategory.id);
-        }
+        const politicsCategory = await factory.createCategory({
+          name: "Politics",
+        });
 
-        const economicsCategory = await testDb
-          .insertInto("categories")
-          .values({ name: "Economics" })
-          .returning("id")
-          .executeTakeFirst();
-        if (economicsCategory) {
-          tracker.trackId("categories", economicsCategory.id);
-        }
+        const economicsCategory = await factory.createCategory({
+          name: "Economics",
+        });
 
         // Create props in different categories
         const prop1 = await factory.createCompetitionProp(competition.id, {
-          category_id: politicsCategory!.id,
+          category_id: politicsCategory.id,
           text: "Biden will win 2024",
         });
 
         const prop2 = await factory.createCompetitionProp(competition.id, {
-          category_id: economicsCategory!.id,
+          category_id: economicsCategory.id,
           text: "Inflation will drop 2%",
         });
 
         const prop3 = await factory.createCompetitionProp(competition.id, {
-          category_id: politicsCategory!.id,
+          category_id: politicsCategory.id,
           text: "Democrats will keep the Senate",
         });
 
@@ -134,44 +121,23 @@ describe("getCompetitionScores", () => {
         await factory.createForecast(user2.id, prop3.id, { forecast: 0.5 }); // user2 prediction: 50%
 
         // Create resolutions (actual outcomes)
-        const resolution1 = await testDb
-          .insertInto("resolutions")
-          .values({
-            prop_id: prop1.id,
-            resolution: true, // Biden won
-            resolved_at: new Date(),
-            notes: "Test resolution",
-            user_id: user1.id,
-          })
-          .returning("id")
-          .executeTakeFirst();
-        if (resolution1) tracker.trackId("resolutions", resolution1.id);
+        await factory.createResolution(prop1.id, {
+          resolution: true, // Biden won
+          notes: "Test resolution",
+          user_id: user1.id,
+        });
 
-        const resolution2 = await testDb
-          .insertInto("resolutions")
-          .values({
-            prop_id: prop2.id,
-            resolution: false, // Inflation didn't drop below 2%
-            resolved_at: new Date(),
-            notes: "Test resolution",
-            user_id: user1.id,
-          })
-          .returning("id")
-          .executeTakeFirst();
-        if (resolution2) tracker.trackId("resolutions", resolution2.id);
+        await factory.createResolution(prop2.id, {
+          resolution: false, // Inflation didn't drop below 2%
+          notes: "Test resolution",
+          user_id: user1.id,
+        });
 
-        const resolution3 = await testDb
-          .insertInto("resolutions")
-          .values({
-            prop_id: prop3.id,
-            resolution: true, // Democrats kept the Senate
-            resolved_at: new Date(),
-            notes: "Test resolution",
-            user_id: user1.id,
-          })
-          .returning("id")
-          .executeTakeFirst();
-        if (resolution3) tracker.trackId("resolutions", resolution3.id);
+        await factory.createResolution(prop3.id, {
+          resolution: true, // Democrats kept the Senate
+          notes: "Test resolution",
+          user_id: user1.id,
+        });
 
         // Note: When props are resolved, ALL users who forecast on those props get scores
         // So both user1 and user2 should appear in the scores
@@ -257,22 +223,11 @@ describe("getCompetitionScores", () => {
         await factory.createForecast(user.id, prop.id, { forecast: 0.8 });
 
         // Actual outcome: it happened (true)
-        const resolution = await testDb
-          .insertInto("resolutions")
-          .values({
-            prop_id: prop.id,
-            resolution: true,
-            resolved_at: new Date(),
-            notes: "Test resolution",
-            user_id: user.id,
-          })
-          .returning("id")
-          .executeTakeFirst();
-
-        // Track resolution for cleanup
-        if (resolution) {
-          getTestTracker().trackId("resolutions", resolution.id);
-        }
+        await factory.createResolution(prop.id, {
+          resolution: true,
+          notes: "Test resolution",
+          user_id: user.id,
+        });
 
         const result = await getCompetitionScores({
           competitionId: competition.id,
