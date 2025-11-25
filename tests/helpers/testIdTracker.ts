@@ -60,14 +60,21 @@ export class TestIdTracker {
 const trackerRegistry = new Map<string, TestIdTracker>();
 
 /**
- * Get a consistent test ID from the test context.
+ * Get a consistent test ID from the test context or test result.
+ * Works with both test contexts (from getCurrentTest) and test results (from onTestFinished).
  */
 function getTestId(test: any): string | null {
+  // Try task.id first (most reliable, works for both contexts and results)
   if (test?.task?.id) {
     return test.task.id.toString();
   }
+  // Fallback to file name + test name combination
   if (test?.file?.name && test?.name) {
     return `${test.file.name}:${test.name}`;
+  }
+  // For test results, try to get task from result
+  if (test?.result?.task?.id) {
+    return test.result.task.id.toString();
   }
   return null;
 }
