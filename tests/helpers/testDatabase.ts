@@ -1,6 +1,7 @@
 import { Pool } from "pg";
 import { Kysely, PostgresDialect } from "kysely";
 import { Database } from "@/types/db_types";
+import { TrackedIds } from "./testIdTracker";
 
 // Singleton instance to prevent too many client connections
 let testDbInstance: Kysely<Database> | null = null;
@@ -46,52 +47,115 @@ export async function getTestDb(): Promise<Kysely<Database>> {
   return testDbInstance;
 }
 
-export async function cleanupTestData(db: Kysely<Database>): Promise<void> {
-  // Clean up test data while preserving seed data (categories, admin user)
-  // Handle table cleanup individually to avoid transaction rollbacks on missing tables
+/**
+ * Clean up test data using tracked IDs.
+ * Only deletes IDs that were tracked for the current test, enabling parallel test execution.
+ */
+export async function cleanupTestData(
+  db: Kysely<Database>,
+  trackedIds: TrackedIds,
+): Promise<void> {
+  // If no tracked IDs, nothing to clean up
+  if (Object.keys(trackedIds).length === 0) {
+    return;
+  }
+
+  // Clean in dependency order (child tables first, parent tables last)
+  // This ensures foreign key constraints are respected
 
   const cleanupOperations = [
-    // Clean in dependency order (child tables first, parent tables last)
-    {
-      name: "feature_flags",
-      operation: () => db.deleteFrom("feature_flags").execute(),
-    },
-
+    // Child tables first
     {
       name: "forecasts",
-      operation: () => db.deleteFrom("forecasts").execute(),
+      operation: () => {
+        const ids = trackedIds["forecasts"];
+        if (!ids || ids.length === 0) return Promise.resolve();
+        return db.deleteFrom("forecasts").where("id", "in", ids).execute();
+      },
     },
     {
       name: "resolutions",
-      operation: () => db.deleteFrom("resolutions").execute(),
+      operation: () => {
+        const ids = trackedIds["resolutions"];
+        if (!ids || ids.length === 0) return Promise.resolve();
+        return db.deleteFrom("resolutions").where("id", "in", ids).execute();
+      },
     },
     {
-      name: "password_resets",
-      operation: () => db.deleteFrom("password_reset_tokens").execute(),
+      name: "feature_flags",
+      operation: () => {
+        const ids = trackedIds["feature_flags"];
+        if (!ids || ids.length === 0) return Promise.resolve();
+        return db.deleteFrom("feature_flags").where("id", "in", ids).execute();
+      },
     },
     {
-      name: "invite_tokens",
-      operation: () => db.deleteFrom("invite_tokens").execute(),
+      name: "password_reset_tokens",
+      operation: () => {
+        const ids = trackedIds["password_reset_tokens"];
+        if (!ids || ids.length === 0) return Promise.resolve();
+        return db
+          .deleteFrom("password_reset_tokens")
+          .where("id", "in", ids)
+          .execute();
+      },
     },
     {
       name: "suggested_props",
-      operation: () => db.deleteFrom("suggested_props").execute(),
+      operation: () => {
+        const ids = trackedIds["suggested_props"];
+        if (!ids || ids.length === 0) return Promise.resolve();
+        return db
+          .deleteFrom("suggested_props")
+          .where("id", "in", ids)
+          .execute();
+      },
     },
-    { name: "props", operation: () => db.deleteFrom("props").execute() },
-
+    {
+      name: "props",
+      operation: () => {
+        const ids = trackedIds["props"];
+        if (!ids || ids.length === 0) return Promise.resolve();
+        return db.deleteFrom("props").where("id", "in", ids).execute();
+      },
+    },
     {
       name: "competitions",
-      // Clean test competitions (but preserve seed competitions with IDs 1 and 2)
-      operation: () =>
-        db.deleteFrom("competitions").where("id", "not in", [1, 2]).execute(),
+      operation: () => {
+        const ids = trackedIds["competitions"];
+        if (!ids || ids.length === 0) return Promise.resolve();
+        // Filter out seed competitions (IDs 1 and 2) just to be safe
+        const idsToDelete = ids.filter((id) => id !== 1 && id !== 2);
+        if (idsToDelete.length === 0) return Promise.resolve();
+        return db
+          .deleteFrom("competitions")
+          .where("id", "in", idsToDelete)
+          .execute();
+      },
     },
     {
       name: "users",
-      operation: () => db.deleteFrom("users").execute(),
+      operation: () => {
+        const ids = trackedIds["users"];
+        if (!ids || ids.length === 0) return Promise.resolve();
+        return db.deleteFrom("users").where("id", "in", ids).execute();
+      },
     },
     {
       name: "logins",
-      operation: () => db.deleteFrom("logins").execute(),
+      operation: () => {
+        const ids = trackedIds["logins"];
+        if (!ids || ids.length === 0) return Promise.resolve();
+        return db.deleteFrom("logins").where("id", "in", ids).execute();
+      },
+    },
+    {
+      name: "invite_tokens",
+      operation: () => {
+        const ids = trackedIds["invite_tokens"];
+        if (!ids || ids.length === 0) return Promise.resolve();
+        return db.deleteFrom("invite_tokens").where("id", "in", ids).execute();
+      },
     },
   ];
 
@@ -106,7 +170,7 @@ export async function cleanupTestData(db: Kysely<Database>): Promise<void> {
           console.log(`Skipping cleanup of ${name} (table does not exist)`);
         }
       } else if (error.code === "23503") {
-        // Foreign key violation
+        // Foreign key violation - this shouldn't happen with proper ordering, but log it
         if (process.env.VERBOSE_TESTS === "true") {
           console.warn(
             `Foreign key constraint preventing cleanup of ${name}:`,

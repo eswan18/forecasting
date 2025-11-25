@@ -1,6 +1,7 @@
 import { Kysely } from "kysely";
 import { Database, User, Prop, Competition, Forecast } from "@/types/db_types";
 import argon2 from "argon2";
+import { testIdTracker } from "./testIdTracker";
 
 // Use existing types from the codebase instead of duplicating interfaces
 // Extend User with username field for convenience in tests
@@ -14,7 +15,10 @@ export type TestCompetition = Competition;
 export type TestForecast = Forecast;
 
 export class TestDataFactory {
-  constructor(private db: Kysely<Database>) {}
+  constructor(
+    private db: Kysely<Database>,
+    private tracker = testIdTracker,
+  ) {}
 
   async createUser(
     overrides: Partial<TestUser> & {
@@ -50,6 +54,9 @@ export class TestDataFactory {
       throw new Error("Failed to create login record");
     }
 
+    // Track the login ID
+    this.tracker.trackId("logins", loginResult.id);
+
     // Create user record directly with test database
     const userResult = await this.db
       .insertInto("users")
@@ -60,6 +67,9 @@ export class TestDataFactory {
     if (!userResult) {
       throw new Error("Failed to create user record");
     }
+
+    // Track the user ID
+    this.tracker.trackId("users", userResult.id);
 
     // Fetch created user and associated login to return a rich object
     const createdUser = await this.db
@@ -112,7 +122,16 @@ export class TestDataFactory {
       .returningAll()
       .executeTakeFirst();
 
-    return result!;
+    if (!result) {
+      throw new Error("Failed to create competition");
+    }
+
+    // Track the competition ID (but exclude seed competitions with IDs 1 and 2)
+    if (result.id !== 1 && result.id !== 2) {
+      this.tracker.trackId("competitions", result.id);
+    }
+
+    return result;
   }
 
   async createProp(overrides: Partial<TestProp> = {}): Promise<TestProp> {
@@ -132,7 +151,14 @@ export class TestDataFactory {
       .returningAll()
       .executeTakeFirst();
 
-    return result!;
+    if (!result) {
+      throw new Error("Failed to create prop");
+    }
+
+    // Track the prop ID
+    this.tracker.trackId("props", result.id);
+
+    return result;
   }
 
   async createForecast(
@@ -154,7 +180,14 @@ export class TestDataFactory {
       .returningAll()
       .executeTakeFirst();
 
-    return result!;
+    if (!result) {
+      throw new Error("Failed to create forecast");
+    }
+
+    // Track the forecast ID
+    this.tracker.trackId("forecasts", result.id);
+
+    return result;
   }
 
   async createAdminUser(
