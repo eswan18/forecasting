@@ -87,31 +87,27 @@ describe("getCompetitionScores", () => {
         });
 
         // Create categories
-        const politicsCategory = await testDb
-          .insertInto("categories")
-          .values({ name: "Politics" })
-          .returning("id")
-          .executeTakeFirst();
+        const politicsCategory = await factory.createCategory({
+          name: "Politics",
+        });
 
-        const economicsCategory = await testDb
-          .insertInto("categories")
-          .values({ name: "Economics" })
-          .returning("id")
-          .executeTakeFirst();
+        const economicsCategory = await factory.createCategory({
+          name: "Economics",
+        });
 
         // Create props in different categories
         const prop1 = await factory.createCompetitionProp(competition.id, {
-          category_id: politicsCategory!.id,
+          category_id: politicsCategory.id,
           text: "Biden will win 2024",
         });
 
         const prop2 = await factory.createCompetitionProp(competition.id, {
-          category_id: economicsCategory!.id,
+          category_id: economicsCategory.id,
           text: "Inflation will drop 2%",
         });
 
         const prop3 = await factory.createCompetitionProp(competition.id, {
-          category_id: politicsCategory!.id,
+          category_id: politicsCategory.id,
           text: "Democrats will keep the Senate",
         });
 
@@ -125,42 +121,26 @@ describe("getCompetitionScores", () => {
         await factory.createForecast(user2.id, prop3.id, { forecast: 0.5 }); // user2 prediction: 50%
 
         // Create resolutions (actual outcomes)
-        await testDb
-          .insertInto("resolutions")
-          .values({
-            prop_id: prop1.id,
-            resolution: true, // Biden won
-            resolved_at: new Date(),
-            notes: "Test resolution",
-            user_id: user1.id,
-          })
-          .execute();
+        await factory.createResolution(prop1.id, {
+          resolution: true, // Biden won
+          notes: "Test resolution",
+          user_id: user1.id,
+        });
 
-        await testDb
-          .insertInto("resolutions")
-          .values({
-            prop_id: prop2.id,
-            resolution: false, // Inflation didn't drop below 2%
-            resolved_at: new Date(),
-            notes: "Test resolution",
-            user_id: user1.id,
-          })
-          .execute();
+        await factory.createResolution(prop2.id, {
+          resolution: false, // Inflation didn't drop below 2%
+          notes: "Test resolution",
+          user_id: user1.id,
+        });
 
-        await testDb
-          .insertInto("resolutions")
-          .values({
-            prop_id: prop3.id,
-            resolution: true, // Democrats kept the Senate
-            resolved_at: new Date(),
-            notes: "Test resolution",
-            user_id: user1.id,
-          })
-          .execute();
+        await factory.createResolution(prop3.id, {
+          resolution: true, // Democrats kept the Senate
+          notes: "Test resolution",
+          user_id: user1.id,
+        });
 
         // Note: When props are resolved, ALL users who forecast on those props get scores
         // So both user1 and user2 should appear in the scores
-
         const result = await getCompetitionScores({
           competitionId: competition.id,
         });
@@ -243,16 +223,11 @@ describe("getCompetitionScores", () => {
         await factory.createForecast(user.id, prop.id, { forecast: 0.8 });
 
         // Actual outcome: it happened (true)
-        await testDb
-          .insertInto("resolutions")
-          .values({
-            prop_id: prop.id,
-            resolution: true,
-            resolved_at: new Date(),
-            notes: "Test resolution",
-            user_id: user.id,
-          })
-          .execute();
+        await factory.createResolution(prop.id, {
+          resolution: true,
+          notes: "Test resolution",
+          user_id: user.id,
+        });
 
         const result = await getCompetitionScores({
           competitionId: competition.id,

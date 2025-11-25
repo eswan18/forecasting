@@ -1,6 +1,7 @@
 import { Pool } from "pg";
 import { Kysely, PostgresDialect } from "kysely";
 import { Database } from "@/types/db_types";
+import { TrackedIds } from "./testIdTracker";
 
 // Singleton instance to prevent too many client connections
 let testDbInstance: Kysely<Database> | null = null;
@@ -46,79 +47,32 @@ export async function getTestDb(): Promise<Kysely<Database>> {
   return testDbInstance;
 }
 
-export async function cleanupTestData(db: Kysely<Database>): Promise<void> {
-  // Clean up test data while preserving seed data (categories, admin user)
-  // Handle table cleanup individually to avoid transaction rollbacks on missing tables
+/**
+ * Clean up test data using tracked IDs.
+ * Only deletes IDs that were tracked for the current test, enabling parallel test execution.
+ * Deletes in reverse order of insertion to guarantee safe foreign key handling.
+ */
+export async function cleanupTestData(
+  db: Kysely<Database>,
+  trackedInserts: TrackedIds,
+): Promise<void> {
+  if (trackedInserts.length === 0) {
+    return;
+  }
 
-  const cleanupOperations = [
-    // Clean in dependency order (child tables first, parent tables last)
-    {
-      name: "feature_flags",
-      operation: () => db.deleteFrom("feature_flags").execute(),
-    },
+  const reversed = [...trackedInserts].reverse();
 
-    {
-      name: "forecasts",
-      operation: () => db.deleteFrom("forecasts").execute(),
-    },
-    {
-      name: "resolutions",
-      operation: () => db.deleteFrom("resolutions").execute(),
-    },
-    {
-      name: "password_resets",
-      operation: () => db.deleteFrom("password_reset_tokens").execute(),
-    },
-    {
-      name: "invite_tokens",
-      operation: () => db.deleteFrom("invite_tokens").execute(),
-    },
-    {
-      name: "suggested_props",
-      operation: () => db.deleteFrom("suggested_props").execute(),
-    },
-    { name: "props", operation: () => db.deleteFrom("props").execute() },
-
-    {
-      name: "competitions",
-      // Clean test competitions (but preserve seed competitions with IDs 1 and 2)
-      operation: () =>
-        db.deleteFrom("competitions").where("id", "not in", [1, 2]).execute(),
-    },
-    {
-      name: "users",
-      operation: () => db.deleteFrom("users").execute(),
-    },
-    {
-      name: "logins",
-      operation: () => db.deleteFrom("logins").execute(),
-    },
-  ];
-
-  // Execute each cleanup operation individually
-  for (const { name, operation } of cleanupOperations) {
+  for (const insert of reversed) {
     try {
-      await operation();
-    } catch (error: any) {
-      // Handle missing tables gracefully
-      if (error.message?.includes("does not exist")) {
-        if (process.env.VERBOSE_TESTS === "true") {
-          console.log(`Skipping cleanup of ${name} (table does not exist)`);
-        }
-      } else if (error.code === "23503") {
-        // Foreign key violation
-        if (process.env.VERBOSE_TESTS === "true") {
-          console.warn(
-            `Foreign key constraint preventing cleanup of ${name}:`,
-            error.message,
-          );
-        }
-      } else {
-        // Log other errors but don't fail tests
-        if (process.env.VERBOSE_TESTS === "true") {
-          console.warn(`Warning cleaning ${name}:`, error.message);
-        }
-      }
+      await (db as any)
+        .deleteFrom(insert.table)
+        .where("id", "=", insert.id)
+        .execute();
+    } catch (error) {
+      console.error(
+        `Error deleting ${insert.table} with id ${insert.id}:`,
+        error,
+      );
     }
   }
 }

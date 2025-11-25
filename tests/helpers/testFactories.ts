@@ -1,6 +1,15 @@
 import { Kysely } from "kysely";
-import { Database, User, Prop, Competition, Forecast } from "@/types/db_types";
+import {
+  Database,
+  User,
+  Prop,
+  Competition,
+  Forecast,
+  Category,
+  Resolution,
+} from "@/types/db_types";
 import argon2 from "argon2";
+import { getTestTracker } from "./testIdTracker";
 
 // Use existing types from the codebase instead of duplicating interfaces
 // Extend User with username field for convenience in tests
@@ -12,9 +21,19 @@ export type TestUser = User & {
 export type TestProp = Prop;
 export type TestCompetition = Competition;
 export type TestForecast = Forecast;
+export type TestCategory = Category;
+export type TestResolution = Resolution;
 
 export class TestDataFactory {
   constructor(private db: Kysely<Database>) {}
+
+  /**
+   * Get the tracker for the current test.
+   * Each test gets its own tracker instance.
+   */
+  private getTracker() {
+    return getTestTracker();
+  }
 
   async createUser(
     overrides: Partial<TestUser> & {
@@ -50,6 +69,9 @@ export class TestDataFactory {
       throw new Error("Failed to create login record");
     }
 
+    // Track the login ID
+    this.getTracker().trackId("logins", loginResult.id);
+
     // Create user record directly with test database
     const userResult = await this.db
       .insertInto("users")
@@ -60,6 +82,9 @@ export class TestDataFactory {
     if (!userResult) {
       throw new Error("Failed to create user record");
     }
+
+    // Track the user ID
+    this.getTracker().trackId("users", userResult.id);
 
     // Fetch created user and associated login to return a rich object
     const createdUser = await this.db
@@ -112,7 +137,16 @@ export class TestDataFactory {
       .returningAll()
       .executeTakeFirst();
 
-    return result!;
+    if (!result) {
+      throw new Error("Failed to create competition");
+    }
+
+    // Track the competition ID (but exclude seed competitions with IDs 1 and 2)
+    if (result.id !== 1 && result.id !== 2) {
+      this.getTracker().trackId("competitions", result.id);
+    }
+
+    return result;
   }
 
   async createProp(overrides: Partial<TestProp> = {}): Promise<TestProp> {
@@ -132,7 +166,14 @@ export class TestDataFactory {
       .returningAll()
       .executeTakeFirst();
 
-    return result!;
+    if (!result) {
+      throw new Error("Failed to create prop");
+    }
+
+    // Track the prop ID
+    this.getTracker().trackId("props", result.id);
+
+    return result;
   }
 
   async createForecast(
@@ -154,7 +195,14 @@ export class TestDataFactory {
       .returningAll()
       .executeTakeFirst();
 
-    return result!;
+    if (!result) {
+      throw new Error("Failed to create forecast");
+    }
+
+    // Track the forecast ID
+    this.getTracker().trackId("forecasts", result.id);
+
+    return result;
   }
 
   async createAdminUser(
@@ -189,5 +237,63 @@ export class TestDataFactory {
       user_id: null,
       ...overrides,
     });
+  }
+
+  async createCategory(
+    overrides: Partial<TestCategory> = {},
+  ): Promise<TestCategory> {
+    const defaults = {
+      name: `Test Category ${Math.random().toString(36).substring(7)}`,
+    };
+
+    const categoryData = { ...defaults, ...overrides } as any;
+
+    const result = await this.db
+      .insertInto("categories")
+      .values(categoryData)
+      .returningAll()
+      .executeTakeFirst();
+
+    if (!result) {
+      throw new Error("Failed to create category");
+    }
+
+    // Track the category ID
+    this.getTracker().trackId("categories", result.id);
+
+    return result;
+  }
+
+  async createResolution(
+    propId: number,
+    overrides: Partial<Omit<TestResolution, "id" | "prop_id">> = {},
+  ): Promise<TestResolution> {
+    const defaults = {
+      resolution: true,
+      notes: null,
+      user_id: null,
+      resolved_at: new Date(), // Required NOT NULL column in database schema
+    };
+
+    const resolutionData = {
+      prop_id: propId,
+      ...defaults,
+      ...overrides,
+    } as any;
+
+    const result = await this.db
+      .insertInto("resolutions")
+      .values(resolutionData)
+      .returningAll()
+      .executeTakeFirst();
+
+    if (!result) {
+      throw new Error("Failed to create resolution");
+    }
+
+    // Track the resolution ID
+    this.getTracker().trackId("resolutions", result.id);
+
+    return result;
   }
 }
