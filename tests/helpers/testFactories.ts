@@ -272,6 +272,7 @@ export class TestDataFactory {
       resolution: true,
       notes: null,
       user_id: null,
+      resolved_at: new Date(), // Required NOT NULL column in database schema
     };
 
     const resolutionData = {
