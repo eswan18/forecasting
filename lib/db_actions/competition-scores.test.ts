@@ -79,6 +79,8 @@ describe("getCompetitionScores", () => {
     ifRunningContainerTestsIt(
       "should aggregate scores correctly for multiple users and categories",
       async () => {
+        const tracker = getTestTracker();
+
         const user1 = await factory.createUser({ username: "user1" });
         const user2 = await factory.createUser({ username: "user2" });
         vi.mocked(getUserFromCookies).mockResolvedValue(user1);
@@ -93,19 +95,18 @@ describe("getCompetitionScores", () => {
           .values({ name: "Politics" })
           .returning("id")
           .executeTakeFirst();
+        if (politicsCategory) {
+          tracker.trackId("categories", politicsCategory.id);
+        }
 
         const economicsCategory = await testDb
           .insertInto("categories")
           .values({ name: "Economics" })
           .returning("id")
           .executeTakeFirst();
-
-        // Track categories for cleanup
-        const tracker = getTestTracker();
-        if (politicsCategory)
-          tracker.trackId("categories", politicsCategory.id);
-        if (economicsCategory)
+        if (economicsCategory) {
           tracker.trackId("categories", economicsCategory.id);
+        }
 
         // Create props in different categories
         const prop1 = await factory.createCompetitionProp(competition.id, {
