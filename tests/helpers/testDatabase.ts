@@ -50,24 +50,19 @@ export async function getTestDb(): Promise<Kysely<Database>> {
 /**
  * Clean up test data using tracked IDs.
  * Only deletes IDs that were tracked for the current test, enabling parallel test execution.
- * Deletes in strict reverse order of insertion (stack-based) to guarantee safe foreign key handling.
+ * Deletes in reverse order of insertion to guarantee safe foreign key handling.
  */
 export async function cleanupTestData(
   db: Kysely<Database>,
   trackedInserts: TrackedIds,
 ): Promise<void> {
-  // If no tracked inserts, nothing to clean up
   if (trackedInserts.length === 0) {
     return;
   }
 
-  // Reverse the array to delete in reverse order of insertion
-  // This guarantees that child records are deleted before parent records
   const reversed = [...trackedInserts].reverse();
 
-  // Delete each insert one by one in reverse order
   for (const insert of reversed) {
-    // Skip seed competitions (IDs 1 and 2)
     if (
       insert.table === "competitions" &&
       (insert.id === 1 || insert.id === 2)
@@ -76,36 +71,12 @@ export async function cleanupTestData(
     }
 
     try {
-      // Use type assertion since Kysely doesn't have perfect type safety for dynamic table names
       await (db as any)
         .deleteFrom(insert.table)
         .where("id", "=", insert.id)
         .execute();
-    } catch (error: any) {
-      // Handle missing tables gracefully
-      if (error.message?.includes("does not exist")) {
-        if (process.env.VERBOSE_TESTS === "true") {
-          console.log(
-            `Skipping cleanup of ${insert.table} (table does not exist)`,
-          );
-        }
-      } else if (error.code === "23503") {
-        // Foreign key violation - this shouldn't happen with reverse order, but log it
-        if (process.env.VERBOSE_TESTS === "true") {
-          console.warn(
-            `Foreign key constraint preventing cleanup of ${insert.table} (id: ${insert.id}):`,
-            error.message,
-          );
-        }
-      } else {
-        // Log other errors but don't fail tests
-        if (process.env.VERBOSE_TESTS === "true") {
-          console.warn(
-            `Warning cleaning ${insert.table} (id: ${insert.id}):`,
-            error.message,
-          );
-        }
-      }
+    } catch (error) {
+      // Silently ignore errors during cleanup
     }
   }
 }
