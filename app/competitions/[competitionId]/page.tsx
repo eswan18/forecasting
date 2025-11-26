@@ -3,7 +3,7 @@ import { getPropsWithUserForecasts } from "@/lib/db_actions/forecasts";
 import { getUserFromCookies } from "@/lib/get-user";
 import { PropsTable } from "@/components/props/props-table";
 import { ForecastablePropsTable } from "@/components/forecastable-props-table";
-import { Trophy, BarChart3, ChartLine, Plus } from "lucide-react";
+import { Trophy, BarChart3, ChartLine } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import CompetitionStartEnd from "./competition-start-end";

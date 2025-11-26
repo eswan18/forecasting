@@ -77,7 +77,6 @@ export default function UsersTable({ data }: { data: VUser[] }) {
                 {row.getVisibleCells().map((cell) => (
                   <TableCell
                     key={cell.id}
-                    align={(cell.column.columnDef.meta as any)?.align}
                     className="py-3 sm:py-4 text-xs sm:text-sm"
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

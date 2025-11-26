@@ -20,6 +20,7 @@ import {
   YAxis,
 } from "recharts";
 import { Tooltip } from "recharts";
+import type { ReactNode } from "react";
 
 export default function PropConsensusContent({
   categories,
@@ -116,7 +117,13 @@ interface TooltipPayload {
   chartType?: string;
   color?: string;
   dataKey: string;
-  formatter?: any;
+  formatter?: (
+    value: number,
+    name: string,
+    item: TooltipPayload,
+    index: number,
+    payload: PropStatistics,
+  ) => ReactNode;
   hide: boolean;
   name: string;
   payload: PropStatistics;

@@ -13,8 +13,8 @@ type ServerActionFunction<TParams, TResult> = (
   ServerActionResult<TResult> | ServerActionResultWithValidation<TResult>
 >;
 
-interface UseServerActionOptions {
-  onSuccess?: (data: any) => void;
+interface UseServerActionOptions<TResult = void> {
+  onSuccess?: (data: TResult) => void;
   onError?: (error: string, code?: string) => void;
   showToast?: boolean;
   successMessage?: string;
@@ -22,7 +22,7 @@ interface UseServerActionOptions {
 
 export function useServerAction<TParams = void, TResult = void>(
   action: ServerActionFunction<TParams, TResult>,
-  options: UseServerActionOptions = {},
+  options: UseServerActionOptions<TResult> = {},
 ) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -124,7 +124,7 @@ export function useServerActionNoParams<TResult = void>(
   action: () => Promise<
     ServerActionResult<TResult> | ServerActionResultWithValidation<TResult>
   >,
-  options: UseServerActionOptions = {},
+  options: UseServerActionOptions<TResult> = {},
 ) {
   const serverAction = useServerAction<void, TResult>(() => action(), options);
 

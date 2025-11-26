@@ -10,7 +10,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { CalendarIcon } from "lucide-react";
+import { ChevronDownIcon } from "lucide-react";
 
 export default function DatePicker({
   value,
@@ -28,22 +28,23 @@ export default function DatePicker({
         <Button
           variant={"outline"}
           className={cn(
-            "w-[240px] justify-start text-left font-normal",
+            "w-[240px] justify-between text-left font-normal",
             !value && "text-muted-foreground",
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
           {value ? (
             formatInTimeZone(value, timeZone || "UTC", "PPP")
           ) : (
             <span>Pick a date</span>
           )}
+          <ChevronDownIcon />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto overflow-hidden p-0" align="start">
         <Calendar
           mode="single"
           selected={value}
+          captionLayout="dropdown"
           onSelect={(val) => {
             onChange(val);
             setOpen(false);

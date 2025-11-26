@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { User, MessageSquare, Trash, MessageCircle } from "lucide-react";
+import { VSuggestedProp } from "@/types/db_types";
 
 // Helper function to parse prop text and notes
 function parsePropText(propText: string) {
@@ -32,7 +33,7 @@ function parsePropText(propText: string) {
 }
 
 export default function SuggestedProps() {
-  const [suggestedProps, setSuggestedProps] = useState<any[]>([]);
+  const [suggestedProps, setSuggestedProps] = useState<VSuggestedProp[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [propToDelete, setPropToDelete] = useState<number | null>(null);

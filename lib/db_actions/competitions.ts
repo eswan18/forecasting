@@ -147,12 +147,19 @@ export async function updateCompetition({
         throw new Error("Competition not found");
       }
       const openDate =
-        (competition as any).forecasts_open_date ??
-        existing.forecasts_open_date;
+        "forecasts_open_date" in competition &&
+        competition.forecasts_open_date !== undefined
+          ? competition.forecasts_open_date
+          : existing.forecasts_open_date;
       const closeDate =
-        (competition as any).forecasts_close_date ??
-        existing.forecasts_close_date;
-      const endDate = (competition as any).end_date ?? existing.end_date;
+        "forecasts_close_date" in competition &&
+        competition.forecasts_close_date !== undefined
+          ? competition.forecasts_close_date
+          : existing.forecasts_close_date;
+      const endDate =
+        "end_date" in competition && competition.end_date !== undefined
+          ? competition.end_date
+          : existing.end_date;
       validateCompetitionDates({
         forecasts_open_date: openDate,
         forecasts_close_date: closeDate,

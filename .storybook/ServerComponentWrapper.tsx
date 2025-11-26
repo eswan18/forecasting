@@ -21,12 +21,12 @@ export function ServerComponentWrapper({
 /**
  * Mock async component wrapper for stories that need to simulate server components
  */
-export function mockAsyncComponent<T extends Record<string, any>>(
+export function mockAsyncComponent<T extends Record<string, unknown>>(
   Component: React.ComponentType<T>,
-  asyncData?: () => Promise<any>,
+  asyncData?: () => Promise<Partial<T>>,
 ) {
   return function MockedComponent(props: T) {
-    const [data, setData] = React.useState<any>(null);
+    const [data, setData] = React.useState<Partial<T> | null>(null);
     const [loading, setLoading] = React.useState(!!asyncData);
 
     React.useEffect(() => {
@@ -42,6 +42,6 @@ export function mockAsyncComponent<T extends Record<string, any>>(
       return <div>Loading...</div>;
     }
 
-    return <Component {...props} {...data} />;
+    return <Component {...props} {...(data || {})} />;
   };
 }

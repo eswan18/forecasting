@@ -27,7 +27,7 @@ export function handleServerActionResult<T>(
     }
 
     // If not throwing, return undefined (caller must handle this case)
-    return undefined as any;
+    return undefined as T;
   }
 
   return result.data;

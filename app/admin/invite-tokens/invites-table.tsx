@@ -62,7 +62,7 @@ export default function InvitesTable({ data }: { data: InviteToken[] }) {
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row, index) => (
+            table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
@@ -71,7 +71,6 @@ export default function InvitesTable({ data }: { data: InviteToken[] }) {
                 {row.getVisibleCells().map((cell) => (
                   <TableCell
                     key={cell.id}
-                    align={(cell.column.columnDef.meta as any)?.align}
                     className="py-3 sm:py-4 text-xs sm:text-sm"
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

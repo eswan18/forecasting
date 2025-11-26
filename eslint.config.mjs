@@ -28,6 +28,13 @@ const eslintConfig = [
       "tests/helpers/000000000000_create-initial-schema.ts",
     ],
   },
+  {
+    // Allow "any" types in test files
+    files: ["**/*.test.ts", "**/*.test.tsx", "tests/**/*.ts"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
 ];
 
 export default eslintConfig;
