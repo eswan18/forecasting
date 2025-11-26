@@ -7,6 +7,7 @@ import { ForecastableFilterBar } from "./forecastable-filter-bar";
 import CreateNewPropButton from "@/components/tables/prop-table/create-new-prop-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type PropWithUserForecast = VProp & {
   user_forecast: number | null;
@@ -67,6 +68,19 @@ export function ForecastablePropsTable({
   const progressPercentage =
     totalProps > 0 ? (completedForecasts / totalProps) * 100 : 0;
 
+  // Check if filters are in default state
+  const isDefaultFilterState =
+    selectedForecastStatus === "unforecasted" &&
+    selectedCategory === "all" &&
+    searchQuery === "";
+
+  // Reset filters to default state
+  const resetFilters = () => {
+    setSearchQuery("");
+    setSelectedCategory("all");
+    setSelectedForecastStatus("unforecasted");
+  };
+
   return (
     <div className="w-full">
       {/* Filter Bar */}
@@ -106,9 +120,16 @@ export function ForecastablePropsTable({
               />
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">
-            {remainingForecasts} remaining
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm text-muted-foreground">
+              {remainingForecasts} remaining
+            </p>
+            {!isDefaultFilterState && (
+              <Button variant="link" onClick={resetFilters}>
+                Show all unforecasted
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
 
