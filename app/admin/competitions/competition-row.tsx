@@ -2,7 +2,7 @@
 
 import { Competition } from "@/types/db_types";
 import Link from "next/link";
-import { Edit, ExternalLink, Eye, EyeOff } from "lucide-react";
+import { Edit, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,11 +17,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { CreateEditCompetitionForm } from "@/components/forms/create-edit-competition-form";
-import { useState, useTransition } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 import { formatDate, formatDateTime } from "@/lib/time-utils";
 import { CompetitionStatusBadge } from "./competition-status-badge";
-import { toggleCompetitionVisibility } from "@/lib/db_actions";
 import { getCompetitionStatusFromObject } from "@/lib/competition-status";
 
 export default function CompetitionRow({
@@ -34,33 +32,8 @@ export default function CompetitionRow({
   nResolvedProps: number;
 }) {
   const [open, setOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
-  const { toast } = useToast();
 
   const status = getCompetitionStatusFromObject(competition);
-
-  const handleVisibilityToggle = async () => {
-    const newVisibility = !competition.visible;
-    startTransition(async () => {
-      try {
-        await toggleCompetitionVisibility({
-          id: competition.id,
-          visible: newVisibility,
-        });
-        toast({
-          title: "Competition visibility updated",
-          description: `Competition is now ${newVisibility ? "visible" : "hidden"} to users`,
-        });
-      } catch (error) {
-        toast({
-          title: "Failed to update visibility",
-          description:
-            error instanceof Error ? error.message : "An error occurred",
-          variant: "destructive",
-        });
-      }
-    });
-  };
 
   return (
     <div className="flex items-center justify-between p-4 border-b border-border hover:bg-muted/50 transition-colors">
@@ -96,22 +69,6 @@ export default function CompetitionRow({
                 />
               </DialogContent>
             </Dialog>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={handleVisibilityToggle}
-              disabled={isPending}
-              title={
-                competition.visible ? "Hide competition" : "Show competition"
-              }
-            >
-              {competition.visible ? (
-                <Eye className="h-4 w-4" />
-              ) : (
-                <EyeOff className="h-4 w-4" />
-              )}
-            </Button>
           </div>
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">

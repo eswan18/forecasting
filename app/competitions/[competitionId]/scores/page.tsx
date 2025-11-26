@@ -12,7 +12,6 @@ import SkeletonCard from "./skeleton-card";
 import ErrorPage from "@/components/pages/error-page";
 import LeaderboardChart from "@/components/charts/leaderboard-chart";
 import { Medal } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 export default async function Page({
   params,
@@ -41,14 +40,9 @@ export default async function Page({
         icon={Medal}
         iconGradient="bg-gradient-to-br from-green-700 to-cyan-400"
       />
-      {!competition.visible && (
-        <Badge variant="secondary" className="text-xs">
-          Not Visible to Users
-        </Badge>
-      )}
       <Suspense
         fallback={
-          <SkeletonCard className="w-full flex flex-col bg-background h-[64rem]" />
+          <SkeletonCard className="w-full flex flex-col bg-background h-256" />
         }
       >
         <ScoreChartsCardSection competitionId={competitionId} />

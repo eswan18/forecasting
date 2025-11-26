@@ -24,10 +24,13 @@ export default async function CompetitionsPage() {
 
   const allCompetitions = await getCompetitions();
 
-  // Filter to visible competitions only (unless user is admin)
+  // Filter competitions based on status (non-admins only see non-upcoming competitions)
   const competitions = user.is_admin
     ? allCompetitions
-    : allCompetitions.filter((comp) => comp.visible);
+    : allCompetitions.filter((comp) => {
+        const status = getCompetitionStatusFromObject(comp);
+        return status !== "upcoming";
+      });
 
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">

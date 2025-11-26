@@ -61,16 +61,13 @@ export default function NavBar() {
   useEffect(() => {
     if (!isLoading) {
       getCompetitions().then((allCompetitions) => {
-        // Filter to visible competitions only (unless user is admin)
-        let filteredCompetitions = user?.is_admin
+        // Filter competitions based on status (non-admins only see non-upcoming competitions)
+        const filteredCompetitions = user?.is_admin
           ? allCompetitions
-          : allCompetitions.filter((comp) => comp.visible);
-
-        // Filter out competitions where forecasts haven't opened yet
-        filteredCompetitions = filteredCompetitions.filter((comp) => {
-          const status = getCompetitionStatusFromObject(comp);
-          return status !== "upcoming";
-        });
+          : allCompetitions.filter((comp) => {
+              const status = getCompetitionStatusFromObject(comp);
+              return status !== "upcoming";
+            });
 
         setCompetitions(filteredCompetitions);
       });

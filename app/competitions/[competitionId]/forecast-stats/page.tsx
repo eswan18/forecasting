@@ -11,7 +11,7 @@ import { getCompetitionById } from "@/lib/db_actions";
 import { InaccessiblePage } from "@/components/inaccessible-page";
 import PageHeading from "@/components/page-heading";
 import { ChartLine } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { getCompetitionStatus } from "@/lib/competition-status";
 
 export default async function Page({
   params,
@@ -31,7 +31,13 @@ export default async function Page({
   if (!competition) {
     return <ErrorPage title="Competition not found" />;
   }
-  if (!competition.visible && !user.is_admin) {
+  const competitionStatus = getCompetitionStatus(
+    competition.forecasts_open_date,
+    competition.forecasts_close_date,
+    competition.end_date,
+  );
+  const pageIsVisible = user.is_admin || competitionStatus !== "upcoming";
+  if (!pageIsVisible) {
     return (
       <InaccessiblePage
         title="Competition Not Available"
@@ -52,11 +58,6 @@ export default async function Page({
         icon={ChartLine}
         iconGradient="bg-gradient-to-br from-blue-500 to-purple-600"
       />
-      {!competition.visible && (
-        <Badge variant="secondary" className="text-xs">
-          Not Visible to Users
-        </Badge>
-      )}
       {/* Stats Cards */}
       <div className="flex flex-row flex-wrap justify-center items-start gap-4">
         <Suspense

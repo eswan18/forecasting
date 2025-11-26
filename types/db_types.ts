@@ -147,7 +147,6 @@ export interface CompetitionsTable {
   forecasts_close_date: Date;
   forecasts_open_date: Date;
   end_date: Date;
-  visible: boolean;
   updated_at: Generated<Date>;
   created_at: Generated<Date>;
 }

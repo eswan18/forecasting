@@ -90,7 +90,7 @@ export function CreateEditCompetitionForm({
       if (initialCompetition) {
         await updateCompetition({
           id: initialCompetition.id,
-          competition: { ...values, visible: initialCompetition.visible },
+          competition: values,
         }).then(() => {
           toast({
             title: "Competition Updated!",
@@ -98,7 +98,7 @@ export function CreateEditCompetitionForm({
         });
       } else {
         await createCompetition({
-          competition: { ...values, visible: true },
+          competition: values,
         }).then(() => {
           toast({
             title: "Competition Created!",
