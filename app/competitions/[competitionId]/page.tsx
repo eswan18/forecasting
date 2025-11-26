@@ -3,7 +3,7 @@ import { getPropsWithUserForecasts } from "@/lib/db_actions/forecasts";
 import { getUserFromCookies } from "@/lib/get-user";
 import { PropsTable } from "@/components/props/props-table";
 import { ForecastablePropsTable } from "@/components/forecastable-props-table";
-import { Trophy, BarChart3, ChartLine } from "lucide-react";
+import { Trophy, BarChart3, ChartLine, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import CompetitionStartEnd from "./competition-start-end";
@@ -35,7 +35,13 @@ export default async function Page({
   if (!competition) {
     return <ErrorPage title="Competition not found" />;
   }
-  const pageIsVisible = competition.visible || user.is_admin;
+
+  const competitionStatus = getCompetitionStatus(
+    competition.forecasts_open_date,
+    competition.forecasts_close_date,
+    competition.end_date,
+  );
+  const pageIsVisible = user.is_admin || competitionStatus !== "upcoming";
   if (!pageIsVisible) {
     return (
       <InaccessiblePage
@@ -44,25 +50,16 @@ export default async function Page({
       />
     );
   }
-
-  const competitionStatus = getCompetitionStatus(
-    competition.forecasts_open_date,
-    competition.forecasts_close_date,
-    competition.end_date,
-  );
   const competitionForecastsAreOpen = competitionStatus === "forecasts-open";
   const propsWithForecasts = await getPropsWithUserForecasts({
     userId: user.id,
     competitionId,
   });
-  const pageTitle = competitionForecastsAreOpen
-    ? `${competition.name} - Make Your Forecasts`
-    : competition.name;
 
   return (
     <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full">
       <PageHeading
-        title={pageTitle}
+        title={competition.name}
         breadcrumbs={{
           Home: "/",
           Competitions: "/competitions",
@@ -72,10 +69,13 @@ export default async function Page({
         iconGradient="bg-gradient-to-br from-yellow-500 to-orange-600"
         className="mb-2"
       >
-        {!competition.visible && (
+        {competitionStatus === "upcoming" && (
           <Badge variant="destructive" className="text-xs">
             Not Visible to Users
           </Badge>
+        )}
+        {competitionForecastsAreOpen && (
+          <Badge variant="default">Forecasts Open</Badge>
         )}
       </PageHeading>
       <CompetitionStartEnd competition={competition} />

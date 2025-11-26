@@ -5,6 +5,8 @@ import { VProp } from "@/types/db_types";
 import { ForecastablePropCard } from "@/components/forecastable-prop-card";
 import { ForecastableFilterBar } from "./forecastable-filter-bar";
 import CreateNewPropButton from "@/components/tables/prop-table/create-new-prop-button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Check } from "lucide-react";
 
 type PropWithUserForecast = VProp & {
   user_forecast: number | null;
@@ -56,6 +58,15 @@ export function ForecastablePropsTable({
     });
   }, [props, searchQuery, selectedCategory, selectedForecastStatus]);
 
+  // Calculate progress for forecasts
+  const completedForecasts = props.filter(
+    (prop) => prop.user_forecast !== null,
+  ).length;
+  const totalProps = props.length;
+  const remainingForecasts = totalProps - completedForecasts;
+  const progressPercentage =
+    totalProps > 0 ? (completedForecasts / totalProps) * 100 : 0;
+
   return (
     <div className="w-full">
       {/* Filter Bar */}
@@ -68,6 +79,38 @@ export function ForecastablePropsTable({
         selectedForecastStatus={selectedForecastStatus}
         onForecastStatusChange={setSelectedForecastStatus}
       />
+
+      {/* Progress Card */}
+      <Card className="w-full mb-6 mt-4">
+        <CardContent>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
+                <Check className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <h3 className="font-bold text-lg">Forecast Progress</h3>
+            </div>
+            <div className="font-bold text-primary text-lg">
+              {completedForecasts}/{totalProps}
+            </div>
+          </div>
+          <div className="w-full h-3 bg-muted rounded-full overflow-hidden mb-4">
+            <div className="h-full flex">
+              <div
+                className="bg-primary transition-all duration-300"
+                style={{ width: `${progressPercentage}%` }}
+              />
+              <div
+                className="bg-accent transition-all duration-300"
+                style={{ width: `${100 - progressPercentage}%` }}
+              />
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {remainingForecasts} remaining
+          </p>
+        </CardContent>
+      </Card>
 
       {/* Results & New Prop Button */}
       <div className="flex items-center justify-between mt-4 mb-8 px-8">
