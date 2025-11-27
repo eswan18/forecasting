@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, BarChart3, Lightbulb, Calendar, List } from "lucide-react";
+import { Trophy, BarChart3, Lightbulb, Calendar } from "lucide-react";
 
 export default async function Home() {
   const user = await getUserFromCookies();
@@ -47,28 +47,22 @@ export default async function Home() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  See the stats about everyone&apos;s 2025 forecasts and view
-                  (very early) rankings.
+                  View leaderboard and check our our new{" "}
+                  <span className="italic">Score Breakdown</span> feature.
                 </p>
               </CardContent>
               <CardFooter className="mt-auto">
-                <div className="flex gap-x-2 w-full">
-                  <Button asChild variant="ghost" className="flex-1">
-                    <Link href="/competitions/2">
-                      <List className="h-4 w-4 mr-2" />
-                      Props
-                    </Link>
-                  </Button>
-                  <Button asChild variant="ghost" className="flex-1">
-                    <Link href="/competitions/2/forecast-stats">
-                      <BarChart3 className="h-4 w-4 mr-2" />
-                      Stats
-                    </Link>
-                  </Button>
-                  <Button asChild variant="ghost" className="flex-1">
+                <div className="flex gap-x-2 w-full justify-center">
+                  <Button asChild variant="ghost">
                     <Link href="/competitions/2/scores">
                       <Trophy className="h-4 w-4 mr-2" />
-                      Scores
+                      Leaderboard
+                    </Link>
+                  </Button>
+                  <Button asChild variant="ghost">
+                    <Link href={`/competitions/2/scores/user/${user.id}`}>
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      Your Score Breakdown
                     </Link>
                   </Button>
                 </div>

@@ -65,5 +65,11 @@ async function ScoreChartsCardSection({
   }
 
   const scores = scoresResult.data;
-  return <LeaderboardChart scores={scores} categories={categories} />;
+  return (
+    <LeaderboardChart
+      scores={scores}
+      categories={categories}
+      competitionId={competitionId}
+    />
+  );
 }
