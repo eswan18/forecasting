@@ -48,43 +48,37 @@ export function RecordForecastForm({
     setLoading(true);
     setError(null);
 
-    try {
-      if (!initialForecast) {
-        // Creating a new forecast
-        const forecast: NewForecast = {
-          prop_id: prop.prop_id,
-          user_id: user!.id,
-          forecast: values.forecast,
-        };
-        const result = await createForecast({ forecast });
-        if (result.success) {
-          toast({ title: "Forecast recorded!" });
-          onSuccess?.();
-        } else {
-          setError(result.error);
-        }
+    if (!initialForecast) {
+      // Creating a new forecast
+      const forecast: NewForecast = {
+        prop_id: prop.prop_id,
+        user_id: user!.id,
+        forecast: values.forecast,
+      };
+      const result = await createForecast({ forecast });
+      if (result.success) {
+        toast({ title: "Forecast recorded!" });
+        onSuccess?.();
       } else {
-        // Updating existing forecast
-        const forecast: ForecastUpdate = {
-          forecast: values.forecast,
-        };
-        const result = await updateForecast({
-          id: initialForecast.id,
-          forecast,
-        });
-        if (result.success) {
-          toast({ title: "Forecast updated!" });
-          onSuccess?.();
-        } else {
-          setError(result.error);
-        }
+        setError(result.error);
       }
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "An error occurred";
-      setError(msg);
-    } finally {
-      setLoading(false);
+    } else {
+      // Updating existing forecast
+      const forecast: ForecastUpdate = {
+        forecast: values.forecast,
+      };
+      const result = await updateForecast({
+        id: initialForecast.id,
+        forecast,
+      });
+      if (result.success) {
+        toast({ title: "Forecast updated!" });
+        onSuccess?.();
+      } else {
+        setError(result.error);
+      }
     }
+    setLoading(false);
   }
 
   return (
