@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, BarChart3, Lightbulb, Calendar, List } from "lucide-react";
+import { Trophy, BarChart3, Lightbulb, Calendar } from "lucide-react";
 
 export default async function Home() {
   const user = await getUserFromCookies();
