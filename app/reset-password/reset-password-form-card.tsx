@@ -55,25 +55,24 @@ export default function ResetPasswordFormCard({
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    executePasswordReset({ username, token, password: values.password })
-      .then(() => {
-        setError("");
-        toast({
-          title: "Password Reset",
-          description: "Your password has been reset. You can now log in.",
-        });
-        setTimeout(() => {
-          router.push("/login");
-        }, 2000);
-      })
-      .catch((e) => {
-        if (e instanceof Error) {
-          setError(e.message);
-        } else {
-          setError("An error occurred");
-        }
-        setLoading(false);
+    const result = await executePasswordReset({
+      username,
+      token,
+      password: values.password,
+    });
+    if (result.success) {
+      setError("");
+      toast({
+        title: "Password Reset",
+        description: "Your password has been reset. You can now log in.",
       });
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
+    } else {
+      setError(result.error);
+      setLoading(false);
+    }
   }
   return (
     <Card className="w-full shadow-xl border-0 bg-card/50 backdrop-blur-sm">
