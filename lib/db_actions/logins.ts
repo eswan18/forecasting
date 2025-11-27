@@ -4,10 +4,16 @@ import { db } from "@/lib/database";
 import { Login, NewLogin, LoginUpdate } from "@/types/db_types";
 import { getUserFromCookies } from "@/lib/get-user";
 import { logger } from "@/lib/logger";
+import {
+  ServerActionResult,
+  success,
+  error,
+  ERROR_CODES,
+} from "@/lib/server-action-result";
 
 export async function getLoginByUsername(
   username: string,
-): Promise<Login | undefined> {
+): Promise<ServerActionResult<Login | null>> {
   logger.debug("Getting login by username", {
     username,
   });
@@ -28,6 +34,7 @@ export async function getLoginByUsername(
         loginId: login.id,
         duration,
       });
+      return success(login);
     } else {
       logger.warn("Login not found", {
         operation: "getLoginByUsername",
@@ -35,18 +42,17 @@ export async function getLoginByUsername(
         username,
         duration,
       });
+      return success(null);
     }
-
-    return login;
-  } catch (error) {
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to get login by username", error as Error, {
+    logger.error("Failed to get login by username", err as Error, {
       operation: "getLoginByUsername",
       table: "logins",
       username,
       duration,
     });
-    throw error;
+    return error("Failed to retrieve login", ERROR_CODES.DATABASE_ERROR);
   }
 }
 
@@ -54,7 +60,7 @@ export async function createLogin({
   login,
 }: {
   login: NewLogin;
-}): Promise<number> {
+}): Promise<ServerActionResult<number>> {
   logger.debug("Creating login", {
     username: login.username,
   });
@@ -76,29 +82,26 @@ export async function createLogin({
       duration,
     });
 
-    return id;
-  } catch (error) {
+    return success(id);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to create login", error as Error, {
+    logger.error("Failed to create login", err as Error, {
       operation: "createLogin",
       table: "logins",
       username: login.username,
       duration,
     });
-    throw error;
+    // Check for unique constraint violation (duplicate username)
+    if (
+      err instanceof Error &&
+      err.message.includes("unique constraint") &&
+      err.message.includes("username")
+    ) {
+      return error("Username already exists", ERROR_CODES.VALIDATION_ERROR);
+    }
+    return error("Failed to create login", ERROR_CODES.DATABASE_ERROR);
   }
 }
-
-type UpdateLoginResponseSuccess = {
-  success: true;
-};
-type UpdateLoginResponseError = {
-  success: false;
-  error: string;
-};
-export type UpdateLoginResponse =
-  | UpdateLoginResponseSuccess
-  | UpdateLoginResponseError;
 
 export async function updateLogin({
   id,
@@ -106,7 +109,7 @@ export async function updateLogin({
 }: {
   id: number;
   login: LoginUpdate;
-}): Promise<UpdateLoginResponse> {
+}): Promise<ServerActionResult<void>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Updating login", {
     loginId: id,
@@ -122,7 +125,7 @@ export async function updateLogin({
         loginId: id,
         currentUserId: currentUser?.id,
       });
-      return { success: false, error: "Unauthorized" };
+      return error("Unauthorized", ERROR_CODES.UNAUTHORIZED);
     }
 
     // Users can only change their username with this function.
@@ -133,10 +136,10 @@ export async function updateLogin({
         attemptedFields: Object.keys(login),
         currentUserId: currentUser?.id,
       });
-      return {
-        success: false,
-        error: 'Not authorized to update login fields other than "username"',
-      };
+      return error(
+        'Not authorized to update login fields other than "username"',
+        ERROR_CODES.UNAUTHORIZED,
+      );
     }
 
     await db.updateTable("logins").set(login).where("id", "=", id).execute();
@@ -150,15 +153,23 @@ export async function updateLogin({
       duration,
     });
 
-    return { success: true };
-  } catch (error) {
+    return success(undefined);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to update login", error as Error, {
+    logger.error("Failed to update login", err as Error, {
       operation: "updateLogin",
       table: "logins",
       loginId: id,
       duration,
     });
-    throw error;
+    // Check for unique constraint violation (duplicate username)
+    if (
+      err instanceof Error &&
+      err.message.includes("unique constraint") &&
+      err.message.includes("username")
+    ) {
+      return error("Username already exists", ERROR_CODES.VALIDATION_ERROR);
+    }
+    return error("Failed to update login", ERROR_CODES.DATABASE_ERROR);
   }
 }

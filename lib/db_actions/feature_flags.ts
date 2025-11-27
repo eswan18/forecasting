@@ -3,9 +3,15 @@
 import { db } from "@/lib/database";
 import { sql } from "kysely";
 import { getUserFromCookies } from "../get-user";
-import { NewFeatureFlag } from "@/types/db_types";
+import { NewFeatureFlag, VFeatureFlag } from "@/types/db_types";
 import { revalidatePath } from "next/cache";
 import { logger } from "@/lib/logger";
+import {
+  ServerActionResult,
+  success,
+  error,
+  ERROR_CODES,
+} from "@/lib/server-action-result";
 
 export async function hasFeatureEnabled({
   featureName,
@@ -13,7 +19,7 @@ export async function hasFeatureEnabled({
 }: {
   featureName: string;
   userId: number;
-}): Promise<boolean> {
+}): Promise<ServerActionResult<boolean>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Checking feature flag", {
     featureName,
@@ -30,7 +36,7 @@ export async function hasFeatureEnabled({
         userId,
         currentUserId: currentUser?.id,
       });
-      throw new Error("Unauthorized");
+      return error("Unauthorized", ERROR_CODES.UNAUTHORIZED);
     }
 
     const result = await db
@@ -55,21 +61,23 @@ export async function hasFeatureEnabled({
       duration,
     });
 
-    return enabled;
-  } catch (error) {
+    return success(enabled);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to check feature flag", error as Error, {
+    logger.error("Failed to check feature flag", err as Error, {
       operation: "hasFeatureEnabled",
       table: "feature_flags",
       featureName,
       userId,
       duration,
     });
-    throw error;
+    return error("Failed to check feature flag", ERROR_CODES.DATABASE_ERROR);
   }
 }
 
-export async function getFeatureFlags() {
+export async function getFeatureFlags(): Promise<
+  ServerActionResult<VFeatureFlag[]>
+> {
   const currentUser = await getUserFromCookies();
   logger.debug("Getting feature flags", {
     currentUserId: currentUser?.id,
@@ -82,7 +90,10 @@ export async function getFeatureFlags() {
       logger.warn("Unauthorized attempt to get feature flags", {
         currentUserId: currentUser?.id,
       });
-      throw new Error("Unauthorized: only admins can get all feature flags");
+      return error(
+        "Only admins can get all feature flags",
+        ERROR_CODES.UNAUTHORIZED,
+      );
     }
 
     const results = await db
@@ -97,15 +108,18 @@ export async function getFeatureFlags() {
       duration,
     });
 
-    return results;
-  } catch (error) {
+    return success(results);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to get feature flags", error as Error, {
+    logger.error("Failed to get feature flags", err as Error, {
       operation: "getFeatureFlags",
       table: "v_feature_flags",
       duration,
     });
-    throw error;
+    return error(
+      "Failed to retrieve feature flags",
+      ERROR_CODES.DATABASE_ERROR,
+    );
   }
 }
 
@@ -113,7 +127,7 @@ export async function createFeatureFlag({
   featureFlag,
 }: {
   featureFlag: NewFeatureFlag;
-}) {
+}): Promise<ServerActionResult<number>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Creating feature flag", {
     featureName: featureFlag.name,
@@ -126,7 +140,10 @@ export async function createFeatureFlag({
       logger.warn("Unauthorized attempt to create feature flag", {
         currentUserId: currentUser?.id,
       });
-      throw new Error("Unauthorized: only admins can create feature flags");
+      return error(
+        "Only admins can create feature flags",
+        ERROR_CODES.UNAUTHORIZED,
+      );
     }
 
     const { id } = await db
@@ -145,16 +162,16 @@ export async function createFeatureFlag({
     });
 
     revalidatePath("/feature-flags");
-    return id;
-  } catch (error) {
+    return success(id);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to create feature flag", error as Error, {
+    logger.error("Failed to create feature flag", err as Error, {
       operation: "createFeatureFlag",
       table: "feature_flags",
       featureName: featureFlag.name,
       duration,
     });
-    throw error;
+    return error("Failed to create feature flag", ERROR_CODES.DATABASE_ERROR);
   }
 }
 
@@ -164,7 +181,7 @@ export async function updateFeatureFlag({
 }: {
   id: number;
   enabled: boolean;
-}) {
+}): Promise<ServerActionResult<void>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Updating feature flag", {
     featureFlagId: id,
@@ -179,7 +196,10 @@ export async function updateFeatureFlag({
         featureFlagId: id,
         currentUserId: currentUser?.id,
       });
-      throw new Error("Unauthorized: only admins can update feature flags");
+      return error(
+        "Only admins can update feature flags",
+        ERROR_CODES.UNAUTHORIZED,
+      );
     }
 
     await db
@@ -198,14 +218,15 @@ export async function updateFeatureFlag({
     });
 
     revalidatePath("/feature-flags");
-  } catch (error) {
+    return success(undefined);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to update feature flag", error as Error, {
+    logger.error("Failed to update feature flag", err as Error, {
       operation: "updateFeatureFlag",
       table: "feature_flags",
       featureFlagId: id,
       duration,
     });
-    throw error;
+    return error("Failed to update feature flag", ERROR_CODES.DATABASE_ERROR);
   }
 }

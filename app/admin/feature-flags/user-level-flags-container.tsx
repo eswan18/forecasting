@@ -34,11 +34,19 @@ export function UserLevelFlagsContainer({
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
   const setFlagEnabled = async (flagId: number, enabled: boolean) => {
-    await updateFeatureFlag({ id: flagId, enabled });
-    toast({
-      title: "Feature flag updated",
-      description: `The feature flag is now *${enabled ? "on" : "off"}*`,
-    });
+    const result = await updateFeatureFlag({ id: flagId, enabled });
+    if (result.success) {
+      toast({
+        title: "Feature flag updated",
+        description: `The feature flag is now *${enabled ? "on" : "off"}*`,
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
+    }
   };
   const userIdsWithFlags = flags
     .map((flag) => flag.user_id)
@@ -115,16 +123,23 @@ function AddUserFeatureFlagWidget({
       user_id: selectedUser.id,
       enabled,
     };
-    await createFeatureFlag({ featureFlag }).then(() => {
+    const result = await createFeatureFlag({ featureFlag });
+    if (result.success) {
       toast({
         title: "User-level flag created",
         description: `The user-level flag for "${featureName}" is now *${
           enabled ? "on" : "off"
         }* for user ${selectedUser.name}`,
       });
-    });
-    if (onChoice) {
-      onChoice();
+      if (onChoice) {
+        onChoice();
+      }
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
     }
   };
   return (

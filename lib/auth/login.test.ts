@@ -22,7 +22,10 @@ describe("Authentication - Login Integration Tests", () => {
       // This test verifies the integration point with the database layer
       const { getLoginByUsername } = await import("@/lib/db_actions");
 
-      vi.mocked(getLoginByUsername).mockResolvedValue(undefined);
+      vi.mocked(getLoginByUsername).mockResolvedValue({
+        success: true,
+        data: null,
+      });
 
       // Dynamic import to ensure fresh module
       const { login } = await import("./login");
@@ -34,7 +37,10 @@ describe("Authentication - Login Integration Tests", () => {
 
     it("should handle missing user gracefully", async () => {
       const { getLoginByUsername } = await import("@/lib/db_actions");
-      vi.mocked(getLoginByUsername).mockResolvedValue(undefined);
+      vi.mocked(getLoginByUsername).mockResolvedValue({
+        success: true,
+        data: null,
+      });
 
       const { login } = await import("./login");
       const result = await login({
@@ -86,7 +92,10 @@ describe("Authentication - Login Integration Tests", () => {
       };
 
       vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockAdmin as any);
-      vi.mocked(dbActions.getLoginByUsername).mockResolvedValue(undefined);
+      vi.mocked(dbActions.getLoginByUsername).mockResolvedValue({
+        success: true,
+        data: null,
+      });
 
       const { loginViaImpersonation } = await import("./login");
 

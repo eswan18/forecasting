@@ -6,6 +6,12 @@ import { headers } from "next/headers";
 import { sendEmail } from "../email";
 import { updateLoginPasswordFromResetToken } from "../auth";
 import { logger } from "@/lib/logger";
+import {
+  ServerActionResult,
+  success,
+  error,
+  ERROR_CODES,
+} from "@/lib/server-action-result";
 
 const PASSWORD_RESET_TOKEN_LIFESPAN_MINUTES = 15;
 
@@ -13,7 +19,7 @@ export async function initiatePasswordReset({
   username,
 }: {
   username: string;
-}) {
+}): Promise<ServerActionResult<void>> {
   logger.debug("Initiating password reset", {
     username,
   });
@@ -24,7 +30,7 @@ export async function initiatePasswordReset({
     const headerValues = await headers();
     const host = headerValues.get("host");
     if (!host) {
-      throw new Error("Host header is missing");
+      return error("Host header is missing", ERROR_CODES.VALIDATION_ERROR);
     }
 
     // Get the login_id for the user.
@@ -41,7 +47,8 @@ export async function initiatePasswordReset({
         table: "v_users",
         username,
       });
-      return;
+      // Return success to avoid leaking information about user existence
+      return success(undefined);
     }
 
     if (!user.login_id) {
@@ -50,7 +57,8 @@ export async function initiatePasswordReset({
         table: "v_users",
         username,
       });
-      return;
+      // Return success to avoid leaking information
+      return success(undefined);
     }
 
     // Create a random token.
@@ -114,15 +122,20 @@ export async function initiatePasswordReset({
       emailSent: true,
       duration,
     });
-  } catch (error) {
+
+    return success(undefined);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to initiate password reset", error as Error, {
+    logger.error("Failed to initiate password reset", err as Error, {
       operation: "initiatePasswordReset",
       table: "password_reset_tokens",
       username,
       duration,
     });
-    throw error;
+    return error(
+      "Failed to initiate password reset",
+      ERROR_CODES.DATABASE_ERROR,
+    );
   }
 }
 
@@ -134,7 +147,7 @@ export async function executePasswordReset({
   username: string;
   token: string;
   password: string;
-}) {
+}): Promise<ServerActionResult<void>> {
   logger.debug("Executing password reset", {
     username,
     token: token.substring(0, 8) + "...", // Log partial token for security
@@ -152,9 +165,11 @@ export async function executePasswordReset({
       token: token.substring(0, 8) + "...",
       duration,
     });
-  } catch (error) {
+
+    return success(undefined);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to execute password reset", error as Error, {
+    logger.error("Failed to execute password reset", err as Error, {
       operation: "executePasswordReset",
       table: "password_reset_tokens",
       username,
@@ -162,6 +177,6 @@ export async function executePasswordReset({
       duration,
     });
     // Suppress details of errors to avoid leaking information.
-    throw new Error("Error resetting password");
+    return error("Error resetting password", ERROR_CODES.VALIDATION_ERROR);
   }
 }

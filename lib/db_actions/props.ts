@@ -13,7 +13,9 @@ import {
 } from "@/lib/server-action-result";
 import { logger } from "@/lib/logger";
 
-export async function getPropById(propId: number): Promise<VProp | null> {
+export async function getPropById(
+  propId: number,
+): Promise<ServerActionResult<VProp | null>> {
   const currentUser = await getUserFromCookies();
 
   logger.debug("Getting prop by ID", {
@@ -48,16 +50,16 @@ export async function getPropById(propId: number): Promise<VProp | null> {
       found: !!result,
     });
 
-    return result || null;
-  } catch (e) {
+    return success(result || null);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Error getting prop by ID", e as Error, {
+    logger.error("Error getting prop by ID", err as Error, {
       operation: "getPropById",
       table: "v_props",
       duration,
       propId,
     });
-    throw e;
+    return error("Failed to fetch prop", ERROR_CODES.DATABASE_ERROR);
   }
 }
 
@@ -67,7 +69,7 @@ export async function getProps({
 }: {
   competitionId?: (number | null)[] | number | null;
   userId?: (number | null)[] | number | null;
-}): Promise<VProp[]> {
+}): Promise<ServerActionResult<VProp[]>> {
   const currentUser = await getUserFromCookies();
 
   logger.debug("Getting props", {
@@ -169,17 +171,17 @@ export async function getProps({
       duration,
     });
 
-    return results;
-  } catch (error) {
+    return success(results);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to get props", error as Error, {
+    logger.error("Failed to get props", err as Error, {
       operation: "getProps",
       table: "v_props",
       propCompetitionId: JSON.stringify(competitionId),
       propUserId: JSON.stringify(userId),
       duration,
     });
-    throw error;
+    return error("Failed to fetch props", ERROR_CODES.DATABASE_ERROR);
   }
 }
 
@@ -195,7 +197,7 @@ export async function resolveProp({
   notes?: string;
   userId: number | null;
   overwrite?: boolean;
-}): Promise<void> {
+}): Promise<ServerActionResult<void>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Resolving prop", {
     propId,
@@ -260,15 +262,23 @@ export async function resolveProp({
     });
 
     revalidatePath("/props");
-  } catch (error) {
+    return success(undefined);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to resolve prop", error as Error, {
+    logger.error("Failed to resolve prop", err as Error, {
       operation: "resolveProp",
       table: "resolutions",
       propId,
       duration,
     });
-    throw error;
+    // Check if it's the validation error we threw
+    if (
+      err instanceof Error &&
+      err.message === `Proposition ${propId} already has a resolution`
+    ) {
+      return error(err.message, ERROR_CODES.VALIDATION_ERROR);
+    }
+    return error("Failed to resolve prop", ERROR_CODES.DATABASE_ERROR);
   }
 }
 
@@ -276,7 +286,7 @@ export async function unresolveProp({
   propId,
 }: {
   propId: number;
-}): Promise<void> {
+}): Promise<ServerActionResult<void>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Unresolving prop", {
     propId,
@@ -306,15 +316,16 @@ export async function unresolveProp({
     });
 
     revalidatePath("/props");
-  } catch (error) {
+    return success(undefined);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to unresolve prop", error as Error, {
+    logger.error("Failed to unresolve prop", err as Error, {
       operation: "unresolveProp",
       table: "resolutions",
       propId,
       duration,
     });
-    throw error;
+    return error("Failed to unresolve prop", ERROR_CODES.DATABASE_ERROR);
   }
 }
 
@@ -474,7 +485,11 @@ export async function createProp({
   }
 }
 
-export async function deleteResolution({ id }: { id: number }): Promise<void> {
+export async function deleteResolution({
+  id,
+}: {
+  id: number;
+}): Promise<ServerActionResult<void>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Deleting resolution", {
     resolutionId: id,
@@ -502,19 +517,24 @@ export async function deleteResolution({ id }: { id: number }): Promise<void> {
 
     revalidatePath("/props");
     revalidatePath("/standalone");
-  } catch (error) {
+    return success(undefined);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to delete resolution", error as Error, {
+    logger.error("Failed to delete resolution", err as Error, {
       operation: "deleteResolution",
       table: "resolutions",
       resolutionId: id,
       duration,
     });
-    throw error;
+    return error("Failed to delete resolution", ERROR_CODES.DATABASE_ERROR);
   }
 }
 
-export async function deleteProp({ id }: { id: number }): Promise<void> {
+export async function deleteProp({
+  id,
+}: {
+  id: number;
+}): Promise<ServerActionResult<void>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Deleting prop", {
     propId: id,
@@ -542,14 +562,15 @@ export async function deleteProp({ id }: { id: number }): Promise<void> {
 
     revalidatePath("/props");
     revalidatePath("/standalone");
-  } catch (error) {
+    return success(undefined);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to delete prop", error as Error, {
+    logger.error("Failed to delete prop", err as Error, {
       operation: "deleteProp",
       table: "props",
       propId: id,
       duration,
     });
-    throw error;
+    return error("Failed to delete prop", ERROR_CODES.DATABASE_ERROR);
   }
 }

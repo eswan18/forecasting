@@ -13,8 +13,18 @@ export default async function PropConsensusCard({
 }: {
   competitionId: number;
 }) {
-  const forecasts = await getForecasts({ competitionId });
-  const categories = await getCategories();
+  const forecastsResult = await getForecasts({ competitionId });
+  if (!forecastsResult.success) {
+    throw new Error(forecastsResult.error);
+  }
+  const forecasts = forecastsResult.data;
+
+  const categoriesResult = await getCategories();
+  if (!categoriesResult.success) {
+    throw new Error(categoriesResult.error);
+  }
+  const categories = categoriesResult.data;
+
   return (
     <Card className="w-full">
       <CardHeader>

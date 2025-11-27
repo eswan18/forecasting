@@ -6,8 +6,17 @@ import { Trophy } from "lucide-react";
 import PageHeading from "@/components/page-heading";
 
 export default async function Page() {
-  const competitions = await getCompetitions();
-  const props = await getProps({});
+  const competitionsResult = await getCompetitions();
+  if (!competitionsResult.success) {
+    throw new Error(competitionsResult.error);
+  }
+  const competitions = competitionsResult.data;
+
+  const propsResult = await getProps({});
+  if (!propsResult.success) {
+    throw new Error(propsResult.error);
+  }
+  const props = propsResult.data;
 
   // Count the number of props for each competition.
   const propCountsByCompetitionId = props.reduce(

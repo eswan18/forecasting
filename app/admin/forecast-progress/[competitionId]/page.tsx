@@ -10,6 +10,8 @@ import { InaccessiblePage } from "@/components/inaccessible-page";
 import ErrorPage from "@/components/pages/error-page";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
 import { ClipboardCheck } from "lucide-react";
+import { logger } from "@/lib/logger";
+import { ErrorToast } from "./error-toast";
 
 export default async function ForecastProgressPage({
   params,
@@ -21,42 +23,82 @@ export default async function ForecastProgressPage({
   if (isNaN(competitionId)) {
     return <ErrorPage title="Invalid competition ID" />;
   }
-  const competition = await getCompetitionById(competitionId);
-  if (!competition) {
+  const competitionResult = await getCompetitionById(competitionId);
+  if (!competitionResult.success) {
     return (
       <InaccessiblePage
         title="Competition not found"
-        message="The competition you are looking for does not exist."
+        message={competitionResult.error}
       />
     );
   }
+  const competition = competitionResult.data;
   const usersResult = await getUsers();
   const users = handleServerActionResult(usersResult);
 
-  const unforecastedProps = await Promise.all(
+  const unforecastedPropsResults = await Promise.all(
     users.map(async (user) => {
+      const result = await getUnforecastedProps({
+        userId: user.id,
+        competitionId,
+      });
       return {
         userId: user.id,
-        props: await getUnforecastedProps({ userId: user.id, competitionId }),
+        result,
       };
     }),
   );
-  const forecastedProps = await Promise.all(
+  const forecastedPropsResults = await Promise.all(
     users.map(async (user) => {
+      const result = await getForecasts({ userId: user.id, competitionId });
       return {
         userId: user.id,
-        forecasts: await getForecasts({ userId: user.id, competitionId }),
+        result,
       };
     }),
   );
+
+  // Check for errors and log them
+  const unforecastedErrors = unforecastedPropsResults.filter(
+    (r) => !r.result.success,
+  );
+  const forecastedErrors = forecastedPropsResults.filter(
+    (r) => !r.result.success,
+  );
+  const hasErrors =
+    unforecastedErrors.length > 0 || forecastedErrors.length > 0;
+
+  if (hasErrors) {
+    unforecastedErrors.forEach(({ userId, result }) => {
+      if (!result.success) {
+        logger.warn("Failed to load unforecasted props", {
+          userId,
+          competitionId,
+          error: result.error,
+        });
+      }
+    });
+    forecastedErrors.forEach(({ userId, result }) => {
+      if (!result.success) {
+        logger.warn("Failed to load forecasts", {
+          userId,
+          competitionId,
+          error: result.error,
+        });
+      }
+    });
+  }
+
   const metrics: UserProgressMetrics[] = users.map((user) => {
-    const unforecasted = unforecastedProps.find((u) => u.userId === user.id);
-    const unforecastedCount = unforecasted?.props
-      ? unforecasted.props.length
+    const unforecasted = unforecastedPropsResults.find(
+      (u) => u.userId === user.id,
+    );
+    const unforecastedCount = unforecasted?.result.success
+      ? unforecasted.result.data.length
       : 0;
-    const forecasted = forecastedProps.find((u) => u.userId === user.id);
-    const forecastedCount = forecasted?.forecasts
-      ? forecasted.forecasts.length
+    const forecasted = forecastedPropsResults.find((u) => u.userId === user.id);
+    const forecastedCount = forecasted?.result.success
+      ? forecasted.result.data.length
       : 0;
     return {
       user,
@@ -68,6 +110,7 @@ export default async function ForecastProgressPage({
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full">
+        <ErrorToast hasErrors={hasErrors} />
         <PageHeading
           title={`${competition?.name}: Forecast Progress`}
           breadcrumbs={{

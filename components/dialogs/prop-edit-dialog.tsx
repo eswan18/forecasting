@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { updateProp } from "@/lib/db_actions/props";
 import { useRouter } from "next/navigation";
 import { Spinner } from "@/components/ui/spinner";
+import { useServerAction } from "@/hooks/use-server-action";
 
 interface PropEditDialogProps {
   prop: VProp;
@@ -26,8 +27,17 @@ interface PropEditDialogProps {
 export function PropEditDialog({ prop, isOpen, onClose }: PropEditDialogProps) {
   const [text, setText] = useState(prop.prop_text);
   const [notes, setNotes] = useState(prop.prop_notes || "");
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  const updatePropAction = useServerAction(updateProp, {
+    successMessage: "Prop updated!",
+    onSuccess: () => {
+      router.refresh();
+      onClose();
+    },
+  });
+
+  const isLoading = updatePropAction.isLoading;
 
   const handleSubmit = async () => {
     if (text.trim().length < 8) {
@@ -35,29 +45,13 @@ export function PropEditDialog({ prop, isOpen, onClose }: PropEditDialogProps) {
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const result = await updateProp({
-        id: prop.prop_id,
-        prop: {
-          text: text.trim(),
-          notes: notes.trim() || null,
-        },
-      });
-
-      if (result.success) {
-        router.refresh();
-        onClose();
-      } else {
-        console.error("Failed to update prop:", result.error);
-        // TODO: Add proper error handling/toast
-      }
-    } catch (error) {
-      console.error("Failed to update prop:", error);
-      // TODO: Add proper error handling/toast
-    } finally {
-      setIsLoading(false);
-    }
+    await updatePropAction.execute({
+      id: prop.prop_id,
+      prop: {
+        text: text.trim(),
+        notes: notes.trim() || null,
+      },
+    });
   };
 
   const handleClose = () => {

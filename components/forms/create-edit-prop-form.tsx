@@ -108,10 +108,14 @@ export function CreateEditPropForm({
     },
   });
   useEffect(() => {
-    getCategories().then(async (categories) => {
-      setCategories(categories);
-      const competitions = await getCompetitions();
-      setCompetitions(competitions);
+    getCategories().then(async (categoriesResult) => {
+      if (categoriesResult.success) {
+        setCategories(categoriesResult.data);
+      }
+      const competitionsResult = await getCompetitions();
+      if (competitionsResult.success) {
+        setCompetitions(competitionsResult.data);
+      }
       setLoading(false);
     });
     getUserFromCookies().then((user) => {

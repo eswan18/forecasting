@@ -31,10 +31,11 @@ export default async function Page({
   if (!user) {
     return <div>Please log in to view this page.</div>;
   }
-  const competition = await getCompetitionById(competitionId);
-  if (!competition) {
-    return <ErrorPage title="Competition not found" />;
+  const competitionResult = await getCompetitionById(competitionId);
+  if (!competitionResult.success) {
+    return <ErrorPage title={competitionResult.error} />;
   }
+  const competition = competitionResult.data;
 
   const competitionStatus = getCompetitionStatus(
     competition.forecasts_open_date,
@@ -51,10 +52,14 @@ export default async function Page({
     );
   }
   const competitionForecastsAreOpen = competitionStatus === "forecasts-open";
-  const propsWithForecasts = await getPropsWithUserForecasts({
+  const propsWithForecastsResult = await getPropsWithUserForecasts({
     userId: user.id,
     competitionId,
   });
+  if (!propsWithForecastsResult.success) {
+    return <ErrorPage title={propsWithForecastsResult.error} />;
+  }
+  const propsWithForecasts = propsWithForecastsResult.data;
 
   return (
     <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full">

@@ -54,12 +54,7 @@ This is a Next.js forecasting application inspired by Philip Tetlock's Good Judg
 
 ### Server Actions Pattern
 
-This codebase follows a specific server action pattern documented in `/docs/server-actions-best-practices.md`:
-
-- All server actions return `ServerActionResult<T>` type instead of throwing errors
-- Use helper functions: `success()`, `error()`, `validationError()`
-- Database actions are in `/lib/db_actions/` organized by entity
-- Client components use `useServerAction` hook for loading states and error handling
+This codebase follows a structured server action pattern that returns results instead of throwing errors. **See `/docs/server-actions-best-practices.md` for complete documentation and examples.**
 
 ### Authentication & Authorization
 

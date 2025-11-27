@@ -51,15 +51,14 @@ export default function RequestPasswordResetFormCard() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     setError("");
-    initiatePasswordReset(values)
-      .then(() => {
-        setLoading(false);
-        router.push("/reset-password/email-sent");
-      })
-      .catch((e) => {
-        setLoading(false);
-        setError(e.message);
-      });
+    const result = await initiatePasswordReset(values);
+    if (result.success) {
+      setLoading(false);
+      router.push("/reset-password/email-sent");
+    } else {
+      setLoading(false);
+      setError(result.error);
+    }
   }
 
   return (

@@ -96,7 +96,9 @@ function MyComponent() {
 
 ### 4. Using Server Actions in Server Components
 
-Use the helper functions for clean error handling:
+#### Critical Errors (Single Request)
+
+Use the helper functions for clean error handling when a single request failure should stop rendering:
 
 ```typescript
 import { handleServerActionResult } from '@/lib/server-action-helpers';
@@ -108,6 +110,64 @@ export default async function Page() {
   return <UsersList users={users} />;
 }
 ```
+
+The `handleServerActionResult` helper will:
+
+- Redirect on `UNAUTHORIZED` errors
+- Throw on other errors (caught by error boundary)
+
+#### Partial Failures (Multiple Parallel Requests)
+
+When making multiple parallel requests (e.g., `Promise.all`), handle errors individually to allow partial data:
+
+```typescript
+import { logger } from '@/lib/logger';
+import { ErrorToast } from './error-toast'; // Client component for toast
+
+export default async function Page() {
+  const results = await Promise.all(
+    users.map(async (user) => {
+      const result = await getForecasts({ userId: user.id });
+      return { userId: user.id, result };
+    }),
+  );
+
+  // Check for errors and log them
+  const errors = results.filter((r) => !r.result.success);
+  const hasErrors = errors.length > 0;
+
+  if (hasErrors) {
+    errors.forEach(({ userId, result }) => {
+      if (!result.success) {
+        logger.warn("Failed to load forecasts", {
+          userId,
+          error: result.error,
+        });
+      }
+    });
+  }
+
+  // Continue with partial data
+  const metrics = results.map(({ userId, result }) => ({
+    userId,
+    count: result.success ? result.data.length : 0,
+  }));
+
+  return (
+    <>
+      <ErrorToast hasErrors={hasErrors} />
+      {/* Render with partial data */}
+    </>
+  );
+}
+```
+
+**Key points for partial failures:**
+
+- Log errors with `logger.warn()` or `logger.error()` for debugging
+- Show user-facing notifications (toast/alert) via client components
+- Continue rendering with partial data when appropriate
+- Use fallback values (e.g., `0`, empty arrays) for failed requests
 
 ## Error Codes
 

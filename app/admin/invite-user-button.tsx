@@ -25,8 +25,16 @@ export function InviteUserButton({ className }: { className?: string }) {
 
   async function generateInviteCode() {
     setLoading(true);
-    const inviteToken = await generateInviteToken({ notes });
-    setInviteCode(inviteToken);
+    const result = await generateInviteToken({ notes });
+    if (result.success) {
+      setInviteCode(result.data);
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
+    }
     setLoading(false);
   }
   const handleCopyInviteLink = () => {

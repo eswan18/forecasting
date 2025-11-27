@@ -25,10 +25,11 @@ export default async function UserScorePage({
     return <ErrorPage title="Invalid competition or user ID" />;
   }
 
-  const competition = await getCompetitionById(competitionId);
-  if (!competition) {
-    return <ErrorPage title="Competition not found" />;
+  const competitionResult = await getCompetitionById(competitionId);
+  if (!competitionResult.success) {
+    return <ErrorPage title={competitionResult.error} />;
   }
+  const competition = competitionResult.data;
 
   const user = await getUserFromCookies();
   if (!user) {
@@ -47,7 +48,12 @@ export default async function UserScorePage({
   }
 
   const scoreBreakdown = scoreBreakdownResult.data;
-  const categories = await getCategories();
+
+  const categoriesResult = await getCategories();
+  if (!categoriesResult.success) {
+    return <ErrorPage title={categoriesResult.error} />;
+  }
+  const categories = categoriesResult.data;
 
   // Sort category scores by penalty (descending)
   const sortedCategoryScores = [...scoreBreakdown.categoryScores].sort(

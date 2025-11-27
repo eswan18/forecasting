@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { resolveProp, unresolveProp } from "@/lib/db_actions/props";
 import { useRouter } from "next/navigation";
 import { Spinner } from "@/components/ui/spinner";
+import { useServerAction } from "@/hooks/use-server-action";
 
 interface ResolutionDialogProps {
   prop: VProp;
@@ -38,31 +39,37 @@ export function ResolutionDialog({
         : "false",
   );
   const [notes, setNotes] = useState(prop.resolution_notes || "");
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async () => {
-    setIsLoading(true);
-    try {
-      if (resolution === "unresolved") {
-        await unresolveProp({ propId: prop.prop_id });
-      } else {
-        await resolveProp({
-          propId: prop.prop_id,
-          resolution: resolution === "true",
-          notes: notes.trim() || undefined,
-          userId: null, // Will be set by the server action
-          overwrite: true,
-        });
-      }
+  const handleSuccess = () => {
+    router.refresh();
+    onClose();
+  };
 
-      router.refresh();
-      onClose();
-    } catch (error) {
-      console.error("Failed to update resolution:", error);
-      // TODO: Add proper error handling/toast
-    } finally {
-      setIsLoading(false);
+  const resolvePropAction = useServerAction(resolveProp, {
+    successMessage: "Resolution updated!",
+    onSuccess: handleSuccess,
+  });
+
+  const unresolvePropAction = useServerAction(unresolveProp, {
+    successMessage: "Prop unresolved!",
+    onSuccess: handleSuccess,
+  });
+
+  const isLoading =
+    resolvePropAction.isLoading || unresolvePropAction.isLoading;
+
+  const handleSubmit = async () => {
+    if (resolution === "unresolved") {
+      await unresolvePropAction.execute({ propId: prop.prop_id });
+    } else {
+      await resolvePropAction.execute({
+        propId: prop.prop_id,
+        resolution: resolution === "true",
+        notes: notes.trim() || undefined,
+        userId: null, // Will be set by the server action
+        overwrite: true,
+      });
     }
   };
 

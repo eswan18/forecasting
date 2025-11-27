@@ -1,13 +1,21 @@
 "use server";
 
-import { NewSuggestedProp } from "@/types/db_types";
+import { NewSuggestedProp, VSuggestedProp } from "@/types/db_types";
 import { db } from "@/lib/database";
 import { getUserFromCookies } from "@/lib/get-user";
 import { logger } from "@/lib/logger";
 import { sql } from "kysely";
 import { revalidatePath } from "next/cache";
+import {
+  ServerActionResult,
+  success,
+  error,
+  ERROR_CODES,
+} from "@/lib/server-action-result";
 
-export async function getSuggestedProps() {
+export async function getSuggestedProps(): Promise<
+  ServerActionResult<VSuggestedProp[]>
+> {
   const currentUser = await getUserFromCookies();
   logger.debug("Getting suggested props", {
     currentUserId: currentUser?.id,
@@ -19,7 +27,10 @@ export async function getSuggestedProps() {
       logger.warn("Unauthorized attempt to get suggested props", {
         currentUserId: currentUser?.id,
       });
-      throw new Error("Unauthorized: only admins can view suggested props");
+      return error(
+        "Only admins can view suggested props",
+        ERROR_CODES.UNAUTHORIZED,
+      );
     }
 
     const results = await db
@@ -34,15 +45,18 @@ export async function getSuggestedProps() {
       duration,
     });
 
-    return results;
-  } catch (error) {
+    return success(results);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to get suggested props", error as Error, {
+    logger.error("Failed to get suggested props", err as Error, {
       operation: "getSuggestedProps",
       table: "v_suggested_props",
       duration,
     });
-    throw error;
+    return error(
+      "Failed to retrieve suggested props",
+      ERROR_CODES.DATABASE_ERROR,
+    );
   }
 }
 
@@ -50,7 +64,7 @@ export async function createSuggestedProp({
   prop,
 }: {
   prop: NewSuggestedProp;
-}) {
+}): Promise<ServerActionResult<number>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Creating suggested prop", {
     suggesterUserId: prop.suggester_user_id,
@@ -63,7 +77,7 @@ export async function createSuggestedProp({
       logger.warn("Unauthorized attempt to create suggested prop", {
         suggesterUserId: prop.suggester_user_id,
       });
-      throw new Error("Unauthorized");
+      return error("You must be logged in", ERROR_CODES.UNAUTHORIZED);
     }
 
     // Make sure the user is suggesting a prop with their own user ID.
@@ -72,7 +86,7 @@ export async function createSuggestedProp({
         suggesterUserId: prop.suggester_user_id,
         currentUserId: currentUser.id,
       });
-      throw new Error("Unauthorized");
+      return error("Unauthorized", ERROR_CODES.UNAUTHORIZED);
     }
 
     const { id } = await db
@@ -90,16 +104,16 @@ export async function createSuggestedProp({
       duration,
     });
 
-    return id;
-  } catch (error) {
+    return success(id);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to create suggested prop", error as Error, {
+    logger.error("Failed to create suggested prop", err as Error, {
       operation: "createSuggestedProp",
       table: "suggested_props",
       suggesterUserId: prop.suggester_user_id,
       duration,
     });
-    throw error;
+    return error("Failed to create suggested prop", ERROR_CODES.DATABASE_ERROR);
   }
 }
 
@@ -107,7 +121,7 @@ export async function deleteSuggestedProp({
   id,
 }: {
   id: number;
-}): Promise<void> {
+}): Promise<ServerActionResult<void>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Deleting suggested prop", {
     suggestedPropId: id,
@@ -121,7 +135,10 @@ export async function deleteSuggestedProp({
         suggestedPropId: id,
         currentUserId: currentUser?.id,
       });
-      throw new Error("Unauthorized: only admins can delete suggested props");
+      return error(
+        "Only admins can delete suggested props",
+        ERROR_CODES.UNAUTHORIZED,
+      );
     }
 
     await db.transaction().execute(async (trx) => {
@@ -142,14 +159,15 @@ export async function deleteSuggestedProp({
     });
 
     revalidatePath("/admin/suggested-props");
-  } catch (error) {
+    return success(undefined);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to delete suggested prop", error as Error, {
+    logger.error("Failed to delete suggested prop", err as Error, {
       operation: "deleteSuggestedProp",
       table: "suggested_props",
       suggestedPropId: id,
       duration,
     });
-    throw error;
+    return error("Failed to delete suggested prop", ERROR_CODES.DATABASE_ERROR);
   }
 }

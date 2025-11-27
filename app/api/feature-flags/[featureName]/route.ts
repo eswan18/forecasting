@@ -17,11 +17,19 @@ export async function GET(
   }
 
   try {
-    const enabled = await hasFeatureEnabled({
+    const result = await hasFeatureEnabled({
       featureName,
       userId: user.id,
     });
-    return NextResponse.json(enabled);
+    if (result.success) {
+      return NextResponse.json(result.data);
+    } else {
+      console.error(
+        `Failed to check feature flag ${featureName}:`,
+        result.error,
+      );
+      return NextResponse.json(false);
+    }
   } catch (error) {
     console.error(`Failed to check feature flag ${featureName}:`, error);
     return NextResponse.json(false);

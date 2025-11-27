@@ -60,7 +60,12 @@ export default function NavBar() {
 
   useEffect(() => {
     if (!isLoading) {
-      getCompetitions().then((allCompetitions) => {
+      getCompetitions().then((result) => {
+        if (!result.success) {
+          console.error("Failed to load competitions:", result.error);
+          return;
+        }
+        const allCompetitions = result.data;
         // Filter competitions based on status (non-admins only see non-upcoming competitions)
         const filteredCompetitions = user?.is_admin
           ? allCompetitions

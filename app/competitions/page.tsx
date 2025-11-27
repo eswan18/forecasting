@@ -22,7 +22,19 @@ export default async function CompetitionsPage() {
     return <></>; // will never reach this line due to redirect.
   }
 
-  const allCompetitions = await getCompetitions();
+  const allCompetitionsResult = await getCompetitions();
+  if (!allCompetitionsResult.success) {
+    return (
+      <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
+        <div className="w-full max-w-6xl">
+          <p className="text-destructive">
+            Error: {allCompetitionsResult.error}
+          </p>
+        </div>
+      </main>
+    );
+  }
+  const allCompetitions = allCompetitionsResult.data;
 
   // Filter competitions based on status (non-admins only see non-upcoming competitions)
   const competitions = user.is_admin

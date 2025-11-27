@@ -46,13 +46,21 @@ async function PropPageContent({
   }
 
   // Get the prop details
-  const prop = await getPropById(propId);
+  const propResult = await getPropById(propId);
+  if (!propResult.success) {
+    return <ErrorPage title={propResult.error} />;
+  }
+  const prop = propResult.data;
   if (!prop) {
     return <ErrorPage title="Prop not found" />;
   }
 
   // Get all forecasts for this prop
-  const forecasts = await getForecasts({ propId });
+  const forecastsResult = await getForecasts({ propId });
+  if (!forecastsResult.success) {
+    return <ErrorPage title={forecastsResult.error} />;
+  }
+  const forecasts = forecastsResult.data;
 
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">

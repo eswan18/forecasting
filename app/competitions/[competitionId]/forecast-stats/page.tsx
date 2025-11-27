@@ -27,10 +27,11 @@ export default async function Page({
     });
     return null;
   }
-  const competition = await getCompetitionById(competitionId);
-  if (!competition) {
-    return <ErrorPage title="Competition not found" />;
+  const competitionResult = await getCompetitionById(competitionId);
+  if (!competitionResult.success) {
+    return <ErrorPage title={competitionResult.error} />;
   }
+  const competition = competitionResult.data;
   const competitionStatus = getCompetitionStatus(
     competition.forecasts_open_date,
     competition.forecasts_close_date,

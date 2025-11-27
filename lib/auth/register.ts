@@ -67,8 +67,11 @@ export async function registerNewUserIfAuthorized({
       throw new Error("No invite token provided.");
     }
     // Check if the invite token is valid
-    const tokenIsValid = await inviteTokenIsValid(inviteToken);
-    if (!tokenIsValid) {
+    const tokenValidationResult = await inviteTokenIsValid(inviteToken);
+    if (!tokenValidationResult.success) {
+      throw new Error(tokenValidationResult.error);
+    }
+    if (!tokenValidationResult.data) {
       throw new Error("Invalid invite token.");
     }
     console.log("Confirmed valid invite token.");
@@ -78,6 +81,9 @@ export async function registerNewUserIfAuthorized({
 
   // Consume the invite token, if one was provided.
   if (inviteToken) {
-    await consumeInviteToken(inviteToken);
+    const consumeResult = await consumeInviteToken(inviteToken);
+    if (!consumeResult.success) {
+      throw new Error(consumeResult.error);
+    }
   }
 }

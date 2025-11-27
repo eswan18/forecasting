@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Form,
@@ -19,8 +18,8 @@ import { AlertTriangle, TrendingUp } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { createForecast, updateForecast } from "@/lib/db_actions";
-import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useServerAction } from "@/hooks/use-server-action";
 
 const formSchema = z.object({
   forecast: z.number({ message: "You must choose a number" }).min(0).max(1),
@@ -36,42 +35,47 @@ export function RecordForecastForm({
   onSuccess?: () => void;
 }) {
   const { user } = useCurrentUser();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { forecast: initialForecast?.forecast ?? 0.5 },
   });
-  const { toast } = useToast();
+
+  const createForecastAction = useServerAction(createForecast, {
+    successMessage: "Forecast recorded!",
+    onSuccess: () => {
+      onSuccess?.();
+    },
+  });
+
+  const updateForecastAction = useServerAction(updateForecast, {
+    successMessage: "Forecast updated!",
+    onSuccess: () => {
+      onSuccess?.();
+    },
+  });
+
+  const isLoading =
+    createForecastAction.isLoading || updateForecastAction.isLoading;
+  const error = createForecastAction.error || updateForecastAction.error;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setLoading(true);
-    setError(null);
-
-    try {
-      if (!initialForecast) {
-        // Creating a new forecast
-        const forecast: NewForecast = {
-          prop_id: prop.prop_id,
-          user_id: user!.id,
-          forecast: values.forecast,
-        };
-        await createForecast({ forecast });
-        toast({ title: "Forecast recorded!" });
-      } else {
-        // Updating existing forecast
-        const forecast: ForecastUpdate = {
-          forecast: values.forecast,
-        };
-        await updateForecast({ id: initialForecast.id, forecast });
-        toast({ title: "Forecast updated!" });
-      }
-      onSuccess?.();
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "An error occurred";
-      setError(msg);
-    } finally {
-      setLoading(false);
+    if (!initialForecast) {
+      // Creating a new forecast
+      const forecast: NewForecast = {
+        prop_id: prop.prop_id,
+        user_id: user!.id,
+        forecast: values.forecast,
+      };
+      await createForecastAction.execute({ forecast });
+    } else {
+      // Updating existing forecast
+      const forecast: ForecastUpdate = {
+        forecast: values.forecast,
+      };
+      await updateForecastAction.execute({
+        id: initialForecast.id,
+        forecast,
+      });
     }
   }
 
@@ -113,10 +117,10 @@ export function RecordForecastForm({
 
         <Button
           type="submit"
-          disabled={loading}
+          disabled={isLoading}
           className="w-full h-11 text-base font-medium"
         >
-          {loading ? (
+          {isLoading ? (
             <>
               <Spinner className="mr-2 h-4 w-4" />
               {initialForecast ? "Updating..." : "Recording..."}
