@@ -8,16 +8,8 @@ import { loginAndRedirect } from "@/lib/get-user";
 import { getUserFromCookies } from "@/lib/get-user";
 import ErrorPage from "@/components/pages/error-page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Medal, User, ExternalLink } from "lucide-react";
-import Link from "next/link";
+import { Medal, User } from "lucide-react";
+import { ForecastScoresTable } from "./components/forecast-scores-table";
 
 export default async function UserScorePage({
   params,
@@ -112,6 +104,13 @@ export default async function UserScorePage({
     }
   }
 
+  // Create sorted forecasts array for penalty view (all forecasts sorted by penalty descending)
+  const sortedForecasts = [...scoreBreakdown.forecastScores].sort((a, b) => {
+    const scoreA = a.score ?? 0;
+    const scoreB = b.score ?? 0;
+    return scoreB - scoreA;
+  });
+
   return (
     <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full">
       <PageHeading
@@ -145,127 +144,15 @@ export default async function UserScorePage({
           </CardContent>
         </Card>
 
-        {/* Category Scores */}
-        {scoreBreakdown.categoryScores.length > 0 && (
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle>Category Scores</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {scoreBreakdown.categoryScores.map((categoryScore) => {
-                  const category = categories.find(
-                    (cat) => cat.id === categoryScore.categoryId,
-                  );
-                  return (
-                    <div
-                      key={categoryScore.categoryId}
-                      className="flex items-center justify-between p-3 rounded-lg border bg-muted/30"
-                    >
-                      <div className="font-medium">
-                        {category?.name || "Unknown Category"}
-                      </div>
-                      <div className="text-lg font-semibold">
-                        {categoryScore.score.toFixed(3)}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Individual Forecast Scores */}
+        {/* Forecast Penalties */}
         {scoreBreakdown.forecastScores.length > 0 && (
           <Card className="w-full">
-            <CardHeader>
-              <CardTitle>Individual Forecast Scores</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Proposition</TableHead>
-                      <TableHead className="text-right">Forecast</TableHead>
-                      <TableHead className="text-right">Resolution</TableHead>
-                      <TableHead className="text-right">Penalty</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sortedCategoryEntries.map(([categoryKey, forecasts]) => {
-                      const categoryId =
-                        categoryKey === "uncategorized" ? null : categoryKey;
-                      const category =
-                        categoryId !== null
-                          ? categories.find((cat) => cat.id === categoryId)
-                          : null;
-
-                      // Find the category score for this category
-                      const categoryScore = sortedCategoryScores.find(
-                        (cs) =>
-                          (cs.categoryId === categoryId &&
-                            categoryId !== null) ||
-                          (cs.categoryId === null && categoryId === null),
-                      );
-
-                      return (
-                        <>
-                          {/* Category Header Row */}
-                          <TableRow key={`category-${categoryKey}`}>
-                            <TableCell
-                              colSpan={3}
-                              className="font-semibold text-lg bg-muted/50 py-3"
-                            >
-                              {category?.name || "Uncategorized"}
-                            </TableCell>
-                            <TableCell className="text-right font-semibold text-lg bg-muted/50 py-3">
-                              {categoryScore
-                                ? categoryScore.score.toFixed(3)
-                                : "-"}
-                            </TableCell>
-                          </TableRow>
-                          {/* Forecast Rows */}
-                          {forecasts.map((forecast) => (
-                            <TableRow key={forecast.forecastId}>
-                              <TableCell className="max-w-md">
-                                <div className="flex items-center gap-2">
-                                  <div className="truncate flex-1">
-                                    {forecast.propText}
-                                  </div>
-                                  <Link
-                                    href={`/props/${forecast.propId}`}
-                                    className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-                                  >
-                                    <ExternalLink className="h-3 w-3" />
-                                  </Link>
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-right">
-                                {(forecast.forecast * 100).toFixed(1)}%
-                              </TableCell>
-                              <TableCell className="text-right">
-                                {forecast.resolution === null
-                                  ? "-"
-                                  : forecast.resolution
-                                    ? "Yes"
-                                    : "No"}
-                              </TableCell>
-                              <TableCell className="text-right font-medium">
-                                {forecast.score !== null
-                                  ? forecast.score.toFixed(3)
-                                  : "-"}
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
+            <ForecastScoresTable
+              sortedCategoryEntries={sortedCategoryEntries}
+              sortedCategoryScores={sortedCategoryScores}
+              sortedForecasts={sortedForecasts}
+              categories={categories}
+            />
           </Card>
         )}
 
