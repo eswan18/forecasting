@@ -52,18 +52,26 @@ describe("Categories Database Actions", () => {
 
       const result = await getCategories();
 
-      expect(result).toEqual(mockCategories);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data).toEqual(mockCategories);
+      }
       expect(getUser.getUserFromCookies).toHaveBeenCalledOnce();
       expect(db.selectFrom).toHaveBeenCalledWith("categories");
       expect(mockSelectAll).toHaveBeenCalledOnce();
       expect(mockExecute).toHaveBeenCalledOnce();
     });
 
-    it("should throw error when user is not authenticated", async () => {
+    it("should return error when user is not authenticated", async () => {
       vi.mocked(getUser.getUserFromCookies).mockResolvedValue(null);
 
-      await expect(getCategories()).rejects.toThrow("Unauthorized");
+      const result = await getCategories();
 
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toContain("logged in");
+        expect(result.code).toBe("UNAUTHORIZED");
+      }
       expect(getUser.getUserFromCookies).toHaveBeenCalledOnce();
       expect(db.selectFrom).not.toHaveBeenCalled();
     });
@@ -81,8 +89,11 @@ describe("Categories Database Actions", () => {
 
       const result = await getCategories();
 
-      expect(result).toEqual([]);
-      expect(result).toHaveLength(0);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data).toEqual([]);
+        expect(result.data).toHaveLength(0);
+      }
     });
 
     it("should handle database errors gracefully", async () => {
@@ -96,10 +107,13 @@ describe("Categories Database Actions", () => {
       vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
       mockExecute.mockRejectedValue(new Error("Database connection failed"));
 
-      await expect(getCategories()).rejects.toThrow(
-        "Database connection failed",
-      );
+      const result = await getCategories();
 
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toContain("Failed to fetch categories");
+        expect(result.code).toBe("DATABASE_ERROR");
+      }
       expect(getUser.getUserFromCookies).toHaveBeenCalledOnce();
       expect(db.selectFrom).toHaveBeenCalledWith("categories");
     });

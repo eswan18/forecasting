@@ -108,8 +108,10 @@ export function CreateEditPropForm({
     },
   });
   useEffect(() => {
-    getCategories().then(async (categories) => {
-      setCategories(categories);
+    getCategories().then(async (categoriesResult) => {
+      if (categoriesResult.success) {
+        setCategories(categoriesResult.data);
+      }
       const competitions = await getCompetitions();
       setCompetitions(competitions);
       setLoading(false);

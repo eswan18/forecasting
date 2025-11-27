@@ -47,7 +47,12 @@ export default async function UserScorePage({
   }
 
   const scoreBreakdown = scoreBreakdownResult.data;
-  const categories = await getCategories();
+
+  const categoriesResult = await getCategories();
+  if (!categoriesResult.success) {
+    return <ErrorPage title={categoriesResult.error} />;
+  }
+  const categories = categoriesResult.data;
 
   // Sort category scores by penalty (descending)
   const sortedCategoryScores = [...scoreBreakdown.categoryScores].sort(

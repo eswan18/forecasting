@@ -57,9 +57,13 @@ async function ScoreChartsCardSection({
   competitionId: number;
 }) {
   // We break this out so that we can wrap it in a Suspense component.
-  const categories = await getCategories();
-  const scoresResult = await getCompetitionScores({ competitionId });
+  const categoriesResult = await getCategories();
+  if (!categoriesResult.success) {
+    throw new Error(categoriesResult.error);
+  }
+  const categories = categoriesResult.data;
 
+  const scoresResult = await getCompetitionScores({ competitionId });
   if (!scoresResult.success) {
     throw new Error(scoresResult.error);
   }

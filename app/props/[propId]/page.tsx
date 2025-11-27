@@ -46,7 +46,11 @@ async function PropPageContent({
   }
 
   // Get the prop details
-  const prop = await getPropById(propId);
+  const propResult = await getPropById(propId);
+  if (!propResult.success) {
+    return <ErrorPage title={propResult.error} />;
+  }
+  const prop = propResult.data;
   if (!prop) {
     return <ErrorPage title="Prop not found" />;
   }
