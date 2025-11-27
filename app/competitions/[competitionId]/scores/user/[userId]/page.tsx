@@ -16,7 +16,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Medal, User } from "lucide-react";
+import { Medal, User, ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 export default async function UserScorePage({
   params,
@@ -179,8 +180,16 @@ export default async function UserScorePage({
                               {forecasts.map((forecast) => (
                                 <TableRow key={forecast.forecastId}>
                                   <TableCell className="max-w-md">
-                                    <div className="truncate">
-                                      {forecast.propText}
+                                    <div className="flex items-center gap-2">
+                                      <div className="truncate flex-1">
+                                        {forecast.propText}
+                                      </div>
+                                      <Link
+                                        href={`/props/${forecast.propId}`}
+                                        className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                                      >
+                                        <ExternalLink className="h-3 w-3" />
+                                      </Link>
                                     </div>
                                   </TableCell>
                                   <TableCell className="text-right">
