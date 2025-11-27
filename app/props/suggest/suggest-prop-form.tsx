@@ -59,12 +59,21 @@ export function SuggestPropForm() {
         : values.propText;
 
       const prop = { prop: combinedText, suggester_user_id: user.id };
-      createSuggestedProp({ prop });
-      form.reset({ propText: "", notes: "" });
-      toast({
-        title: "Proposition submitted",
-        description: "Your proposition has been submitted for review.",
-      });
+      const result = await createSuggestedProp({ prop });
+      if (result.success) {
+        form.reset({ propText: "", notes: "" });
+        toast({
+          title: "Proposition submitted",
+          description: "Your proposition has been submitted for review.",
+        });
+      } else {
+        toast({
+          title: "Submission Error",
+          description: result.error,
+          variant: "destructive",
+        });
+        setError(result.error);
+      }
     } catch (error) {
       if (error instanceof Error) {
         toast({

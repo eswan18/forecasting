@@ -12,7 +12,11 @@ import {
   ERROR_CODES,
 } from "@/lib/server-action-result";
 
-export async function generateInviteToken({ notes }: { notes?: string }) {
+export async function generateInviteToken({
+  notes,
+}: {
+  notes?: string;
+}): Promise<ServerActionResult<string>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Generating invite token", {
     notes,
@@ -25,7 +29,10 @@ export async function generateInviteToken({ notes }: { notes?: string }) {
       logger.warn("Unauthorized attempt to generate invite token", {
         currentUserId: currentUser?.id,
       });
-      throw new Error("Unauthorized");
+      return error(
+        "You must be an admin to generate invite tokens",
+        ERROR_CODES.UNAUTHORIZED,
+      );
     }
 
     // Create the token.
@@ -45,19 +52,21 @@ export async function generateInviteToken({ notes }: { notes?: string }) {
       duration,
     });
 
-    return token;
-  } catch (error) {
+    return success(token);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to generate invite token", error as Error, {
+    logger.error("Failed to generate invite token", err as Error, {
       operation: "generateInviteToken",
       table: "invite_tokens",
       duration,
     });
-    throw error;
+    return error("Failed to generate invite token", ERROR_CODES.DATABASE_ERROR);
   }
 }
 
-export async function inviteTokenIsValid(token: string) {
+export async function inviteTokenIsValid(
+  token: string,
+): Promise<ServerActionResult<boolean>> {
   logger.debug("Validating invite token", {
     token: token.substring(0, 8) + "...", // Log partial token for security
   });
@@ -79,7 +88,7 @@ export async function inviteTokenIsValid(token: string) {
         token: token.substring(0, 8) + "...",
         duration,
       });
-      return false;
+      return success(false);
     }
 
     if (invite.used_at !== null) {
@@ -90,7 +99,7 @@ export async function inviteTokenIsValid(token: string) {
         usedAt: invite.used_at.toISOString(),
         duration,
       });
-      return false;
+      return success(false);
     }
 
     logger.info("Invite token is valid", {
@@ -100,20 +109,22 @@ export async function inviteTokenIsValid(token: string) {
       duration,
     });
 
-    return true;
-  } catch (error) {
+    return success(true);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to validate invite token", error as Error, {
+    logger.error("Failed to validate invite token", err as Error, {
       operation: "inviteTokenIsValid",
       table: "invite_tokens",
       token: token.substring(0, 8) + "...",
       duration,
     });
-    throw error;
+    return error("Failed to validate invite token", ERROR_CODES.DATABASE_ERROR);
   }
 }
 
-export async function consumeInviteToken(token: string) {
+export async function consumeInviteToken(
+  token: string,
+): Promise<ServerActionResult<void>> {
   logger.debug("Consuming invite token", {
     token: token.substring(0, 8) + "...", // Log partial token for security
   });
@@ -127,13 +138,13 @@ export async function consumeInviteToken(token: string) {
       .returning("token")
       .execute();
 
-    if (!invite) {
+    if (!invite || invite.length === 0) {
       logger.warn("Invalid invite token for consumption", {
         operation: "consumeInviteToken",
         table: "invite_tokens",
         token: token.substring(0, 8) + "...",
       });
-      throw new Error("Invalid invite token.");
+      return error("Invalid invite token", ERROR_CODES.VALIDATION_ERROR);
     }
 
     const duration = Date.now() - startTime;
@@ -143,15 +154,17 @@ export async function consumeInviteToken(token: string) {
       token: token.substring(0, 8) + "...",
       duration,
     });
-  } catch (error) {
+
+    return success(undefined);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to consume invite token", error as Error, {
+    logger.error("Failed to consume invite token", err as Error, {
       operation: "consumeInviteToken",
       table: "invite_tokens",
       token: token.substring(0, 8) + "...",
       duration,
     });
-    throw error;
+    return error("Failed to consume invite token", ERROR_CODES.DATABASE_ERROR);
   }
 }
 

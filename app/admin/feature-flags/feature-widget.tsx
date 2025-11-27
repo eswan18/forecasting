@@ -46,16 +46,24 @@ export function FeatureWidget({ featureName, flags }: FeatureWidgetProps) {
               name="Default Value"
               checked={defaultValue.enabled}
               onCheckedChange={async (checked) => {
-                await updateFeatureFlag({
+                const result = await updateFeatureFlag({
                   id: defaultValue.id,
                   enabled: checked,
                 });
-                toast({
-                  title: "Feature flag updated",
-                  description: `The default value for "${featureName}" is now *${
-                    checked ? "on" : "off"
-                  }*`,
-                });
+                if (result.success) {
+                  toast({
+                    title: "Feature flag updated",
+                    description: `The default value for "${featureName}" is now *${
+                      checked ? "on" : "off"
+                    }*`,
+                  });
+                } else {
+                  toast({
+                    title: "Error",
+                    description: result.error,
+                    variant: "destructive",
+                  });
+                }
               }}
             />
           ) : (
@@ -116,10 +124,14 @@ function AddDefaultFeatureFlagWidget({
   onChoice?: () => void;
 }) {
   const flag = { name: featureName, user_id: null };
-  const saveDefaultFlag = (enabled: boolean) => {
-    createFeatureFlag({ featureFlag: { ...flag, enabled } });
-    if (onChoice) {
-      onChoice();
+  const saveDefaultFlag = async (enabled: boolean) => {
+    const result = await createFeatureFlag({
+      featureFlag: { ...flag, enabled },
+    });
+    if (result.success) {
+      if (onChoice) {
+        onChoice();
+      }
     }
   };
   return (

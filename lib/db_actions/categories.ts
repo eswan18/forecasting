@@ -10,9 +10,7 @@ import {
   ERROR_CODES,
 } from "@/lib/server-action-result";
 
-export async function getCategories(): Promise<
-  ServerActionResult<Category[]>
-> {
+export async function getCategories(): Promise<ServerActionResult<Category[]>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Getting categories", { currentUserId: currentUser?.id });
 
