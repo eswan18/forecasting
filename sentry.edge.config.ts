@@ -4,12 +4,7 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
-
-function parseSampleRate(value: string | undefined, fallback: number): number {
-  const n = value === undefined ? NaN : parseFloat(value);
-  if (!Number.isFinite(n) || n < 0 || n > 1) return fallback;
-  return n;
-}
+import { parseSampleRate } from "./lib/sentry-utils";
 
 const defaultTraceRate = process.env.NODE_ENV === "production" ? 0.2 : 1;
 

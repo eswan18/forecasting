@@ -1,15 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { VProp } from "@/types/db_types";
+import { PropWithUserForecast } from "@/types/db_types";
 import { PropCard } from "@/components/prop-card";
 import { FilterBar } from "./filter-bar";
 import CreateNewPropButton from "@/components/tables/prop-table/create-new-prop-button";
-
-type PropWithUserForecast = VProp & {
-  user_forecast: number | null;
-  user_forecast_id: number | null;
-};
 
 interface PropTableWithFilterBarProps {
   props: PropWithUserForecast[];

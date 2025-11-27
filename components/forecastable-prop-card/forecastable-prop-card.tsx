@@ -6,16 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TrendingUp } from "lucide-react";
-import { VProp } from "@/types/db_types";
+import { PropWithUserForecast } from "@/types/db_types";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { createForecast, updateForecast } from "@/lib/db_actions";
 import { useToast } from "@/hooks/use-toast";
 import { Spinner } from "@/components/ui/spinner";
-
-type PropWithUserForecast = VProp & {
-  user_forecast: number | null;
-  user_forecast_id: number | null;
-};
 
 interface ForecastablePropCardProps {
   prop: PropWithUserForecast;
