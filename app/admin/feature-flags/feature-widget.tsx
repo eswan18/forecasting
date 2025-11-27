@@ -123,15 +123,28 @@ function AddDefaultFeatureFlagWidget({
   featureName: string;
   onChoice?: () => void;
 }) {
+  const { toast } = useToast();
   const flag = { name: featureName, user_id: null };
   const saveDefaultFlag = async (enabled: boolean) => {
     const result = await createFeatureFlag({
       featureFlag: { ...flag, enabled },
     });
     if (result.success) {
+      toast({
+        title: "Default flag created",
+        description: `The default value for "${featureName}" is now *${
+          enabled ? "on" : "off"
+        }*`,
+      });
       if (onChoice) {
         onChoice();
       }
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
     }
   };
   return (
