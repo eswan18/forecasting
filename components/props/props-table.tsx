@@ -1,13 +1,8 @@
 "use client";
 
-import { VProp } from "@/types/db_types";
+import { PropWithUserForecast } from "@/types/db_types";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { PropTableWithFilterBar } from "./prop-table-with-filter-bar";
-
-type PropWithUserForecast = VProp & {
-  user_forecast: number | null;
-  user_forecast_id: number | null;
-};
 
 interface PropsTableProps {
   props: PropWithUserForecast[];

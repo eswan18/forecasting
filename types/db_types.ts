@@ -174,6 +174,11 @@ export interface VPropsView {
 }
 export type VProp = Selectable<VPropsView>;
 
+export type PropWithUserForecast = VProp & {
+  user_forecast: number | null;
+  user_forecast_id: number | null;
+};
+
 export interface VForecastsView {
   category_id: number | null;
   category_name: string | null;

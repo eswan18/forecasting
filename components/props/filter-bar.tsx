@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { VProp } from "@/types/db_types";
+import { PropWithUserForecast } from "@/types/db_types";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import {
@@ -11,11 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-type PropWithUserForecast = VProp & {
-  user_forecast: number | null;
-  user_forecast_id: number | null;
-};
 
 interface FilterBarProps {
   props: PropWithUserForecast[];

@@ -1,18 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { VProp } from "@/types/db_types";
+import { PropWithUserForecast } from "@/types/db_types";
 import { ForecastablePropCard } from "@/components/forecastable-prop-card";
 import { ForecastableFilterBar } from "./forecastable-filter-bar";
 import CreateNewPropButton from "@/components/tables/prop-table/create-new-prop-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-type PropWithUserForecast = VProp & {
-  user_forecast: number | null;
-  user_forecast_id: number | null;
-};
 
 interface ForecastablePropsTableProps {
   props: PropWithUserForecast[];
