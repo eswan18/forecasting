@@ -68,7 +68,10 @@ export function RecordForecastForm({
         const forecast: ForecastUpdate = {
           forecast: values.forecast,
         };
-        const result = await updateForecast({ id: initialForecast.id, forecast });
+        const result = await updateForecast({
+          id: initialForecast.id,
+          forecast,
+        });
         if (result.success) {
           toast({ title: "Forecast updated!" });
           onSuccess?.();

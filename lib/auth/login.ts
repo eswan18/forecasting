@@ -27,7 +27,12 @@ export async function login({
   password: string;
 }): Promise<LoginResponse> {
   // Fetch the user from the database
-  const login = await getLoginByUsername(username);
+  const loginResult = await getLoginByUsername(username);
+  if (!loginResult.success) {
+    console.log("Failed to retrieve login:", loginResult.error);
+    return { success: false, error: "Invalid username or password." };
+  }
+  const login = loginResult.data;
   if (!login) {
     console.log("Attempted login with invalid username:", username);
     return { success: false, error: "Invalid username or password." };
@@ -69,10 +74,13 @@ export async function loginViaImpersonation(username: string) {
     throw new Error("Not authorized.");
   }
 
-  const login = await getLoginByUsername(username);
-  if (!login) {
-    throw new Error("Invalid username.");
+  const loginResult = await getLoginByUsername(username);
+  if (!loginResult.success || !loginResult.data) {
+    throw new Error(
+      loginResult.success ? "Invalid username." : loginResult.error,
+    );
   }
+  const login = loginResult.data;
 
   // Create a JWT token
   if (!JWT_SECRET) {

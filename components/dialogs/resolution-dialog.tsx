@@ -44,10 +44,11 @@ export function ResolutionDialog({
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
+      let result;
       if (resolution === "unresolved") {
-        await unresolveProp({ propId: prop.prop_id });
+        result = await unresolveProp({ propId: prop.prop_id });
       } else {
-        await resolveProp({
+        result = await resolveProp({
           propId: prop.prop_id,
           resolution: resolution === "true",
           notes: notes.trim() || undefined,
@@ -56,8 +57,13 @@ export function ResolutionDialog({
         });
       }
 
-      router.refresh();
-      onClose();
+      if (result.success) {
+        router.refresh();
+        onClose();
+      } else {
+        console.error("Failed to update resolution:", result.error);
+        // TODO: Add proper error handling/toast
+      }
     } catch (error) {
       console.error("Failed to update resolution:", error);
       // TODO: Add proper error handling/toast

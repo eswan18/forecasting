@@ -190,7 +190,10 @@ export async function createForecast({
       duration,
     });
     // Check if it's the validation error we threw
-    if (err instanceof Error && err.message === "Cannot create forecasts past the due date") {
+    if (
+      err instanceof Error &&
+      err.message === "Cannot create forecasts past the due date"
+    ) {
       return error(err.message, ERROR_CODES.VALIDATION_ERROR);
     }
     return error("Failed to create forecast", ERROR_CODES.DATABASE_ERROR);
@@ -280,7 +283,10 @@ export async function updateForecast({
       duration,
     });
     // Check if it's the validation error we threw
-    if (err instanceof Error && err.message === "Cannot create forecasts past the due date") {
+    if (
+      err instanceof Error &&
+      err.message === "Cannot create forecasts past the due date"
+    ) {
       return error(err.message, ERROR_CODES.VALIDATION_ERROR);
     }
     return error("Failed to update forecast", ERROR_CODES.DATABASE_ERROR);
@@ -361,7 +367,10 @@ export async function getPropsWithUserForecasts({
   competitionId: number | null;
 }): Promise<
   ServerActionResult<
-    (VProp & { user_forecast: number | null; user_forecast_id: number | null })[]
+    (VProp & {
+      user_forecast: number | null;
+      user_forecast_id: number | null;
+    })[]
   >
 > {
   const currentUser = await getUserFromCookies();

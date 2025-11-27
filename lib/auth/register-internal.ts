@@ -54,8 +54,13 @@ export async function registerNewUser({
     throw new Error("Username and password are required.");
   }
 
-  const existingLogin = await getLoginByUsername(username);
-  if (existingLogin) {
+  const existingLoginResult = await getLoginByUsername(username);
+  if (!existingLoginResult.success) {
+    throw new Error(
+      `Failed to check username availability: ${existingLoginResult.error}`,
+    );
+  }
+  if (existingLoginResult.data) {
     throw new Error("Username already exists.");
   }
 
@@ -67,11 +72,12 @@ export async function registerNewUser({
     type: argon2.argon2id,
   });
   const login = { username, password_hash: passwordHash };
-  const loginId = await createLogin({ login });
+  const loginIdResult = await createLogin({ login });
 
-  if (!loginId) {
-    throw new Error("Failed to create login record");
+  if (!loginIdResult.success) {
+    throw new Error(loginIdResult.error);
   }
+  const loginId = loginIdResult.data;
 
   const user = { name, email, login_id: loginId, is_admin: isAdmin };
   const result = await createUser({ user });

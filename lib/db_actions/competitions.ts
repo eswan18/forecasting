@@ -83,10 +83,7 @@ export async function getCompetitionById(
       competitionId: id,
       duration,
     });
-    return error(
-      "Failed to retrieve competition",
-      ERROR_CODES.DATABASE_ERROR,
-    );
+    return error("Failed to retrieve competition", ERROR_CODES.DATABASE_ERROR);
   }
 }
 

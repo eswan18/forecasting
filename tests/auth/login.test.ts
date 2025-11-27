@@ -61,7 +61,10 @@ describe("Authentication Login", () => {
             .selectAll()
             .where("username", "=", username)
             .executeTakeFirst();
-          return result;
+          return {
+            success: true,
+            data: result || null,
+          };
         },
       );
     } else {

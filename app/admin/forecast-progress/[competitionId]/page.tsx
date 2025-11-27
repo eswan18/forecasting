@@ -44,7 +44,10 @@ export default async function ForecastProgressPage({
 
   const unforecastedPropsResults = await Promise.all(
     users.map(async (user) => {
-      const result = await getUnforecastedProps({ userId: user.id, competitionId });
+      const result = await getUnforecastedProps({
+        userId: user.id,
+        competitionId,
+      });
       return {
         userId: user.id,
         result,
@@ -61,7 +64,9 @@ export default async function ForecastProgressPage({
     }),
   );
   const metrics: UserProgressMetrics[] = users.map((user) => {
-    const unforecasted = unforecastedPropsResults.find((u) => u.userId === user.id);
+    const unforecasted = unforecastedPropsResults.find(
+      (u) => u.userId === user.id,
+    );
     const unforecastedCount = unforecasted?.result.success
       ? unforecasted.result.data.length
       : 0;

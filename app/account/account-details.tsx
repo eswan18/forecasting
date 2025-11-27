@@ -227,12 +227,7 @@ function ChangeUsernameForm({ onSuccess }: { onSuccess: () => void }) {
       setError("User not found");
       return;
     }
-    const response = await updateLogin({ id: loginId, login: values }).catch(
-      (e) => {
-        const error = e instanceof Error ? e.message : "An error occurred";
-        return { success: false, error };
-      },
-    );
+    const response = await updateLogin({ id: loginId, login: values });
     if (!response.success) {
       setError(response.error);
     } else {

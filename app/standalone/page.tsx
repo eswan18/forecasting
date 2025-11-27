@@ -19,7 +19,9 @@ export default async function Page() {
   if (!propsWithForecastsResult.success) {
     return (
       <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full">
-        <p className="text-destructive">Error: {propsWithForecastsResult.error}</p>
+        <p className="text-destructive">
+          Error: {propsWithForecastsResult.error}
+        </p>
       </main>
     );
   }
