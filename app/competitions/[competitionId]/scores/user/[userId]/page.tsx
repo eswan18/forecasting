@@ -144,78 +144,78 @@ export default async function UserScorePage({
               <CardTitle>Individual Forecast Scores</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                {Object.entries(forecastsByCategory).map(
-                  ([categoryKey, forecasts]) => {
-                    const categoryId =
-                      categoryKey === "uncategorized"
-                        ? null
-                        : parseInt(categoryKey, 10);
-                    const category = categoryId !== null
-                      ? categories.find((cat) => cat.id === categoryId)
-                      : null;
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Proposition</TableHead>
+                      <TableHead className="text-right">Forecast</TableHead>
+                      <TableHead className="text-right">Resolution</TableHead>
+                      <TableHead className="text-right">Score</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {Object.entries(forecastsByCategory).map(
+                      ([categoryKey, forecasts]) => {
+                        const categoryId =
+                          categoryKey === "uncategorized"
+                            ? null
+                            : parseInt(categoryKey, 10);
+                        const category =
+                          categoryId !== null
+                            ? categories.find((cat) => cat.id === categoryId)
+                            : null;
 
-                    return (
-                      <div key={categoryKey}>
-                        <h3 className="font-semibold text-lg mb-3">
-                          {category?.name || "Uncategorized"}
-                        </h3>
-                        <div className="overflow-x-auto">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Proposition</TableHead>
-                                <TableHead className="text-right">
-                                  Forecast
-                                </TableHead>
-                                <TableHead className="text-right">
-                                  Resolution
-                                </TableHead>
-                                <TableHead className="text-right">
-                                  Score
-                                </TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {forecasts.map((forecast) => (
-                                <TableRow key={forecast.forecastId}>
-                                  <TableCell className="max-w-md">
-                                    <div className="flex items-center gap-2">
-                                      <div className="truncate flex-1">
-                                        {forecast.propText}
-                                      </div>
-                                      <Link
-                                        href={`/props/${forecast.propId}`}
-                                        className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        <ExternalLink className="h-3 w-3" />
-                                      </Link>
+                        return (
+                          <>
+                            {/* Category Header Row */}
+                            <TableRow key={`category-${categoryKey}`}>
+                              <TableCell
+                                colSpan={4}
+                                className="font-semibold text-lg bg-muted/50 py-3"
+                              >
+                                {category?.name || "Uncategorized"}
+                              </TableCell>
+                            </TableRow>
+                            {/* Forecast Rows */}
+                            {forecasts.map((forecast) => (
+                              <TableRow key={forecast.forecastId}>
+                                <TableCell className="max-w-md">
+                                  <div className="flex items-center gap-2">
+                                    <div className="truncate flex-1">
+                                      {forecast.propText}
                                     </div>
-                                  </TableCell>
-                                  <TableCell className="text-right">
-                                    {(forecast.forecast * 100).toFixed(1)}%
-                                  </TableCell>
-                                  <TableCell className="text-right">
-                                    {forecast.resolution === null
-                                      ? "-"
-                                      : forecast.resolution
-                                        ? "Yes"
-                                        : "No"}
-                                  </TableCell>
-                                  <TableCell className="text-right font-medium">
-                                    {forecast.score !== null
-                                      ? forecast.score.toFixed(3)
-                                      : "-"}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
-                      </div>
-                    );
-                  },
-                )}
+                                    <Link
+                                      href={`/props/${forecast.propId}`}
+                                      className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                                    >
+                                      <ExternalLink className="h-3 w-3" />
+                                    </Link>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  {(forecast.forecast * 100).toFixed(1)}%
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  {forecast.resolution === null
+                                    ? "-"
+                                    : forecast.resolution
+                                      ? "Yes"
+                                      : "No"}
+                                </TableCell>
+                                <TableCell className="text-right font-medium">
+                                  {forecast.score !== null
+                                    ? forecast.score.toFixed(3)
+                                    : "-"}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </>
+                        );
+                      },
+                    )}
+                  </TableBody>
+                </Table>
               </div>
             </CardContent>
           </Card>
