@@ -9,6 +9,12 @@ import {
 import { getUserFromCookies } from "../get-user";
 import { revalidatePath } from "next/cache";
 import { logger } from "@/lib/logger";
+import {
+  ServerActionResult,
+  success,
+  error,
+  ERROR_CODES,
+} from "@/lib/server-action-result";
 
 function validateCompetitionDates({
   forecasts_open_date,
@@ -18,18 +24,25 @@ function validateCompetitionDates({
   forecasts_open_date: Date;
   forecasts_close_date: Date;
   end_date: Date;
-}) {
+}): ServerActionResult<void> {
   if (forecasts_open_date >= forecasts_close_date) {
-    throw new Error("Open date must be before close date");
+    return error(
+      "Open date must be before close date",
+      ERROR_CODES.VALIDATION_ERROR,
+    );
   }
   if (forecasts_close_date >= end_date) {
-    throw new Error("Close date must be before end date");
+    return error(
+      "Close date must be before end date",
+      ERROR_CODES.VALIDATION_ERROR,
+    );
   }
+  return success(undefined);
 }
 
 export async function getCompetitionById(
   id: number,
-): Promise<Competition | undefined> {
+): Promise<ServerActionResult<Competition | null>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Getting competition by ID", {
     competitionId: id,
@@ -52,6 +65,7 @@ export async function getCompetitionById(
         competitionId: id,
         duration,
       });
+      return success(competition);
     } else {
       logger.warn("Competition not found", {
         operation: "getCompetitionById",
@@ -59,22 +73,26 @@ export async function getCompetitionById(
         competitionId: id,
         duration,
       });
+      return error("Competition not found", ERROR_CODES.NOT_FOUND);
     }
-
-    return competition;
-  } catch (error) {
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to get competition by ID", error as Error, {
+    logger.error("Failed to get competition by ID", err as Error, {
       operation: "getCompetitionById",
       table: "competitions",
       competitionId: id,
       duration,
     });
-    throw error;
+    return error(
+      "Failed to retrieve competition",
+      ERROR_CODES.DATABASE_ERROR,
+    );
   }
 }
 
-export async function getCompetitions(): Promise<Competition[]> {
+export async function getCompetitions(): Promise<
+  ServerActionResult<Competition[]>
+> {
   const currentUser = await getUserFromCookies();
   logger.debug("Getting all competitions", {
     currentUserId: currentUser?.id,
@@ -95,15 +113,15 @@ export async function getCompetitions(): Promise<Competition[]> {
       duration,
     });
 
-    return results;
-  } catch (error) {
+    return success(results);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to get competitions", error as Error, {
+    logger.error("Failed to get competitions", err as Error, {
       operation: "getCompetitions",
       table: "competitions",
       duration,
     });
-    throw error;
+    return error("Failed to retrieve competitions", ERROR_CODES.DATABASE_ERROR);
   }
 }
 
@@ -113,7 +131,7 @@ export async function updateCompetition({
 }: {
   id: number;
   competition: CompetitionUpdate;
-}) {
+}): Promise<ServerActionResult<void>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Updating competition", {
     competitionId: id,
@@ -128,7 +146,10 @@ export async function updateCompetition({
         competitionId: id,
         currentUserId: currentUser?.id,
       });
-      throw new Error("Unauthorized: Only admins can update competitions");
+      return error(
+        "Only admins can update competitions",
+        ERROR_CODES.UNAUTHORIZED,
+      );
     }
 
     // If any of the date fields are being changed, validate ordering using the
@@ -144,7 +165,7 @@ export async function updateCompetition({
         .where("id", "=", id)
         .executeTakeFirst();
       if (!existing) {
-        throw new Error("Competition not found");
+        return error("Competition not found", ERROR_CODES.NOT_FOUND);
       }
       const openDate =
         "forecasts_open_date" in competition &&
@@ -160,11 +181,14 @@ export async function updateCompetition({
         "end_date" in competition && competition.end_date !== undefined
           ? competition.end_date
           : existing.end_date;
-      validateCompetitionDates({
+      const validationResult = validateCompetitionDates({
         forecasts_open_date: openDate,
         forecasts_close_date: closeDate,
         end_date: endDate,
       });
+      if (!validationResult.success) {
+        return validationResult;
+      }
     }
 
     await db
@@ -183,15 +207,16 @@ export async function updateCompetition({
 
     revalidatePath("/competitions");
     revalidatePath("/admin/competitions");
-  } catch (error) {
+    return success(undefined);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to update competition", error as Error, {
+    logger.error("Failed to update competition", err as Error, {
       operation: "updateCompetition",
       table: "competitions",
       competitionId: id,
       duration,
     });
-    throw error;
+    return error("Failed to update competition", ERROR_CODES.DATABASE_ERROR);
   }
 }
 
@@ -199,7 +224,7 @@ export async function createCompetition({
   competition,
 }: {
   competition: NewCompetition;
-}) {
+}): Promise<ServerActionResult<void>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Creating competition", {
     competitionName: competition.name,
@@ -212,15 +237,21 @@ export async function createCompetition({
       logger.warn("Unauthorized attempt to create competition", {
         currentUserId: currentUser?.id,
       });
-      throw new Error("Unauthorized: Only admins can create competitions");
+      return error(
+        "Only admins can create competitions",
+        ERROR_CODES.UNAUTHORIZED,
+      );
     }
 
     // Validate dates on create
-    validateCompetitionDates({
+    const validationResult = validateCompetitionDates({
       forecasts_open_date: competition.forecasts_open_date,
       forecasts_close_date: competition.forecasts_close_date,
       end_date: competition.end_date,
     });
+    if (!validationResult.success) {
+      return validationResult;
+    }
 
     await db.insertInto("competitions").values(competition).execute();
 
@@ -234,14 +265,15 @@ export async function createCompetition({
 
     revalidatePath("/competitions");
     revalidatePath("/admin/competitions");
-  } catch (error) {
+    return success(undefined);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to create competition", error as Error, {
+    logger.error("Failed to create competition", err as Error, {
       operation: "createCompetition",
       table: "competitions",
       competitionName: competition.name,
       duration,
     });
-    throw error;
+    return error("Failed to create competition", ERROR_CODES.DATABASE_ERROR);
   }
 }

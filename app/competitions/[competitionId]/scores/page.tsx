@@ -20,7 +20,11 @@ export default async function Page({
 }) {
   const { competitionId: competitionIdString } = await params;
   const competitionId = parseInt(competitionIdString, 10);
-  const competition = await getCompetitionById(competitionId);
+  const competitionResult = await getCompetitionById(competitionId);
+  if (!competitionResult.success) {
+    return <ErrorPage title={competitionResult.error} />;
+  }
+  const competition = competitionResult.data;
   if (!competition) {
     return <ErrorPage title="Competition not found" />;
   }

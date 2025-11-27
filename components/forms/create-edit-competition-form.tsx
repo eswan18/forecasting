@@ -88,22 +88,44 @@ export function CreateEditCompetitionForm({
     setLoading(true);
     try {
       if (initialCompetition) {
-        await updateCompetition({
+        const result = await updateCompetition({
           id: initialCompetition.id,
           competition: values,
-        }).then(() => {
+        });
+        if (result.success) {
           toast({
             title: "Competition Updated!",
           });
-        });
+          if (onSubmit) {
+            onSubmit();
+          }
+        } else {
+          toast({
+            title: "Update Error",
+            description: result.error,
+            variant: "destructive",
+          });
+          setError(result.error);
+        }
       } else {
-        await createCompetition({
+        const result = await createCompetition({
           competition: values,
-        }).then(() => {
+        });
+        if (result.success) {
           toast({
             title: "Competition Created!",
           });
-        });
+          if (onSubmit) {
+            onSubmit();
+          }
+        } else {
+          toast({
+            title: "Create Error",
+            description: result.error,
+            variant: "destructive",
+          });
+          setError(result.error);
+        }
       }
     } catch (e) {
       const title = initialCompetition ? "Update Error" : "Create Error";
@@ -124,9 +146,6 @@ export function CreateEditCompetitionForm({
       }
     } finally {
       setLoading(false);
-    }
-    if (onSubmit) {
-      onSubmit();
     }
   }
   if (loading) {

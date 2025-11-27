@@ -31,7 +31,11 @@ export default async function Page({
   if (!user) {
     return <div>Please log in to view this page.</div>;
   }
-  const competition = await getCompetitionById(competitionId);
+  const competitionResult = await getCompetitionById(competitionId);
+  if (!competitionResult.success) {
+    return <ErrorPage title={competitionResult.error} />;
+  }
+  const competition = competitionResult.data;
   if (!competition) {
     return <ErrorPage title="Competition not found" />;
   }

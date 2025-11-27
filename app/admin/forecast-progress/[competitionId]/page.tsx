@@ -21,7 +21,16 @@ export default async function ForecastProgressPage({
   if (isNaN(competitionId)) {
     return <ErrorPage title="Invalid competition ID" />;
   }
-  const competition = await getCompetitionById(competitionId);
+  const competitionResult = await getCompetitionById(competitionId);
+  if (!competitionResult.success) {
+    return (
+      <InaccessiblePage
+        title="Competition not found"
+        message={competitionResult.error}
+      />
+    );
+  }
+  const competition = competitionResult.data;
   if (!competition) {
     return (
       <InaccessiblePage

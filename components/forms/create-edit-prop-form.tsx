@@ -112,8 +112,10 @@ export function CreateEditPropForm({
       if (categoriesResult.success) {
         setCategories(categoriesResult.data);
       }
-      const competitions = await getCompetitions();
-      setCompetitions(competitions);
+      const competitionsResult = await getCompetitions();
+      if (competitionsResult.success) {
+        setCompetitions(competitionsResult.data);
+      }
       setLoading(false);
     });
     getUserFromCookies().then((user) => {
