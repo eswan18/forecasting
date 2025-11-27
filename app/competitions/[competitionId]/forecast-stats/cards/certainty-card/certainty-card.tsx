@@ -14,7 +14,11 @@ export default async function CertaintyCard({
 }: {
   competitionId: number;
 }) {
-  const forecasts = await getForecasts({ competitionId });
+  const forecastsResult = await getForecasts({ competitionId });
+  if (!forecastsResult.success) {
+    throw new Error(forecastsResult.error);
+  }
+  const forecasts = forecastsResult.data;
   return (
     <Card className="w-80 h-96">
       <CardHeader className="pb-1">

@@ -33,30 +33,32 @@ export default async function ForecastProgressPage({
   const usersResult = await getUsers();
   const users = handleServerActionResult(usersResult);
 
-  const unforecastedProps = await Promise.all(
+  const unforecastedPropsResults = await Promise.all(
     users.map(async (user) => {
+      const result = await getUnforecastedProps({ userId: user.id, competitionId });
       return {
         userId: user.id,
-        props: await getUnforecastedProps({ userId: user.id, competitionId }),
+        result,
       };
     }),
   );
-  const forecastedProps = await Promise.all(
+  const forecastedPropsResults = await Promise.all(
     users.map(async (user) => {
+      const result = await getForecasts({ userId: user.id, competitionId });
       return {
         userId: user.id,
-        forecasts: await getForecasts({ userId: user.id, competitionId }),
+        result,
       };
     }),
   );
   const metrics: UserProgressMetrics[] = users.map((user) => {
-    const unforecasted = unforecastedProps.find((u) => u.userId === user.id);
-    const unforecastedCount = unforecasted?.props
-      ? unforecasted.props.length
+    const unforecasted = unforecastedPropsResults.find((u) => u.userId === user.id);
+    const unforecastedCount = unforecasted?.result.success
+      ? unforecasted.result.data.length
       : 0;
-    const forecasted = forecastedProps.find((u) => u.userId === user.id);
-    const forecastedCount = forecasted?.forecasts
-      ? forecasted.forecasts.length
+    const forecasted = forecastedPropsResults.find((u) => u.userId === user.id);
+    const forecastedCount = forecasted?.result.success
+      ? forecasted.result.data.length
       : 0;
     return {
       user,

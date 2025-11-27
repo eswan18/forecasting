@@ -51,10 +51,14 @@ export default async function Page({
     );
   }
   const competitionForecastsAreOpen = competitionStatus === "forecasts-open";
-  const propsWithForecasts = await getPropsWithUserForecasts({
+  const propsWithForecastsResult = await getPropsWithUserForecasts({
     userId: user.id,
     competitionId,
   });
+  if (!propsWithForecastsResult.success) {
+    return <ErrorPage title={propsWithForecastsResult.error} />;
+  }
+  const propsWithForecasts = propsWithForecastsResult.data;
 
   return (
     <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full">

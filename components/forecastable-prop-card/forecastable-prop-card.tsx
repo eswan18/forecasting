@@ -45,23 +45,40 @@ export function ForecastablePropCard({
     try {
       if (prop.user_forecast_id) {
         // Update existing forecast
-        await updateForecast({
+        const result = await updateForecast({
           id: prop.user_forecast_id,
           forecast: { forecast: forecastNum },
         });
-        toast({ title: "Forecast updated!" });
+        if (result.success) {
+          toast({ title: "Forecast updated!" });
+          onForecastUpdate?.();
+        } else {
+          toast({
+            title: "Error",
+            description: result.error,
+            variant: "destructive",
+          });
+        }
       } else {
         // Create new forecast
-        await createForecast({
+        const result = await createForecast({
           forecast: {
             prop_id: prop.prop_id,
             user_id: user.id,
             forecast: forecastNum,
           },
         });
-        toast({ title: "Forecast recorded!" });
+        if (result.success) {
+          toast({ title: "Forecast recorded!" });
+          onForecastUpdate?.();
+        } else {
+          toast({
+            title: "Error",
+            description: result.error,
+            variant: "destructive",
+          });
+        }
       }
-      onForecastUpdate?.();
     } catch (error) {
       toast({
         title: "Error",

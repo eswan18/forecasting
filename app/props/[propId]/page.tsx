@@ -56,7 +56,11 @@ async function PropPageContent({
   }
 
   // Get all forecasts for this prop
-  const forecasts = await getForecasts({ propId });
+  const forecastsResult = await getForecasts({ propId });
+  if (!forecastsResult.success) {
+    return <ErrorPage title={forecastsResult.error} />;
+  }
+  const forecasts = forecastsResult.data;
 
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">

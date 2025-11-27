@@ -56,17 +56,26 @@ export function RecordForecastForm({
           user_id: user!.id,
           forecast: values.forecast,
         };
-        await createForecast({ forecast });
-        toast({ title: "Forecast recorded!" });
+        const result = await createForecast({ forecast });
+        if (result.success) {
+          toast({ title: "Forecast recorded!" });
+          onSuccess?.();
+        } else {
+          setError(result.error);
+        }
       } else {
         // Updating existing forecast
         const forecast: ForecastUpdate = {
           forecast: values.forecast,
         };
-        await updateForecast({ id: initialForecast.id, forecast });
-        toast({ title: "Forecast updated!" });
+        const result = await updateForecast({ id: initialForecast.id, forecast });
+        if (result.success) {
+          toast({ title: "Forecast updated!" });
+          onSuccess?.();
+        } else {
+          setError(result.error);
+        }
       }
-      onSuccess?.();
     } catch (e) {
       const msg = e instanceof Error ? e.message : "An error occurred";
       setError(msg);

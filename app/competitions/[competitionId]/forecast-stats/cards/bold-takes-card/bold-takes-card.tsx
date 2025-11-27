@@ -14,7 +14,11 @@ export default async function BoldTakesCard({
 }: {
   competitionId: number;
 }) {
-  const forecasts = await getForecasts({ competitionId });
+  const forecastsResult = await getForecasts({ competitionId });
+  if (!forecastsResult.success) {
+    throw new Error(forecastsResult.error);
+  }
+  const forecasts = forecastsResult.data;
   const boldestForecasts = getForecastsFurthestFromMean(forecasts);
   return (
     <Card className="w-80 h-96">

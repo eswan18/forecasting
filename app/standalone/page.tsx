@@ -12,10 +12,18 @@ export default async function Page() {
     return null;
   }
 
-  const propsWithForecasts = await getPropsWithUserForecasts({
+  const propsWithForecastsResult = await getPropsWithUserForecasts({
     userId: user.id,
     competitionId: null, // null means standalone props
   });
+  if (!propsWithForecastsResult.success) {
+    return (
+      <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full">
+        <p className="text-destructive">Error: {propsWithForecastsResult.error}</p>
+      </main>
+    );
+  }
+  const propsWithForecasts = propsWithForecastsResult.data;
 
   return (
     <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full">

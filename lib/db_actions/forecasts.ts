@@ -12,6 +12,12 @@ import { getUserFromCookies } from "@/lib/get-user";
 import { revalidatePath } from "next/cache";
 import { OrderByExpression, OrderByModifiers, sql } from "kysely";
 import { logger } from "@/lib/logger";
+import {
+  ServerActionResult,
+  success,
+  error,
+  ERROR_CODES,
+} from "@/lib/server-action-result";
 
 export type VForecastsOrderByExpression = OrderByExpression<
   Database,
@@ -35,7 +41,7 @@ export async function getForecasts({
   propId?: number;
   resolution?: (boolean | null)[];
   sort?: Sort;
-}): Promise<VForecast[]> {
+}): Promise<ServerActionResult<VForecast[]>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Getting forecasts", {
     userId,
@@ -96,17 +102,17 @@ export async function getForecasts({
       competitionId,
     });
 
-    return results;
-  } catch (error) {
+    return success(results);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to get forecasts", error as Error, {
+    logger.error("Failed to get forecasts", err as Error, {
       operation: "getForecasts",
       table: "v_forecasts",
       duration,
       userId,
       competitionId,
     });
-    throw error;
+    return error("Failed to retrieve forecasts", ERROR_CODES.DATABASE_ERROR);
   }
 }
 
@@ -114,7 +120,7 @@ export async function createForecast({
   forecast,
 }: {
   forecast: NewForecast;
-}): Promise<number> {
+}): Promise<ServerActionResult<number>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Creating forecast", {
     propId: forecast.prop_id,
@@ -173,17 +179,21 @@ export async function createForecast({
 
     revalidatePath("/competitions");
     revalidatePath("/standalone/forecasts");
-    return id;
-  } catch (error) {
+    return success(id);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to create forecast", error as Error, {
+    logger.error("Failed to create forecast", err as Error, {
       operation: "createForecast",
       table: "forecasts",
       propId: forecast.prop_id,
       userId: forecast.user_id,
       duration,
     });
-    throw error;
+    // Check if it's the validation error we threw
+    if (err instanceof Error && err.message === "Cannot create forecasts past the due date") {
+      return error(err.message, ERROR_CODES.VALIDATION_ERROR);
+    }
+    return error("Failed to create forecast", ERROR_CODES.DATABASE_ERROR);
   }
 }
 
@@ -193,7 +203,7 @@ export async function updateForecast({
 }: {
   id: number;
   forecast: ForecastUpdate;
-}): Promise<void> {
+}): Promise<ServerActionResult<void>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Updating forecast", {
     forecastId: id,
@@ -210,7 +220,7 @@ export async function updateForecast({
         attemptedColumns: Object.keys(forecast),
         currentUserId: currentUser?.id,
       });
-      throw new Error("Unauthorized");
+      return error("Unauthorized", ERROR_CODES.UNAUTHORIZED);
     }
 
     // Check that the competition hasn't ended already.
@@ -260,15 +270,20 @@ export async function updateForecast({
 
     revalidatePath("/competitions");
     revalidatePath("/standalone/forecasts");
-  } catch (error) {
+    return success(undefined);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to update forecast", error as Error, {
+    logger.error("Failed to update forecast", err as Error, {
       operation: "updateForecast",
       table: "forecasts",
       forecastId: id,
       duration,
     });
-    throw error;
+    // Check if it's the validation error we threw
+    if (err instanceof Error && err.message === "Cannot create forecasts past the due date") {
+      return error(err.message, ERROR_CODES.VALIDATION_ERROR);
+    }
+    return error("Failed to update forecast", ERROR_CODES.DATABASE_ERROR);
   }
 }
 
@@ -278,7 +293,7 @@ export async function getUnforecastedProps({
 }: {
   competitionId: number;
   userId: number;
-}): Promise<VProp[]> {
+}): Promise<ServerActionResult<VProp[]>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Getting unforecasted props", {
     competitionId,
@@ -321,17 +336,20 @@ export async function getUnforecastedProps({
       duration,
     });
 
-    return results;
-  } catch (error) {
+    return success(results);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to get unforecasted props", error as Error, {
+    logger.error("Failed to get unforecasted props", err as Error, {
       operation: "getUnforecastedProps",
       table: "v_props",
       competitionId,
       userId,
       duration,
     });
-    throw error;
+    return error(
+      "Failed to retrieve unforecasted props",
+      ERROR_CODES.DATABASE_ERROR,
+    );
   }
 }
 
@@ -342,7 +360,9 @@ export async function getPropsWithUserForecasts({
   userId: number;
   competitionId: number | null;
 }): Promise<
-  (VProp & { user_forecast: number | null; user_forecast_id: number | null })[]
+  ServerActionResult<
+    (VProp & { user_forecast: number | null; user_forecast_id: number | null })[]
+  >
 > {
   const currentUser = await getUserFromCookies();
   logger.debug("Getting props with user forecasts", {
@@ -390,21 +410,28 @@ export async function getPropsWithUserForecasts({
       competitionId,
     });
 
-    return results;
-  } catch (error) {
+    return success(results);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to get props with user forecasts", error as Error, {
+    logger.error("Failed to get props with user forecasts", err as Error, {
       operation: "getPropsWithUserForecasts",
       table: "v_props",
-      duration,
       userId,
       competitionId,
+      duration,
     });
-    throw error;
+    return error(
+      "Failed to retrieve props with user forecasts",
+      ERROR_CODES.DATABASE_ERROR,
+    );
   }
 }
 
-export async function deleteForecast({ id }: { id: number }): Promise<void> {
+export async function deleteForecast({
+  id,
+}: {
+  id: number;
+}): Promise<ServerActionResult<void>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Deleting forecast", {
     forecastId: id,
@@ -433,14 +460,15 @@ export async function deleteForecast({ id }: { id: number }): Promise<void> {
 
     revalidatePath("/competitions");
     revalidatePath("/standalone/forecasts");
-  } catch (error) {
+    return success(undefined);
+  } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to delete forecast", error as Error, {
+    logger.error("Failed to delete forecast", err as Error, {
       operation: "deleteForecast",
       table: "forecasts",
       forecastId: id,
       duration,
     });
-    throw error;
+    return error("Failed to delete forecast", ERROR_CODES.DATABASE_ERROR);
   }
 }
