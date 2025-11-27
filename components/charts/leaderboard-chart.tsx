@@ -3,15 +3,20 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Category } from "@/types/db_types";
 import { CompetitionScore } from "@/lib/db_actions";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
 
 interface LeaderboardChartProps {
   scores: CompetitionScore;
   categories: Category[];
+  competitionId: number;
 }
 
 export default function LeaderboardChart({
   scores,
   categories,
+  competitionId,
 }: LeaderboardChartProps) {
   // Sort users by score (lower is better for Brier scores)
   const sortedUsers = [...scores.overallScores].sort(
@@ -74,14 +79,25 @@ export default function LeaderboardChart({
             <Card key={userScore.userId} className="w-full">
               <CardContent
                 className="p-6
-                grid grid-cols-[5rem_auto] grid-rows-2 grid-flow-col
-                lg:flex lg:flex-row lg:gap-x-4 lg:items-center"
+                  grid grid-cols-[6rem_auto] grid-rows-2 grid-flow-col
+                  lg:flex lg:flex-row lg:gap-x-4 lg:items-center
+                  "
               >
-                {/* User Info */}
-                <div className="flex items-center gap-3 mb-1 lg:w-60">
+                {/* User Info with Button */}
+                <div className="flex flex-col gap-2 mb-1 lg:w-60">
                   <h3 className="text-lg font-semibold">
                     {userScore.userName}
                   </h3>
+                  <div className="block">
+                    <Button asChild variant="link" className="p-0 h-auto">
+                      <Link
+                        href={`/competitions/${competitionId}/scores/user/${userScore.userId}`}
+                      >
+                        Full Score Breakdown
+                        <ExternalLink className="h-3 w-3 ml-1" />
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Score as Text */}
