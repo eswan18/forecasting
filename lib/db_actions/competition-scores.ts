@@ -285,7 +285,7 @@ export async function getUserScoreBreakdown({
         categoryName: row.category_name,
         forecast: Number(row.forecast),
         resolution: row.resolution,
-        score: row.score ? Number(row.score) : null,
+        score: row.score !== null ? Number(row.score) : null,
       }),
     );
 
