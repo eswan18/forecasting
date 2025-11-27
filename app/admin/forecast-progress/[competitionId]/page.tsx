@@ -10,6 +10,8 @@ import { InaccessiblePage } from "@/components/inaccessible-page";
 import ErrorPage from "@/components/pages/error-page";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
 import { ClipboardCheck } from "lucide-react";
+import { logger } from "@/lib/logger";
+import { ErrorToast } from "./error-toast";
 
 export default async function ForecastProgressPage({
   params,
@@ -63,6 +65,38 @@ export default async function ForecastProgressPage({
       };
     }),
   );
+
+  // Check for errors and log them
+  const unforecastedErrors = unforecastedPropsResults.filter(
+    (r) => !r.result.success,
+  );
+  const forecastedErrors = forecastedPropsResults.filter(
+    (r) => !r.result.success,
+  );
+  const hasErrors =
+    unforecastedErrors.length > 0 || forecastedErrors.length > 0;
+
+  if (hasErrors) {
+    unforecastedErrors.forEach(({ userId, result }) => {
+      if (!result.success) {
+        logger.warn("Failed to load unforecasted props", {
+          userId,
+          competitionId,
+          error: result.error,
+        });
+      }
+    });
+    forecastedErrors.forEach(({ userId, result }) => {
+      if (!result.success) {
+        logger.warn("Failed to load forecasts", {
+          userId,
+          competitionId,
+          error: result.error,
+        });
+      }
+    });
+  }
+
   const metrics: UserProgressMetrics[] = users.map((user) => {
     const unforecasted = unforecastedPropsResults.find(
       (u) => u.userId === user.id,
@@ -84,6 +118,7 @@ export default async function ForecastProgressPage({
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full">
+        <ErrorToast hasErrors={hasErrors} />
         <PageHeading
           title={`${competition?.name}: Forecast Progress`}
           breadcrumbs={{
