@@ -136,6 +136,32 @@ tests/
 └── integration/            # Cross-component integration tests
 ```
 
+**Test Factories:**
+
+The project includes test data factories for creating realistic test data:
+
+```typescript
+// Create test user
+const user = await factory.createUser({
+  username: "testuser",
+  email: "test@example.com",
+});
+
+// Create competition
+const competition = await factory.createCompetition({
+  name: "Test Competition",
+  forecasts_open_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+  forecasts_close_date: new Date(),
+  end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+});
+
+// Create proposition and forecast
+const prop = await factory.createCompetitionProp(competition.id);
+const forecast = await factory.createForecast(user.id.toString(), prop.id, {
+  forecast: 0.75,
+});
+```
+
 **Troubleshooting:**
 
 If container tests fail to start:
@@ -157,6 +183,8 @@ npm run test
 - First run: ~3-5 minutes (downloads PostgreSQL image)
 - Subsequent runs: ~4-5 seconds (reuses container setup)
 - 106 tests covering full authentication and database operations
+
+For more detailed testing documentation, see `tests/README.md`.
 
 ### Migrations
 

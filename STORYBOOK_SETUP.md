@@ -2,15 +2,15 @@
 
 ## Current Status
 
-I've successfully set up Storybook 8.6 for your Next.js project with experimental support for React Server Components. Here's what has been configured:
+I've successfully set up Storybook 10.0.8 for your Next.js project with support for React Server Components. Here's what has been configured:
 
 ### ✅ What's Been Set Up
 
 1. **Updated Configuration** (`/.storybook/main.ts`)
-   - Added experimental RSC support with `experimentalRSC: true`
    - Configured story paths to include components and app directories
    - Added proper Vite configuration for alias resolution
    - Added theme addon for light/dark mode support
+   - Using `@storybook/react-vite` framework
 
 2. **Enhanced Preview** (`/.storybook/preview.ts`)
    - Configured theme switching with `@storybook/addon-themes`
@@ -33,9 +33,9 @@ I've successfully set up Storybook 8.6 for your Next.js project with experimenta
 
 ## React Server Components Support
 
-### Current State (2024/2025)
+### Current State (2025)
 
-Storybook now has **experimental** support for React Server Components through the `@storybook/experimental-nextjs-vite` package. This means:
+Storybook 10 provides improved support for React Server Components. This means:
 
 - ✅ **Client components work perfectly** - Any component with `"use client"` directive
 - ✅ **Basic RSC rendering** - The framework can handle some server component scenarios
@@ -101,8 +101,8 @@ Given the current state of RSC support in Storybook:
    - May need to refactor some components for better Storybook compatibility
 
 3. **Future outlook**:
-   - RSC support is improving rapidly
-   - By late 2025, expect much better server component support
-   - The investment in setting up Storybook now will pay off
+   - RSC support continues to improve with each Storybook release
+   - Storybook 10 already provides significantly better server component support than earlier versions
+   - The investment in setting up Storybook will pay off as support continues to improve
 
 The setup is ready to use, and while server components have limitations, the majority of your components will work great in Storybook!
