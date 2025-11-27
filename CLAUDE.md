@@ -54,41 +54,7 @@ This is a Next.js forecasting application inspired by Philip Tetlock's Good Judg
 
 ### Server Actions Pattern
 
-This codebase follows a structured server action pattern that returns results instead of throwing errors. **See `/docs/server-actions-best-practices.md` for complete documentation.**
-
-#### Core Concepts
-
-- **Return Type**: All server actions return `ServerActionResult<T>`:
-  ```typescript
-  type ServerActionResult<T> = 
-    | { success: true; data: T }
-    | { success: false; error: string; code?: string };
-  ```
-
-- **Helper Functions**: Use `success()`, `error()`, and `validationError()` from `/lib/server-action-result.ts`
-- **Error Codes**: Use predefined `ERROR_CODES` (UNAUTHORIZED, NOT_FOUND, VALIDATION_ERROR, DATABASE_ERROR, etc.)
-
-#### Usage Patterns
-
-**In Client Components:**
-- Use `useServerAction` hook from `/hooks/use-server-action.ts` for automatic loading states, error handling, and toast notifications
-- Example: `const action = useServerAction(updateUser, { successMessage: "Updated!" })`
-
-**In Server Components:**
-- Use `handleServerActionResult()` from `/lib/server-action-helpers.ts` to automatically handle errors (throws on error, redirects on UNAUTHORIZED)
-- For partial failures (e.g., multiple parallel requests), check `result.success` and handle errors individually
-- Log errors with `logger.warn()` or `logger.error()` before showing user-facing messages
-
-**Error Handling:**
-- **Critical errors**: Return error page or throw (handled by error boundary)
-- **Partial failures**: Log errors, show toast/alert, continue with partial data
-- **Validation errors**: Use `ServerActionResultWithValidation` for form field-level errors
-
-#### File Organization
-
-- **Database Actions**: `/lib/db_actions/` organized by entity (e.g., `users.ts`, `forecasts.ts`, `props.ts`)
-- **Server Action Helpers**: `/lib/server-action-helpers.ts` and `/lib/server-action-result.ts`
-- **Client Hooks**: `/hooks/use-server-action.ts` for client component integration
+This codebase follows a structured server action pattern that returns results instead of throwing errors. **See `/docs/server-actions-best-practices.md` for complete documentation and examples.**
 
 ### Authentication & Authorization
 
