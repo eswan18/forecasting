@@ -54,7 +54,8 @@ export function RecordForecastForm({
     },
   });
 
-  const isLoading = createForecastAction.isLoading || updateForecastAction.isLoading;
+  const isLoading =
+    createForecastAction.isLoading || updateForecastAction.isLoading;
   const error = createForecastAction.error || updateForecastAction.error;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {

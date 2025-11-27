@@ -33,14 +33,6 @@ export default async function ForecastProgressPage({
     );
   }
   const competition = competitionResult.data;
-  if (!competition) {
-    return (
-      <InaccessiblePage
-        title="Competition not found"
-        message="The competition you are looking for does not exist."
-      />
-    );
-  }
   const usersResult = await getUsers();
   const users = handleServerActionResult(usersResult);
 

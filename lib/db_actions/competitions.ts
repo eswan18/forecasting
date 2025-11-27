@@ -42,7 +42,7 @@ function validateCompetitionDates({
 
 export async function getCompetitionById(
   id: number,
-): Promise<ServerActionResult<Competition | null>> {
+): Promise<ServerActionResult<Competition>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Getting competition by ID", {
     competitionId: id,

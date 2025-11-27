@@ -42,7 +42,8 @@ export function ForecastablePropCard({
     },
   });
 
-  const isSubmitting = createForecastAction.isLoading || updateForecastAction.isLoading;
+  const isSubmitting =
+    createForecastAction.isLoading || updateForecastAction.isLoading;
 
   const handleForecastSubmit = async () => {
     if (!user) return;

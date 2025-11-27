@@ -97,7 +97,8 @@ export function CreateEditCompetitionForm({
     },
   });
 
-  const isLoading = createCompetitionAction.isLoading || updateCompetitionAction.isLoading;
+  const isLoading =
+    createCompetitionAction.isLoading || updateCompetitionAction.isLoading;
   const error = createCompetitionAction.error || updateCompetitionAction.error;
 
   async function handleSubmit(values: z.infer<typeof formSchema>) {

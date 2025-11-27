@@ -112,6 +112,7 @@ export default async function Page() {
 ```
 
 The `handleServerActionResult` helper will:
+
 - Redirect on `UNAUTHORIZED` errors
 - Throw on other errors (caught by error boundary)
 
@@ -162,6 +163,7 @@ export default async function Page() {
 ```
 
 **Key points for partial failures:**
+
 - Log errors with `logger.warn()` or `logger.error()` for debugging
 - Show user-facing notifications (toast/alert) via client components
 - Continue rendering with partial data when appropriate

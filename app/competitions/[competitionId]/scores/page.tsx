@@ -25,9 +25,6 @@ export default async function Page({
     return <ErrorPage title={competitionResult.error} />;
   }
   const competition = competitionResult.data;
-  if (!competition) {
-    return <ErrorPage title="Competition not found" />;
-  }
   const user = await getUserFromCookies();
   if (!user) {
     await loginAndRedirect({ url: `competitions/${competitionId}/scores` });

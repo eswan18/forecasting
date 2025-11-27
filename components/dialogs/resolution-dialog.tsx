@@ -56,7 +56,8 @@ export function ResolutionDialog({
     onSuccess: handleSuccess,
   });
 
-  const isLoading = resolvePropAction.isLoading || unresolvePropAction.isLoading;
+  const isLoading =
+    resolvePropAction.isLoading || unresolvePropAction.isLoading;
 
   const handleSubmit = async () => {
     if (resolution === "unresolved") {

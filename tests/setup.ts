@@ -8,12 +8,10 @@ if (useContainers) {
   // Clean up test data after each test to ensure isolation
   // Note: Container setup/teardown is now handled by globalSetup.ts
   afterEach(async () => {
-    const { getTestDb, cleanupTestData } = await import(
-      "./helpers/testDatabase"
-    );
-    const { getTrackerForTest, clearTrackerForTest } = await import(
-      "./helpers/testIdTracker"
-    );
+    const { getTestDb, cleanupTestData } =
+      await import("./helpers/testDatabase");
+    const { getTrackerForTest, clearTrackerForTest } =
+      await import("./helpers/testIdTracker");
 
     const db = await getTestDb();
     const test = getCurrentTest();

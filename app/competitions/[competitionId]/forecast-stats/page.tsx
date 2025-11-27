@@ -32,9 +32,6 @@ export default async function Page({
     return <ErrorPage title={competitionResult.error} />;
   }
   const competition = competitionResult.data;
-  if (!competition) {
-    return <ErrorPage title="Competition not found" />;
-  }
   const competitionStatus = getCompetitionStatus(
     competition.forecasts_open_date,
     competition.forecasts_close_date,
