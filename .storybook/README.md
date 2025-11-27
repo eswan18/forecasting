@@ -1,10 +1,10 @@
 # Storybook Setup for Next.js with React Server Components
 
-This project uses Storybook 8.6 with experimental support for Next.js and React Server Components.
+This project uses Storybook 10.0.8 with support for Next.js and React Server Components.
 
 ## Current Status
 
-As of 2024/2025, Storybook has experimental support for React Server Components (RSC) through the `@storybook/experimental-nextjs-vite` framework. However, there are still some limitations:
+As of 2025, Storybook 10 provides improved support for React Server Components (RSC) through the `@storybook/react-vite` framework. However, there are still some limitations:
 
 ### ✅ What Works
 
@@ -135,10 +135,10 @@ export const Default: Story = {
 
 ## Future Improvements
 
-As Storybook's RSC support improves, we'll be able to:
+As Storybook's RSC support continues to improve, we'll be able to:
 
 - Create stories for async server components more easily
 - Test server actions within Storybook
 - Better integrate with Next.js App Router features
 
-For now, focus on building a comprehensive component library for your client-side components, which will provide the most value for your development workflow.
+Storybook 10 already provides significantly better server component support than earlier versions. For now, focus on building a comprehensive component library for your client-side components, which will provide the most value for your development workflow.
