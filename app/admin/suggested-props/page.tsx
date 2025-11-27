@@ -41,18 +41,13 @@ export default function SuggestedProps() {
   // Load suggested props on component mount
   useEffect(() => {
     const loadProps = async () => {
-      try {
-        const result = await getSuggestedProps();
-        if (result.success) {
-          setSuggestedProps(result.data);
-        } else {
-          console.error("Failed to load suggested props:", result.error);
-        }
-      } catch (error) {
-        console.error("Failed to load suggested props:", error);
-      } finally {
-        setLoading(false);
+      const result = await getSuggestedProps();
+      if (result.success) {
+        setSuggestedProps(result.data);
+      } else {
+        console.error("Failed to load suggested props:", result.error);
       }
+      setLoading(false);
     };
     loadProps();
   }, []);
@@ -60,19 +55,15 @@ export default function SuggestedProps() {
   const handleDeleteProp = async () => {
     if (!propToDelete) return;
 
-    try {
-      const result = await deleteSuggestedProp({ id: propToDelete });
-      if (result.success) {
-        setSuggestedProps((prev) =>
-          prev.filter((prop) => prop.id !== propToDelete),
-        );
-        setDeleteDialogOpen(false);
-        setPropToDelete(null);
-      } else {
-        console.error("Failed to delete suggested prop:", result.error);
-      }
-    } catch (error) {
-      console.error("Failed to delete suggested prop:", error);
+    const result = await deleteSuggestedProp({ id: propToDelete });
+    if (result.success) {
+      setSuggestedProps((prev) =>
+        prev.filter((prop) => prop.id !== propToDelete),
+      );
+      setDeleteDialogOpen(false);
+      setPropToDelete(null);
+    } else {
+      console.error("Failed to delete suggested prop:", result.error);
     }
   };
 
