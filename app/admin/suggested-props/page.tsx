@@ -64,7 +64,7 @@ export default function SuggestedProps() {
   // Load suggested props on component mount
   useEffect(() => {
     getSuggestedPropsAction.execute();
-  }, []);
+  }, [getSuggestedPropsAction.execute]);
 
   const loading = getSuggestedPropsAction.isLoading;
   const isLoadingDelete = deleteSuggestedPropAction.isLoading;
