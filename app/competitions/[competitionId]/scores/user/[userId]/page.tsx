@@ -150,7 +150,7 @@ export default async function UserScorePage({
                       categoryKey === "uncategorized"
                         ? null
                         : parseInt(categoryKey, 10);
-                    const category = categoryId
+                    const category = categoryId !== null
                       ? categories.find((cat) => cat.id === categoryId)
                       : null;
 
