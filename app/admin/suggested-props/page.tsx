@@ -16,6 +16,10 @@ import {
 } from "@/components/ui/dialog";
 import { User, MessageSquare, Trash, MessageCircle } from "lucide-react";
 import { VSuggestedProp } from "@/types/db_types";
+import {
+  useServerAction,
+  useServerActionNoParams,
+} from "@/hooks/use-server-action";
 
 // Helper function to parse prop text and notes
 function parsePropText(propText: string) {
@@ -34,37 +38,40 @@ function parsePropText(propText: string) {
 
 export default function SuggestedProps() {
   const [suggestedProps, setSuggestedProps] = useState<VSuggestedProp[]>([]);
-  const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [propToDelete, setPropToDelete] = useState<number | null>(null);
 
+  const getSuggestedPropsAction = useServerActionNoParams(getSuggestedProps, {
+    showToast: false,
+    onSuccess: (data) => {
+      setSuggestedProps(data);
+    },
+  });
+
+  const deleteSuggestedPropAction = useServerAction(deleteSuggestedProp, {
+    successMessage: "Suggested prop deleted!",
+    onSuccess: () => {
+      if (propToDelete) {
+        setSuggestedProps((prev) =>
+          prev.filter((prop) => prop.id !== propToDelete),
+        );
+        setDeleteDialogOpen(false);
+        setPropToDelete(null);
+      }
+    },
+  });
+
   // Load suggested props on component mount
   useEffect(() => {
-    const loadProps = async () => {
-      const result = await getSuggestedProps();
-      if (result.success) {
-        setSuggestedProps(result.data);
-      } else {
-        console.error("Failed to load suggested props:", result.error);
-      }
-      setLoading(false);
-    };
-    loadProps();
+    getSuggestedPropsAction.execute();
   }, []);
+
+  const loading = getSuggestedPropsAction.isLoading;
+  const isLoadingDelete = deleteSuggestedPropAction.isLoading;
 
   const handleDeleteProp = async () => {
     if (!propToDelete) return;
-
-    const result = await deleteSuggestedProp({ id: propToDelete });
-    if (result.success) {
-      setSuggestedProps((prev) =>
-        prev.filter((prop) => prop.id !== propToDelete),
-      );
-      setDeleteDialogOpen(false);
-      setPropToDelete(null);
-    } else {
-      console.error("Failed to delete suggested prop:", result.error);
-    }
+    await deleteSuggestedPropAction.execute({ id: propToDelete });
   };
 
   const openDeleteDialog = (propId: number) => {
@@ -185,8 +192,19 @@ export default function SuggestedProps() {
               >
                 Cancel
               </Button>
-              <Button variant="destructive" onClick={handleDeleteProp}>
-                Delete
+              <Button
+                variant="destructive"
+                onClick={handleDeleteProp}
+                disabled={isLoadingDelete}
+              >
+                {isLoadingDelete ? (
+                  <>
+                    <Spinner className="mr-2 h-4 w-4" />
+                    Deleting...
+                  </>
+                ) : (
+                  "Delete"
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>

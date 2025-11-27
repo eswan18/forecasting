@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { resolveProp, unresolveProp } from "@/lib/db_actions/props";
 import { useRouter } from "next/navigation";
 import { Spinner } from "@/components/ui/spinner";
+import { useServerAction } from "@/hooks/use-server-action";
 
 interface ResolutionDialogProps {
   prop: VProp;
@@ -38,16 +39,30 @@ export function ResolutionDialog({
         : "false",
   );
   const [notes, setNotes] = useState(prop.resolution_notes || "");
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  const handleSuccess = () => {
+    router.refresh();
+    onClose();
+  };
+
+  const resolvePropAction = useServerAction(resolveProp, {
+    successMessage: "Resolution updated!",
+    onSuccess: handleSuccess,
+  });
+
+  const unresolvePropAction = useServerAction(unresolveProp, {
+    successMessage: "Prop unresolved!",
+    onSuccess: handleSuccess,
+  });
+
+  const isLoading = resolvePropAction.isLoading || unresolvePropAction.isLoading;
+
   const handleSubmit = async () => {
-    setIsLoading(true);
-    let result;
     if (resolution === "unresolved") {
-      result = await unresolveProp({ propId: prop.prop_id });
+      await unresolvePropAction.execute({ propId: prop.prop_id });
     } else {
-      result = await resolveProp({
+      await resolvePropAction.execute({
         propId: prop.prop_id,
         resolution: resolution === "true",
         notes: notes.trim() || undefined,
@@ -55,15 +70,6 @@ export function ResolutionDialog({
         overwrite: true,
       });
     }
-
-    if (result.success) {
-      router.refresh();
-      onClose();
-    } else {
-      console.error("Failed to update resolution:", result.error);
-      // TODO: Add proper error handling/toast
-    }
-    setIsLoading(false);
   };
 
   const handleClose = () => {

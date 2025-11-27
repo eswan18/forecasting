@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { AlertTriangle, Trophy, Calendar, CalendarClock } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
-import { useToast } from "@/hooks/use-toast";
 import { createCompetition, updateCompetition } from "@/lib/db_actions";
 import { Button } from "@/components/ui/button";
+import { useServerAction } from "@/hooks/use-server-action";
 import {
   Form,
   FormControl,
@@ -70,9 +69,6 @@ export function CreateEditCompetitionForm({
   initialCompetition?: Competition;
   onSubmit?: () => void;
 }) {
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -83,72 +79,40 @@ export function CreateEditCompetitionForm({
     },
   });
 
+  const createCompetitionAction = useServerAction(createCompetition, {
+    successMessage: "Competition Created!",
+    onSuccess: () => {
+      if (onSubmit) {
+        onSubmit();
+      }
+    },
+  });
+
+  const updateCompetitionAction = useServerAction(updateCompetition, {
+    successMessage: "Competition Updated!",
+    onSuccess: () => {
+      if (onSubmit) {
+        onSubmit();
+      }
+    },
+  });
+
+  const isLoading = createCompetitionAction.isLoading || updateCompetitionAction.isLoading;
+  const error = createCompetitionAction.error || updateCompetitionAction.error;
+
   async function handleSubmit(values: z.infer<typeof formSchema>) {
-    setError("");
-    setLoading(true);
-    try {
-      if (initialCompetition) {
-        const result = await updateCompetition({
-          id: initialCompetition.id,
-          competition: values,
-        });
-        if (result.success) {
-          toast({
-            title: "Competition Updated!",
-          });
-          if (onSubmit) {
-            onSubmit();
-          }
-        } else {
-          toast({
-            title: "Update Error",
-            description: result.error,
-            variant: "destructive",
-          });
-          setError(result.error);
-        }
-      } else {
-        const result = await createCompetition({
-          competition: values,
-        });
-        if (result.success) {
-          toast({
-            title: "Competition Created!",
-          });
-          if (onSubmit) {
-            onSubmit();
-          }
-        } else {
-          toast({
-            title: "Create Error",
-            description: result.error,
-            variant: "destructive",
-          });
-          setError(result.error);
-        }
-      }
-    } catch (e) {
-      const title = initialCompetition ? "Update Error" : "Create Error";
-      if (e instanceof Error) {
-        toast({
-          title,
-          description: e.message,
-          variant: "destructive",
-        });
-        setError(e.message);
-      } else {
-        toast({
-          title,
-          description: "An error occurred.",
-          variant: "destructive",
-        });
-        setError("An error occurred.");
-      }
-    } finally {
-      setLoading(false);
+    if (initialCompetition) {
+      await updateCompetitionAction.execute({
+        id: initialCompetition.id,
+        competition: values,
+      });
+    } else {
+      await createCompetitionAction.execute({
+        competition: values,
+      });
     }
   }
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center h-40">
         <Spinner />
@@ -241,10 +205,10 @@ export function CreateEditCompetitionForm({
         />
         <Button
           type="submit"
-          disabled={loading}
+          disabled={isLoading}
           className="w-full h-11 text-base font-medium"
         >
-          {loading ? (
+          {isLoading ? (
             <>
               <Spinner className="mr-2 h-4 w-4" />
               {initialCompetition ? "Updating..." : "Creating..."}

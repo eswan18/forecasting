@@ -11,6 +11,7 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { createForecast, updateForecast } from "@/lib/db_actions";
 import { useToast } from "@/hooks/use-toast";
 import { Spinner } from "@/components/ui/spinner";
+import { useServerAction } from "@/hooks/use-server-action";
 
 interface ForecastablePropCardProps {
   prop: PropWithUserForecast;
@@ -26,7 +27,22 @@ export function ForecastablePropCard({
   const [forecastValue, setForecastValue] = useState<string>(
     prop.user_forecast?.toString() ?? "",
   );
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const createForecastAction = useServerAction(createForecast, {
+    successMessage: "Forecast recorded!",
+    onSuccess: () => {
+      onForecastUpdate?.();
+    },
+  });
+
+  const updateForecastAction = useServerAction(updateForecast, {
+    successMessage: "Forecast updated!",
+    onSuccess: () => {
+      onForecastUpdate?.();
+    },
+  });
+
+  const isSubmitting = createForecastAction.isLoading || updateForecastAction.isLoading;
 
   const handleForecastSubmit = async () => {
     if (!user) return;
@@ -41,53 +57,21 @@ export function ForecastablePropCard({
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      if (prop.user_forecast_id) {
-        // Update existing forecast
-        const result = await updateForecast({
-          id: prop.user_forecast_id,
-          forecast: { forecast: forecastNum },
-        });
-        if (result.success) {
-          toast({ title: "Forecast updated!" });
-          onForecastUpdate?.();
-        } else {
-          toast({
-            title: "Error",
-            description: result.error,
-            variant: "destructive",
-          });
-        }
-      } else {
-        // Create new forecast
-        const result = await createForecast({
-          forecast: {
-            prop_id: prop.prop_id,
-            user_id: user.id,
-            forecast: forecastNum,
-          },
-        });
-        if (result.success) {
-          toast({ title: "Forecast recorded!" });
-          onForecastUpdate?.();
-        } else {
-          toast({
-            title: "Error",
-            description: result.error,
-            variant: "destructive",
-          });
-        }
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to save forecast",
-        variant: "destructive",
+    if (prop.user_forecast_id) {
+      // Update existing forecast
+      await updateForecastAction.execute({
+        id: prop.user_forecast_id,
+        forecast: { forecast: forecastNum },
       });
-    } finally {
-      setIsSubmitting(false);
+    } else {
+      // Create new forecast
+      await createForecastAction.execute({
+        forecast: {
+          prop_id: prop.prop_id,
+          user_id: user.id,
+          forecast: forecastNum,
+        },
+      });
     }
   };
 
