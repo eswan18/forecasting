@@ -128,18 +128,20 @@ export default async function UserScorePage({
       <div className="flex flex-col gap-6 w-full">
         {/* Overall Score Summary */}
         <Card className="w-full">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Medal className="h-5 w-5" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Medal className="h-4 w-4" />
               Overall Score
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {scoreBreakdown.overallScore.toFixed(3)}
-            </div>
-            <div className="text-sm text-muted-foreground mt-1">
-              Average Brier Score across all categories
+          <CardContent className="pt-0">
+            <div className="flex flex-col gap-2">
+              <div className="text-5xl font-bold tracking-tight">
+                {scoreBreakdown.overallScore.toFixed(3)}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Average Brier Score across all categories
+              </div>
             </div>
           </CardContent>
         </Card>
