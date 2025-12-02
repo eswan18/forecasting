@@ -9,9 +9,18 @@ import { VUser } from "@/types/db_types";
 import { InaccessiblePage } from "@/components/inaccessible-page";
 import ErrorPage from "@/components/pages/error-page";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
-import { ClipboardCheck } from "lucide-react";
+import { ClipboardCheck, Users } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { ErrorToast } from "./error-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default async function ForecastProgressPage({
   params,
@@ -100,16 +109,26 @@ export default async function ForecastProgressPage({
     const forecastedCount = forecasted?.result.success
       ? forecasted.result.data.length
       : 0;
+    const total = forecastedCount + unforecastedCount;
     return {
       user,
       unforecasted: unforecastedCount,
       forecasted: forecastedCount,
-      percentComplete: forecastedCount / (forecastedCount + unforecastedCount),
+      percentComplete: total > 0 ? forecastedCount / total : 0,
     };
   });
+
+  // Calculate summary statistics
+  const totalUsers = metrics.length;
+  const totalForecasted = metrics.reduce((sum, m) => sum + m.forecasted, 0);
+  const totalUnforecasted = metrics.reduce((sum, m) => sum + m.unforecasted, 0);
+  const totalProps = totalForecasted + totalUnforecasted;
+  const overallProgress = totalProps > 0 ? totalForecasted / totalProps : 0;
+  const usersFinished = metrics.filter((m) => m.percentComplete === 1).length;
+
   return (
-    <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
-      <div className="w-full">
+    <main className="flex flex-col py-4 px-4 sm:py-6 sm:px-6 lg:py-8 lg:px-8 xl:py-12 xl:px-24">
+      <div className="w-full max-w-6xl mx-auto space-y-6 sm:space-y-8">
         <ErrorToast hasErrors={hasErrors} />
         <PageHeading
           title={`${competition?.name}: Forecast Progress`}
@@ -122,22 +141,80 @@ export default async function ForecastProgressPage({
           }}
           icon={ClipboardCheck}
           iconGradient="bg-gradient-to-br from-cyan-500 to-blue-600"
+          className="mb-2"
         />
-        <table className="w-full mt-8">
-          <thead>
-            <tr>
-              <th>User</th>
-              <th className="text-right">Unforecasted</th>
-              <th className="text-right">Forecasted</th>
-              <th className="text-right">Progress</th>
-            </tr>
-          </thead>
-          <tbody>
-            {metrics.map((m) => (
-              <UserMetricsRow key={m.user.id} metrics={m} />
-            ))}
-          </tbody>
-        </table>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <Card className="border-0 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
+            <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
+              <div className="flex items-center justify-between">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400">
+                    Overall Progress
+                  </p>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-900 dark:text-blue-100">
+                    {(overallProgress * 100).toFixed(0)}%
+                  </p>
+                </div>
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <ClipboardCheck className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
+            <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
+              <div className="flex items-center justify-between">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-green-600 dark:text-green-400">
+                    Users Finished
+                  </p>
+                  <p className="text-xl sm:text-2xl font-bold text-green-900 dark:text-green-100">
+                    {usersFinished} / {totalUsers}
+                  </p>
+                </div>
+                <Users className="h-6 w-6 sm:h-8 sm:w-8 text-green-500 flex-shrink-0" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Progress Table */}
+        <Card className="shadow-lg border-0">
+          <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <ClipboardCheck className="h-4 w-4 sm:h-5 sm:w-5" />
+              User Progress
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0 overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-muted/30">
+                <TableRow className="border-b">
+                  <TableHead className="font-semibold text-muted-foreground text-xs sm:text-sm">
+                    User
+                  </TableHead>
+                  <TableHead className="font-semibold text-muted-foreground text-xs sm:text-sm text-right">
+                    Unforecasted
+                  </TableHead>
+                  <TableHead className="font-semibold text-muted-foreground text-xs sm:text-sm text-right">
+                    Forecasted
+                  </TableHead>
+                  <TableHead className="font-semibold text-muted-foreground text-xs sm:text-sm text-right">
+                    Progress
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {metrics.map((m) => (
+                  <UserMetricsRow key={m.user.id} metrics={m} />
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </div>
     </main>
   );
@@ -151,14 +228,51 @@ interface UserProgressMetrics {
 }
 
 async function UserMetricsRow({ metrics }: { metrics: UserProgressMetrics }) {
+  const percentComplete = metrics.percentComplete * 100;
+  const isComplete = metrics.percentComplete === 1;
+  const isInProgress =
+    metrics.percentComplete > 0 && metrics.percentComplete < 1;
+
   return (
-    <tr>
-      <td>{metrics.user.name}</td>
-      <td className="text-right">{metrics.unforecasted}</td>
-      <td className="text-right">{metrics.forecasted}</td>
-      <td className="text-right">
-        {(metrics.percentComplete * 100).toFixed(0)}%
-      </td>
-    </tr>
+    <TableRow className="border-b hover:bg-muted/20 transition-colors">
+      <TableCell className="py-3 sm:py-4 text-xs sm:text-sm font-medium">
+        {metrics.user.name}
+      </TableCell>
+      <TableCell className="py-3 sm:py-4 text-xs sm:text-sm text-right">
+        {metrics.unforecasted}
+      </TableCell>
+      <TableCell className="py-3 sm:py-4 text-xs sm:text-sm text-right">
+        {metrics.forecasted}
+      </TableCell>
+      <TableCell className="py-3 sm:py-4 text-xs sm:text-sm text-right">
+        <div className="flex items-center justify-end gap-2">
+          <div className="flex-1 max-w-[100px] hidden sm:block">
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div
+                className={`h-full transition-all ${
+                  isComplete
+                    ? "bg-green-500"
+                    : isInProgress
+                      ? "bg-yellow-500"
+                      : "bg-muted"
+                }`}
+                style={{ width: `${percentComplete}%` }}
+              />
+            </div>
+          </div>
+          <span
+            className={`font-medium ${
+              isComplete
+                ? "text-green-600 dark:text-green-400"
+                : isInProgress
+                  ? "text-yellow-600 dark:text-yellow-400"
+                  : "text-muted-foreground"
+            }`}
+          >
+            {percentComplete.toFixed(0)}%
+          </span>
+        </div>
+      </TableCell>
+    </TableRow>
   );
 }
