@@ -129,7 +129,7 @@ export function ForecastablePropsTable({
       </Card>
 
       {/* Results & New Prop Button */}
-      <div className="flex items-center justify-between mt-4 mb-8 px-8">
+      <div className="flex items-center justify-between mt-4 mb-8 px-4">
         <p className="text-sm text-muted-foreground">
           Showing {filteredProps.length} of {props.length} propositions
         </p>
@@ -144,7 +144,7 @@ export function ForecastablePropsTable({
 
       <div className="space-y-3">
         {filteredProps.length > 0 ? (
-          <div className="flex flex-col justify-start items-center gap-6">
+          <div className="flex flex-col justify-start gap-6">
             {filteredProps.map((prop) => (
               <ForecastablePropCard
                 key={prop.prop_id}
