@@ -9,6 +9,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { LucideIcon } from "lucide-react";
+import { MarkdownRenderer } from "@/components/markdown";
 
 export default function PageHeading({
   title,
@@ -54,15 +55,17 @@ export default function PageHeading({
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full">
         {icon && (
           <div
-            className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-              iconGradient || "bg-gradient-to-br from-blue-500 to-purple-600"
+            className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
+              iconGradient || "bg-linear-to-br from-blue-500 to-purple-600"
             }`}
           >
             {React.createElement(icon, { className: "h-5 w-5 text-white" })}
           </div>
         )}
         <div className="min-w-0 flex items-center gap-x-4">
-          <h1 className="text-2xl font-bold inline">{title}</h1>
+          <h1 className="text-2xl font-bold inline">
+            <MarkdownRenderer>{title}</MarkdownRenderer>
+          </h1>
           {children}
         </div>
       </div>

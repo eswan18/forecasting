@@ -7,6 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { generateInviteToken } from "@/lib/db_actions/invite-tokens";
 import { useState } from "react";
@@ -64,11 +65,17 @@ export function InviteUserButton({ className }: { className?: string }) {
             inviteCode === null && (
               <div className="flex flex-col gap-y-4">
                 <div className="flex flex-col gap-y-2">
-                  <Label>Notes</Label>
-                  <Input
+                  <Label>
+                    Notes{" "}
+                    <span className="text-xs text-muted-foreground font-normal">
+                      (Markdown supported)
+                    </span>
+                  </Label>
+                  <Textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Who is this for?"
+                    placeholder="Who is this for? Markdown formatting (links, bold, italic) is supported."
+                    className="min-h-[80px]"
                   />
                 </div>
                 <Button

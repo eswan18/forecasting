@@ -116,11 +116,14 @@ export function SuggestPropForm() {
                   <FormLabel className="text-sm sm:text-base font-medium flex items-center gap-2">
                     <FileText className="h-4 w-4" />
                     Prop Text
+                    <span className="text-xs text-muted-foreground font-normal">
+                      (Markdown supported)
+                    </span>
                   </FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
-                      placeholder="Enter the proposition text here. Be clear and specific about what you're asking people to forecast."
+                      placeholder="Enter the proposition text here. Be clear and specific about what you're asking people to forecast. Markdown formatting (links, bold, italic) is supported."
                       className="min-h-[120px] resize-none text-sm sm:text-base"
                       rows={5}
                     />
@@ -138,11 +141,14 @@ export function SuggestPropForm() {
                   <FormLabel className="text-sm sm:text-base font-medium flex items-center gap-2">
                     <Hash className="h-4 w-4" />
                     Additional Notes (Optional)
+                    <span className="text-xs text-muted-foreground font-normal">
+                      (Markdown supported)
+                    </span>
                   </FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
-                      placeholder="Add any additional context, clarification, or background information that might be helpful for reviewers."
+                      placeholder="Add any additional context, clarification, or background information that might be helpful for reviewers. Markdown formatting (links, bold, italic) is supported."
                       className="min-h-[80px] resize-none text-sm sm:text-base"
                       rows={3}
                     />

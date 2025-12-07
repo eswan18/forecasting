@@ -146,14 +146,19 @@ export function ResolutionDialog({
 
           <div className="space-y-2">
             <Label htmlFor="notes" className="text-sm font-medium">
-              Notes {resolution !== "unresolved" && "(optional)"}
+              Notes {resolution !== "unresolved" && "(optional)"}{" "}
+              {resolution !== "unresolved" && (
+                <span className="text-xs text-muted-foreground font-normal">
+                  (Markdown supported)
+                </span>
+              )}
             </Label>
             <Textarea
               id="notes"
               placeholder={
                 resolution === "unresolved"
                   ? "Notes will be removed when unresolved"
-                  : "Add notes about this resolution..."
+                  : "Add notes about this resolution... Markdown formatting (links, bold, italic) is supported."
               }
               value={notes}
               onChange={(e) => setNotes(e.target.value)}

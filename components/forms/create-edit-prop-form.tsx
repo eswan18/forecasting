@@ -153,12 +153,15 @@ export function CreateEditPropForm({
               <FormLabel className="text-sm font-medium flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 Proposition Text
+                <span className="text-xs text-muted-foreground font-normal">
+                  (Markdown supported)
+                </span>
               </FormLabel>
               <FormControl>
                 <Textarea
                   {...field}
                   className="text-sm min-h-24 resize-none"
-                  placeholder="Enter the proposition text here. Be clear and specific about what you're asking people to forecast."
+                  placeholder="Enter the proposition text here. Be clear and specific about what you're asking people to forecast. Markdown formatting (links, bold, italic) is supported."
                 />
               </FormControl>
               <FormMessage />
@@ -173,13 +176,16 @@ export function CreateEditPropForm({
               <FormLabel className="text-sm font-medium flex items-center gap-2">
                 <Hash className="h-4 w-4" />
                 Notes (Optional)
+                <span className="text-xs text-muted-foreground font-normal">
+                  (Markdown supported)
+                </span>
               </FormLabel>
               <FormControl>
                 <Textarea
                   {...field}
                   value={field.value ?? undefined}
                   className="text-sm min-h-20 resize-none"
-                  placeholder="Add any additional context, clarification, or background information."
+                  placeholder="Add any additional context, clarification, or background information. Markdown formatting (links, bold, italic) is supported."
                 />
               </FormControl>
               <FormMessage />

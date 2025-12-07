@@ -20,6 +20,7 @@ import {
   useServerAction,
   useServerActionNoParams,
 } from "@/hooks/use-server-action";
+import { MarkdownRenderer } from "@/components/markdown";
 
 // Helper function to parse prop text and notes
 function parsePropText(propText: string) {
@@ -126,7 +127,7 @@ export default function SuggestedProps() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <CardTitle className="text-lg leading-relaxed mb-3">
-                          {mainText}
+                          <MarkdownRenderer>{mainText}</MarkdownRenderer>
                         </CardTitle>
 
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -163,9 +164,9 @@ export default function SuggestedProps() {
                             Additional Notes
                           </span>
                         </div>
-                        <p className="text-sm text-muted-foreground leading-relaxed pl-6">
-                          {notes}
-                        </p>
+                        <div className="text-sm text-muted-foreground leading-relaxed pl-6">
+                          <MarkdownRenderer>{notes}</MarkdownRenderer>
+                        </div>
                       </div>
                     </CardContent>
                   )}

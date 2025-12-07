@@ -18,6 +18,7 @@ import { deleteInviteToken } from "@/lib/db_actions";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { MarkdownRenderer } from "@/components/markdown";
 
 export function getColumns(): ColumnDef<InviteToken>[] {
   return [
@@ -57,7 +58,9 @@ export function getColumns(): ColumnDef<InviteToken>[] {
         return (
           <div>
             {notes ? (
-              <span className="text-xs sm:text-sm">{notes}</span>
+              <div className="text-xs sm:text-sm">
+                <MarkdownRenderer>{notes}</MarkdownRenderer>
+              </div>
             ) : (
               <span className="text-xs sm:text-sm text-muted-foreground italic">
                 No notes

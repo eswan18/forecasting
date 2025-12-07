@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { VProp } from "@/types/db_types";
+import { MarkdownRenderer } from "@/components/markdown";
 
 interface PropCardProps {
   prop: VProp;
@@ -25,14 +26,14 @@ export function PropCard({ prop, userForecast }: PropCardProps) {
           </Link>
         </div>
         <h3 className="text-lg font-semibold leading-tight text-balance mb-0 wrap-anywhere">
-          {prop.prop_text}
+          <MarkdownRenderer>{prop.prop_text}</MarkdownRenderer>
         </h3>
       </CardHeader>
       <CardContent className="space-y-4">
         {prop.prop_notes && (
-          <p className="text-sm text-muted-foreground leading-relaxed wrap-anywhere">
-            {prop.prop_notes}
-          </p>
+          <div className="text-sm text-muted-foreground leading-relaxed wrap-anywhere">
+            <MarkdownRenderer>{prop.prop_notes}</MarkdownRenderer>
+          </div>
         )}
 
         <div className="flex w-full justify-end pt-2 border-t">

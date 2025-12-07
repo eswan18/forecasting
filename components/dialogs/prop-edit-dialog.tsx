@@ -75,11 +75,14 @@ export function PropEditDialog({ prop, isOpen, onClose }: PropEditDialogProps) {
         <div className="grid gap-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="text" className="text-sm font-medium">
-              Proposition Text *
+              Proposition Text *{" "}
+              <span className="text-xs text-muted-foreground font-normal">
+                (Markdown supported)
+              </span>
             </Label>
             <Textarea
               id="text"
-              placeholder="Enter the proposition text..."
+              placeholder="Enter the proposition text... Markdown formatting (links, bold, italic) is supported."
               value={text}
               onChange={(e) => setText(e.target.value)}
               className="min-h-[100px]"
@@ -93,11 +96,14 @@ export function PropEditDialog({ prop, isOpen, onClose }: PropEditDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="notes" className="text-sm font-medium">
-              Notes (optional)
+              Notes (optional){" "}
+              <span className="text-xs text-muted-foreground font-normal">
+                (Markdown supported)
+              </span>
             </Label>
             <Textarea
               id="notes"
-              placeholder="Add any additional notes..."
+              placeholder="Add any additional notes... Markdown formatting (links, bold, italic) is supported."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="min-h-[80px]"

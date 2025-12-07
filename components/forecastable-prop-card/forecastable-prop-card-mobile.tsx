@@ -5,13 +5,15 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, Pencil } from "lucide-react";
 import { PropWithUserForecast } from "@/types/db_types";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { createForecast, updateForecast } from "@/lib/db_actions";
 import { useToast } from "@/hooks/use-toast";
 import { Spinner } from "@/components/ui/spinner";
 import { useServerAction } from "@/hooks/use-server-action";
+import { MarkdownRenderer } from "@/components/markdown";
+import { PropEditDialog } from "@/components/dialogs/prop-edit-dialog";
 
 interface ForecastablePropCardMobileProps {
   prop: PropWithUserForecast;
@@ -27,6 +29,7 @@ export function ForecastablePropCardMobile({
   const [forecastValue, setForecastValue] = useState<string>(
     prop.user_forecast?.toString() ?? "",
   );
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const createForecastAction = useServerAction(createForecast, {
     successMessage: "Forecast recorded!",
@@ -79,16 +82,26 @@ export function ForecastablePropCardMobile({
   return (
     <Card className="group hover:shadow-lg transition-shadow duration-200 w-full">
       <CardHeader className="pb-2 space-y-4">
-        {/* Category badge */}
-        <div className="flex flex-row justify-start">
+        {/* Category badge and edit button */}
+        <div className="flex flex-row justify-between items-center">
           <Badge variant="secondary" className="w-fit">
             {prop.category_name}
           </Badge>
+          {user?.is_admin && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsEditDialogOpen(true)}
+              className="h-7 px-2"
+            >
+              <Pencil className="h-3 w-3" />
+            </Button>
+          )}
         </div>
 
         {/* Prop text */}
         <h3 className="text-lg font-semibold leading-tight text-balance mb-0 wrap-anywhere">
-          {prop.prop_text}
+          <MarkdownRenderer>{prop.prop_text}</MarkdownRenderer>
         </h3>
 
         {/* Forecast section */}
@@ -128,11 +141,22 @@ export function ForecastablePropCardMobile({
       </CardHeader>
       <CardContent className="pt-0">
         {prop.prop_notes && (
-          <p className="text-sm text-muted-foreground leading-relaxed wrap-anywhere">
-            {prop.prop_notes}
-          </p>
+          <div className="text-sm text-muted-foreground leading-relaxed wrap-anywhere">
+            <MarkdownRenderer>{prop.prop_notes}</MarkdownRenderer>
+          </div>
         )}
       </CardContent>
+
+      {user?.is_admin && (
+        <PropEditDialog
+          prop={prop}
+          isOpen={isEditDialogOpen}
+          onClose={() => {
+            setIsEditDialogOpen(false);
+            onForecastUpdate?.();
+          }}
+        />
+      )}
     </Card>
   );
 }
