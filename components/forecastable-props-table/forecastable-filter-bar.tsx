@@ -56,7 +56,11 @@ export function ForecastableFilterBar({
         </div>
 
         {/* Category Dropdown */}
-        <Select value={selectedCategory} onValueChange={onCategoryChange}>
+        <Select
+          value={selectedCategory}
+          onValueChange={onCategoryChange}
+          key="category-select"
+        >
           <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
@@ -74,6 +78,7 @@ export function ForecastableFilterBar({
         <Select
           value={selectedForecastStatus}
           onValueChange={onForecastStatusChange}
+          key="forecast-status-select"
         >
           <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Forecast Status" />
