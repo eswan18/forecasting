@@ -1,9 +1,9 @@
 import UsersTable from "./users-table";
-import { getUsers, getInviteTokens } from "@/lib/db_actions";
+import { getUsers, getInviteTokens, getPasswordResetTokens } from "@/lib/db_actions";
 import { InviteUserButton } from "../invite-user-button";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Mail } from "lucide-react";
+import { Users, Mail, KeyRound } from "lucide-react";
 import Link from "next/link";
 import PageHeading from "@/components/page-heading";
 
@@ -14,16 +14,20 @@ export default async function Page() {
   const inviteTokensResult = await getInviteTokens();
   const inviteTokens = handleServerActionResult(inviteTokensResult);
 
+  const passwordResetTokensResult = await getPasswordResetTokens();
+  const passwordResetTokens = handleServerActionResult(passwordResetTokensResult);
+
   users.sort((a, b) => a.id - b.id);
 
   const activeUsers = users.filter(
     (user) => user.deactivated_at === null,
   ).length;
-  const inactiveUsers = users.filter(
-    (user) => user.deactivated_at !== null,
-  ).length;
   const unusedInvites = inviteTokens.filter(
     (token) => token.used_at === null,
+  ).length;
+  const now = new Date();
+  const activeResetTokens = passwordResetTokens.filter(
+    (token) => token.expires_at >= now,
   ).length;
 
   return (
@@ -67,24 +71,6 @@ export default async function Page() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900">
-            <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
-              <div className="flex items-center justify-between">
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Inactive Users
-                  </p>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    {inactiveUsers}
-                  </p>
-                </div>
-                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-400 rounded-full flex items-center justify-center flex-shrink-0">
-                  <div className="w-2 h-2 sm:w-3 sm:h-3 bg-white rounded-full"></div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           <Link
             href="/admin/invite-tokens"
             className="sm:col-span-2 lg:col-span-1"
@@ -101,6 +87,27 @@ export default async function Page() {
                     </p>
                   </div>
                   <Mail className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500 flex-shrink-0" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link
+            href="/admin/password-reset-tokens"
+            className="sm:col-span-2 lg:col-span-1"
+          >
+            <Card className="border-0 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
+                <div className="flex items-center justify-between">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-orange-600 dark:text-orange-400">
+                      Active Reset Tokens
+                    </p>
+                    <p className="text-xl sm:text-2xl font-bold text-orange-900 dark:text-orange-100">
+                      {activeResetTokens}
+                    </p>
+                  </div>
+                  <KeyRound className="h-6 w-6 sm:h-8 sm:w-8 text-orange-500 flex-shrink-0" />
                 </div>
               </CardContent>
             </Card>

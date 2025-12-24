@@ -12,6 +12,8 @@ import {
   error,
   ERROR_CODES,
 } from "@/lib/server-action-result";
+import { getUserFromCookies } from "../get-user";
+import { PasswordReset } from "@/types/db_types";
 
 const PASSWORD_RESET_TOKEN_LIFESPAN_MINUTES = 15;
 
@@ -178,5 +180,53 @@ export async function executePasswordReset({
     });
     // Suppress details of errors to avoid leaking information.
     return error("Error resetting password", ERROR_CODES.VALIDATION_ERROR);
+  }
+}
+
+export async function getPasswordResetTokens(): Promise<
+  ServerActionResult<PasswordReset[]>
+> {
+  const currentUser = await getUserFromCookies();
+  logger.debug("Getting password reset tokens", {
+    currentUserId: currentUser?.id,
+  });
+
+  const startTime = Date.now();
+  try {
+    if (!currentUser?.is_admin) {
+      logger.warn("Unauthorized attempt to get password reset tokens", {
+        currentUserId: currentUser?.id,
+      });
+      return error(
+        "You must be an admin to view password reset tokens",
+        ERROR_CODES.UNAUTHORIZED,
+      );
+    }
+
+    const passwordResetTokens = await db
+      .selectFrom("password_reset_tokens")
+      .selectAll()
+      .orderBy("initiated_at", "desc")
+      .execute();
+
+    const duration = Date.now() - startTime;
+    logger.debug(`Retrieved ${passwordResetTokens.length} password reset tokens`, {
+      operation: "getPasswordResetTokens",
+      table: "password_reset_tokens",
+      duration,
+    });
+
+    return success(passwordResetTokens);
+  } catch (err) {
+    const duration = Date.now() - startTime;
+    logger.error("Failed to get password reset tokens", err as Error, {
+      operation: "getPasswordResetTokens",
+      table: "password_reset_tokens",
+      duration,
+    });
+    return error(
+      "Failed to retrieve password reset tokens",
+      ERROR_CODES.DATABASE_ERROR,
+    );
   }
 }
