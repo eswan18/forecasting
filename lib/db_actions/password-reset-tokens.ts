@@ -13,7 +13,7 @@ import {
   ERROR_CODES,
 } from "@/lib/server-action-result";
 import { getUserFromCookies } from "../get-user";
-import { PasswordReset } from "@/types/db_types";
+import { VPasswordResetToken } from "@/types/db_types";
 
 const PASSWORD_RESET_TOKEN_LIFESPAN_MINUTES = 15;
 
@@ -184,7 +184,7 @@ export async function executePasswordReset({
 }
 
 export async function getPasswordResetTokens(): Promise<
-  ServerActionResult<PasswordReset[]>
+  ServerActionResult<VPasswordResetToken[]>
 > {
   const currentUser = await getUserFromCookies();
   logger.debug("Getting password reset tokens", {
@@ -204,24 +204,27 @@ export async function getPasswordResetTokens(): Promise<
     }
 
     const passwordResetTokens = await db
-      .selectFrom("password_reset_tokens")
+      .selectFrom("v_password_reset_tokens")
       .selectAll()
       .orderBy("initiated_at", "desc")
       .execute();
 
     const duration = Date.now() - startTime;
-    logger.debug(`Retrieved ${passwordResetTokens.length} password reset tokens`, {
-      operation: "getPasswordResetTokens",
-      table: "password_reset_tokens",
-      duration,
-    });
+    logger.debug(
+      `Retrieved ${passwordResetTokens.length} password reset tokens`,
+      {
+        operation: "getPasswordResetTokens",
+        table: "v_password_reset_tokens",
+        duration,
+      },
+    );
 
     return success(passwordResetTokens);
   } catch (err) {
     const duration = Date.now() - startTime;
     logger.error("Failed to get password reset tokens", err as Error, {
       operation: "getPasswordResetTokens",
-      table: "password_reset_tokens",
+      table: "v_password_reset_tokens",
       duration,
     });
     return error(

@@ -1,5 +1,9 @@
 import UsersTable from "./users-table";
-import { getUsers, getInviteTokens, getPasswordResetTokens } from "@/lib/db_actions";
+import {
+  getUsers,
+  getInviteTokens,
+  getPasswordResetTokens,
+} from "@/lib/db_actions";
 import { InviteUserButton } from "../invite-user-button";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +19,9 @@ export default async function Page() {
   const inviteTokens = handleServerActionResult(inviteTokensResult);
 
   const passwordResetTokensResult = await getPasswordResetTokens();
-  const passwordResetTokens = handleServerActionResult(passwordResetTokensResult);
+  const passwordResetTokens = handleServerActionResult(
+    passwordResetTokensResult,
+  );
 
   users.sort((a, b) => a.id - b.id);
 

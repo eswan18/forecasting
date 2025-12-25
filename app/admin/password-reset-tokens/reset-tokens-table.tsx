@@ -19,9 +19,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getColumns } from "./columns";
-import { PasswordReset } from "@/types/db_types";
+import { VPasswordResetToken } from "@/types/db_types";
 
-export default function ResetTokensTable({ data }: { data: PasswordReset[] }) {
+export default function ResetTokensTable({
+  data,
+}: {
+  data: VPasswordResetToken[];
+}) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const columns = getColumns();
