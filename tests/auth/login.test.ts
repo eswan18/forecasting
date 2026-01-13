@@ -184,6 +184,7 @@ describe("Authentication Login", () => {
           login_id: adminUser.login_id,
           username: adminUser.username || null,
           deactivated_at: null,
+          idp_user_id: null,
           updated_at: new Date(),
           created_at: new Date(),
         });
@@ -227,6 +228,7 @@ describe("Authentication Login", () => {
           login_id: regularUser.login_id,
           username: regularUser.username || null,
           deactivated_at: null,
+          idp_user_id: null,
           updated_at: new Date(),
           created_at: new Date(),
         });
@@ -267,6 +269,7 @@ describe("Authentication Login", () => {
           login_id: adminUser.login_id,
           username: adminUser.username || null,
           deactivated_at: null,
+          idp_user_id: null,
           updated_at: new Date(),
           created_at: new Date(),
         });
