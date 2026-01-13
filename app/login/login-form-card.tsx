@@ -47,16 +47,17 @@ export default function LoginFormCard({
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-4">
-          <div className="rounded-lg bg-muted/50 p-4 space-y-2">
-            <p className="text-base text-center text-muted-foreground">
-              We've migrated to a new login system!
+          <div className="rounded-lg bg-muted/50 p-4 space-y-3">
+            <p className="text-sm text-center">
+              We&apos;ve migrated to a new login system! You&apos;ll be
+              redirected there to sign in.
             </p>
             <p className="text-sm text-center">
-              You'll be directed there to sign in.
-              If this is your first time signing in, <span className="font-bold">you&apos;ll need to reset your password</span> there.
-            </p>
-            <p className="text-sm text-center text-muted-foreground">
-              But don't worry, the reset password process actually works now.
+              <span className="font-semibold">First time?</span>{" "}
+              <span className="text-muted-foreground">
+                You&apos;ll need to reset your password first. Don&apos;t
+                worry, the process actually works now.
+              </span>
             </p>
           </div>
 
