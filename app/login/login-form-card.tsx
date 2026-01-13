@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, Eye, EyeOff, Lock, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { AlertTriangle, Eye, EyeOff, Lock, User, ExternalLink } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,11 +42,22 @@ const formSchema = z.object({
   password: z.string().min(8).max(30),
 });
 
-export default function LoginFormCard({ onLogin }: { onLogin?: () => void }) {
-  const [error, setError] = useState("");
+interface LoginFormCardProps {
+  onLogin?: () => void;
+  redirectUrl?: string;
+  initialError?: string;
+}
+
+export default function LoginFormCard({
+  onLogin,
+  redirectUrl = "/",
+  initialError,
+}: LoginFormCardProps) {
+  const [error, setError] = useState(initialError || "");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { mutate } = useCurrentUser();
+  const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -66,6 +78,13 @@ export default function LoginFormCard({ onLogin }: { onLogin?: () => void }) {
     });
     mutate();
     if (!response.success) {
+      // Check if we should redirect to OAuth flow
+      if ("useOAuth" in response && response.useOAuth) {
+        // Redirect to OAuth login
+        const oauthUrl = `/oauth/login?returnUrl=${encodeURIComponent(redirectUrl)}`;
+        router.push(oauthUrl);
+        return;
+      }
       setError(response.error);
     } else {
       setError("");
@@ -74,6 +93,12 @@ export default function LoginFormCard({ onLogin }: { onLogin?: () => void }) {
       }
     }
     setLoading(false);
+  }
+
+  function handleOAuthLogin() {
+    setLoading(true);
+    const oauthUrl = `/oauth/login?returnUrl=${encodeURIComponent(redirectUrl)}`;
+    router.push(oauthUrl);
   }
   return (
     <Card className="w-full shadow-xl border-0 bg-card/50 backdrop-blur-sm">
@@ -173,6 +198,26 @@ export default function LoginFormCard({ onLogin }: { onLogin?: () => void }) {
         </Form>
 
         <div className="space-y-4">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <Separator className="w-full" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">Or</span>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full h-11"
+            onClick={handleOAuthLogin}
+            disabled={loading}
+          >
+            <ExternalLink className="mr-2 h-4 w-4" />
+            Sign in with Identity Provider
+          </Button>
+
           <Separator />
 
           <div className="space-y-3 text-center">

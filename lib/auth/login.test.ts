@@ -12,6 +12,21 @@ vi.mock("@/lib/get-user", () => ({
   getUserFromCookies: vi.fn(),
 }));
 
+// Mock identity-login-flag module
+vi.mock("@/lib/db_actions/identity-login-flag", () => ({
+  isIdentityLoginEnabled: vi.fn().mockResolvedValue({ enabled: false, user: null }),
+  setUserIdpUserId: vi.fn().mockResolvedValue(true),
+}));
+
+// Mock IDP client
+vi.mock("@/lib/idp/client", () => ({
+  IDPAdminClient: vi.fn().mockImplementation(() => ({
+    createUser: vi.fn(),
+    getToken: vi.fn(),
+  })),
+  IDPUserExistsError: class IDPUserExistsError extends Error {},
+}));
+
 describe("Authentication - Login Integration Tests", () => {
   beforeEach(() => {
     vi.clearAllMocks();
