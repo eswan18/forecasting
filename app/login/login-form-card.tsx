@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Eye, EyeOff, Lock, User, ExternalLink } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { AlertTriangle, Lock, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,92 +12,26 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Separator } from "@/components/ui/separator";
-import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { useForm } from "react-hook-form";
 import { Spinner } from "@/components/ui/spinner";
-import { login, LoginResponse } from "@/lib/auth";
-
-const formSchema = z.object({
-  username: z
-    .string()
-    .regex(
-      /^[a-z0-9_]+$/,
-      "Must contain only lowercase letters, numbers, or underscores",
-    )
-    .min(2)
-    .max(30),
-  password: z.string().min(8).max(30),
-});
 
 interface LoginFormCardProps {
-  onLogin?: () => void;
   redirectUrl?: string;
   initialError?: string;
 }
 
 export default function LoginFormCard({
-  onLogin,
   redirectUrl = "/",
   initialError,
 }: LoginFormCardProps) {
-  const [error, setError] = useState(initialError || "");
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const { mutate } = useCurrentUser();
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      username: "",
-      password: "",
-    },
-  });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setLoading(true);
-    const response = await login({
-      username: values.username,
-      password: values.password,
-    }).catch((error) => {
-      const message =
-        error instanceof Error ? error.message : "An error occurred";
-      return { success: false, error: message } as LoginResponse;
-    });
-    mutate();
-    if (!response.success) {
-      // Check if we should redirect to OAuth flow
-      if ("useOAuth" in response && response.useOAuth) {
-        // Redirect to OAuth login
-        const oauthUrl = `/oauth/login?returnUrl=${encodeURIComponent(redirectUrl)}`;
-        router.push(oauthUrl);
-        return;
-      }
-      setError(response.error);
-    } else {
-      setError("");
-      if (onLogin) {
-        onLogin();
-      }
-    }
-    setLoading(false);
-  }
-
-  function handleOAuthLogin() {
+  function handleSignIn() {
     setLoading(true);
     const oauthUrl = `/oauth/login?returnUrl=${encodeURIComponent(redirectUrl)}`;
     router.push(oauthUrl);
   }
+
   return (
     <Card className="w-full shadow-xl border-0 bg-card/50 backdrop-blur-sm">
       <CardHeader className="space-y-4 pb-6">
@@ -109,136 +41,58 @@ export default function LoginFormCard({
           </div>
           <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
           <CardDescription className="text-muted-foreground">
-            Enter your credentials to access your account
+            Sign in with your identity provider account
           </CardDescription>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="username"
-              render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel className="text-sm font-medium">
-                    Username
-                  </FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        placeholder="Enter your username"
-                        autoCapitalize="none"
-                        className="pl-10 h-11"
-                        {...field}
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel className="text-sm font-medium">
-                    Password
-                  </FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password"
-                        className="pl-10 pr-10 h-11"
-                        {...field}
-                      />
-                      <button
-                        type="button"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </button>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button
-              type="submit"
-              className="w-full h-11 text-base font-medium"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Spinner className="mr-2 h-4 w-4" />
-                  Signing in...
-                </>
-              ) : (
-                "Sign in"
-              )}
-            </Button>
-            {error && (
-              <Alert variant="destructive" className="mt-4">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Authentication failed</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-          </form>
-        </Form>
-
         <div className="space-y-4">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <Separator className="w-full" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Or</span>
-            </div>
+          <div className="rounded-lg bg-muted/50 p-4 space-y-2">
+            <p className="text-base text-center text-muted-foreground">
+              We've migrated to a new login system!
+            </p>
+            <p className="text-sm text-center">
+              You'll be directed there to sign in.
+              If this is your first time signing in, <span className="font-bold">you&apos;ll need to reset your password</span> there.
+            </p>
+            <p className="text-sm text-center text-muted-foreground">
+              But don't worry, the reset password process actually works now.
+            </p>
           </div>
 
           <Button
-            type="button"
-            variant="outline"
-            className="w-full h-11"
-            onClick={handleOAuthLogin}
+            onClick={handleSignIn}
+            className="w-full h-11 text-base font-medium"
             disabled={loading}
           >
-            <ExternalLink className="mr-2 h-4 w-4" />
-            Sign in with Identity Provider
+            {loading ? (
+              <>
+                <Spinner className="mr-2 h-4 w-4" />
+                Redirecting...
+              </>
+            ) : (
+              <>
+                <LogIn className="mr-2 h-4 w-4" />
+                Sign in
+              </>
+            )}
           </Button>
 
-          <Separator />
+          {initialError && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Authentication failed</AlertTitle>
+              <AlertDescription>{initialError}</AlertDescription>
+            </Alert>
+          )}
+        </div>
 
-          <div className="space-y-3 text-center">
-            <p className="text-sm text-muted-foreground">
-              Forgot your password?
-              <Link href="/reset-password" className="ml-1">
-                <Button
-                  variant="link"
-                  className="h-auto p-0 text-sm font-normal text-primary hover:underline"
-                >
-                  Reset it here
-                </Button>
-              </Link>
+        <div className="space-y-3 text-center">
+          <div className="rounded-lg bg-muted/50 p-3">
+            <p className="text-xs text-muted-foreground">
+              Don&apos;t have an account? You&apos;ll need an invite link from
+              Ethan to register.
             </p>
-
-            <div className="rounded-lg bg-muted/50 p-3">
-              <p className="text-xs text-muted-foreground">
-                Don&apos;t have an account? You&apos;ll need an invite link from
-                Ethan to register.
-              </p>
-            </div>
           </div>
         </div>
       </CardContent>

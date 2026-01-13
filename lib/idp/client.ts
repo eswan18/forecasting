@@ -82,6 +82,36 @@ export class IDPAdminClient {
   }
 
   /**
+   * Get a user by username from the IDP.
+   * Uses the list users endpoint and filters by username.
+   * Returns null if user not found.
+   */
+  async getUserByUsername(username: string): Promise<IDPUser | null> {
+    const token = await this.getToken();
+
+    // The IDP doesn't have a by-username endpoint, so we list users and filter
+    // This is fine for small user counts during migration
+    const response = await fetch(
+      `${IDP_BASE_URL}/admin/users?limit=100`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Failed to list users from IDP: ${error}`);
+    }
+
+    const data: { users: IDPUser[] } = await response.json();
+    const user = data.users.find((u) => u.username === username);
+    return user ?? null;
+  }
+
+  /**
    * Create a new user in the IDP.
    * Used during migration when a legacy user logs in.
    */

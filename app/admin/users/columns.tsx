@@ -12,10 +12,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { loginViaImpersonation } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, UserCheck, UserX, User } from "lucide-react";
+import { ExternalLink, UserCheck, UserX } from "lucide-react";
 import Link from "next/link";
 import { setUserActive } from "@/lib/db_actions/users";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
@@ -34,17 +32,6 @@ export function getColumns({
       cell: ({ row }) => {
         const username = row.original.username;
         const name = row.original.name;
-        const handleImpersonate = username
-          ? async () => {
-              await loginViaImpersonation(username)
-                .then(async () => {
-                  mutateUser();
-                })
-                .then(() => {
-                  redirect("/");
-                });
-            }
-          : null;
         return (
           <div className="px-2">
             <div className="flex flex-row gap-x-1 sm:gap-x-2 items-center text-sm sm:text-lg">
@@ -62,46 +49,6 @@ export function getColumns({
                   )}
                   <ExternalLink className="h-3 w-3 flex-shrink-0" />
                 </Link>
-                {handleImpersonate && !row.original.is_admin && (
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-5 w-5 p-0 flex-shrink-0"
-                      >
-                        <User className="h-3 w-3" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle>Impersonate User?</DialogTitle>
-                        <DialogDescription>
-                          Impersonating this user will log you out of your
-                          current session. You will remain logged in as the
-                          impersonated user until logging out.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <DialogFooter className="flex-col sm:flex-row gap-2">
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            /* dialog will close automatically */
-                          }}
-                          className="w-full sm:w-auto"
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          onClick={handleImpersonate}
-                          className="w-full sm:w-auto"
-                        >
-                          Impersonate
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                )}
               </div>
             </div>
             <div className="text-xs sm:text-sm text-muted-foreground truncate">

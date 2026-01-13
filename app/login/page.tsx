@@ -1,5 +1,3 @@
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import LoginFormCard from "./login-form-card";
 
 export default async function LoginPage({
@@ -12,19 +10,10 @@ export default async function LoginPage({
     ? decodeURIComponent(redirectUrlParam)
     : "/";
 
-  const revalidateOnLogin = async () => {
-    "use server";
-    revalidatePath("/");
-    redirect(redirectUrl);
-  };
   return (
     <div className="flex flex-col items-center justify-start pt-16 pb-8 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-md">
-        <LoginFormCard
-          onLogin={revalidateOnLogin}
-          redirectUrl={redirectUrl}
-          initialError={error}
-        />
+        <LoginFormCard redirectUrl={redirectUrl} initialError={error} />
       </div>
     </div>
   );

@@ -1,18 +1,15 @@
 "use server";
 
 import { cookies } from "next/headers";
-import jwt from "jsonwebtoken";
 import { db } from "@/lib/database";
 import { VUser } from "@/types/db_types";
 import { redirect } from "next/navigation";
 import { validateIDPToken } from "@/lib/idp/client";
 import { logger } from "@/lib/logger";
 
-const JWT_SECRET = process.env.JWT_SECRET as string;
-
 /**
  * Get the current user from cookies.
- * Supports both legacy JWT tokens and IDP tokens.
+ * Validates the IDP access token and looks up the user.
  */
 export async function getUserFromCookies(): Promise<VUser | null> {
   const token = (await cookies()).get("token")?.value;
@@ -20,40 +17,7 @@ export async function getUserFromCookies(): Promise<VUser | null> {
     return null;
   }
 
-  // Try legacy JWT first
-  const legacyUser = await getUserFromLegacyToken(token);
-  if (legacyUser) {
-    return legacyUser;
-  }
-
-  // Try IDP token
-  const idpUser = await getUserFromIDPToken(token);
-  return idpUser;
-}
-
-/**
- * Get user from a legacy JWT token.
- * These tokens contain { loginId: number } and are signed with JWT_SECRET.
- */
-async function getUserFromLegacyToken(token: string): Promise<VUser | null> {
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { loginId: number };
-    const user = await db
-      .selectFrom("v_users")
-      .selectAll()
-      .where("login_id", "=", decoded.loginId)
-      .executeTakeFirstOrThrow();
-
-    // Check if user is deactivated
-    if (user.deactivated_at) {
-      logger.warn("Deactivated user attempted access", { userId: user.id });
-      return null;
-    }
-
-    return user;
-  } catch {
-    return null;
-  }
+  return getUserFromIDPToken(token);
 }
 
 /**
@@ -86,19 +50,10 @@ async function getUserFromIDPToken(token: string): Promise<VUser | null> {
 }
 
 /**
- * Get user from a token string (supports both legacy and IDP tokens).
- * This is primarily used for backwards compatibility.
+ * Get user from a token string.
  */
 export async function getUserFromToken(token: string): Promise<VUser | null> {
-  // Try legacy JWT first
-  const legacyUser = await getUserFromLegacyToken(token);
-  if (legacyUser) {
-    return legacyUser;
-  }
-
-  // Try IDP token
-  const idpUser = await getUserFromIDPToken(token);
-  return idpUser;
+  return getUserFromIDPToken(token);
 }
 
 export async function loginAndRedirect({
