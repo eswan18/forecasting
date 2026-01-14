@@ -5,6 +5,7 @@ import { useState } from "react";
 import { stopImpersonation } from "@/lib/auth/impersonation";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 interface ImpersonationBannerProps {
   impersonatedUsername: string;
@@ -26,6 +27,11 @@ export function ImpersonationBanner({
       router.refresh();
     } catch (error) {
       console.error("Failed to stop impersonation:", error);
+      toast({
+        title: "Error",
+        description: "Failed to stop impersonation. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
