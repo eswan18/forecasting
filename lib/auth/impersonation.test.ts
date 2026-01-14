@@ -104,6 +104,7 @@ describe("Impersonation", () => {
       mockExecuteTakeFirst.mockResolvedValue({
         id: 1,
         name: "Admin User",
+        is_admin: true,
       });
 
       const { startImpersonation } = await import("./impersonation");
@@ -111,6 +112,45 @@ describe("Impersonation", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe("Cannot impersonate yourself");
+    });
+
+    it("should fail when trying to impersonate another admin", async () => {
+      mockGetRealUserFromCookies.mockResolvedValue({
+        id: 1,
+        name: "Admin User",
+        is_admin: true,
+      });
+      mockExecuteTakeFirst.mockResolvedValue({
+        id: 2,
+        name: "Other Admin",
+        is_admin: true,
+      });
+
+      const { startImpersonation } = await import("./impersonation");
+      const result = await startImpersonation(2);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Cannot impersonate another admin");
+    });
+
+    it("should fail when trying to impersonate a deactivated user", async () => {
+      mockGetRealUserFromCookies.mockResolvedValue({
+        id: 1,
+        name: "Admin User",
+        is_admin: true,
+      });
+      mockExecuteTakeFirst.mockResolvedValue({
+        id: 2,
+        name: "Deactivated User",
+        is_admin: false,
+        deactivated_at: new Date(),
+      });
+
+      const { startImpersonation } = await import("./impersonation");
+      const result = await startImpersonation(2);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("User is deactivated");
     });
 
     it("should succeed when admin impersonates another user", async () => {

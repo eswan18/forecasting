@@ -69,6 +69,20 @@ export async function startImpersonation(
     return { success: false, error: "Cannot impersonate yourself" };
   }
 
+  // Don't allow impersonating admin users
+  if (targetUser.is_admin) {
+    logger.warn("Attempt to impersonate admin user", {
+      adminId: currentUser.id,
+      targetUserId,
+    });
+    return { success: false, error: "Cannot impersonate another admin" };
+  }
+
+  // Don't allow impersonating deactivated users
+  if (targetUser.deactivated_at) {
+    return { success: false, error: "User is deactivated" };
+  }
+
   // Create signed token and set cookie
   const token = createSignedToken(targetUserId, currentUser.id);
   const cookieStore = await cookies();
