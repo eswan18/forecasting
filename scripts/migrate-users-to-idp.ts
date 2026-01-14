@@ -5,7 +5,7 @@
  *   npx tsx scripts/migrate-users-to-idp.ts [env-file]
  *
  * Examples:
- *   npx tsx scripts/migrate-users-to-idp.ts .env.id-dev
+ *   npx tsx scripts/migrate-users-to-idp.ts .env.idp.dev
  *   npx tsx scripts/migrate-users-to-idp.ts .env.prod
  *
  * Defaults to .env.id-dev if no env file is specified.
@@ -19,7 +19,7 @@ import type { Database } from "@/types/db_types";
 import crypto from "crypto";
 
 // Load environment file
-const envFile = process.argv[2] || ".env.id-dev";
+const envFile = process.argv[2];
 const envPath = path.resolve(process.cwd(), envFile);
 console.log(`Loading environment from: ${envPath}`);
 const result = dotenv.config({ path: envPath });
@@ -28,8 +28,6 @@ if (result.error) {
   process.exit(1);
 }
 
-// If user_id = 19 skip (duplicate)
-const skipUserId = 19;
 
 // IDP Configuration from environment
 const IDP_BASE_URL = process.env.IDP_BASE_URL || "";
@@ -183,7 +181,6 @@ async function main() {
     .selectFrom("v_users")
     .selectAll()
     .where("deactivated_at", "is", null)
-    .where("id", "!=", skipUserId)
     .execute();
   console.log(`Found ${users.length} active forecasting users`);
 
