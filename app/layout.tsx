@@ -6,6 +6,7 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/react";
 import { EnvironmentBanner } from "@/components/environment-banner";
+import { ImpersonationBannerWrapper } from "@/components/impersonation-banner-wrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,6 +25,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider attribute="class">
           <EnvironmentBanner />
+          <ImpersonationBannerWrapper />
           <NavBar />
           <div className="w-full max-w-6xl mx-auto">{children}</div>
           <Toaster />
