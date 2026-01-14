@@ -4,8 +4,6 @@ import {
   getCategories,
 } from "@/lib/db_actions";
 import PageHeading from "@/components/page-heading";
-import { loginAndRedirect } from "@/lib/get-user";
-import { getUserFromCookies } from "@/lib/get-user";
 import ErrorPage from "@/components/pages/error-page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Medal, User } from "lucide-react";
@@ -16,6 +14,7 @@ export default async function UserScorePage({
 }: {
   params: Promise<{ competitionId: string; userId: string }>;
 }) {
+  // Middleware ensures user is logged in
   const { competitionId: competitionIdString, userId: userIdString } =
     await params;
   const competitionId = parseInt(competitionIdString, 10);
@@ -30,13 +29,6 @@ export default async function UserScorePage({
     return <ErrorPage title={competitionResult.error} />;
   }
   const competition = competitionResult.data;
-
-  const user = await getUserFromCookies();
-  if (!user) {
-    await loginAndRedirect({
-      url: `competitions/${competitionId}/scores/user/${userId}`,
-    });
-  }
 
   const scoreBreakdownResult = await getUserScoreBreakdown({
     competitionId,

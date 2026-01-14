@@ -4,7 +4,6 @@ import { cookies } from "next/headers";
 import crypto from "crypto";
 import { db } from "@/lib/database";
 import { VUser } from "@/types/db_types";
-import { redirect } from "next/navigation";
 import { validateIDPToken } from "@/lib/idp/client";
 import { logger } from "@/lib/logger";
 
@@ -183,19 +182,4 @@ async function getUserFromIDPToken(token: string): Promise<VUser | null> {
  */
 export async function getUserFromToken(token: string): Promise<VUser | null> {
   return getUserFromIDPToken(token);
-}
-
-export async function loginAndRedirect({
-  url,
-}: {
-  url: string;
-}): Promise<never> {
-  if (url === "/") {
-    // The login page redirect to the home page by default, so we don't need to specify
-    // it in the query params.
-    redirect("/login");
-  } else {
-    const redirectTo = encodeURIComponent(url);
-    redirect(`/login?redirect=${redirectTo}`);
-  }
 }

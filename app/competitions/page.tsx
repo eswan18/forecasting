@@ -1,6 +1,6 @@
 import PageHeading from "@/components/page-heading";
 import { getCompetitions } from "@/lib/db_actions/competitions";
-import { getUserFromCookies, loginAndRedirect } from "@/lib/get-user";
+import { getUserFromCookies } from "@/lib/get-user";
 import Link from "next/link";
 import {
   Card,
@@ -16,11 +16,8 @@ import { formatDate } from "@/lib/time-utils";
 import { getCompetitionStatusFromObject } from "@/lib/competition-status";
 
 export default async function CompetitionsPage() {
-  const user = await getUserFromCookies();
-  if (!user) {
-    await loginAndRedirect({ url: `/competitions` });
-    return <></>; // will never reach this line due to redirect.
-  }
+  // Middleware ensures user is logged in
+  const user = (await getUserFromCookies())!;
 
   const allCompetitionsResult = await getCompetitions();
   if (!allCompetitionsResult.success) {

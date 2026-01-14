@@ -25,12 +25,10 @@ export default async function Page({
       <ErrorPage title={`Invalid competition ID '${competitionIdString}'`} />
     );
   }
-  const user = await getUserFromCookies();
-  const allowEdits = user?.is_admin || false;
+  // Middleware ensures user is logged in
+  const user = (await getUserFromCookies())!;
+  const allowEdits = user.is_admin;
 
-  if (!user) {
-    return <div>Please log in to view this page.</div>;
-  }
   const competitionResult = await getCompetitionById(competitionId);
   if (!competitionResult.success) {
     return <ErrorPage title={competitionResult.error} />;

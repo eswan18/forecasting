@@ -1,16 +1,12 @@
 import { getPropsWithUserForecasts } from "@/lib/db_actions/forecasts";
-import { getUserFromCookies, loginAndRedirect } from "@/lib/get-user";
+import { getUserFromCookies } from "@/lib/get-user";
 import { PropsTable } from "@/components/props/props-table";
 import PageHeading from "@/components/page-heading";
 import { TrendingUpDown } from "lucide-react";
 
 export default async function Page() {
-  const user = await getUserFromCookies();
-
-  if (!user) {
-    await loginAndRedirect({ url: "/standalone/props" });
-    return null;
-  }
+  // Middleware ensures user is logged in
+  const user = (await getUserFromCookies())!;
 
   const propsWithForecastsResult = await getPropsWithUserForecasts({
     userId: user.id,
