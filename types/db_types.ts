@@ -29,6 +29,7 @@ export interface UsersTable {
   login_id: number | null;
   is_admin: boolean;
   deactivated_at: Date | null;
+  idp_user_id: string | null; // UUID from IDP (null = legacy login)
   updated_at: Generated<Date>;
   created_at: Generated<Date>;
 }
@@ -212,6 +213,7 @@ export interface VUsersView {
   email: string;
   is_admin: boolean;
   deactivated_at: Date | null;
+  idp_user_id: string | null; // UUID from IDP (null = legacy login)
   login_id: number | null;
   username: string | null;
   created_at: Date;
