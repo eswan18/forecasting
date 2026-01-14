@@ -122,10 +122,12 @@ function UserDetailsSection({
 
 function AccountSettingsSection({ email }: { email: string }) {
   function handleManageAccount() {
-    const idpBaseUrl =
-      process.env.NEXT_PUBLIC_IDP_BASE_URL || "https://identity.ethanswan.com";
-    const normalizedBaseUrl = idpBaseUrl.replace(/\/+$/, "");
-    window.location.href = `${normalizedBaseUrl}/oauth/account-settings`;
+    const idpBaseUrl = process.env.NEXT_PUBLIC_IDP_BASE_URL;
+    if (idpBaseUrl) {
+      // Redirect to IDP account settings page
+      const normalizedBaseUrl = idpBaseUrl.replace(/\/+$/, "");
+      window.location.href = `${normalizedBaseUrl}/oauth/account-settings`;
+    }
   }
 
   return (
