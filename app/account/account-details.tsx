@@ -21,7 +21,7 @@ import { useServerAction } from "@/hooks/use-server-action";
 import { Spinner } from "@/components/ui/spinner";
 import { ExternalLink } from "lucide-react";
 
-export function AccountDetails() {
+export function AccountDetails({ idpBaseUrl }: { idpBaseUrl?: string }) {
   const { user, isLoading, mutate } = useCurrentUser();
   async function mutateUser(updatedUser: UserUpdate) {
     if (user) {
@@ -35,7 +35,7 @@ export function AccountDetails() {
           {!isLoading && (
             <UserDetailsSection initialUser={user} mutateUser={mutateUser} />
           )}
-          <AccountSettingsSection email={user.email} />
+          <AccountSettingsSection email={user.email} idpBaseUrl={idpBaseUrl} />
         </>
       )}
     </div>
@@ -120,11 +120,15 @@ function UserDetailsSection({
   );
 }
 
-function AccountSettingsSection({ email }: { email: string }) {
+function AccountSettingsSection({
+  email,
+  idpBaseUrl,
+}: {
+  email: string;
+  idpBaseUrl?: string;
+}) {
   function handleManageAccount() {
-    const idpBaseUrl = process.env.NEXT_PUBLIC_IDP_BASE_URL;
     if (idpBaseUrl) {
-      // Redirect to IDP account settings page
       const normalizedBaseUrl = idpBaseUrl.replace(/\/+$/, "");
       window.location.href = `${normalizedBaseUrl}/oauth/account-settings`;
     }
