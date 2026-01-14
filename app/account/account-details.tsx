@@ -20,7 +20,6 @@ import { Label } from "@/components/ui/label";
 import { useServerAction } from "@/hooks/use-server-action";
 import { Spinner } from "@/components/ui/spinner";
 import { ExternalLink } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 export function AccountDetails() {
   const { user, isLoading, mutate } = useCurrentUser();
@@ -122,10 +121,13 @@ function UserDetailsSection({
 }
 
 function AccountSettingsSection({ email }: { email: string }) {
-  const router = useRouter();
-
   function handleManageAccount() {
-    router.push("/oauth/account-settings");
+    const idpBaseUrl = process.env.NEXT_PUBLIC_IDP_BASE_URL;
+    if (idpBaseUrl) {
+      // Redirect to IDP account settings page
+      const normalizedBaseUrl = idpBaseUrl.replace(/\/+$/, "");
+      window.location.href = `${normalizedBaseUrl}/oauth/account-settings`;
+    }
   }
 
   return (
