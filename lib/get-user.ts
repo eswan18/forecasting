@@ -42,14 +42,22 @@ function verifyImpersonationToken(
     return null;
   }
 
-  // Verify signature
+  // Verify signature using timing-safe comparison
   const data = `${userId}:${adminId}:${timestamp}`;
   const expectedSignature = crypto
     .createHmac("sha256", secret)
     .update(data)
     .digest("hex");
 
-  if (signature !== expectedSignature) {
+  // Use timing-safe comparison to prevent timing attacks
+  const signatureBuffer = Buffer.from(signature, "hex");
+  const expectedSignatureBuffer = Buffer.from(expectedSignature, "hex");
+
+  if (signatureBuffer.length !== expectedSignatureBuffer.length) {
+    return null;
+  }
+
+  if (!crypto.timingSafeEqual(signatureBuffer, expectedSignatureBuffer)) {
     return null;
   }
 
