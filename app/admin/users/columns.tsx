@@ -120,8 +120,8 @@ function UsernameCell({ user }: { user: VUser }) {
             )}
             <ExternalLink className="h-3 w-3 flex-shrink-0" />
           </Link>
-          {/* Impersonate button - only show for non-admin users */}
-          {!user.is_admin && (
+          {/* Impersonate button - only show for non-admin, active users */}
+          {!user.is_admin && !user.deactivated_at && (
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button
