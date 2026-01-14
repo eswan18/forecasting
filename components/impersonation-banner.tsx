@@ -8,12 +8,10 @@ import { X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface ImpersonationBannerProps {
-  impersonatedUsername: string;
   impersonatedName: string;
 }
 
 export function ImpersonationBanner({
-  impersonatedUsername,
   impersonatedName,
 }: ImpersonationBannerProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -37,7 +35,7 @@ export function ImpersonationBanner({
     }
   };
 
-  const displayName = impersonatedUsername || impersonatedName;
+  const displayName = impersonatedName;
 
   return (
     <div className="bg-amber-500 text-black text-center text-sm font-medium py-2 w-full flex items-center justify-center gap-3">

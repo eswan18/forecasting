@@ -78,8 +78,8 @@ describe("getCompetitionScores", () => {
     ifRunningContainerTestsIt(
       "should aggregate scores correctly for multiple users and categories",
       async () => {
-        const user1 = await factory.createUser({ username: "user1" });
-        const user2 = await factory.createUser({ username: "user2" });
+        const user1 = await factory.createUser({ name: "User One" });
+        const user2 = await factory.createUser({ name: "User Two" });
         vi.mocked(getUserFromCookies).mockResolvedValue(user1);
 
         const competition = await factory.createCompetition({

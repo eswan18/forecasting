@@ -1,4 +1,5 @@
 import { Kysely } from "kysely";
+import crypto from "crypto";
 import {
   Database,
   User,
@@ -8,16 +9,10 @@ import {
   Category,
   Resolution,
 } from "@/types/db_types";
-import argon2 from "argon2";
 import { getTestTracker } from "./testIdTracker";
 
-// Use existing types from the codebase instead of duplicating interfaces
-// Extend User with username field for convenience in tests
-export type TestUser = User & {
-  username: string | null;
-};
-
-// These types match exactly with the database types
+// Use existing types from the codebase
+export type TestUser = User;
 export type TestProp = Prop;
 export type TestCompetition = Competition;
 export type TestForecast = Forecast;
@@ -35,47 +30,24 @@ export class TestDataFactory {
     return getTestTracker();
   }
 
-  async createUser(
-    overrides: Partial<TestUser> & {
-      password?: string;
-    } = {},
-  ): Promise<TestUser> {
-    const username =
-      overrides.username ||
-      `testuser_${Math.random().toString(36).substring(7)}`;
-    const password = overrides.password || "testpassword123";
+  async createUser(overrides: Partial<TestUser> = {}): Promise<TestUser> {
     const name =
-      overrides.name ||
-      overrides.username ||
-      `testuser_${Math.random().toString(36).substring(7)}`;
+      overrides.name || `testuser_${Math.random().toString(36).substring(7)}`;
     const email =
       overrides.email ||
       `test_${Math.random().toString(36).substring(7)}@example.com`;
     const isAdmin = overrides.is_admin || false;
+    const idpUserId = overrides.idp_user_id || crypto.randomUUID();
 
-    // Create login record directly with test database
-    const SALT = process.env.ARGON2_SALT;
-    const passwordHash = await argon2.hash(String(SALT) + password, {
-      type: argon2.argon2id,
-    });
-
-    const loginResult = await this.db
-      .insertInto("logins")
-      .values({ username, password_hash: passwordHash })
-      .returning("id")
-      .executeTakeFirst();
-
-    if (!loginResult) {
-      throw new Error("Failed to create login record");
-    }
-
-    // Track the login ID
-    this.getTracker().trackId("logins", loginResult.id);
-
-    // Create user record directly with test database
+    // Create user record directly with test database (no login needed)
     const userResult = await this.db
       .insertInto("users")
-      .values({ name, email, login_id: loginResult.id, is_admin: isAdmin })
+      .values({
+        name,
+        email,
+        is_admin: isAdmin,
+        idp_user_id: idpUserId,
+      })
       .returning("id")
       .executeTakeFirst();
 
@@ -86,7 +58,7 @@ export class TestDataFactory {
     // Track the user ID
     this.getTracker().trackId("users", userResult.id);
 
-    // Fetch created user and associated login to return a rich object
+    // Fetch created user to return a rich object
     const createdUser = await this.db
       .selectFrom("users")
       .selectAll()
@@ -97,24 +69,7 @@ export class TestDataFactory {
       throw new Error("Created user not found in database");
     }
 
-    const login = await this.db
-      .selectFrom("logins")
-      .selectAll()
-      .where("id", "=", createdUser.login_id!)
-      .executeTakeFirst();
-
-    return {
-      id: createdUser.id,
-      name: createdUser.name,
-      email: createdUser.email,
-      login_id: createdUser.login_id,
-      is_admin: createdUser.is_admin,
-      deactivated_at: createdUser.deactivated_at,
-      idp_user_id: createdUser.idp_user_id,
-      created_at: createdUser.created_at,
-      updated_at: createdUser.updated_at,
-      username: login?.username || null,
-    };
+    return createdUser;
   }
 
   async createCompetition(
@@ -206,14 +161,10 @@ export class TestDataFactory {
     return result;
   }
 
-  async createAdminUser(
-    overrides: Partial<TestUser> & {
-      password?: string;
-    } = {},
-  ): Promise<TestUser> {
+  async createAdminUser(overrides: Partial<TestUser> = {}): Promise<TestUser> {
     return this.createUser({
       is_admin: true,
-      username: `admin_${Math.random().toString(36).substring(7)}`,
+      name: `admin_${Math.random().toString(36).substring(7)}`,
       ...overrides,
     });
   }

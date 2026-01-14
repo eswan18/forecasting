@@ -14,7 +14,6 @@ export async function ImpersonationBannerWrapper() {
 
   return (
     <ImpersonationBanner
-      impersonatedUsername={currentUser.username || ""}
       impersonatedName={currentUser.name || ""}
     />
   );

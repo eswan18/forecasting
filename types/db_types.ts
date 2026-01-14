@@ -5,7 +5,6 @@ export interface Database {
   competitions: CompetitionsTable;
   feature_flags: FeatureFlagsTable;
   forecasts: ForecastsTable;
-  logins: LoginsTable;
   props: PropsTable;
   resolutions: ResolutionsTable;
   suggested_props: SuggestedPropsTable;
@@ -23,10 +22,9 @@ export interface UsersTable {
   id: Generated<number>;
   name: string;
   email: string;
-  login_id: number | null;
   is_admin: boolean;
   deactivated_at: Date | null;
-  idp_user_id: string | null; // UUID from IDP (null = legacy login)
+  idp_user_id: string | null; // UUID from IDP
   updated_at: Generated<Date>;
   created_at: Generated<Date>;
 }
@@ -82,17 +80,6 @@ export interface ResolutionsTable {
 export type Resolution = Selectable<ResolutionsTable>;
 export type NewResolution = Insertable<ResolutionsTable>;
 export type ResolutionUpdate = Updateable<ResolutionsTable>;
-
-export interface LoginsTable {
-  id: Generated<number>;
-  username: string;
-  password_hash: string;
-  updated_at: Generated<Date>;
-  created_at: Generated<Date>;
-}
-export type Login = Selectable<LoginsTable>;
-export type NewLogin = Insertable<LoginsTable>;
-export type LoginUpdate = Updateable<LoginsTable>;
 
 export interface SuggestedPropsTable {
   id: Generated<number>;
@@ -188,9 +175,7 @@ export interface VUsersView {
   email: string;
   is_admin: boolean;
   deactivated_at: Date | null;
-  idp_user_id: string | null; // UUID from IDP (null = legacy login)
-  login_id: number | null;
-  username: string | null;
+  idp_user_id: string | null; // UUID from IDP
   created_at: Date;
   updated_at: Date;
 }
@@ -200,10 +185,8 @@ export interface VSuggestedPropsView {
   id: number;
   prop_text: string;
   user_id: number;
-  login_id: number | null;
   user_name: string;
   user_email: string;
-  user_username: string | null;
 }
 export type VSuggestedProp = Selectable<VSuggestedPropsView>;
 
@@ -214,7 +197,6 @@ export interface VFeatureFlagsView {
   enabled: boolean;
   user_name: string | null;
   user_email: string | null;
-  user_login_id: number | null;
   user_is_admin: boolean | null;
 }
 export type VFeatureFlag = Selectable<VFeatureFlagsView>;

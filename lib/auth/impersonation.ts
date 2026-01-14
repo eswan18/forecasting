@@ -96,9 +96,9 @@ export async function startImpersonation(
 
   logger.info("Admin started impersonation", {
     adminId: currentUser.id,
-    adminUsername: currentUser.username,
+    adminName: currentUser.name,
     targetUserId,
-    targetUsername: targetUser.username,
+    targetName: targetUser.name,
   });
 
   revalidatePath("/");

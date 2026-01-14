@@ -120,15 +120,6 @@ async function main() {
     .executeTakeFirst();
   console.log(`Deleted ${deleteUserResult.numDeletedRows} user(s)`);
 
-  // Delete the old user's login record (if any)
-  if (oldUser.login_id) {
-    const deleteLoginResult = await db
-      .deleteFrom("logins")
-      .where("id", "=", oldUser.login_id)
-      .executeTakeFirst();
-    console.log(`Deleted ${deleteLoginResult.numDeletedRows} login(s)`);
-  }
-
   console.log("\n" + "=".repeat(50));
   console.log("Merge complete!");
   console.log("=".repeat(50));

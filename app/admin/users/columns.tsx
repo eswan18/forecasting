@@ -25,9 +25,9 @@ import { useRouter } from "next/navigation";
 export function getColumns(): ColumnDef<VUser>[] {
   return [
     {
-      accessorKey: "username",
-      header: () => <div className="px-2">Username</div>,
-      cell: ({ row }) => <UsernameCell user={row.original} />,
+      accessorKey: "name",
+      header: () => <div className="px-2">Name</div>,
+      cell: ({ row }) => <NameCell user={row.original} />,
     },
     {
       accessorKey: "deactivated_at",
@@ -65,11 +65,10 @@ export function getColumns(): ColumnDef<VUser>[] {
   ];
 }
 
-function UsernameCell({ user }: { user: VUser }) {
+function NameCell({ user }: { user: VUser }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const username = user.username;
   const name = user.name;
 
   const handleImpersonate = async () => {
@@ -79,7 +78,7 @@ function UsernameCell({ user }: { user: VUser }) {
       if (result.success) {
         toast({
           title: "Impersonating",
-          description: `Now viewing as ${username || name}`,
+          description: `Now viewing as ${name}`,
         });
         setIsDialogOpen(false);
         router.push("/");
@@ -111,13 +110,7 @@ function UsernameCell({ user }: { user: VUser }) {
             href={`/admin/users/${user.id}`}
             className="flex items-center gap-x-1 hover:text-primary transition-colors min-w-0"
           >
-            {username ? (
-              <span className="truncate">{username}</span>
-            ) : (
-              <span className="text-muted-foreground truncate">
-                &lt;no username&gt;
-              </span>
-            )}
+            <span className="truncate">{name}</span>
             <ExternalLink className="h-3 w-3 flex-shrink-0" />
           </Link>
           {/* Impersonate button - only show for non-admin, active users */}
@@ -137,9 +130,9 @@ function UsernameCell({ user }: { user: VUser }) {
                 <DialogHeader>
                   <DialogTitle>Impersonate User?</DialogTitle>
                   <DialogDescription>
-                    You will view the app as {username || name}. Your admin
-                    session remains active - click &quot;Stop Impersonating&quot; in the
-                    banner to return to your own view.
+                    You will view the app as {name}. Your admin session remains
+                    active - click &quot;Stop Impersonating&quot; in the banner
+                    to return to your own view.
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter className="flex-col sm:flex-row gap-2">
@@ -164,7 +157,7 @@ function UsernameCell({ user }: { user: VUser }) {
         </div>
       </div>
       <div className="text-xs sm:text-sm text-muted-foreground truncate">
-        {name}
+        {user.email}
       </div>
     </div>
   );
@@ -233,8 +226,8 @@ function UserStatusCell({ user }: { user: VUser }) {
               </DialogTitle>
               <DialogDescription>
                 {isActive
-                  ? `Are you sure you want to deactivate ${user.username || user.name}? They will no longer be able to access the system.`
-                  : `Are you sure you want to activate ${user.username || user.name}? They will regain access to the system.`}
+                  ? `Are you sure you want to deactivate ${user.name}? They will no longer be able to access the system.`
+                  : `Are you sure you want to activate ${user.name}? They will regain access to the system.`}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="flex-col sm:flex-row gap-2">
