@@ -136,11 +136,6 @@ export default function SuggestedProps() {
                             <span className="font-medium">
                               {prop.user_name}
                             </span>
-                            {prop.user_username && (
-                              <span className="text-muted-foreground">
-                                (@{prop.user_username})
-                              </span>
-                            )}
                           </div>
                         </div>
                       </div>

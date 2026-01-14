@@ -1,39 +1,18 @@
 import UsersTable from "./users-table";
-import {
-  getUsers,
-  getInviteTokens,
-  getPasswordResetTokens,
-} from "@/lib/db_actions";
-import { InviteUserButton } from "../invite-user-button";
+import { getUsers } from "@/lib/db_actions";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Mail, KeyRound } from "lucide-react";
-import Link from "next/link";
+import { Users } from "lucide-react";
 import PageHeading from "@/components/page-heading";
 
 export default async function Page() {
   const result = await getUsers();
   const users = handleServerActionResult(result);
 
-  const inviteTokensResult = await getInviteTokens();
-  const inviteTokens = handleServerActionResult(inviteTokensResult);
-
-  const passwordResetTokensResult = await getPasswordResetTokens();
-  const passwordResetTokens = handleServerActionResult(
-    passwordResetTokensResult,
-  );
-
   users.sort((a, b) => a.id - b.id);
 
   const activeUsers = users.filter(
     (user) => user.deactivated_at === null,
-  ).length;
-  const unusedInvites = inviteTokens.filter(
-    (token) => token.used_at === null,
-  ).length;
-  const now = new Date();
-  const activeResetTokens = passwordResetTokens.filter(
-    (token) => token.expires_at >= now,
   ).length;
 
   return (
@@ -51,14 +30,8 @@ export default async function Page() {
           className="mb-2"
         />
 
-        <div className="flex items-center justify-between">
-          <div className="flex gap-2 sm:gap-4">
-            <InviteUserButton className="w-full sm:w-auto flex items-center justify-center gap-2 text-sm sm:text-base" />
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        {/* Stats Card */}
+        <div className="grid grid-cols-1 gap-4 sm:gap-6">
           <Card className="border-0 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
             <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
               <div className="flex items-center justify-between">
@@ -76,48 +49,6 @@ export default async function Page() {
               </div>
             </CardContent>
           </Card>
-
-          <Link
-            href="/admin/invite-tokens"
-            className="sm:col-span-2 lg:col-span-1"
-          >
-            <Card className="border-0 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
-                <div className="flex items-center justify-between">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs sm:text-sm font-medium text-purple-600 dark:text-purple-400">
-                      Unused Invites
-                    </p>
-                    <p className="text-xl sm:text-2xl font-bold text-purple-900 dark:text-purple-100">
-                      {unusedInvites}
-                    </p>
-                  </div>
-                  <Mail className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500 flex-shrink-0" />
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link
-            href="/admin/password-reset-tokens"
-            className="sm:col-span-2 lg:col-span-1"
-          >
-            <Card className="border-0 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
-                <div className="flex items-center justify-between">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs sm:text-sm font-medium text-orange-600 dark:text-orange-400">
-                      Active Reset Tokens
-                    </p>
-                    <p className="text-xl sm:text-2xl font-bold text-orange-900 dark:text-orange-100">
-                      {activeResetTokens}
-                    </p>
-                  </div>
-                  <KeyRound className="h-6 w-6 sm:h-8 sm:w-8 text-orange-500 flex-shrink-0" />
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
         </div>
 
         {/* Users Table */}

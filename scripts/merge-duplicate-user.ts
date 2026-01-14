@@ -113,32 +113,12 @@ async function main() {
     .executeTakeFirst();
   console.log(`Updated ${featureFlagsResult.numUpdatedRows} feature_flags`);
 
-  // Delete password_reset_tokens for old user's login (if any)
-  if (oldUser.login_id) {
-    const passwordResetResult = await db
-      .deleteFrom("password_reset_tokens")
-      .where("login_id", "=", oldUser.login_id)
-      .executeTakeFirst();
-    console.log(
-      `Deleted ${passwordResetResult.numDeletedRows} password_reset_tokens`,
-    );
-  }
-
   // Delete the old user
   const deleteUserResult = await db
     .deleteFrom("users")
     .where("id", "=", OLD_USER_ID)
     .executeTakeFirst();
   console.log(`Deleted ${deleteUserResult.numDeletedRows} user(s)`);
-
-  // Delete the old user's login record (if any)
-  if (oldUser.login_id) {
-    const deleteLoginResult = await db
-      .deleteFrom("logins")
-      .where("id", "=", oldUser.login_id)
-      .executeTakeFirst();
-    console.log(`Deleted ${deleteLoginResult.numDeletedRows} login(s)`);
-  }
 
   console.log("\n" + "=".repeat(50));
   console.log("Merge complete!");

@@ -98,7 +98,6 @@ export async function createUserFromIdp({
       .values({
         name,
         email,
-        login_id: null, // No legacy login
         is_admin: false,
         idp_user_id: idpUserId,
       })

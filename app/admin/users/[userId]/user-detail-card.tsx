@@ -82,16 +82,14 @@ export default function UserDetailCard({ user }: UserDetailCardProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 bg-linear-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                {user.username
-                  ? user.username.charAt(0).toUpperCase()
-                  : user.name.charAt(0).toUpperCase()}
+                {user.name.charAt(0).toUpperCase()}
               </div>
               <div>
                 <CardTitle className="text-2xl flex items-center gap-2">
                   <User className="h-6 w-6" />
-                  {user.username || "<no username>"}
+                  {user.name}
                 </CardTitle>
-                <p className="text-muted-foreground text-lg">{user.name}</p>
+                <p className="text-muted-foreground text-lg">{user.email}</p>
               </div>
             </div>
             <Badge
@@ -124,18 +122,10 @@ export default function UserDetailCard({ user }: UserDetailCardProps) {
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-border">
                     <span className="text-sm font-medium text-muted-foreground">
-                      Login ID
+                      IDP User ID
                     </span>
-                    <span className="text-sm font-mono bg-muted px-2 py-1 rounded">
-                      {user.login_id || "N/A"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-border">
-                    <span className="text-sm font-medium text-muted-foreground">
-                      Username
-                    </span>
-                    <span className="text-sm">
-                      {user.username || "Not set"}
+                    <span className="text-sm font-mono bg-muted px-2 py-1 rounded truncate max-w-48">
+                      {user.idp_user_id || "N/A"}
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-2">
@@ -214,8 +204,8 @@ export default function UserDetailCard({ user }: UserDetailCardProps) {
                             </DialogTitle>
                             <DialogDescription>
                               {isActive
-                                ? `Are you sure you want to deactivate ${user.username || user.name}? They will no longer be able to access the system.`
-                                : `Are you sure you want to activate ${user.username || user.name}? They will regain access to the system.`}
+                                ? `Are you sure you want to deactivate ${user.name}? They will no longer be able to access the system.`
+                                : `Are you sure you want to activate ${user.name}? They will regain access to the system.`}
                             </DialogDescription>
                           </DialogHeader>
                           <DialogFooter>
