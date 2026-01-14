@@ -20,11 +20,7 @@ import { handleServerActionResult } from "@/lib/server-action-helpers";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
 
-export function getColumns({
-  mutateUser,
-}: {
-  mutateUser: () => void;
-}): ColumnDef<VUser>[] {
+export function getColumns(): ColumnDef<VUser>[] {
   return [
     {
       accessorKey: "username",
