@@ -5,10 +5,8 @@
  *   npx tsx scripts/migrate-users-to-idp.ts [env-file]
  *
  * Examples:
- *   npx tsx scripts/migrate-users-to-idp.ts .env.idp.dev
  *   npx tsx scripts/migrate-users-to-idp.ts .env.prod
  *
- * Defaults to .env.id-dev if no env file is specified.
  */
 
 import dotenv from "dotenv";
