@@ -57,11 +57,7 @@ const formSchema = z.object({
   email: z.string().email(),
 });
 
-export default function RegisterFormCard({
-  inviteToken,
-}: {
-  inviteToken?: string;
-}) {
+export default function RegisterFormCard() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -78,7 +74,7 @@ export default function RegisterFormCard({
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    registerNewUserIfAuthorized({ ...values, inviteToken })
+    registerNewUserIfAuthorized(values)
       .then(() => {
         router.push("/login");
       })

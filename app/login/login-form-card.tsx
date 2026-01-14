@@ -47,17 +47,10 @@ export default function LoginFormCard({
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-4">
-          <div className="rounded-lg bg-muted/50 p-4 space-y-3">
+          <div className="rounded-lg bg-muted/50 p-4">
             <p className="text-sm text-center">
-              We&apos;ve migrated to a new login system! You&apos;ll be
-              redirected there to sign in.
-            </p>
-            <p className="text-sm text-center">
-              <span className="font-semibold">First time?</span>{" "}
-              <span className="text-muted-foreground">
-                You&apos;ll need to reset your password first. Don&apos;t
-                worry, the process actually works now.
-              </span>
+              You&apos;ll be redirected to sign in with your identity provider
+              account.
             </p>
           </div>
 
@@ -91,8 +84,7 @@ export default function LoginFormCard({
         <div className="space-y-3 text-center">
           <div className="rounded-lg bg-muted/50 p-3">
             <p className="text-xs text-muted-foreground">
-              Don&apos;t have an account? You&apos;ll need an invite link from
-              Ethan to register.
+              Don&apos;t have an account? Contact Ethan to get set up.
             </p>
           </div>
         </div>
