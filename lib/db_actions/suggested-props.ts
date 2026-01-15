@@ -33,10 +33,14 @@ export async function getSuggestedProps(): Promise<
       );
     }
 
-    const results = await db
-      .selectFrom("v_suggested_props")
-      .selectAll()
-      .execute();
+    const results = await db.transaction().execute(async (trx) => {
+      await trx.executeQuery(
+        sql`SELECT set_config('app.current_user_id', ${currentUser.id}, true);`.compile(
+          db,
+        ),
+      );
+      return await trx.selectFrom("v_suggested_props").selectAll().execute();
+    });
 
     const duration = Date.now() - startTime;
     logger.info(`Retrieved ${results.length} suggested props`, {
@@ -89,11 +93,18 @@ export async function createSuggestedProp({
       return error("Unauthorized", ERROR_CODES.UNAUTHORIZED);
     }
 
-    const { id } = await db
-      .insertInto("suggested_props")
-      .values(prop)
-      .returning("id")
-      .executeTakeFirstOrThrow();
+    const { id } = await db.transaction().execute(async (trx) => {
+      await trx.executeQuery(
+        sql`SELECT set_config('app.current_user_id', ${currentUser.id}, true);`.compile(
+          db,
+        ),
+      );
+      return await trx
+        .insertInto("suggested_props")
+        .values(prop)
+        .returning("id")
+        .executeTakeFirstOrThrow();
+    });
 
     const duration = Date.now() - startTime;
     logger.info("Suggested prop created successfully", {
