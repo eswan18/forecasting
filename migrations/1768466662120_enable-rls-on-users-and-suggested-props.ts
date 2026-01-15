@@ -8,11 +8,6 @@ import { sql } from "kysely";
  * - Any authenticated user can INSERT their own suggestions
  * - Only admins can SELECT/UPDATE/DELETE (to review and manage suggestions)
  *
- * Note: We intentionally do NOT add RLS to the users table because the login
- * flow needs to query users by idp_user_id before we know the user's ID.
- * The users table is protected by app-level auth checks and the v_users view
- * already filters sensitive columns.
- *
  * The view (v_suggested_props) already has security_barrier and security_invoker
  * set, so RLS policies will cascade through it.
  */
