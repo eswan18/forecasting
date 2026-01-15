@@ -65,7 +65,8 @@ export default function SuggestedProps() {
   // Load suggested props on component mount
   useEffect(() => {
     getSuggestedPropsAction.execute();
-  }, [getSuggestedPropsAction.execute]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Only run once on mount to avoid infinite loop
+  }, []);
 
   const loading = getSuggestedPropsAction.isLoading;
   const isLoadingDelete = deleteSuggestedPropAction.isLoading;
