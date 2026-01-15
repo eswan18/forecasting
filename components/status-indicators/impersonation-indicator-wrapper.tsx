@@ -1,7 +1,7 @@
 import { getImpersonatingAdmin, getUserFromCookies } from "@/lib/get-user";
-import { ImpersonationBanner } from "./impersonation-banner";
+import { ImpersonationIndicator } from "./impersonation-indicator";
 
-export async function ImpersonationBannerWrapper() {
+export async function ImpersonationIndicatorWrapper() {
   const [impersonatingAdmin, currentUser] = await Promise.all([
     getImpersonatingAdmin(),
     getUserFromCookies(),
@@ -12,9 +12,5 @@ export async function ImpersonationBannerWrapper() {
     return null;
   }
 
-  return (
-    <ImpersonationBanner
-      impersonatedName={currentUser.name || ""}
-    />
-  );
+  return <ImpersonationIndicator impersonatedName={currentUser.name || ""} />;
 }
