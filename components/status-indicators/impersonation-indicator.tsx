@@ -6,14 +6,15 @@ import { stopImpersonation } from "@/lib/auth/impersonation";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { StatusIndicator } from "./status-indicator";
 
-interface ImpersonationBannerProps {
+interface ImpersonationIndicatorProps {
   impersonatedName: string;
 }
 
-export function ImpersonationBanner({
+export function ImpersonationIndicator({
   impersonatedName,
-}: ImpersonationBannerProps) {
+}: ImpersonationIndicatorProps) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -35,29 +36,29 @@ export function ImpersonationBanner({
     }
   };
 
-  const displayName = impersonatedName;
-
   return (
-    <div className="bg-amber-500 text-black text-center text-sm font-medium py-2 w-full flex items-center justify-center gap-3">
-      <span>
-        Viewing as <strong>{displayName}</strong>
-      </span>
-      <Button
-        size="sm"
-        variant="secondary"
-        onClick={handleStopImpersonation}
-        disabled={isLoading}
-        className="h-6 px-2 text-xs"
-      >
-        {isLoading ? (
-          "Stopping..."
-        ) : (
-          <>
-            <X className="h-3 w-3 mr-1" />
-            Stop Impersonating
-          </>
-        )}
-      </Button>
-    </div>
+    <StatusIndicator variant="warning">
+      <div className="flex items-center justify-center gap-3">
+        <span>
+          Viewing as <strong>{impersonatedName}</strong>
+        </span>
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={handleStopImpersonation}
+          disabled={isLoading}
+          className="h-6 px-2 text-xs"
+        >
+          {isLoading ? (
+            "Stopping..."
+          ) : (
+            <>
+              <X className="h-3 w-3 mr-1" />
+              Stop Impersonating
+            </>
+          )}
+        </Button>
+      </div>
+    </StatusIndicator>
   );
 }
