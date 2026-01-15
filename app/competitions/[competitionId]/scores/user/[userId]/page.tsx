@@ -14,7 +14,6 @@ export default async function UserScorePage({
 }: {
   params: Promise<{ competitionId: string; userId: string }>;
 }) {
-  // Middleware ensures user is logged in
   const { competitionId: competitionIdString, userId: userIdString } =
     await params;
   const competitionId = parseInt(competitionIdString, 10);

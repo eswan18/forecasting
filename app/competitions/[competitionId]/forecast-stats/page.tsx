@@ -18,7 +18,6 @@ export default async function Page({
 }: {
   params: Promise<{ competitionId: string }>;
 }) {
-  // Middleware ensures user is logged in
   const { competitionId: competitionIdString } = await params;
   const competitionId = parseInt(competitionIdString, 10);
   const user = (await getUserFromCookies())!;
@@ -60,7 +59,7 @@ export default async function Page({
           fallback={
             <SkeletonCard
               title="Consensus Forecasts"
-              className="w-full h-72 sm:h-[32rem]"
+              className="w-full h-72 sm:h-128"
             />
           }
         >

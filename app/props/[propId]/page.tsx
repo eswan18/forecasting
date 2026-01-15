@@ -40,7 +40,6 @@ async function PropPageContent({
     return <ErrorPage title={`Invalid prop ID '${propIdString}'`} />;
   }
 
-  // Middleware ensures user is logged in
   const user = (await getUserFromCookies())!;
 
   // Get the prop details

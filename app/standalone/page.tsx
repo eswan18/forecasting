@@ -5,7 +5,6 @@ import PageHeading from "@/components/page-heading";
 import { TrendingUpDown } from "lucide-react";
 
 export default async function Page() {
-  // Middleware ensures user is logged in
   const user = (await getUserFromCookies())!;
 
   const propsWithForecastsResult = await getPropsWithUserForecasts({

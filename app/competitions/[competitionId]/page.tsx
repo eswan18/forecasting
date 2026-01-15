@@ -25,7 +25,6 @@ export default async function Page({
       <ErrorPage title={`Invalid competition ID '${competitionIdString}'`} />
     );
   }
-  // Middleware ensures user is logged in
   const user = (await getUserFromCookies())!;
   const allowEdits = user.is_admin;
 

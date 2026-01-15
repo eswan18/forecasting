@@ -16,7 +16,6 @@ import { formatDate } from "@/lib/time-utils";
 import { getCompetitionStatusFromObject } from "@/lib/competition-status";
 
 export default async function CompetitionsPage() {
-  // Middleware ensures user is logged in
   const user = (await getUserFromCookies())!;
 
   const allCompetitionsResult = await getCompetitions();
@@ -68,7 +67,7 @@ export default async function CompetitionsPage() {
                 <div className="hidden md:flex items-center justify-between p-6">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
-                      <Trophy className="h-5 w-5 text-primary flex-shrink-0" />
+                      <Trophy className="h-5 w-5 text-primary shrink-0" />
                       <h3 className="text-lg font-semibold truncate">
                         {competition.name}
                       </h3>
@@ -85,7 +84,7 @@ export default async function CompetitionsPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-2 ml-6 flex-shrink-0">
+                  <div className="flex gap-2 ml-6 shrink-0">
                     <Button asChild variant="ghost">
                       <Link href={`/competitions/${competition.id}`}>
                         <List className="h-4 w-4 mr-2" />

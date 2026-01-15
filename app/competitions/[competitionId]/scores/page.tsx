@@ -15,7 +15,6 @@ export default async function Page({
 }: {
   params: Promise<{ competitionId: string }>;
 }) {
-  // Middleware ensures user is logged in
   const { competitionId: competitionIdString } = await params;
   const competitionId = parseInt(competitionIdString, 10);
   const competitionResult = await getCompetitionById(competitionId);

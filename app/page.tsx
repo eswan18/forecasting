@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 
 export default async function Home() {
-  // Middleware ensures user is logged in
   const user = (await getUserFromCookies())!;
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
