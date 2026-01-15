@@ -7,6 +7,7 @@ import type { NextRequest } from "next/server";
  */
 const PUBLIC_ROUTES = [
   "/login",
+  "/oauth", // OAuth login and callback routes
   "/api/health",
   "/api/me", // Returns null if not logged in, used by client components
 ];
