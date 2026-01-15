@@ -75,29 +75,14 @@ export default async function Home() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-2">
-                We've migrated to a new login system! This means <span className="font-semibold">you need to reset your password</span> on your first login.
+                We&apos;ve migrated to a new login system!
               </p>
-              <ul className="text-muted-foreground list-disc list-inside">
+              <ul className="text-muted-foreground list-disc list-inside space-y-1">
                 <li>Our password reset flow is much more reliable</li>
-                <li>We now support multifactor authentication</li>
+                <li>We now support Two-Factor Authentication using one-time passwords</li>
+                <li>Your username will remain the same, but you&apos;ll need to reset your password on your first login</li>
               </ul>
             </CardContent>
-            <CardFooter className="mt-auto">
-              <div className="flex gap-x-2 w-full justify-center">
-                <Button asChild variant="ghost">
-                  <Link href="/competitions/6/scores">
-                    <Trophy className="h-4 w-4 mr-2" />
-                    Leaderboard
-                  </Link>
-                </Button>
-                <Button asChild variant="ghost">
-                  <Link href={`/competitions/6/scores/user/${user.id}`}>
-                    <BarChart3 className="h-4 w-4 mr-2" />
-                    Your Score Breakdown
-                  </Link>
-                </Button>
-              </div>
-            </CardFooter>
           </Card>
         </div>
       </div>
