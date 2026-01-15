@@ -1,6 +1,7 @@
 import { getCurrentEnvironment } from "@/lib/environment";
+import { StatusIndicator, StatusIndicatorVariant } from "./status-indicator";
 
-export function EnvironmentBanner() {
+export function EnvironmentIndicator() {
   const env = getCurrentEnvironment();
 
   // Only show banner for non-production environments
@@ -8,22 +9,20 @@ export function EnvironmentBanner() {
     return null;
   }
 
-  const getBarColor = (env: string) => {
+  const getVariant = (env: string): StatusIndicatorVariant => {
     switch (env) {
       case "local":
-        return "bg-blue-500";
+        return "info";
       case "dev":
-        return "bg-yellow-500";
+        return "warning";
       default:
-        return "bg-gray-500";
+        return "accent";
     }
   };
 
   return (
-    <div
-      className={`${getBarColor(env)} text-white text-center text-xs font-medium py-1 w-full`}
-    >
+    <StatusIndicator variant={getVariant(env)}>
       {env.toUpperCase()} ENVIRONMENT
-    </div>
+    </StatusIndicator>
   );
 }
