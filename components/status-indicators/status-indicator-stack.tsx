@@ -1,6 +1,6 @@
 import { EnvironmentIndicator } from "./environment-indicator";
 import { ImpersonationIndicatorWrapper } from "./impersonation-indicator-wrapper";
-import { AdminPanelIndicator } from "./admin-panel-indicator";
+import { AdminPanelIndicatorWrapper } from "./admin-panel-indicator-wrapper";
 
 /**
  * StatusIndicatorStack renders all status indicators at the very top of the page.
@@ -18,7 +18,7 @@ export function StatusIndicatorStack() {
     <div className="w-full">
       <EnvironmentIndicator />
       <ImpersonationIndicatorWrapper />
-      <AdminPanelIndicator />
+      <AdminPanelIndicatorWrapper />
     </div>
   );
 }
