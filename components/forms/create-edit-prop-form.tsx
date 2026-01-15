@@ -1,14 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  AlertTriangle,
-  FileText,
-  Tag,
-  Trophy,
-  Users,
-  Hash,
-} from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { useServerAction } from "@/hooks/use-server-action";
 import {
@@ -18,28 +11,14 @@ import {
   updateProp,
 } from "@/lib/db_actions";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Category, Competition, VProp } from "@/types/db_types";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { getUserFromCookies } from "@/lib/get-user";
+import { PropFormFields } from "./prop-form-fields";
 
 const formSchema = z
   .object({
@@ -96,6 +75,7 @@ export function CreateEditPropForm({
       if (onSubmit) onSubmit();
     },
   });
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -107,6 +87,7 @@ export function CreateEditPropForm({
       user_id: initialUserId ?? null,
     },
   });
+
   useEffect(() => {
     getCategories().then(async (categoriesResult) => {
       if (categoriesResult.success) {
@@ -135,6 +116,7 @@ export function CreateEditPropForm({
       await createPropAction.execute({ prop: values });
     }
   }
+
   if (loading || createPropAction.isLoading || updatePropAction.isLoading) {
     return (
       <div className="flex justify-center items-center h-40">
@@ -142,169 +124,18 @@ export function CreateEditPropForm({
       </div>
     );
   }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="text"
-          render={({ field }) => (
-            <FormItem className="space-y-2">
-              <FormLabel className="text-sm font-medium flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Proposition Text
-                <span className="text-xs text-muted-foreground font-normal">
-                  (Markdown supported)
-                </span>
-              </FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  className="text-sm min-h-24 resize-none"
-                  placeholder="Enter the proposition text here. Be clear and specific about what you're asking people to forecast. Markdown formatting (links, bold, italic) is supported."
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+        <PropFormFields
+          form={form}
+          categories={categories}
+          competitions={competitions}
+          initialUserId={initialUserId}
+          canEditPublicProps={canEditPublicProps}
         />
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem className="space-y-2">
-              <FormLabel className="text-sm font-medium flex items-center gap-2">
-                <Hash className="h-4 w-4" />
-                Notes (Optional)
-                <span className="text-xs text-muted-foreground font-normal">
-                  (Markdown supported)
-                </span>
-              </FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  value={field.value ?? undefined}
-                  className="text-sm min-h-20 resize-none"
-                  placeholder="Add any additional context, clarification, or background information. Markdown formatting (links, bold, italic) is supported."
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="category_id"
-          render={({ field }) => {
-            return (
-              <FormItem className="space-y-2">
-                <FormLabel className="text-sm font-medium flex items-center gap-2">
-                  <Tag className="h-4 w-4" />
-                  Category
-                </FormLabel>
-                <Select
-                  {...field}
-                  value={field.value === null ? "null" : String(field.value)}
-                  onValueChange={(value) =>
-                    field.onChange(value === "null" ? null : Number(value))
-                  }
-                >
-                  <FormControl>
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="null">None</SelectItem>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={String(category.id)}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            );
-          }}
-        />
-        <FormField
-          control={form.control}
-          name="competition_id"
-          render={({ field }) => {
-            return (
-              <FormItem className="space-y-2">
-                <FormLabel className="text-sm font-medium flex items-center gap-2">
-                  <Trophy className="h-4 w-4" />
-                  Competition
-                </FormLabel>
-                <Select
-                  {...field}
-                  value={field.value === null ? "null" : String(field.value)}
-                  onValueChange={(value) =>
-                    field.onChange(value === "null" ? null : Number(value))
-                  }
-                >
-                  <FormControl>
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Select a competition" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="null">None</SelectItem>
-                    {competitions.map((competition) => (
-                      <SelectItem
-                        key={competition.id}
-                        value={String(competition.id)}
-                      >
-                        {competition.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            );
-          }}
-        />
-        <FormField
-          control={form.control}
-          name="user_id"
-          render={({ field }) => {
-            return (
-              <FormItem className="space-y-2">
-                <FormLabel className="text-sm font-medium flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Visibility
-                </FormLabel>
-                <Select
-                  {...field}
-                  value={field.value === null ? "null" : String(field.value)}
-                  onValueChange={(value) =>
-                    field.onChange(value === "null" ? null : Number(value))
-                  }
-                >
-                  <FormControl>
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Select visibility" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {initialUserId && (
-                      <SelectItem value={String(initialUserId)}>
-                        Personal
-                      </SelectItem>
-                    )}
-                    {canEditPublicProps && (
-                      <SelectItem value="null">Public</SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            );
-          }}
-        />
+
         <Button
           type="submit"
           disabled={createPropAction.isLoading || updatePropAction.isLoading}
@@ -319,6 +150,7 @@ export function CreateEditPropForm({
             <>{initialProp ? "Update Proposition" : "Create Proposition"}</>
           )}
         </Button>
+
         {(createPropAction.error || updatePropAction.error) && (
           <Alert variant="destructive" className="mt-4">
             <AlertTriangle className="h-4 w-4" />
