@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getUserFromCookies, loginAndRedirect } from "@/lib/get-user";
+import { getUserFromCookies } from "@/lib/get-user";
 import {
   BoldTakesCard,
   CertaintyCard,
@@ -20,13 +20,7 @@ export default async function Page({
 }) {
   const { competitionId: competitionIdString } = await params;
   const competitionId = parseInt(competitionIdString, 10);
-  const user = await getUserFromCookies();
-  if (!user) {
-    await loginAndRedirect({
-      url: `/competitions/${competitionId}/forecast-stats`,
-    });
-    return null;
-  }
+  const user = (await getUserFromCookies())!;
   const competitionResult = await getCompetitionById(competitionId);
   if (!competitionResult.success) {
     return <ErrorPage title={competitionResult.error} />;
@@ -65,7 +59,7 @@ export default async function Page({
           fallback={
             <SkeletonCard
               title="Consensus Forecasts"
-              className="w-full h-72 sm:h-[32rem]"
+              className="w-full h-72 sm:h-128"
             />
           }
         >

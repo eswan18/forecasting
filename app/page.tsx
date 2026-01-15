@@ -1,5 +1,5 @@
 import PageHeading from "@/components/page-heading";
-import { getUserFromCookies, loginAndRedirect } from "@/lib/get-user";
+import { getUserFromCookies } from "@/lib/get-user";
 import Link from "next/link";
 import {
   Card,
@@ -19,11 +19,7 @@ import {
 } from "lucide-react";
 
 export default async function Home() {
-  const user = await getUserFromCookies();
-  if (!user) {
-    await loginAndRedirect({ url: `/` });
-    return <></>; // will never reach this line due to redirect.
-  }
+  const user = (await getUserFromCookies())!;
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-6xl">

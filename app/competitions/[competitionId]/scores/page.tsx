@@ -5,9 +5,6 @@ import {
 } from "@/lib/db_actions";
 import PageHeading from "@/components/page-heading";
 import { Suspense } from "react";
-import { loginAndRedirect } from "@/lib/get-user";
-
-import { getUserFromCookies } from "@/lib/get-user";
 import SkeletonCard from "./skeleton-card";
 import ErrorPage from "@/components/pages/error-page";
 import LeaderboardChart from "@/components/charts/leaderboard-chart";
@@ -25,10 +22,6 @@ export default async function Page({
     return <ErrorPage title={competitionResult.error} />;
   }
   const competition = competitionResult.data;
-  const user = await getUserFromCookies();
-  if (!user) {
-    await loginAndRedirect({ url: `competitions/${competitionId}/scores` });
-  }
   return (
     <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full">
       <PageHeading
