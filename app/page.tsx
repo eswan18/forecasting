@@ -11,11 +11,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  TrendingUpDown,
   Trophy,
   BarChart3,
   Calendar,
-  ArrowRight,
+  MessageCircleWarning,
 } from "lucide-react";
 
 export default async function Home() {
@@ -28,48 +27,20 @@ export default async function Home() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-          {/* 2026 Forecasts */}
-          <Card className="hover:shadow-md transition-shadow flex flex-col">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <TrendingUpDown className="h-5 w-5 text-primary" />
-                <CardTitle className="text-lg text-foreground">
-                  2026 Forecasts: Now Open
-                </CardTitle>
-                <Badge variant="default" className="ml-auto">
-                  Forecasts Open
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Make your forecasts for 2026 by January 1st!
-              </p>
-            </CardContent>
-            <CardFooter className="mt-auto">
-              <Button asChild variant="default" className="w-full">
-                <Link href="/competitions/6">
-                  Record Your Forecasts
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Link>
-              </Button>
-            </CardFooter>
-          </Card>
           {/* 2025 Current Competition */}
           <Card className="hover:shadow-md transition-shadow flex flex-col">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-primary" />
-                <CardTitle className="text-lg">2025 Open Competition</CardTitle>
+                <CardTitle className="text-lg">2025 Open</CardTitle>
                 <Badge variant="default" className="ml-auto">
-                  Active
+                  Scores Finalized
                 </Badge>
               </div>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                2025 is almost over. Check out the running leaderboard and our
-                new <span className="italic">Score Breakdown</span> feature.
+                2025 is over, and you can now see the final scores!
               </p>
             </CardContent>
             <CardFooter className="mt-auto">
@@ -88,6 +59,30 @@ export default async function Home() {
                 </Button>
               </div>
             </CardFooter>
+          </Card>
+          {/* 2026 Forecasts */}
+          <Card className="hover:shadow-md transition-shadow flex flex-col">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <MessageCircleWarning className="h-5 w-5 text-primary" />
+                <CardTitle className="text-lg text-foreground">
+                  New Login System
+                </CardTitle>
+                <Badge variant="default" className="ml-auto">
+                  New Feature
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-2">
+                We&apos;ve migrated to a new login system!
+              </p>
+              <ul className="text-muted-foreground list-disc list-inside space-y-1">
+                <li>Our password reset flow is much more reliable</li>
+                <li>We now support Two-Factor Authentication using one-time passwords</li>
+                <li>Your username will remain the same, but you&apos;ll need to reset your password on your first login</li>
+              </ul>
+            </CardContent>
           </Card>
         </div>
       </div>
