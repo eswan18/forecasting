@@ -90,23 +90,23 @@ function AllPropsConsensusChart({
         <Tooltip content={<CustomTooltip />} />
         <Scatter
           dataKey="mean"
-          shape={<RenderDot radius={5} fill="var(--primary)" />}
+          shape={<RenderDot radius={5} fill="hsl(var(--primary))" />}
         />
         <Scatter
           dataKey="p25"
-          shape={<RenderDot radius={3} fill="var(--foreground)" />}
+          shape={<RenderDot radius={3} fill="hsl(var(--foreground))" />}
         />
         <Scatter
           dataKey="p75"
-          shape={<RenderDot radius={3} fill="var(--foreground)" />}
+          shape={<RenderDot radius={3} fill="hsl(var(--foreground))" />}
         />
         <Scatter
           dataKey="min"
-          shape={<RenderDot radius={2} fill="var(--secondary)" />}
+          shape={<RenderDot radius={2} fill="hsl(var(--secondary))" />}
         />
         <Scatter
           dataKey="max"
-          shape={<RenderDot radius={2} fill="var(--secondary)" />}
+          shape={<RenderDot radius={2} fill="hsl(var(--secondary))" />}
         />
       </ComposedChart>
     </ChartContainer>
