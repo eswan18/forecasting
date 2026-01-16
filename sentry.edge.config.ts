@@ -16,5 +16,5 @@ Sentry.init({
     defaultTraceRate,
   ),
 
-  debug: process.env.NODE_ENV !== "production",
+  debug: false,
 });

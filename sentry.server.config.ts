@@ -16,6 +16,6 @@ if (process.env.SENTRY_ENABLED !== "false") {
       defaultTraceRate,
     ),
 
-    debug: process.env.NODE_ENV !== "production",
+    debug: false,
   });
 }
