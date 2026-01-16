@@ -85,10 +85,12 @@ export async function createUserFromIdp({
   idpUserId,
   email,
   name,
+  username,
 }: {
   idpUserId: string;
   email: string;
   name: string;
+  username: string | null;
 }): Promise<VUser | null> {
   const startTime = Date.now();
 
@@ -100,6 +102,7 @@ export async function createUserFromIdp({
         email,
         is_admin: false,
         idp_user_id: idpUserId,
+        username,
       })
       .returning("id")
       .executeTakeFirstOrThrow();
@@ -130,5 +133,42 @@ export async function createUserFromIdp({
       duration,
     });
     return null;
+  }
+}
+
+/**
+ * Update a user's username from IDP claims.
+ * Called on each login to keep the username in sync with the IDP.
+ */
+export async function updateUserUsername(
+  userId: number,
+  username: string | null,
+): Promise<boolean> {
+  const startTime = Date.now();
+
+  try {
+    await db
+      .updateTable("users")
+      .set({ username })
+      .where("id", "=", userId)
+      .execute();
+
+    const duration = Date.now() - startTime;
+    logger.debug("Updated user username from IDP", {
+      operation: "updateUserUsername",
+      userId,
+      username,
+      duration,
+    });
+
+    return true;
+  } catch (err) {
+    const duration = Date.now() - startTime;
+    logger.error("Failed to update user username", err as Error, {
+      operation: "updateUserUsername",
+      userId,
+      duration,
+    });
+    return false;
   }
 }
