@@ -83,7 +83,7 @@ This codebase follows a structured server action pattern that returns results in
 
 1. Spin up local PostgreSQL: `docker compose --env-file .env.prod -f local-pg-container.yaml up`
 2. Set `DATABASE_URL='postgresql://ethan:ethan@localhost:2345/forecasting'` in `.env.local`
-3. Add required env vars: `JWT_SECRET`, `ARGON2_SALT`, `MAILGUN_API_KEY`
+3. Add required env vars: `JWT_SECRET`, `ARGON2_SALT`
 4. Run `ENV=local npm run dev`
 
 ### Environment Management
