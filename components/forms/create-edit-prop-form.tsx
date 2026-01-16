@@ -20,7 +20,7 @@ import { Category, Competition, VProp } from "@/types/db_types";
 import { getUserFromCookies } from "@/lib/get-user";
 import { PropFormFields } from "./prop-form-fields";
 
-const formSchema = z
+export const propFormSchema = z
   .object({
     text: z.string().min(8).max(1000),
     notes: z
@@ -40,6 +40,8 @@ const formSchema = z
     message: "Public props must have a category",
     path: ["category_id"],
   });
+
+export type PropFormValues = z.infer<typeof propFormSchema>;
 
 /*
  * Form for creating or editing a prop.
@@ -76,8 +78,8 @@ export function CreateEditPropForm({
     },
   });
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<PropFormValues>({
+    resolver: zodResolver(propFormSchema),
     defaultValues: {
       text: initialProp?.prop_text ?? "",
       notes: initialProp?.prop_notes || null,
@@ -106,7 +108,7 @@ export function CreateEditPropForm({
     });
   }, []);
 
-  async function handleSubmit(values: z.infer<typeof formSchema>) {
+  async function handleSubmit(values: PropFormValues) {
     if (initialProp) {
       await updatePropAction.execute({
         id: initialProp.prop_id,

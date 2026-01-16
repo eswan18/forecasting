@@ -18,10 +18,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Category, Competition } from "@/types/db_types";
+import { PropFormValues } from "./create-edit-prop-form";
 
 interface PropFormFieldsProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  form: UseFormReturn<any>;
+  form: UseFormReturn<PropFormValues>;
   categories: Category[];
   competitions: Competition[];
   initialUserId?: number;
