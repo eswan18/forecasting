@@ -44,9 +44,6 @@ JWT_SECRET='whocares'
 # This will need to match the prod salt if you want to be able to log in as a preexisting user.
 # But if not, you can make something up.
 ARGON2_SALT='ask-ethan'
-
-# If you want to test email functionality, you'll need to get one of these.
-MAILGUN_API_KEY='abcxyz'
 ```
 
 Now, you can launch a fully-functional dev instance.
