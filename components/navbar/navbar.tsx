@@ -3,11 +3,9 @@
 import React, { useState, useEffect } from "react";
 import {
   NavigationMenu,
-  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 
@@ -15,7 +13,6 @@ import ThemeToggle from "./theme-toggle";
 import { UserStatus } from "./user-status";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ReactElement } from "react";
 import {
   BarChartHorizontal,
   Flag,
@@ -24,7 +21,6 @@ import {
   User2,
   Users,
   Menu,
-  ChevronDown,
 } from "lucide-react";
 import {
   Sheet,
@@ -39,17 +35,9 @@ import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { getCompetitions } from "@/lib/db_actions/competitions";
 import { Competition } from "@/types/db_types";
 import { getCompetitionStatusFromObject } from "@/lib/competition-status";
-
-type NavLink = {
-  href: string;
-  label: string;
-  icon?: ReactElement;
-};
-
-type NavLinkGroup = {
-  label: string;
-  links: NavLink[];
-};
+import { NavLink, NavLinkGroup } from "./nav-types";
+import { DropdownNavbarItem } from "./dropdown-navbar-item";
+import { MobileDropdownItem } from "./mobile-dropdown-item";
 
 export default function NavBar() {
   const { user, isLoading } = useCurrentUser();
@@ -265,84 +253,5 @@ export default function NavBar() {
         </div>
       </div>
     </nav>
-  );
-}
-
-function DropdownNavbarItem({
-  group: { label, links },
-}: {
-  group: NavLinkGroup;
-}) {
-  return (
-    <NavigationMenuItem>
-      <NavigationMenuTrigger className="h-9 px-3 py-1">
-        {label}
-      </NavigationMenuTrigger>
-      <NavigationMenuContent>
-        <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-          {links.map(({ href, label, icon }) => (
-            <li key={href}>
-              <NavigationMenuLink asChild>
-                <Link
-                  href={href}
-                  className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                >
-                  <div className="flex items-center space-x-2">
-                    {icon}
-                    <div className="text-sm font-medium leading-none">
-                      {label}
-                    </div>
-                  </div>
-                </Link>
-              </NavigationMenuLink>
-            </li>
-          ))}
-        </ul>
-      </NavigationMenuContent>
-    </NavigationMenuItem>
-  );
-}
-
-function MobileDropdownItem({
-  group: { label, links },
-  isExpanded,
-  onToggle,
-}: {
-  group: NavLinkGroup;
-  isExpanded: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <div className="space-y-1">
-      <Button
-        variant="ghost"
-        className="w-full justify-between h-12 text-base"
-        onClick={onToggle}
-      >
-        {label}
-        <ChevronDown
-          className={`h-4 w-4 transition-transform ${
-            isExpanded ? "rotate-180" : ""
-          }`}
-        />
-      </Button>
-      {isExpanded && (
-        <div className="space-y-1 pl-4">
-          {links.map(({ href, label, icon }) => (
-            <SheetClose asChild key={href}>
-              <Link href={href}>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start h-10 text-sm pl-6"
-                >
-                  <span className="mr-3">{icon}</span>
-                  {label}
-                </Button>
-              </Link>
-            </SheetClose>
-          ))}
-        </div>
-      )}
-    </div>
   );
 }
