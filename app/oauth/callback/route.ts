@@ -7,7 +7,7 @@ import {
 import {
   getUserByIdpUserId,
   createUserFromIdp,
-  updateUserUsername,
+  syncUserFromIdp,
 } from "@/lib/db_actions/identity-login-flag";
 import { logger } from "@/lib/logger";
 
@@ -100,8 +100,11 @@ export async function GET(request: NextRequest) {
         email: claims.email,
       });
     } else {
-      // Existing user - update username from IDP to stay in sync
-      await updateUserUsername(user.id, claims.username || null);
+      // Existing user - sync email and username from IDP
+      await syncUserFromIdp(user.id, {
+        email: claims.email,
+        username: claims.username || null,
+      });
     }
 
     // Check if user is deactivated

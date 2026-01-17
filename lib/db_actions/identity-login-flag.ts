@@ -137,26 +137,27 @@ export async function createUserFromIdp({
 }
 
 /**
- * Update a user's username from IDP claims.
- * Called on each login to keep the username in sync with the IDP.
+ * Sync user data from IDP claims.
+ * Called on each login to keep email and username in sync with the IDP.
  */
-export async function updateUserUsername(
+export async function syncUserFromIdp(
   userId: number,
-  username: string | null,
+  { email, username }: { email: string; username: string | null },
 ): Promise<boolean> {
   const startTime = Date.now();
 
   try {
     await db
       .updateTable("users")
-      .set({ username })
+      .set({ email, username })
       .where("id", "=", userId)
       .execute();
 
     const duration = Date.now() - startTime;
-    logger.debug("Updated user username from IDP", {
-      operation: "updateUserUsername",
+    logger.debug("Synced user data from IDP", {
+      operation: "syncUserFromIdp",
       userId,
+      email,
       username,
       duration,
     });
@@ -164,8 +165,8 @@ export async function updateUserUsername(
     return true;
   } catch (err) {
     const duration = Date.now() - startTime;
-    logger.error("Failed to update user username", err as Error, {
-      operation: "updateUserUsername",
+    logger.error("Failed to sync user data from IDP", err as Error, {
+      operation: "syncUserFromIdp",
       userId,
       duration,
     });
