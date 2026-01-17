@@ -72,7 +72,7 @@ export default function ForecastDensityChart({
         <Line
           type="monotone"
           dataKey="density"
-          stroke="hsl(var(--chart-1))"
+          stroke="var(--chart-1)"
           strokeWidth={2}
           dot={false}
           name="Density"
