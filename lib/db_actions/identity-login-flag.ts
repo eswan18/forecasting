@@ -85,10 +85,12 @@ export async function createUserFromIdp({
   idpUserId,
   email,
   name,
+  username,
 }: {
   idpUserId: string;
   email: string;
   name: string;
+  username: string | null;
 }): Promise<VUser | null> {
   const startTime = Date.now();
 
@@ -100,6 +102,7 @@ export async function createUserFromIdp({
         email,
         is_admin: false,
         idp_user_id: idpUserId,
+        username,
       })
       .returning("id")
       .executeTakeFirstOrThrow();
@@ -130,5 +133,43 @@ export async function createUserFromIdp({
       duration,
     });
     return null;
+  }
+}
+
+/**
+ * Sync user data from IDP claims.
+ * Called on each login to keep email and username in sync with the IDP.
+ */
+export async function syncUserFromIdp(
+  userId: number,
+  { email, username }: { email: string; username: string | null },
+): Promise<boolean> {
+  const startTime = Date.now();
+
+  try {
+    await db
+      .updateTable("users")
+      .set({ email, username })
+      .where("id", "=", userId)
+      .execute();
+
+    const duration = Date.now() - startTime;
+    logger.debug("Synced user data from IDP", {
+      operation: "syncUserFromIdp",
+      userId,
+      email,
+      username,
+      duration,
+    });
+
+    return true;
+  } catch (err) {
+    const duration = Date.now() - startTime;
+    logger.error("Failed to sync user data from IDP", err as Error, {
+      operation: "syncUserFromIdp",
+      userId,
+      duration,
+    });
+    return false;
   }
 }

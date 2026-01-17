@@ -7,6 +7,7 @@ import {
 import {
   getUserByIdpUserId,
   createUserFromIdp,
+  syncUserFromIdp,
 } from "@/lib/db_actions/identity-login-flag";
 import { logger } from "@/lib/logger";
 
@@ -74,12 +75,13 @@ export async function GET(request: NextRequest) {
 
     if (!user) {
       // First login via IDP - create user record
-      // Use username from claims, fallback to email prefix
+      // Use username from claims, fallback to email prefix for display name
       const name = claims.username || claims.email.split("@")[0];
       user = await createUserFromIdp({
         idpUserId: claims.sub,
         email: claims.email,
         name,
+        username: claims.username || null,
       });
 
       if (!user) {
@@ -96,6 +98,12 @@ export async function GET(request: NextRequest) {
         userId: user.id,
         idpUserId: claims.sub,
         email: claims.email,
+      });
+    } else {
+      // Existing user - sync email and username from IDP
+      await syncUserFromIdp(user.id, {
+        email: claims.email,
+        username: claims.username || null,
       });
     }
 

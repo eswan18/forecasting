@@ -25,6 +25,7 @@ export interface UsersTable {
   is_admin: boolean;
   deactivated_at: Date | null;
   idp_user_id: string | null; // UUID from IDP
+  username: string | null; // Username from IDP, updated on each login
   updated_at: Generated<Date>;
   created_at: Generated<Date>;
 }
@@ -176,6 +177,7 @@ export interface VUsersView {
   is_admin: boolean;
   deactivated_at: Date | null;
   idp_user_id: string | null; // UUID from IDP
+  username: string | null; // Username from IDP
   created_at: Date;
   updated_at: Date;
 }
