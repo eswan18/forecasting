@@ -436,6 +436,64 @@ export async function getPropsWithUserForecasts({
   }
 }
 
+export async function getRecentlyResolvedForecasts({
+  userId,
+  limit = 3,
+}: {
+  userId: number;
+  limit?: number;
+}): Promise<ServerActionResult<VForecast[]>> {
+  const currentUser = await getUserFromCookies();
+  logger.debug("Getting recently resolved forecasts", {
+    userId,
+    limit,
+    currentUserId: currentUser?.id,
+  });
+
+  const startTime = Date.now();
+  try {
+    const results = await db.transaction().execute(async (trx) => {
+      await trx.executeQuery(
+        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
+          db,
+        ),
+      );
+      return await trx
+        .selectFrom("v_forecasts")
+        .selectAll()
+        .where("user_id", "=", userId)
+        .where("resolution", "is not", null)
+        .orderBy("resolution_updated_at", "desc")
+        .limit(limit)
+        .execute();
+    });
+
+    const duration = Date.now() - startTime;
+    logger.debug(`Retrieved ${results.length} recently resolved forecasts`, {
+      operation: "getRecentlyResolvedForecasts",
+      table: "v_forecasts",
+      duration,
+      userId,
+      limit,
+    });
+
+    return success(results);
+  } catch (err) {
+    const duration = Date.now() - startTime;
+    logger.error("Failed to get recently resolved forecasts", err as Error, {
+      operation: "getRecentlyResolvedForecasts",
+      table: "v_forecasts",
+      userId,
+      limit,
+      duration,
+    });
+    return error(
+      "Failed to retrieve recently resolved forecasts",
+      ERROR_CODES.DATABASE_ERROR,
+    );
+  }
+}
+
 export async function deleteForecast({
   id,
 }: {

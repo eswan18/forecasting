@@ -11,6 +11,7 @@ import {
 import MiniLeaderboard from "@/components/landing/mini-leaderboard";
 import NewsCard from "@/components/landing/news-card";
 import IconLinkButton from "@/components/landing/icon-link-button";
+import RecentlyResolved from "@/components/landing/recently-resolved";
 import { Suspense } from "react";
 
 export default async function Home() {
@@ -84,11 +85,19 @@ export default async function Home() {
               <CheckCircle className="h-5 w-5" />
               Recently Resolved
             </h2>
-            <Card>
-              <CardContent className="py-6">
-                <p className="text-sm text-muted-foreground">Coming soon...</p>
-              </CardContent>
-            </Card>
+            <Suspense
+              fallback={
+                <Card>
+                  <CardContent className="py-6">
+                    <p className="text-sm text-muted-foreground">
+                      Loading...
+                    </p>
+                  </CardContent>
+                </Card>
+              }
+            >
+              <RecentlyResolved userId={user.id} />
+            </Suspense>
           </div>
         </div>
       </div>
