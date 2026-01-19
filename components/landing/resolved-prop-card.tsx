@@ -52,9 +52,9 @@ export default function ResolvedPropCard({
                   {resolution ? "Yes" : "No"}
                 </span>
                 {resolution ? (
-                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <CheckCircle className="h-5 w-5 text-green-600" />
                 ) : (
-                  <XCircle className="h-4 w-4 text-red-600" />
+                  <XCircle className="h-5 w-5 text-red-600" />
                 )}
                 <span className="text-sm text-muted-foreground">
                   {formatShortDate(resolutionDate)}
