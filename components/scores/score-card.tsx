@@ -76,7 +76,7 @@ export default function ScoreCard({
                 <BarChart
                   data={chartData}
                   layout="vertical"
-                  margin={{ top: 0, right: 10, left: 0, bottom: 0 }}
+                  margin={{ top: 0, right: 10, left: 10, bottom: 0 }}
                 >
                   <XAxis
                     type="number"
@@ -133,7 +133,7 @@ export default function ScoreCard({
                 <BarChart
                   data={chartData}
                   layout="vertical"
-                  margin={{ top: 0, right: 30, left: 0, bottom: 0 }}
+                  margin={{ top: 0, right: 30, left: 10, bottom: 0 }}
                 >
                   <XAxis
                     type="number"
