@@ -44,33 +44,32 @@ export default async function MiniLeaderboard({
   }
 
   return (
-    <Card>
-      <CardContent>
-        <div className="flex flex-col gap-2">
-          {sortedUsers.map((userScore, index) => (
-            <div
-              key={userScore.userId}
-              className="flex items-center justify-between"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground w-5 text-right">
-                  {index + 1}.
+    <Link href={`/competitions/${competitionId}/scores`}>
+      <Card className="hover:shadow-md transition-shadow">
+        <CardContent>
+          <div className="flex flex-col gap-2">
+            {sortedUsers.map((userScore, index) => (
+              <div
+                key={userScore.userId}
+                className="flex items-center justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground w-5 text-right">
+                    {index + 1}.
+                  </span>
+                  <span className="font-medium">{userScore.userName}</span>
+                </div>
+                <span className="text-muted-foreground tabular-nums">
+                  {userScore.score.toFixed(2)}
                 </span>
-                <span className="font-medium">{userScore.userName}</span>
               </div>
-              <span className="text-muted-foreground tabular-nums">
-                {userScore.score.toFixed(2)}
-              </span>
-            </div>
-          ))}
-        </div>
-        <Link
-          href={`/competitions/${competitionId}/scores`}
-          className="flex items-center justify-center gap-1 text-sm text-muted-foreground hover:text-foreground mt-4"
-        >
-          More <ArrowRight className="h-4 w-4" />
-        </Link>
-      </CardContent>
-    </Card>
+            ))}
+          </div>
+          <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground mt-4">
+            More <ArrowRight className="h-4 w-4" />
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
