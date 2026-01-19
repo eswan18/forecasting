@@ -73,7 +73,8 @@ export default async function Home() {
                 </Card>
               }
             >
-              <MiniLeaderboard competitionId={3} />
+              {/* Competition ID 6 = 2026 */}
+              <MiniLeaderboard competitionId={6} />
             </Suspense>
           </div>
 
