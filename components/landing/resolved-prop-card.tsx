@@ -26,7 +26,7 @@ export default function ResolvedPropCard({
             <div className="flex-1 min-w-0">
               <p className="text-sm line-clamp-2">{propText}</p>
               {propNotes && (
-                <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-3">
                   {propNotes}
                 </p>
               )}
