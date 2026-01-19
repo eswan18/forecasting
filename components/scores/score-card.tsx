@@ -25,6 +25,60 @@ interface ScoreCardProps {
   maxScore: number;
 }
 
+interface ChartDataItem {
+  name: string;
+  score: number;
+  isOverall: boolean;
+}
+
+interface ScoreBarChartProps {
+  data: ChartDataItem[];
+  maxScore: number;
+  fontSize: number;
+  rightMargin: number;
+}
+
+function ScoreBarChart({
+  data,
+  maxScore,
+  fontSize,
+  rightMargin,
+}: ScoreBarChartProps) {
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart
+        data={data}
+        layout="vertical"
+        margin={{ top: 0, right: rightMargin, left: 10, bottom: 0 }}
+      >
+        <XAxis
+          type="number"
+          domain={[0, Math.ceil(maxScore * 10) / 10]}
+          hide
+        />
+        <YAxis
+          type="category"
+          dataKey="name"
+          axisLine={false}
+          tickLine={false}
+          tick={{ fontSize }}
+          width={95}
+        />
+        <Bar dataKey="score" radius={[0, 4, 4, 0]} barSize={12}>
+          {data.map((entry) => (
+            <Cell
+              key={entry.name}
+              className={
+                entry.isOverall ? "fill-primary" : "fill-muted-foreground/40"
+              }
+            />
+          ))}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
 export default function ScoreCard({
   rank,
   userId,
@@ -36,7 +90,7 @@ export default function ScoreCard({
   maxScore,
 }: ScoreCardProps) {
   // Build chart data with Overall first, then categories
-  const chartData = [
+  const chartData: ChartDataItem[] = [
     { name: "Overall", score: overallScore, isOverall: true },
     ...categoryScores.map((cs) => {
       const category = categories.find((c) => c.id === cs.categoryId);
@@ -49,7 +103,10 @@ export default function ScoreCard({
   ];
 
   return (
-    <Link href={`/competitions/${competitionId}/scores/user/${userId}`}>
+    <Link
+      href={`/competitions/${competitionId}/scores/user/${userId}`}
+      aria-label={`View detailed scores for ${userName}`}
+    >
       <Card className="hover:shadow-md transition-shadow">
         <CardContent>
           {/* Mobile layout */}
@@ -69,39 +126,12 @@ export default function ScoreCard({
             </div>
             {/* Chart below */}
             <div className="h-28 mt-3">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={chartData}
-                  layout="vertical"
-                  margin={{ top: 0, right: 10, left: 10, bottom: 0 }}
-                >
-                  <XAxis
-                    type="number"
-                    domain={[0, Math.ceil(maxScore * 10) / 10]}
-                    hide
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 11 }}
-                    width={95}
-                  />
-                  <Bar dataKey="score" radius={[0, 4, 4, 0]} barSize={12}>
-                    {chartData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        className={
-                          entry.isOverall
-                            ? "fill-primary"
-                            : "fill-muted-foreground/40"
-                        }
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <ScoreBarChart
+                data={chartData}
+                maxScore={maxScore}
+                fontSize={11}
+                rightMargin={10}
+              />
             </div>
           </div>
 
@@ -126,39 +156,12 @@ export default function ScoreCard({
 
             {/* Right side: horizontal bar chart */}
             <div className="w-2/3 h-32">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={chartData}
-                  layout="vertical"
-                  margin={{ top: 0, right: 30, left: 10, bottom: 0 }}
-                >
-                  <XAxis
-                    type="number"
-                    domain={[0, Math.ceil(maxScore * 10) / 10]}
-                    hide
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12 }}
-                    width={95}
-                  />
-                  <Bar dataKey="score" radius={[0, 4, 4, 0]} barSize={12}>
-                    {chartData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        className={
-                          entry.isOverall
-                            ? "fill-primary"
-                            : "fill-muted-foreground/40"
-                        }
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <ScoreBarChart
+                data={chartData}
+                maxScore={maxScore}
+                fontSize={12}
+                rightMargin={30}
+              />
             </div>
           </div>
         </CardContent>
