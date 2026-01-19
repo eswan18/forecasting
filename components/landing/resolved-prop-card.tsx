@@ -24,9 +24,14 @@ export default function ResolvedPropCard({
           <div className="flex items-start gap-3">
             {/* Left side: prop info */}
             <div className="flex-1 min-w-0">
-              <p className="text-sm line-clamp-2">{propText}</p>
+              <p className="text-sm line-clamp-2" title={propText}>
+                {propText}
+              </p>
               {propNotes && (
-                <p className="text-xs text-muted-foreground mt-1 line-clamp-3">
+                <p
+                  className="text-xs text-muted-foreground mt-1 line-clamp-3"
+                  title={propNotes}
+                >
                   {propNotes}
                 </p>
               )}
