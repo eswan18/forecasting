@@ -1,7 +1,5 @@
 import { getUserFromCookies } from "@/lib/get-user";
-import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
   Trophy,
   BarChart3,
@@ -12,6 +10,7 @@ import {
 } from "lucide-react";
 import MiniLeaderboard from "@/components/landing/mini-leaderboard";
 import NewsCard from "@/components/landing/news-card";
+import IconLinkButton from "@/components/landing/icon-link-button";
 import { Suspense } from "react";
 
 export default async function Home() {
@@ -41,18 +40,12 @@ export default async function Home() {
                 2025 is over, and you can now see the final scores!
               </p>
               <div className="flex gap-2 flex-wrap justify-center">
-                <Button asChild variant="outline" size="sm" className="min-w-[75%]">
-                  <Link href="/competitions/2/scores" className="flex items-center justify-between w-full">
-                    <Trophy className="h-3 w-3 shrink-0" />
-                    <span>Leaderboard</span>
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" size="sm" className="min-w-[75%]">
-                  <Link href={`/competitions/2/scores/user/${user.id}`} className="flex items-center justify-between w-full">
-                    <BarChart3 className="h-3 w-3 shrink-0" />
-                    <span>Your Score Breakdown</span>
-                  </Link>
-                </Button>
+                <IconLinkButton icon={Trophy} href="/competitions/2/scores">
+                  Leaderboard
+                </IconLinkButton>
+                <IconLinkButton icon={BarChart3} href={`/competitions/2/scores/user/${user.id}`}>
+                  Your Score Breakdown
+                </IconLinkButton>
               </div>
             </NewsCard>
           </div>
