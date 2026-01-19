@@ -76,7 +76,7 @@ export default function ScoreCard({
                 <BarChart
                   data={chartData}
                   layout="vertical"
-                  margin={{ top: 0, right: 10, left: 50, bottom: 0 }}
+                  margin={{ top: 0, right: 10, left: 0, bottom: 0 }}
                 >
                   <XAxis
                     type="number"
@@ -88,8 +88,8 @@ export default function ScoreCard({
                     dataKey="name"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fontSize: 12 }}
-                    width={45}
+                    tick={{ fontSize: 11 }}
+                    width={95}
                   />
                   <Bar dataKey="score" radius={[0, 4, 4, 0]} barSize={12}>
                     {chartData.map((entry, index) => (
@@ -128,12 +128,12 @@ export default function ScoreCard({
             </div>
 
             {/* Right side: horizontal bar chart */}
-            <div className="w-2/3 h-24">
+            <div className="w-2/3 h-32">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={chartData}
                   layout="vertical"
-                  margin={{ top: 0, right: 30, left: 60, bottom: 0 }}
+                  margin={{ top: 0, right: 30, left: 0, bottom: 0 }}
                 >
                   <XAxis
                     type="number"
@@ -146,7 +146,7 @@ export default function ScoreCard({
                     axisLine={false}
                     tickLine={false}
                     tick={{ fontSize: 12 }}
-                    width={55}
+                    width={95}
                   />
                   <Bar dataKey="score" radius={[0, 4, 4, 0]} barSize={12}>
                     {chartData.map((entry, index) => (
