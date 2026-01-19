@@ -65,10 +65,7 @@ export default function ScoreCard({
                   {overallScore.toFixed(2)}
                 </span>
               </div>
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                Full score breakdown
-                <ArrowRight className="h-3 w-3" />
-              </div>
+              <ArrowRight className="h-5 w-5 text-muted-foreground" />
             </div>
             {/* Chart below */}
             <div className="h-28 mt-3">
