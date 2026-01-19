@@ -25,9 +25,11 @@ import type { ReactNode } from "react";
 export default function PropConsensusContent({
   categories,
   forecasts,
+  userId,
 }: {
   categories: Category[];
   forecasts: VForecast[];
+  userId: number | null;
 }) {
   const [selectedCategory, setSelectedCategory] = useState(categories[0]);
   const forecastsInScope = forecasts.filter(
@@ -55,7 +57,7 @@ export default function PropConsensusContent({
         ))}
       </SelectContent>
       <AllPropsConsensusChart
-        props={propStatisticsForForecasts(forecastsInScope)}
+        props={propStatisticsForForecasts(forecastsInScope, userId)}
       />
       <div className="w-full flex justify-center">
         <p className="text-muted-foreground text-sm">
@@ -108,6 +110,16 @@ function AllPropsConsensusChart({
           dataKey="max"
           shape={<RenderDot radius={2} fill="hsl(var(--secondary))" />}
         />
+        <Scatter
+          dataKey="userForecast"
+          shape={
+            <RenderOutlineDot
+              radius={5}
+              stroke="hsl(var(--primary))"
+              strokeWidth={2}
+            />
+          }
+        />
       </ComposedChart>
     </ChartContainer>
   );
@@ -155,6 +167,12 @@ const CustomTooltip = ({
           <p>{stats.min.toFixed(2)}</p>
           <p className="text-muted-foreground">Max</p>
           <p>{stats.max.toFixed(2)}</p>
+          {stats.userForecast !== null && (
+            <>
+              <p className="text-muted-foreground">You</p>
+              <p>{stats.userForecast.toFixed(2)}</p>
+            </>
+          )}
         </div>
       </div>
     );
@@ -180,4 +198,36 @@ const RenderDot: FC<{
   fill: string;
 }) => {
   return <Dot cx={cx} cy={cy} r={radius} fill={fill} />;
+};
+
+const RenderOutlineDot: FC<{
+  cx?: number;
+  cy?: number;
+  radius: number;
+  stroke: string;
+  strokeWidth: number;
+}> = ({
+  cx,
+  cy,
+  radius,
+  stroke,
+  strokeWidth,
+}: {
+  cx?: number;
+  cy?: number;
+  radius: number;
+  stroke: string;
+  strokeWidth: number;
+}) => {
+  if (cx === undefined || cy === undefined) return null;
+  return (
+    <circle
+      cx={cx}
+      cy={cy}
+      r={radius}
+      fill="none"
+      stroke={stroke}
+      strokeWidth={strokeWidth}
+    />
+  );
 };

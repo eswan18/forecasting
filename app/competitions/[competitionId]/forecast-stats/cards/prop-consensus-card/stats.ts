@@ -23,10 +23,12 @@ export interface PropStatistics {
   max: number;
   p25: number;
   p75: number;
+  userForecast: number | null;
 }
 
 export function propStatisticsForForecasts(
   forecasts: VForecast[],
+  userId: number | null,
 ): Map<number, PropStatistics> {
   const forecastsByProp = new Map<number, VForecast[]>();
   for (const forecast of forecasts) {
@@ -37,6 +39,10 @@ export function propStatisticsForForecasts(
   const propStatisticsByPropId = new Map<number, PropStatistics>();
   for (const [propId, forecastsForProp] of forecastsByProp) {
     const values = forecastsForProp.map((forecast) => forecast.forecast);
+    const userForecast =
+      userId !== null
+        ? forecastsForProp.find((f) => f.user_id === userId)?.forecast ?? null
+        : null;
     propStatisticsByPropId.set(propId, {
       prop_id: propId,
       prop_text: forecastsForProp[0].prop_text,
@@ -45,6 +51,7 @@ export function propStatisticsForForecasts(
       max: Math.max(...values),
       p25: quantile(values, 0.25),
       p75: quantile(values, 0.75),
+      userForecast,
     });
   }
   return propStatisticsByPropId;
