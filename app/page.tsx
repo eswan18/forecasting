@@ -35,18 +35,24 @@ export default async function Home() {
               </p>
             </NewsCard>
 
-            <NewsCard icon={BarChart3} title="2025 Scores Finalized">
-              <p className="mb-2">
-                2025 is over, and you can now see the final scores!
-              </p>
-              <div className="flex gap-2 flex-wrap justify-center">
-                <IconLinkButton icon={Trophy} href="/competitions/2/scores">
-                  Leaderboard
-                </IconLinkButton>
-                <IconLinkButton icon={BarChart3} href={`/competitions/2/scores/user/${user.id}`}>
-                  Your Score Breakdown
-                </IconLinkButton>
-              </div>
+            <NewsCard
+              icon={BarChart3}
+              title="2025 Scores Finalized"
+              buttons={
+                <>
+                  <IconLinkButton icon={Trophy} href="/competitions/2/scores">
+                    Leaderboard
+                  </IconLinkButton>
+                  <IconLinkButton
+                    icon={BarChart3}
+                    href={`/competitions/2/scores/user/${user.id}`}
+                  >
+                    Your Score Breakdown
+                  </IconLinkButton>
+                </>
+              }
+            >
+              <p>2025 is over, and you can now see the final scores!</p>
             </NewsCard>
           </div>
 
