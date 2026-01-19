@@ -45,7 +45,7 @@ export default async function MiniLeaderboard({
 
   return (
     <Card>
-      <CardContent className="py-4">
+      <CardContent>
         <div className="flex flex-col gap-2">
           {sortedUsers.map((userScore, index) => (
             <div
@@ -66,7 +66,7 @@ export default async function MiniLeaderboard({
         </div>
         <Link
           href={`/competitions/${competitionId}/scores`}
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mt-4"
+          className="flex items-center justify-center gap-1 text-sm text-muted-foreground hover:text-foreground mt-4"
         >
           More <ArrowRight className="h-4 w-4" />
         </Link>
