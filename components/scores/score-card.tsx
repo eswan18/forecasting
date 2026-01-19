@@ -52,12 +52,12 @@ export default function ScoreCard({
     <Link href={`/competitions/${competitionId}/scores/user/${userId}`}>
       <Card className="hover:shadow-md transition-shadow">
         <CardContent className="py-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-1">
             {/* Left side: rank, name, score, link */}
-            <div className="flex-shrink-0 w-48">
+            <div className="flex flex-col">
               <div className="flex items-baseline gap-2">
                 <span className="text-lg text-muted-foreground">{rank}.</span>
-                <span className="text-lg font-semibold">{userName}</span>
+                <span className="text-lg font-semibold truncate">{userName}</span>
                 <span className="text-xl font-bold ml-2">
                   {overallScore.toFixed(2)}
                 </span>
