@@ -49,6 +49,7 @@ export default async function RecentlyResolved({
           propNotes={forecast.prop_notes}
           forecast={forecast.forecast}
           resolution={forecast.resolution!}
+          resolutionDate={forecast.resolution_updated_at!}
         />
       ))}
     </div>

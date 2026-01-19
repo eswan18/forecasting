@@ -8,6 +8,11 @@ interface ResolvedPropCardProps {
   propNotes: string | null;
   forecast: number;
   resolution: boolean;
+  resolutionDate: Date;
+}
+
+function formatShortDate(date: Date): string {
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 export default function ResolvedPropCard({
@@ -16,45 +21,53 @@ export default function ResolvedPropCard({
   propNotes,
   forecast,
   resolution,
+  resolutionDate,
 }: ResolvedPropCardProps) {
   return (
     <Link href={`/props/${propId}`}>
       <Card className="hover:shadow-md transition-shadow">
         <CardContent>
-          <div className="flex items-start gap-3">
-            {/* Left side: prop info */}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm line-clamp-2" title={propText}>
-                {propText}
+          {/* Top: prop text and notes */}
+          <div className="mb-3">
+            <p className="text-sm line-clamp-2" title={propText}>
+              {propText}
+            </p>
+            {propNotes && (
+              <p
+                className="text-xs text-muted-foreground mt-1 line-clamp-3"
+                title={propNotes}
+              >
+                {propNotes}
               </p>
-              {propNotes && (
-                <p
-                  className="text-xs text-muted-foreground mt-1 line-clamp-3"
-                  title={propNotes}
-                >
-                  {propNotes}
-                </p>
-              )}
-            </div>
+            )}
+          </div>
 
-            {/* Right side: forecast and resolution stacked */}
-            <div className="flex flex-col items-center gap-y-4 shrink-0">
-              <div className="flex items-center gap-1 line-clamp-2">
+          {/* Bottom row: resolution info and forecast */}
+          <div className="flex items-end justify-between">
+            {/* Left: Resolution with date */}
+            <div>
+              <p className="text-xs text-muted-foreground">Resolution</p>
+              <div className="flex items-center gap-1 mt-0.5">
+                <span className="text-sm font-medium">
+                  {resolution ? "Yes" : "No"}
+                </span>
                 {resolution ? (
                   <CheckCircle className="h-4 w-4 text-green-600" />
                 ) : (
                   <XCircle className="h-4 w-4 text-red-600" />
                 )}
-                <span className="text-sm font-medium">
-                  {resolution ? "Yes" : "No"}
+                <span className="text-sm text-muted-foreground">
+                  {formatShortDate(resolutionDate)}
                 </span>
               </div>
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground">You said</p>
-                <p className="text-sm font-medium tabular-nums">
-                  {forecast.toFixed(2)}
-                </p>
-              </div>
+            </div>
+
+            {/* Right: User's forecast */}
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">You said</p>
+              <p className="text-sm font-medium tabular-nums mt-0.5">
+                {forecast.toFixed(2)}
+              </p>
             </div>
           </div>
         </CardContent>
