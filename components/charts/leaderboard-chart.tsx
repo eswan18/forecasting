@@ -52,15 +52,10 @@ export default function LeaderboardChart({
   return (
     <div className="flex flex-col w-full gap-y-6 items-start">
       {/* Explanation of Scores */}
-      <div className="w-full rounded-lg">
-        <h4 className="font-semibold mb-2">How to Read Scores</h4>
-        <div className="text-sm text-muted-foreground space-y-1">
-          <p>
-            <strong>Lower scores are better</strong> - Brier scores measure
-            forecasting accuracy. Scores range from 0 (perfect) to 1 (worst).
-          </p>
-        </div>
-      </div>
+      <p className="text-sm text-muted-foreground">
+        <strong>Lower scores are better</strong> - Brier scores measure
+        forecasting accuracy. Scores range from 0 (perfect) to 1 (worst).
+      </p>
 
       {/* Score Cards */}
       <div className="flex flex-col gap-y-3 w-full">
