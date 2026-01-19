@@ -1,8 +1,8 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Category } from "@/types/db_types";
-import { CompetitionScore } from "@/lib/db_actions";
+import type { Category } from "@/types/db_types";
+import type { CompetitionScore } from "@/lib/db_actions";
 import ScoreCard from "@/components/scores/score-card";
 
 interface LeaderboardChartProps {

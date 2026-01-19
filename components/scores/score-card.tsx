@@ -11,8 +11,8 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
-import { UserCategoryScore } from "@/lib/db_actions/competition-scores";
-import { Category } from "@/types/db_types";
+import type { UserCategoryScore } from "@/lib/db_actions/competition-scores";
+import type { Category } from "@/types/db_types";
 
 interface ScoreCardProps {
   rank: number;
@@ -89,17 +89,17 @@ export default function ScoreCard({
   competitionId,
   maxScore,
 }: ScoreCardProps) {
+  // Build category lookup map for O(1) access
+  const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
+
   // Build chart data with Overall first, then categories
   const chartData: ChartDataItem[] = [
     { name: "Overall", score: overallScore, isOverall: true },
-    ...categoryScores.map((cs) => {
-      const category = categories.find((c) => c.id === cs.categoryId);
-      return {
-        name: category?.name || "Unknown",
-        score: cs.score,
-        isOverall: false,
-      };
-    }),
+    ...categoryScores.map((cs) => ({
+      name: categoryMap.get(cs.categoryId) || "Unknown",
+      score: cs.score,
+      isOverall: false,
+    })),
   ];
 
   return (
@@ -112,17 +112,19 @@ export default function ScoreCard({
           {/* Mobile layout */}
           <div className="flex flex-col md:hidden">
             {/* Top row: name/score on left, link on right */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-baseline gap-2">
-                <span className="text-lg text-muted-foreground">{rank}.</span>
-                <span className="text-lg font-semibold truncate">
+            <div className="flex items-center justify-between min-w-0">
+              <div className="flex items-baseline gap-2 min-w-0 flex-1">
+                <span className="text-lg text-muted-foreground shrink-0">
+                  {rank}.
+                </span>
+                <span className="text-lg font-semibold truncate min-w-0 flex-1">
                   {userName}
                 </span>
-                <span className="text-xl font-bold ml-2">
+                <span className="text-xl font-bold ml-2 shrink-0">
                   {overallScore.toFixed(2)}
                 </span>
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
             </div>
             {/* Chart below */}
             <div className="h-28 mt-3">
@@ -136,15 +138,17 @@ export default function ScoreCard({
           </div>
 
           {/* Desktop layout */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-4 min-w-0">
             {/* Left side: rank, name, score, link */}
-            <div className="flex flex-col w-1/3">
-              <div className="flex items-baseline gap-2">
-                <span className="text-lg text-muted-foreground">{rank}.</span>
-                <span className="text-lg font-semibold truncate">
+            <div className="flex flex-col w-1/3 min-w-0">
+              <div className="flex items-baseline gap-2 min-w-0">
+                <span className="text-lg text-muted-foreground shrink-0">
+                  {rank}.
+                </span>
+                <span className="text-lg font-semibold truncate flex-1 min-w-0">
                   {userName}
                 </span>
-                <span className="text-xl font-bold ml-2">
+                <span className="text-xl font-bold ml-2 shrink-0">
                   {overallScore.toFixed(2)}
                 </span>
               </div>
