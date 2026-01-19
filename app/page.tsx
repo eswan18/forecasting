@@ -1,6 +1,6 @@
 import { getUserFromCookies } from "@/lib/get-user";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Trophy,
@@ -11,6 +11,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import MiniLeaderboard from "@/components/landing/mini-leaderboard";
+import NewsCard from "@/components/landing/news-card";
 import { Suspense } from "react";
 
 export default async function Home() {
@@ -28,50 +29,32 @@ export default async function Home() {
               News
             </h2>
 
-            {/* New Login System */}
-            <Card className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2">
-                <div className="flex items-center gap-2">
-                  <MessageCircleWarning className="h-4 w-4 text-primary" />
-                  <CardTitle className="text-base">New Login System</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                <p>
-                  We&apos;ve migrated to a new login system with improved
-                  password reset and Two-Factor Authentication support.
-                </p>
-              </CardContent>
-            </Card>
+            <NewsCard icon={MessageCircleWarning} title="New Login System">
+              <p>
+                We&apos;ve migrated to a new login system with improved
+                password reset and Two-Factor Authentication support.
+              </p>
+            </NewsCard>
 
-            {/* 2025 Scores */}
-            <Card className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2">
-                <div className="flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4 text-primary" />
-                  <CardTitle className="text-base">2025 Scores Finalized</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                <p className="mb-2">
-                  2025 is over, and you can now see the final scores!
-                </p>
-                <div className="flex gap-2 flex-wrap">
-                  <Button asChild variant="outline" size="sm">
-                    <Link href="/competitions/2/scores">
-                      <Trophy className="h-3 w-3 mr-1" />
-                      Leaderboard
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline" size="sm">
-                    <Link href={`/competitions/2/scores/user/${user.id}`}>
-                      <BarChart3 className="h-3 w-3 mr-1" />
-                      Your Scores
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <NewsCard icon={BarChart3} title="2025 Scores Finalized">
+              <p className="mb-2">
+                2025 is over, and you can now see the final scores!
+              </p>
+              <div className="flex gap-2 flex-wrap">
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/competitions/2/scores">
+                    <Trophy className="h-3 w-3 mr-1" />
+                    Leaderboard
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/competitions/2/scores/user/${user.id}`}>
+                    <BarChart3 className="h-3 w-3 mr-1" />
+                    Your Scores
+                  </Link>
+                </Button>
+              </div>
+            </NewsCard>
           </div>
 
           {/* 2026 Standings Section */}
