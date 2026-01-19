@@ -41,13 +41,13 @@ export default async function Home() {
                 2025 is over, and you can now see the final scores!
               </p>
               <div className="flex gap-2 flex-wrap justify-center">
-                <Button asChild variant="outline" size="sm" className="min-w-[50%]">
+                <Button asChild variant="outline" size="sm" className="min-w-[75%]">
                   <Link href="/competitions/2/scores">
                     <Trophy className="h-3 w-3 mr-1" />
                     Leaderboard
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="sm" className="min-w-[50%]">
+                <Button asChild variant="outline" size="sm" className="min-w-[75%]">
                   <Link href={`/competitions/2/scores/user/${user.id}`}>
                     <BarChart3 className="h-3 w-3 mr-1" />
                     Your Scores
