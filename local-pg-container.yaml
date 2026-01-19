@@ -27,6 +27,7 @@ services:
     command: >
       bash -c "
         set -eo pipefail
+        echo 'Starting pg_dump from remote database...'
         pg_dump --no-owner --no-acl $ADMIN_DATABASE_URL | psql 'postgresql://admin:admin_pw@host.docker.internal:2345/forecasting' &&
         psql 'postgresql://admin:admin_pw@host.docker.internal:2345/forecasting' -c \"
           CREATE ROLE app_user WITH LOGIN PASSWORD 'app_user_pw';
