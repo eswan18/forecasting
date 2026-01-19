@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronRight } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -51,7 +51,7 @@ export default function ScoreCard({
   return (
     <Link href={`/competitions/${competitionId}/scores/user/${userId}`}>
       <Card className="hover:shadow-md transition-shadow">
-        <CardContent className="py-4">
+        <CardContent>
           {/* Mobile layout */}
           <div className="flex flex-col md:hidden">
             {/* Top row: name/score on left, link on right */}
@@ -65,7 +65,7 @@ export default function ScoreCard({
                   {overallScore.toFixed(2)}
                 </span>
               </div>
-              <ArrowRight className="h-5 w-5 text-muted-foreground" />
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
             </div>
             {/* Chart below */}
             <div className="h-28 mt-3">
