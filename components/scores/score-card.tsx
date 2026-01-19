@@ -54,7 +54,7 @@ export default function ScoreCard({
         <CardContent className="py-4">
           <div className="flex items-center gap-4 flex-1">
             {/* Left side: rank, name, score, link */}
-            <div className="flex flex-col">
+            <div className="flex flex-col md:w-1/3">
               <div className="flex items-baseline gap-2">
                 <span className="text-lg text-muted-foreground">{rank}.</span>
                 <span className="text-lg font-semibold truncate">{userName}</span>
@@ -69,7 +69,7 @@ export default function ScoreCard({
             </div>
 
             {/* Right side: horizontal bar chart */}
-            <div className="flex-1 h-24">
+            <div className="flex-1 md:flex-none md:w-2/3 h-24">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={chartData}
