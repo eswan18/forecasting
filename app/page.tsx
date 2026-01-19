@@ -50,7 +50,7 @@ export default async function Home() {
                 <Button asChild variant="outline" size="sm" className="min-w-[75%]">
                   <Link href={`/competitions/2/scores/user/${user.id}`}>
                     <BarChart3 className="h-3 w-3 mr-1" />
-                    Your Scores
+                    Your Score Breakdown
                   </Link>
                 </Button>
               </div>
