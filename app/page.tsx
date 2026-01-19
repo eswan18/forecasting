@@ -42,15 +42,15 @@ export default async function Home() {
               </p>
               <div className="flex gap-2 flex-wrap justify-center">
                 <Button asChild variant="outline" size="sm" className="min-w-[75%]">
-                  <Link href="/competitions/2/scores">
-                    <Trophy className="h-3 w-3 mr-1" />
-                    Leaderboard
+                  <Link href="/competitions/2/scores" className="flex items-center justify-between w-full">
+                    <Trophy className="h-3 w-3 shrink-0" />
+                    <span>Leaderboard</span>
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="sm" className="min-w-[75%]">
-                  <Link href={`/competitions/2/scores/user/${user.id}`}>
-                    <BarChart3 className="h-3 w-3 mr-1" />
-                    Your Score Breakdown
+                  <Link href={`/competitions/2/scores/user/${user.id}`} className="flex items-center justify-between w-full">
+                    <BarChart3 className="h-3 w-3 shrink-0" />
+                    <span>Your Score Breakdown</span>
                   </Link>
                 </Button>
               </div>
