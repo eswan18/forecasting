@@ -105,7 +105,7 @@ describe("Suggested Props Unit Tests", () => {
       vi.mocked(getUser.getUserFromCookies).mockResolvedValue(null);
 
       const result = await createSuggestedProp({
-        prop: { text: "My suggestion", suggester_user_id: 1 },
+        prop: { prop: "My suggestion", suggester_user_id: 1 },
       });
 
       expect(result.success).toBe(false);
@@ -118,7 +118,7 @@ describe("Suggested Props Unit Tests", () => {
       vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
 
       const result = await createSuggestedProp({
-        prop: { text: "My suggestion", suggester_user_id: 999 }, // Different user
+        prop: { prop: "My suggestion", suggester_user_id: 999 }, // Different user
       });
 
       expect(result.success).toBe(false);
@@ -143,7 +143,7 @@ describe("Suggested Props Unit Tests", () => {
       });
 
       const result = await createSuggestedProp({
-        prop: { text: "My suggestion", suggester_user_id: 1 },
+        prop: { prop: "My suggestion", suggester_user_id: 1 },
       });
 
       expect(result.success).toBe(true);
@@ -160,7 +160,7 @@ describe("Suggested Props Unit Tests", () => {
       );
 
       const result = await createSuggestedProp({
-        prop: { text: "My suggestion", suggester_user_id: 1 },
+        prop: { prop: "My suggestion", suggester_user_id: 1 },
       });
 
       expect(result.success).toBe(false);
