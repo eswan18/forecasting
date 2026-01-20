@@ -18,7 +18,6 @@ vi.mock("next/cache", () => ({
 // Import after mocking
 import {
   getPropById,
-  getProps,
   createProp,
   updateProp,
   resolveProp,
