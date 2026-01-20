@@ -204,24 +204,18 @@ export async function updateForecast({
 
     // Check that the competition hasn't ended, then update the record.
     await withRLS(currentUser?.id, async (trx) => {
-      // First, get the prop_id from the forecast
+      // Check close date via v_forecasts (which joins with competition data)
       const forecastRecord = await trx
-        .selectFrom("forecasts")
-        .where("id", "=", id)
-        .select("prop_id")
+        .selectFrom("v_forecasts")
+        .where("forecast_id", "=", id)
+        .select("competition_forecasts_close_date")
         .executeTakeFirst();
 
       if (!forecastRecord) {
         throw new Error("Forecast not found");
       }
 
-      // Now check if the competition has ended
-      const prop = await trx
-        .selectFrom("v_props")
-        .where("prop_id", "=", forecastRecord.prop_id)
-        .select("competition_forecasts_close_date")
-        .executeTakeFirst();
-      const closeDate = prop?.competition_forecasts_close_date;
+      const closeDate = forecastRecord.competition_forecasts_close_date;
       if (closeDate && closeDate <= new Date()) {
         logger.warn("Attempted to update forecast past due date", {
           forecastId: id,
