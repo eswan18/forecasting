@@ -1,6 +1,5 @@
 "use server";
 import { logger } from "@/lib/logger";
-import { db } from "@/lib/database";
 import { getUserFromCookies } from "@/lib/get-user";
 import { sql } from "kysely";
 import {
@@ -9,6 +8,7 @@ import {
   error,
   ERROR_CODES,
 } from "@/lib/server-action-result";
+import { withRLS } from "@/lib/db-helpers";
 
 export interface UserScore {
   userId: number;
@@ -68,13 +68,7 @@ export async function getCompetitionScores({
         ERROR_CODES.UNAUTHORIZED,
       );
     }
-    const results = await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
-          db,
-        ),
-      );
-
+    const results = await withRLS(currentUser?.id, async (trx) => {
       // Execute both queries in parallel for better performance
       const [overallResults, categoryResults] = await Promise.all([
         // Get overall scores (averaged by user across all categories)
@@ -185,13 +179,7 @@ export async function getUserScoreBreakdown({
       );
     }
 
-    const results = await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
-          db,
-        ),
-      );
-
+    const results = await withRLS(currentUser?.id, async (trx) => {
       // Get user info and overall score
       const [userInfo] = await trx
         .selectFrom("v_forecasts")

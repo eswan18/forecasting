@@ -1,16 +1,9 @@
 "use server";
 
-import {
-  Database,
-  ForecastUpdate,
-  NewForecast,
-  VForecast,
-  VProp,
-} from "@/types/db_types";
-import { db } from "@/lib/database";
+import { Database, ForecastUpdate, NewForecast, VForecast, VProp } from "@/types/db_types";
 import { getUserFromCookies } from "@/lib/get-user";
 import { revalidatePath } from "next/cache";
-import { OrderByExpression, OrderByModifiers, sql } from "kysely";
+import { OrderByExpression, OrderByModifiers } from "kysely";
 import { logger } from "@/lib/logger";
 import {
   ServerActionResult,
@@ -18,6 +11,7 @@ import {
   error,
   ERROR_CODES,
 } from "@/lib/server-action-result";
+import { withRLS } from "@/lib/db-helpers";
 
 export type VForecastsOrderByExpression = OrderByExpression<
   Database,
@@ -53,12 +47,7 @@ export async function getForecasts({
 
   const startTime = Date.now();
   try {
-    const results = await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
-          db,
-        ),
-      );
+    const results = await withRLS(currentUser?.id, async (trx) => {
       let query = trx.selectFrom("v_forecasts").selectAll();
       if (userId !== undefined) {
         query = query.where("user_id", "=", userId);
@@ -130,13 +119,8 @@ export async function createForecast({
 
   const startTime = Date.now();
   try {
-    // Check that the competition hasn't ended already.
-    await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
-          db,
-        ),
-      );
+    // Check that the competition hasn't ended, then insert the record.
+    const id = await withRLS(currentUser?.id, async (trx) => {
       const prop = await trx
         .selectFrom("v_props")
         .where("prop_id", "=", forecast.prop_id)
@@ -150,15 +134,7 @@ export async function createForecast({
         });
         throw new Error("Cannot create forecasts past the due date");
       }
-    });
 
-    // Insert the record.
-    const id = await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
-          db,
-        ),
-      );
       const { id } = await trx
         .insertInto("forecasts")
         .values(forecast)
@@ -226,16 +202,23 @@ export async function updateForecast({
       return error("Unauthorized", ERROR_CODES.UNAUTHORIZED);
     }
 
-    // Check that the competition hasn't ended already.
-    await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
-          db,
-        ),
-      );
+    // Check that the competition hasn't ended, then update the record.
+    await withRLS(currentUser?.id, async (trx) => {
+      // First, get the prop_id from the forecast
+      const forecastRecord = await trx
+        .selectFrom("forecasts")
+        .where("id", "=", id)
+        .select("prop_id")
+        .executeTakeFirst();
+
+      if (!forecastRecord) {
+        throw new Error("Forecast not found");
+      }
+
+      // Now check if the competition has ended
       const prop = await trx
         .selectFrom("v_props")
-        .where("prop_id", "=", id)
+        .where("prop_id", "=", forecastRecord.prop_id)
         .select("competition_forecasts_close_date")
         .executeTakeFirst();
       const closeDate = prop?.competition_forecasts_close_date;
@@ -244,17 +227,9 @@ export async function updateForecast({
           forecastId: id,
           dueDate: closeDate.toISOString(),
         });
-        throw new Error("Cannot create forecasts past the due date");
+        throw new Error("Cannot update forecasts past the due date");
       }
-    });
 
-    // Update the record.
-    await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
-          db,
-        ),
-      );
       await trx
         .updateTable("forecasts")
         .set(forecast)
@@ -282,12 +257,14 @@ export async function updateForecast({
       forecastId: id,
       duration,
     });
-    // Check if it's the validation error we threw
-    if (
-      err instanceof Error &&
-      err.message === "Cannot create forecasts past the due date"
-    ) {
-      return error(err.message, ERROR_CODES.VALIDATION_ERROR);
+    // Check if it's a validation error we threw
+    if (err instanceof Error) {
+      if (
+        err.message === "Cannot update forecasts past the due date" ||
+        err.message === "Forecast not found"
+      ) {
+        return error(err.message, ERROR_CODES.VALIDATION_ERROR);
+      }
     }
     return error("Failed to update forecast", ERROR_CODES.DATABASE_ERROR);
   }
@@ -310,12 +287,7 @@ export async function getUnforecastedProps({
   const startTime = Date.now();
   try {
     // Fetch props without a corresponding entry in the forecasts table for that user.
-    const results = await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
-          db,
-        ),
-      );
+    const results = await withRLS(currentUser?.id, async (trx) => {
       return await trx
         .selectFrom("v_props")
         .selectAll()
@@ -382,13 +354,7 @@ export async function getPropsWithUserForecasts({
 
   const startTime = Date.now();
   try {
-    const results = await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
-          db,
-        ),
-      );
-
+    const results = await withRLS(currentUser?.id, async (trx) => {
       let query = trx
         .selectFrom("v_props")
         .leftJoin("forecasts", (join) =>
@@ -452,12 +418,7 @@ export async function getRecentlyResolvedForecasts({
 
   const startTime = Date.now();
   try {
-    const results = await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
-          db,
-        ),
-      );
+    const results = await withRLS(currentUser?.id, async (trx) => {
       return await trx
         .selectFrom("v_forecasts")
         .selectAll()
@@ -507,12 +468,7 @@ export async function deleteForecast({
 
   const startTime = Date.now();
   try {
-    await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
-          db,
-        ),
-      );
+    await withRLS(currentUser?.id, async (trx) => {
       await trx.deleteFrom("forecasts").where("id", "=", id).execute();
     });
 

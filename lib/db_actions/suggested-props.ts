@@ -1,10 +1,8 @@
 "use server";
 
 import { NewSuggestedProp, VSuggestedProp } from "@/types/db_types";
-import { db } from "@/lib/database";
 import { getUserFromCookies } from "@/lib/get-user";
 import { logger } from "@/lib/logger";
-import { sql } from "kysely";
 import { revalidatePath } from "next/cache";
 import {
   ServerActionResult,
@@ -12,6 +10,7 @@ import {
   error,
   ERROR_CODES,
 } from "@/lib/server-action-result";
+import { withRLS } from "@/lib/db-helpers";
 
 export async function getSuggestedProps(): Promise<
   ServerActionResult<VSuggestedProp[]>
@@ -33,12 +32,7 @@ export async function getSuggestedProps(): Promise<
       );
     }
 
-    const results = await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser.id}, true);`.compile(
-          db,
-        ),
-      );
+    const results = await withRLS(currentUser.id, async (trx) => {
       return await trx.selectFrom("v_suggested_props").selectAll().execute();
     });
 
@@ -93,12 +87,7 @@ export async function createSuggestedProp({
       return error("Unauthorized", ERROR_CODES.UNAUTHORIZED);
     }
 
-    const { id } = await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser.id}, true);`.compile(
-          db,
-        ),
-      );
+    const { id } = await withRLS(currentUser.id, async (trx) => {
       return await trx
         .insertInto("suggested_props")
         .values(prop)
@@ -152,12 +141,7 @@ export async function deleteSuggestedProp({
       );
     }
 
-    await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
-          db,
-        ),
-      );
+    await withRLS(currentUser?.id, async (trx) => {
       await trx.deleteFrom("suggested_props").where("id", "=", id).execute();
     });
 

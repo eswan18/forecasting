@@ -1,9 +1,7 @@
 "use server";
 import { getUserFromCookies } from "../get-user";
 import { revalidatePath } from "next/cache";
-import { db } from "@/lib/database";
 import { VProp, PropUpdate, NewProp, NewResolution } from "@/types/db_types";
-import { sql } from "kysely";
 import {
   ServerActionResult,
   ERROR_CODES,
@@ -12,6 +10,7 @@ import {
   validationError,
 } from "@/lib/server-action-result";
 import { logger } from "@/lib/logger";
+import { withRLS } from "@/lib/db-helpers";
 
 export async function getPropById(
   propId: number,
@@ -25,20 +24,12 @@ export async function getPropById(
 
   const startTime = Date.now();
   try {
-    const result = await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
-          db,
-        ),
-      );
-
-      const prop = await trx
+    const result = await withRLS(currentUser?.id, async (trx) => {
+      return await trx
         .selectFrom("v_props")
         .selectAll()
         .where("prop_id", "=", propId)
         .executeTakeFirst();
-
-      return prop;
     });
 
     const duration = Date.now() - startTime;
@@ -106,12 +97,7 @@ export async function getProps({
     }
 
     // Build and execute the query.
-    const results = await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
-          db,
-        ),
-      );
+    const results = await withRLS(currentUser?.id, async (trx) => {
       let query = trx
         .selectFrom("v_props")
         .orderBy("prop_id", "asc")
@@ -209,13 +195,7 @@ export async function resolveProp({
 
   const startTime = Date.now();
   try {
-    await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
-          db,
-        ),
-      );
-
+    await withRLS(currentUser?.id, async (trx) => {
       // first check that this prop doesn't already have a resolution
       const existingResolution = await trx
         .selectFrom("resolutions")
@@ -295,12 +275,7 @@ export async function unresolveProp({
 
   const startTime = Date.now();
   try {
-    await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
-          db,
-        ),
-      );
+    await withRLS(currentUser?.id, async (trx) => {
       await trx
         .deleteFrom("resolutions")
         .where("prop_id", "=", propId)
@@ -366,12 +341,7 @@ export async function updateProp({
       );
     }
 
-    await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
-          db,
-        ),
-      );
+    await withRLS(currentUser?.id, async (trx) => {
       await trx.updateTable("props").set(prop).where("id", "=", id).execute();
     });
 
@@ -445,12 +415,7 @@ export async function createProp({
       );
     }
 
-    await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
-          db,
-        ),
-      );
+    await withRLS(currentUser?.id, async (trx) => {
       await trx.insertInto("props").values(prop).execute();
     });
 
@@ -498,12 +463,7 @@ export async function deleteResolution({
 
   const startTime = Date.now();
   try {
-    await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
-          db,
-        ),
-      );
+    await withRLS(currentUser?.id, async (trx) => {
       await trx.deleteFrom("resolutions").where("id", "=", id).execute();
     });
 
@@ -543,12 +503,7 @@ export async function deleteProp({
 
   const startTime = Date.now();
   try {
-    await db.transaction().execute(async (trx) => {
-      await trx.executeQuery(
-        sql`SELECT set_config('app.current_user_id', ${currentUser?.id}, true);`.compile(
-          db,
-        ),
-      );
+    await withRLS(currentUser?.id, async (trx) => {
       await trx.deleteFrom("props").where("id", "=", id).execute();
     });
 
