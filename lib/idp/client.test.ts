@@ -83,5 +83,29 @@ describe("IDP Client", () => {
 
       expect(result).toBeNull();
     });
+
+    it("should return null when names contain only whitespace", async () => {
+      const { buildNameFromUserInfo } = await import("./client");
+
+      const result = buildNameFromUserInfo({
+        sub: "user-123",
+        given_name: "   ",
+        family_name: "  ",
+      });
+
+      expect(result).toBeNull();
+    });
+
+    it("should trim whitespace from names", async () => {
+      const { buildNameFromUserInfo } = await import("./client");
+
+      const result = buildNameFromUserInfo({
+        sub: "user-123",
+        given_name: "  John  ",
+        family_name: "  Doe  ",
+      });
+
+      expect(result).toBe("John Doe");
+    });
   });
 });
