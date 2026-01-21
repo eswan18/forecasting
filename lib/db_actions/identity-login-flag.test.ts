@@ -7,6 +7,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 describe("Identity Login Functions", () => {
   // Mock implementations that we can control per-test
   let mockUserResult: any = undefined;
+  let mockSetData: any = undefined;
 
   const mockUserExecuteTakeFirst = vi.fn(() => {
     return Promise.resolve(mockUserResult);
@@ -29,20 +30,28 @@ describe("Identity Login Functions", () => {
     return {};
   });
 
+  // Mock for updateTable that captures the set data
+  const mockUpdateExecute = vi.fn().mockResolvedValue(undefined);
+  const mockUpdateWhere = vi.fn(() => ({
+    execute: mockUpdateExecute,
+  }));
+  const mockUpdateSet = vi.fn((data: any) => {
+    mockSetData = data;
+    return { where: mockUpdateWhere };
+  });
+  const mockUpdateTable = vi.fn(() => ({
+    set: mockUpdateSet,
+  }));
+
   beforeEach(() => {
     vi.resetModules();
     mockUserResult = undefined;
+    mockSetData = undefined;
 
     vi.doMock("@/lib/database", () => ({
       db: {
         selectFrom: mockSelectFrom,
-        updateTable: vi.fn(() => ({
-          set: vi.fn(() => ({
-            where: vi.fn(() => ({
-              execute: vi.fn().mockResolvedValue(undefined),
-            })),
-          })),
-        })),
+        updateTable: mockUpdateTable,
         insertInto: vi.fn(() => ({
           values: vi.fn(() => ({
             returning: vi.fn(() => ({
@@ -106,6 +115,61 @@ describe("Identity Login Functions", () => {
       const result = await getUserByIdpUserId("abc-123-uuid");
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe("syncUserFromIdp", () => {
+    it("should include name in update when provided", async () => {
+      const { syncUserFromIdp } = await import("./identity-login-flag");
+
+      const result = await syncUserFromIdp(1, {
+        email: "test@example.com",
+        username: "testuser",
+        name: "John Doe",
+        pictureUrl: "https://example.com/photo.jpg",
+      });
+
+      expect(result).toBe(true);
+      expect(mockSetData).toEqual({
+        email: "test@example.com",
+        username: "testuser",
+        name: "John Doe",
+        picture_url: "https://example.com/photo.jpg",
+      });
+    });
+
+    it("should exclude name from update when null", async () => {
+      const { syncUserFromIdp } = await import("./identity-login-flag");
+
+      const result = await syncUserFromIdp(1, {
+        email: "test@example.com",
+        username: "testuser",
+        name: null,
+        pictureUrl: "https://example.com/photo.jpg",
+      });
+
+      expect(result).toBe(true);
+      expect(mockSetData).toEqual({
+        email: "test@example.com",
+        username: "testuser",
+        picture_url: "https://example.com/photo.jpg",
+      });
+      expect(mockSetData).not.toHaveProperty("name");
+    });
+
+    it("should return false on database error", async () => {
+      mockUpdateExecute.mockRejectedValueOnce(new Error("Database error"));
+
+      const { syncUserFromIdp } = await import("./identity-login-flag");
+
+      const result = await syncUserFromIdp(1, {
+        email: "test@example.com",
+        username: "testuser",
+        name: "John Doe",
+        pictureUrl: null,
+      });
+
+      expect(result).toBe(false);
     });
   });
 });
