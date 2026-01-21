@@ -26,6 +26,7 @@ export interface UsersTable {
   deactivated_at: Date | null;
   idp_user_id: string | null; // UUID from IDP
   username: string | null; // Username from IDP, updated on each login
+  picture_url: string | null; // Avatar URL from IDP, updated on each login
   updated_at: Generated<Date>;
   created_at: Generated<Date>;
 }
@@ -178,6 +179,7 @@ export interface VUsersView {
   deactivated_at: Date | null;
   idp_user_id: string | null; // UUID from IDP
   username: string | null; // Username from IDP
+  picture_url: string | null; // Avatar URL from IDP
   created_at: Date;
   updated_at: Date;
 }
