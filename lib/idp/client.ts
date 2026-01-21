@@ -337,3 +337,12 @@ export async function generateCodeChallenge(verifier: string): Promise<string> {
   const hash = await crypto.subtle.digest("SHA-256", data);
   return jose.base64url.encode(new Uint8Array(hash));
 }
+
+/**
+ * Construct a full name from given_name and family_name fields.
+ * Returns null if neither field is provided.
+ */
+export function buildNameFromUserInfo(userInfo: UserInfoResponse): string | null {
+  const parts = [userInfo.given_name, userInfo.family_name].filter(Boolean);
+  return parts.length > 0 ? parts.join(" ") : null;
+}

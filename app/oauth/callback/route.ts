@@ -4,6 +4,7 @@ import {
   exchangeCodeForTokens,
   validateIDPToken,
   fetchUserInfo,
+  buildNameFromUserInfo,
 } from "@/lib/idp/client";
 import {
   getUserByIdpUserId,
@@ -78,9 +79,7 @@ export async function GET(request: NextRequest) {
     let user = await getUserByIdpUserId(claims.sub);
 
     // Construct name from userInfo (given_name + family_name)
-    const nameFromIdp = [userInfo.given_name, userInfo.family_name]
-      .filter(Boolean)
-      .join(" ") || null;
+    const nameFromIdp = buildNameFromUserInfo(userInfo);
 
     if (!user) {
       // First login via IDP - create user record
