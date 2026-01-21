@@ -141,18 +141,29 @@ export async function createUserFromIdp({
 
 /**
  * Sync user data from IDP claims.
- * Called on each login to keep email, username, and picture in sync with the IDP.
+ * Called on each login to keep email, username, name, and picture in sync with the IDP.
+ * Name is only updated if provided by the IDP (not null).
  */
 export async function syncUserFromIdp(
   userId: number,
-  { email, username, pictureUrl }: { email: string; username: string | null; pictureUrl: string | null },
+  { email, username, name, pictureUrl }: { email: string; username: string | null; name: string | null; pictureUrl: string | null },
 ): Promise<boolean> {
   const startTime = Date.now();
 
   try {
+    // Only include name in update if IDP provides it
+    const updateData: { email: string; username: string | null; picture_url: string | null; name?: string } = {
+      email,
+      username,
+      picture_url: pictureUrl,
+    };
+    if (name) {
+      updateData.name = name;
+    }
+
     await db
       .updateTable("users")
-      .set({ email, username, picture_url: pictureUrl })
+      .set(updateData)
       .where("id", "=", userId)
       .execute();
 
@@ -162,6 +173,7 @@ export async function syncUserFromIdp(
       userId,
       email,
       username,
+      name: name ? "[present]" : null,
       pictureUrl: pictureUrl ? "[present]" : null,
       duration,
     });

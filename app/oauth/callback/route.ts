@@ -77,10 +77,15 @@ export async function GET(request: NextRequest) {
     // Look up user by IDP user ID
     let user = await getUserByIdpUserId(claims.sub);
 
+    // Construct name from userInfo (given_name + family_name)
+    const nameFromIdp = [userInfo.given_name, userInfo.family_name]
+      .filter(Boolean)
+      .join(" ") || null;
+
     if (!user) {
       // First login via IDP - create user record
-      // Use username from claims, fallback to email prefix for display name
-      const name = claims.username || claims.email.split("@")[0];
+      // Use name from IDP if available, else fallback to username or email prefix
+      const name = nameFromIdp || claims.username || claims.email.split("@")[0];
       user = await createUserFromIdp({
         idpUserId: claims.sub,
         email: claims.email,
@@ -105,10 +110,11 @@ export async function GET(request: NextRequest) {
         email: claims.email,
       });
     } else {
-      // Existing user - sync email, username, and picture from IDP
+      // Existing user - sync email, username, name, and picture from IDP
       await syncUserFromIdp(user.id, {
         email: claims.email,
         username: claims.username || null,
+        name: nameFromIdp,
         pictureUrl: userInfo.picture || null,
       });
     }
