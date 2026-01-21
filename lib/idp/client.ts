@@ -38,6 +38,16 @@ export interface IDPClaims {
   iat: number;
 }
 
+export interface UserInfoResponse {
+  sub: string;
+  username?: string;
+  email?: string;
+  email_verified?: boolean;
+  given_name?: string;
+  family_name?: string;
+  picture?: string; // Avatar URL
+}
+
 /**
  * Admin client for IDP operations using client credentials flow.
  * Used for creating users during migration.
@@ -284,6 +294,26 @@ export async function validateIDPToken(token: string): Promise<IDPClaims> {
     exp: payload.exp as number,
     iat: payload.iat as number,
   };
+}
+
+/**
+ * Fetch user info from the IDP's /oauth/userinfo endpoint.
+ * This returns profile information including the avatar URL.
+ */
+export async function fetchUserInfo(accessToken: string): Promise<UserInfoResponse> {
+  const response = await fetch(`${IDP_BASE_URL}/oauth/userinfo`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Failed to fetch user info: ${error}`);
+  }
+
+  return response.json();
 }
 
 /**

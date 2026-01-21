@@ -86,11 +86,13 @@ export async function createUserFromIdp({
   email,
   name,
   username,
+  pictureUrl,
 }: {
   idpUserId: string;
   email: string;
   name: string;
   username: string | null;
+  pictureUrl: string | null;
 }): Promise<VUser | null> {
   const startTime = Date.now();
 
@@ -103,6 +105,7 @@ export async function createUserFromIdp({
         is_admin: false,
         idp_user_id: idpUserId,
         username,
+        picture_url: pictureUrl,
       })
       .returning("id")
       .executeTakeFirstOrThrow();
@@ -138,18 +141,18 @@ export async function createUserFromIdp({
 
 /**
  * Sync user data from IDP claims.
- * Called on each login to keep email and username in sync with the IDP.
+ * Called on each login to keep email, username, and picture in sync with the IDP.
  */
 export async function syncUserFromIdp(
   userId: number,
-  { email, username }: { email: string; username: string | null },
+  { email, username, pictureUrl }: { email: string; username: string | null; pictureUrl: string | null },
 ): Promise<boolean> {
   const startTime = Date.now();
 
   try {
     await db
       .updateTable("users")
-      .set({ email, username })
+      .set({ email, username, picture_url: pictureUrl })
       .where("id", "=", userId)
       .execute();
 
@@ -159,6 +162,7 @@ export async function syncUserFromIdp(
       userId,
       email,
       username,
+      pictureUrl: pictureUrl ? "[present]" : null,
       duration,
     });
 

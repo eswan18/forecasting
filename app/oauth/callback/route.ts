@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import {
   exchangeCodeForTokens,
   validateIDPToken,
+  fetchUserInfo,
 } from "@/lib/idp/client";
 import {
   getUserByIdpUserId,
@@ -70,6 +71,9 @@ export async function GET(request: NextRequest) {
     // Validate the access token and extract claims
     const claims = await validateIDPToken(tokens.access_token);
 
+    // Fetch user info to get profile data including avatar
+    const userInfo = await fetchUserInfo(tokens.access_token);
+
     // Look up user by IDP user ID
     let user = await getUserByIdpUserId(claims.sub);
 
@@ -82,6 +86,7 @@ export async function GET(request: NextRequest) {
         email: claims.email,
         name,
         username: claims.username || null,
+        pictureUrl: userInfo.picture || null,
       });
 
       if (!user) {
@@ -100,10 +105,11 @@ export async function GET(request: NextRequest) {
         email: claims.email,
       });
     } else {
-      // Existing user - sync email and username from IDP
+      // Existing user - sync email, username, and picture from IDP
       await syncUserFromIdp(user.id, {
         email: claims.email,
         username: claims.username || null,
+        pictureUrl: userInfo.picture || null,
       });
     }
 
