@@ -19,7 +19,8 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { Label } from "@/components/ui/label";
 import { useServerAction } from "@/hooks/use-server-action";
 import { Spinner } from "@/components/ui/spinner";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, User2 } from "lucide-react";
+import Image from "next/image";
 
 export function AccountDetails({ idpBaseUrl }: { idpBaseUrl?: string }) {
   const { user, isLoading, mutate } = useCurrentUser();
@@ -35,7 +36,7 @@ export function AccountDetails({ idpBaseUrl }: { idpBaseUrl?: string }) {
           {!isLoading && (
             <UserDetailsSection initialUser={user} mutateUser={mutateUser} />
           )}
-          <AccountSettingsSection email={user.email} idpBaseUrl={idpBaseUrl} />
+          <AccountSettingsSection email={user.email} username={user.username} pictureUrl={user.picture_url} idpBaseUrl={idpBaseUrl} />
         </>
       )}
     </div>
@@ -122,40 +123,57 @@ function UserDetailsSection({
 
 function AccountSettingsSection({
   email,
+  username,
+  pictureUrl,
   idpBaseUrl,
 }: {
   email: string;
+  username: string | null;
+  pictureUrl: string | null;
   idpBaseUrl?: string;
 }) {
-  function handleManageAccount() {
+  function getAccountSettingsUrl() {
     if (idpBaseUrl) {
       const normalizedBaseUrl = idpBaseUrl.replace(/\/+$/, "");
-      window.location.href = `${normalizedBaseUrl}/oauth/account-settings`;
+      return `${normalizedBaseUrl}/oauth/account-settings`;
     }
+    return undefined;
   }
 
   return (
     <div>
-      <h2 className="text-lg text-muted-foreground mb-4">Account Settings</h2>
+      <h2 className="text-lg text-muted-foreground mb-4">Account Details</h2>
       <div className="space-y-6">
-        <div className="grid grid-cols-4 gap-4 items-center">
-          <AccountLabel>Email</AccountLabel>
-          <div className="col-span-2 text-sm text-muted-foreground">
-            {email}
-          </div>
+        <div className="flex flex-col items-center gap-2">
+          {pictureUrl ? (
+            <Image
+              src={pictureUrl}
+              alt="Your avatar"
+              width={80}
+              height={80}
+              className="h-20 w-20 rounded-full object-cover border border-border"
+            />
+          ) : (
+            <div className="h-20 w-20 rounded-full border border-border bg-muted flex items-center justify-center">
+              <User2 className="h-10 w-10 text-muted-foreground" />
+            </div>
+          )}
+          {username && <p className="font-medium">{username}</p>}
+          <p className="text-sm text-muted-foreground">{email}</p>
         </div>
         <div className="rounded-lg bg-muted/50 p-4">
-          <p className="text-sm text-muted-foreground mb-4">
-            Your email, password, and other account settings are managed by the
-            identity provider.
+          <p className="text-sm text-muted-foreground mb-4 text-center">
+            Account details are managed by the identity provider.
           </p>
           <Button
-            onClick={handleManageAccount}
+            asChild
             variant="outline"
             className="w-full"
           >
-            <ExternalLink className="mr-2 h-4 w-4" />
-            Manage Account Settings
+            <a href={getAccountSettingsUrl()} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Manage Account Details
+            </a>
           </Button>
         </div>
       </div>
