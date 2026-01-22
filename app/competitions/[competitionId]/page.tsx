@@ -63,9 +63,7 @@ export default async function Page({
       <PageHeading
         title={competition.name}
         breadcrumbs={{
-          Home: "/",
           Competitions: "/competitions",
-          [competition.name]: `/competitions/${competition.id}`,
         }}
         className="mb-2"
       >

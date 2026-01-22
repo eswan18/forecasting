@@ -31,9 +31,7 @@ export default async function FeatureFlagsPage() {
         <PageHeading
           title="Feature Flags"
           breadcrumbs={{
-            Home: "/",
             Admin: "/admin",
-            "Feature Flags": "/admin/feature-flags",
           }}
         />
         <div className="flex flex-col gap-2">

@@ -28,7 +28,6 @@ export default async function Page({
         breadcrumbs={{
           Competitions: "/competitions",
           [competition.name]: `/competitions/${competition.id}`,
-          Scores: `/competitions/${competition.id}/scores`,
         }}
       />
       <Suspense

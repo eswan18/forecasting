@@ -116,7 +116,6 @@ export default async function UserScorePage({
           Competitions: "/competitions",
           [competition.name]: `/competitions/${competition.id}`,
           Scores: `/competitions/${competition.id}/scores`,
-          [scoreBreakdown.userName]: `/competitions/${competition.id}/scores/user/${userId}`,
         }}
       />
 

@@ -47,7 +47,6 @@ export default async function Page({
         breadcrumbs={{
           Competitions: "/competitions",
           [competition.name]: `/competitions/${competition.id}`,
-          "Forecast Stats": `/competitions/${competition.id}/forecast-stats`,
         }}
       />
       {/* Stats Cards */}

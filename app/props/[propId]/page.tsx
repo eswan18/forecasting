@@ -60,13 +60,7 @@ async function PropPageContent({
 
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
-      <PageHeading
-        title={prop.prop_text}
-        breadcrumbs={{
-          Home: "/",
-          Props: "/props",
-        }}
-      />
+      <PageHeading title={prop.prop_text} breadcrumbs={{}} />
 
       <div className="w-full max-w-4xl space-y-6">
         {/* Prop Details Card */}

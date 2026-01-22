@@ -5,14 +5,7 @@ export default async function SuggestPropPage() {
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-lg">
-        <PageHeading
-          title="Suggest Prop"
-          breadcrumbs={{
-            Home: "/",
-            "Suggest Prop": "/props/suggest",
-          }}
-          className="mb-2"
-        />
+        <PageHeading title="Suggest Prop" breadcrumbs={{}} className="mb-2" />
         <SuggestPropForm />
       </div>
     </main>
