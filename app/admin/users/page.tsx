@@ -25,8 +25,6 @@ export default async function Page() {
             Admin: "/admin",
             Users: "/admin/users",
           }}
-          icon={Users}
-          iconGradient="bg-gradient-to-br from-blue-500 to-purple-600"
           className="mb-2"
         />
 

@@ -6,7 +6,7 @@ import {
 import PageHeading from "@/components/page-heading";
 import ErrorPage from "@/components/pages/error-page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Medal, User } from "lucide-react";
+import { Medal } from "lucide-react";
 import { ForecastScoresTable } from "./components/forecast-scores-table";
 
 export default async function UserScorePage({
@@ -118,8 +118,6 @@ export default async function UserScorePage({
           Scores: `/competitions/${competition.id}/scores`,
           [scoreBreakdown.userName]: `/competitions/${competition.id}/scores/user/${userId}`,
         }}
-        icon={User}
-        iconGradient="bg-gradient-to-br from-blue-700 to-cyan-400"
       />
 
       <div className="flex flex-col gap-6 w-full">

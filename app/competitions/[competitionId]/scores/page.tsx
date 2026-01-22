@@ -8,7 +8,6 @@ import { Suspense } from "react";
 import SkeletonCard from "./skeleton-card";
 import ErrorPage from "@/components/pages/error-page";
 import LeaderboardChart from "@/components/charts/leaderboard-chart";
-import { Medal } from "lucide-react";
 
 export default async function Page({
   params,
@@ -31,8 +30,6 @@ export default async function Page({
           [competition.name]: `/competitions/${competition.id}`,
           Scores: `/competitions/${competition.id}/scores`,
         }}
-        icon={Medal}
-        iconGradient="bg-gradient-to-br from-green-700 to-cyan-400"
       />
       <Suspense
         fallback={

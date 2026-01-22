@@ -139,8 +139,6 @@ export default async function ForecastProgressPage({
             [competition?.name || "Competition"]:
               `/admin/forecast-progress/${competitionId}`,
           }}
-          icon={ClipboardCheck}
-          iconGradient="bg-gradient-to-br from-cyan-500 to-blue-600"
           className="mb-2"
         />
 

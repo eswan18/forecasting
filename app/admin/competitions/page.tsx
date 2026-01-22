@@ -60,8 +60,6 @@ export default async function Page() {
             Admin: "/admin",
             Competitions: "/admin/competitions",
           }}
-          icon={Trophy}
-          iconGradient="bg-gradient-to-br from-orange-500 to-red-600"
           className="mb-2"
         />
 

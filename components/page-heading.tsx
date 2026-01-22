@@ -1,4 +1,3 @@
-import React from "react";
 import { cn } from "@/lib/utils";
 import {
   Breadcrumb,
@@ -8,7 +7,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { LucideIcon } from "lucide-react";
 import { MarkdownRenderer } from "@/components/markdown";
 
 export default function PageHeading({
@@ -16,15 +14,11 @@ export default function PageHeading({
   className,
   children,
   breadcrumbs,
-  icon,
-  iconGradient,
 }: {
   title: string;
   className?: string;
   children?: React.ReactNode;
   breadcrumbs?: Record<string, string>;
-  icon?: LucideIcon;
-  iconGradient?: string;
 }) {
   const defaultClassName = "w-full mb-8 flex flex-col items-center gap-y-4";
   className = cn(defaultClassName, className);
@@ -53,15 +47,6 @@ export default function PageHeading({
         </div>
       )}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full">
-        {icon && (
-          <div
-            className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-              iconGradient || "bg-linear-to-br from-blue-500 to-purple-600"
-            }`}
-          >
-            {React.createElement(icon, { className: "h-5 w-5 text-white" })}
-          </div>
-        )}
         <div className="min-w-0 flex items-center gap-x-4">
           <h1 className="text-2xl font-bold inline">
             <MarkdownRenderer>{title}</MarkdownRenderer>

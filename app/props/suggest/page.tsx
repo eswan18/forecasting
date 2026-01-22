@@ -1,6 +1,5 @@
 import PageHeading from "@/components/page-heading";
 import { SuggestPropForm } from "./suggest-prop-form";
-import { Lightbulb } from "lucide-react";
 
 export default async function SuggestPropPage() {
   return (
@@ -12,8 +11,6 @@ export default async function SuggestPropPage() {
             Home: "/",
             "Suggest Prop": "/props/suggest",
           }}
-          icon={Lightbulb}
-          iconGradient="bg-gradient-to-br from-yellow-500 to-orange-600"
           className="mb-2"
         />
         <SuggestPropForm />

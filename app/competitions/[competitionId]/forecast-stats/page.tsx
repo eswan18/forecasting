@@ -10,7 +10,6 @@ import ErrorPage from "@/components/pages/error-page";
 import { getCompetitionById } from "@/lib/db_actions";
 import { InaccessiblePage } from "@/components/inaccessible-page";
 import PageHeading from "@/components/page-heading";
-import { ChartLine } from "lucide-react";
 import { getCompetitionStatus } from "@/lib/competition-status";
 
 export default async function Page({
@@ -50,8 +49,6 @@ export default async function Page({
           [competition.name]: `/competitions/${competition.id}`,
           "Forecast Stats": `/competitions/${competition.id}/forecast-stats`,
         }}
-        icon={ChartLine}
-        iconGradient="bg-gradient-to-br from-blue-500 to-purple-600"
       />
       {/* Stats Cards */}
       <div className="flex flex-row flex-wrap justify-center items-start gap-4">

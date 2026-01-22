@@ -2,7 +2,6 @@ import PageHeading from "@/components/page-heading";
 import { getFeatureFlags } from "@/lib/db_actions";
 import { VFeatureFlag } from "@/types/db_types";
 import { FeatureWidget } from "./feature-widget";
-import { Flag } from "lucide-react";
 
 export default async function FeatureFlagsPage() {
   const result = await getFeatureFlags();
@@ -36,8 +35,6 @@ export default async function FeatureFlagsPage() {
             Admin: "/admin",
             "Feature Flags": "/admin/feature-flags",
           }}
-          icon={Flag}
-          iconGradient="bg-gradient-to-br from-green-500 to-teal-600"
         />
         <div className="flex flex-col gap-2">
           {featureNames.map((name) => (
