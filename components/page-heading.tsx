@@ -19,7 +19,7 @@ export default function PageHeading({
   children?: React.ReactNode;
   breadcrumbs?: Record<string, string>;
 }) {
-  const defaultClassName = "w-full mb-8 flex flex-col items-center gap-y-4";
+  const defaultClassName = "w-full mb-8 flex flex-col items-center gap-y-1";
   className = cn(defaultClassName, className);
   const hasBreadcrumbs = breadcrumbs && Object.keys(breadcrumbs).length > 0;
   return (
