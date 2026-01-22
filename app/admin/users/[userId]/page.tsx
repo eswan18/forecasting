@@ -24,7 +24,7 @@ export default async function UserDetailPage({ params }: PageProps) {
   }
 
   return (
-    <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
+    <main className="flex flex-col items-center py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-4xl">
         <PageHeading
           title={user.name}
@@ -32,7 +32,6 @@ export default async function UserDetailPage({ params }: PageProps) {
             Admin: "/admin",
             Users: "/admin/users",
           }}
-          className="mb-2"
         />
         <UserDetailCard user={user} />
       </div>
