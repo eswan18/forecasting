@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { User, MessageSquare, Trash, MessageCircle } from "lucide-react";
+import { User, MessageSquare, Trash } from "lucide-react";
 import { VSuggestedProp } from "@/types/db_types";
 import {
   useServerAction,
@@ -91,8 +91,6 @@ export default function SuggestedProps() {
             Admin: "/admin",
             "Suggested Props": "/admin/suggested-props",
           }}
-          icon={MessageCircle}
-          iconGradient="bg-gradient-to-br from-indigo-500 to-purple-600"
         />
 
         {loading ? (

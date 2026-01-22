@@ -2,7 +2,6 @@ import { getPropsWithUserForecasts } from "@/lib/db_actions/forecasts";
 import { getUserFromCookies } from "@/lib/get-user";
 import { PropsTable } from "@/components/props/props-table";
 import PageHeading from "@/components/page-heading";
-import { TrendingUpDown } from "lucide-react";
 
 export default async function Page() {
   const user = (await getUserFromCookies())!;
@@ -30,8 +29,6 @@ export default async function Page() {
           Home: "/",
           "Standalone Forecasts": "/standalone",
         }}
-        icon={TrendingUpDown}
-        iconGradient="bg-gradient-to-br from-orange-500 to-red-600"
         className="mb-2"
       />
       <p className="text-muted-foreground mb-8">

@@ -3,7 +3,6 @@ import { handleServerActionResult } from "@/lib/server-action-helpers";
 import { redirect } from "next/navigation";
 import UserDetailCard from "./user-detail-card";
 import PageHeading from "@/components/page-heading";
-import { User } from "lucide-react";
 
 interface PageProps {
   params: Promise<{ userId: string }>;
@@ -35,8 +34,6 @@ export default async function UserDetailPage({ params }: PageProps) {
             Users: "/admin/users",
             [user.name]: `/admin/users/${user.id}`,
           }}
-          icon={User}
-          iconGradient="bg-gradient-to-br from-blue-500 to-indigo-600"
           className="mb-2"
         />
         <UserDetailCard user={user} />

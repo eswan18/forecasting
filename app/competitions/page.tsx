@@ -49,8 +49,6 @@ export default async function CompetitionsPage() {
             Home: "/",
             Competitions: "/competitions",
           }}
-          icon={Trophy}
-          iconGradient="bg-gradient-to-br from-yellow-500 to-orange-600"
           className="mb-8"
         />
 

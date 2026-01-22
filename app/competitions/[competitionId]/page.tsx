@@ -3,7 +3,7 @@ import { getPropsWithUserForecasts } from "@/lib/db_actions/forecasts";
 import { getUserFromCookies } from "@/lib/get-user";
 import { PropsTable } from "@/components/props/props-table";
 import { ForecastablePropsTable } from "@/components/forecastable-props-table";
-import { Trophy, BarChart3, ChartLine } from "lucide-react";
+import { BarChart3, ChartLine } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import CompetitionStartEnd from "./competition-start-end";
@@ -67,8 +67,6 @@ export default async function Page({
           Competitions: "/competitions",
           [competition.name]: `/competitions/${competition.id}`,
         }}
-        icon={Trophy}
-        iconGradient="bg-gradient-to-br from-yellow-500 to-orange-600"
         className="mb-2"
       >
         {competitionStatus === "upcoming" && (
