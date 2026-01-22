@@ -43,14 +43,7 @@ export default async function CompetitionsPage() {
   return (
     <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
       <div className="w-full max-w-6xl">
-        <PageHeading
-          title="Competitions"
-          breadcrumbs={{
-            Home: "/",
-            Competitions: "/competitions",
-          }}
-          className="mb-8"
-        />
+        <PageHeading title="Competitions" breadcrumbs={{}} className="mb-8" />
 
         <div className="grid grid-cols-1 gap-6">
           {competitions.map((competition) => {

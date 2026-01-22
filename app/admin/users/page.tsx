@@ -21,9 +21,7 @@ export default async function Page() {
         <PageHeading
           title="User Management"
           breadcrumbs={{
-            Home: "/",
             Admin: "/admin",
-            Users: "/admin/users",
           }}
           className="mb-2"
         />

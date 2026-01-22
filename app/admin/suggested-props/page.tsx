@@ -87,9 +87,7 @@ export default function SuggestedProps() {
         <PageHeading
           title="Suggested Props"
           breadcrumbs={{
-            Home: "/",
             Admin: "/admin",
-            "Suggested Props": "/admin/suggested-props",
           }}
         />
 

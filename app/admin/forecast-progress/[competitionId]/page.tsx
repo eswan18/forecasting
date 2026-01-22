@@ -133,11 +133,7 @@ export default async function ForecastProgressPage({
         <PageHeading
           title={`${competition?.name}: Forecast Progress`}
           breadcrumbs={{
-            Home: "/",
             Admin: "/admin",
-            "Forecast Progress": "/admin/forecast-progress",
-            [competition?.name || "Competition"]:
-              `/admin/forecast-progress/${competitionId}`,
           }}
           className="mb-2"
         />

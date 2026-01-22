@@ -29,10 +29,8 @@ export default async function UserDetailPage({ params }: PageProps) {
         <PageHeading
           title={user.name}
           breadcrumbs={{
-            Home: "/",
             Admin: "/admin",
             Users: "/admin/users",
-            [user.name]: `/admin/users/${user.id}`,
           }}
           className="mb-2"
         />

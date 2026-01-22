@@ -25,10 +25,7 @@ export default async function Page() {
     <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full">
       <PageHeading
         title="Standalone Forecasts"
-        breadcrumbs={{
-          Home: "/",
-          "Standalone Forecasts": "/standalone",
-        }}
+        breadcrumbs={{}}
         className="mb-2"
       />
       <p className="text-muted-foreground mb-8">
