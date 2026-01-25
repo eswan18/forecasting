@@ -1,6 +1,7 @@
 "use server";
 
 import { db } from "@/lib/database";
+import { withRLS } from "@/lib/db-helpers";
 import {
   Competition,
   CompetitionUpdate,
@@ -197,11 +198,13 @@ export async function updateCompetition({
       }
     }
 
-    await db
-      .updateTable("competitions")
-      .set(competition)
-      .where("id", "=", id)
-      .execute();
+    await withRLS(currentUser.id, async (trx) => {
+      await trx
+        .updateTable("competitions")
+        .set(competition)
+        .where("id", "=", id)
+        .execute();
+    });
 
     const duration = Date.now() - startTime;
     logger.info("Competition updated successfully", {
@@ -259,7 +262,9 @@ export async function createCompetition({
       return validationResult;
     }
 
-    await db.insertInto("competitions").values(competition).execute();
+    await withRLS(currentUser.id, async (trx) => {
+      await trx.insertInto("competitions").values(competition).execute();
+    });
 
     const duration = Date.now() - startTime;
     logger.info("Competition created successfully", {
