@@ -59,9 +59,7 @@ describe("getCompetitionScores", () => {
         const user = await factory.createUser();
         vi.mocked(getUserFromCookies).mockResolvedValue(user);
 
-        const competition = await factory.createCompetition({
-          name: "Test Competition",
-        });
+        const competition = await factory.createCompetition();
 
         const result = await getCompetitionScores({
           competitionId: competition.id,
@@ -82,9 +80,7 @@ describe("getCompetitionScores", () => {
         const user2 = await factory.createUser({ name: "User Two" });
         vi.mocked(getUserFromCookies).mockResolvedValue(user1);
 
-        const competition = await factory.createCompetition({
-          name: "Test Competition",
-        });
+        const competition = await factory.createCompetition();
 
         // Create categories
         const politicsCategory = await factory.createCategory({
