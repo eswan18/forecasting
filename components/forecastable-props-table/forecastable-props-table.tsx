@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { PropWithUserForecast } from "@/types/db_types";
-import { ForecastablePropCard } from "@/components/forecastable-prop-card";
+import { EditableForecastCard } from "@/components/forecast-card";
 import { ForecastableFilterBar } from "./forecastable-filter-bar";
 import CreateNewPropButton from "@/components/tables/prop-table/create-new-prop-button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -142,17 +142,17 @@ export function ForecastablePropsTable({
         )}
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4 max-w-3xl mx-auto">
         {filteredProps.length > 0 ? (
-          <div className="flex flex-col justify-start gap-6">
+          <>
             {filteredProps.map((prop) => (
-              <ForecastablePropCard
+              <EditableForecastCard
                 key={prop.prop_id}
                 prop={prop}
                 onForecastUpdate={onForecastUpdate}
               />
             ))}
-          </div>
+          </>
         ) : (
           <div className="text-center py-12 bg-card border rounded-lg">
             <p className="text-muted-foreground">
