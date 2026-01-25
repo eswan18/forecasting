@@ -1,6 +1,7 @@
 "use server";
 
 import { db } from "@/lib/database";
+import { withRLS } from "@/lib/db-helpers";
 import {
   CompetitionMember,
   NewCompetitionMember,
@@ -32,13 +33,15 @@ export async function getCompetitionMembers(
 
   const startTime = Date.now();
   try {
-    const members = await db
-      .selectFrom("v_competition_members")
-      .selectAll()
-      .where("competition_id", "=", competitionId)
-      .orderBy("role", "asc") // admins first
-      .orderBy("user_name", "asc")
-      .execute();
+    const members = await withRLS(currentUser?.id, async (trx) => {
+      return trx
+        .selectFrom("v_competition_members")
+        .selectAll()
+        .where("competition_id", "=", competitionId)
+        .orderBy("role", "asc") // admins first
+        .orderBy("user_name", "asc")
+        .execute();
+    });
 
     const duration = Date.now() - startTime;
     logger.info(`Retrieved ${members.length} competition members`, {
@@ -84,12 +87,14 @@ export async function getCurrentUserRole(
 
   const startTime = Date.now();
   try {
-    const membership = await db
-      .selectFrom("competition_members")
-      .select("role")
-      .where("competition_id", "=", competitionId)
-      .where("user_id", "=", currentUser.id)
-      .executeTakeFirst();
+    const membership = await withRLS(currentUser.id, async (trx) => {
+      return trx
+        .selectFrom("competition_members")
+        .select("role")
+        .where("competition_id", "=", competitionId)
+        .where("user_id", "=", currentUser.id)
+        .executeTakeFirst();
+    });
 
     const duration = Date.now() - startTime;
     logger.info("Retrieved current user role", {
@@ -142,74 +147,67 @@ export async function addCompetitionMember({
       return error("You must be logged in", ERROR_CODES.UNAUTHORIZED);
     }
 
-    // Check if current user is an admin of this competition
-    const currentUserMembership = await db
-      .selectFrom("competition_members")
-      .select("role")
-      .where("competition_id", "=", competitionId)
-      .where("user_id", "=", currentUser.id)
-      .executeTakeFirst();
+    const inserted = await withRLS(currentUser.id, async (trx) => {
+      // Check if current user is an admin of this competition
+      const currentUserMembership = await trx
+        .selectFrom("competition_members")
+        .select("role")
+        .where("competition_id", "=", competitionId)
+        .where("user_id", "=", currentUser.id)
+        .executeTakeFirst();
 
-    if (currentUserMembership?.role !== "admin") {
-      logger.warn("Unauthorized attempt to add competition member", {
-        competitionId,
-        currentUserId: currentUser.id,
-        currentRole: currentUserMembership?.role,
-      });
-      return error(
-        "Only competition admins can add members",
-        ERROR_CODES.UNAUTHORIZED,
-      );
-    }
+      if (currentUserMembership?.role !== "admin") {
+        logger.warn("Unauthorized attempt to add competition member", {
+          competitionId,
+          currentUserId: currentUser.id,
+          currentRole: currentUserMembership?.role,
+        });
+        throw new Error("UNAUTHORIZED: Only competition admins can add members");
+      }
 
-    // Find user by email
-    const userToAdd = await db
-      .selectFrom("users")
-      .select("id")
-      .where("email", "=", userEmail)
-      .where("deactivated_at", "is", null)
-      .executeTakeFirst();
+      // Find user by email
+      const userToAdd = await trx
+        .selectFrom("users")
+        .select("id")
+        .where("email", "=", userEmail)
+        .where("deactivated_at", "is", null)
+        .executeTakeFirst();
 
-    if (!userToAdd) {
-      return error(
-        "No active user found with that email",
-        ERROR_CODES.NOT_FOUND,
-      );
-    }
+      if (!userToAdd) {
+        throw new Error("NOT_FOUND: No active user found with that email");
+      }
 
-    // Check if user is already a member
-    const existingMembership = await db
-      .selectFrom("competition_members")
-      .select("id")
-      .where("competition_id", "=", competitionId)
-      .where("user_id", "=", userToAdd.id)
-      .executeTakeFirst();
+      // Check if user is already a member
+      const existingMembership = await trx
+        .selectFrom("competition_members")
+        .select("id")
+        .where("competition_id", "=", competitionId)
+        .where("user_id", "=", userToAdd.id)
+        .executeTakeFirst();
 
-    if (existingMembership) {
-      return error(
-        "User is already a member of this competition",
-        ERROR_CODES.VALIDATION_ERROR,
-      );
-    }
+      if (existingMembership) {
+        throw new Error("VALIDATION: User is already a member of this competition");
+      }
 
-    const newMember: NewCompetitionMember = {
-      competition_id: competitionId,
-      user_id: userToAdd.id,
-      role,
-    };
+      const newMember: NewCompetitionMember = {
+        competition_id: competitionId,
+        user_id: userToAdd.id,
+        role,
+      };
 
-    const inserted = await db
-      .insertInto("competition_members")
-      .values(newMember)
-      .returningAll()
-      .executeTakeFirstOrThrow();
+      return trx
+        .insertInto("competition_members")
+        .values(newMember)
+        .returningAll()
+        .executeTakeFirstOrThrow();
+    });
 
     const duration = Date.now() - startTime;
     logger.info("Competition member added successfully", {
       operation: "addCompetitionMember",
       table: "competition_members",
       competitionId,
-      addedUserId: userToAdd.id,
+      addedUserId: inserted.user_id,
       role,
       duration,
     });
@@ -219,6 +217,28 @@ export async function addCompetitionMember({
     return success(inserted);
   } catch (err) {
     const duration = Date.now() - startTime;
+    const errorMessage = (err as Error).message;
+
+    // Handle specific error types thrown from within the transaction
+    if (errorMessage.startsWith("UNAUTHORIZED:")) {
+      return error(
+        errorMessage.replace("UNAUTHORIZED: ", ""),
+        ERROR_CODES.UNAUTHORIZED,
+      );
+    }
+    if (errorMessage.startsWith("NOT_FOUND:")) {
+      return error(
+        errorMessage.replace("NOT_FOUND: ", ""),
+        ERROR_CODES.NOT_FOUND,
+      );
+    }
+    if (errorMessage.startsWith("VALIDATION:")) {
+      return error(
+        errorMessage.replace("VALIDATION: ", ""),
+        ERROR_CODES.VALIDATION_ERROR,
+      );
+    }
+
     logger.error("Failed to add competition member", err as Error, {
       operation: "addCompetitionMember",
       table: "competition_members",
@@ -457,11 +477,13 @@ export async function getMemberCount(
 
   const startTime = Date.now();
   try {
-    const result = await db
-      .selectFrom("competition_members")
-      .select((eb) => eb.fn.count("id").as("count"))
-      .where("competition_id", "=", competitionId)
-      .executeTakeFirst();
+    const result = await withRLS(currentUser?.id, async (trx) => {
+      return trx
+        .selectFrom("competition_members")
+        .select((eb) => eb.fn.count("id").as("count"))
+        .where("competition_id", "=", competitionId)
+        .executeTakeFirst();
+    });
 
     const count = Number(result?.count ?? 0);
 
