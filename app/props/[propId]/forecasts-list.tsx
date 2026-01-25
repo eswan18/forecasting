@@ -1,18 +1,87 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowDown, ArrowUp } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
 import { VForecast } from "@/types/db_types";
 
 type SortOrder = "asc" | "desc";
 
-interface ForecastsListProps {
-  forecasts: VForecast[];
+// Helper to get color based on probability
+const getProbColor = (prob: number) => {
+  if (prob <= 0.2) return { dot: "bg-red-500", bar: "bg-red-400" };
+  if (prob <= 0.4) return { dot: "bg-orange-500", bar: "bg-orange-400" };
+  if (prob <= 0.6) return { dot: "bg-yellow-500", bar: "bg-yellow-500" };
+  if (prob <= 0.8) return { dot: "bg-lime-500", bar: "bg-lime-500" };
+  return { dot: "bg-green-500", bar: "bg-green-500" };
+};
+
+interface ForecastRowProps {
+  forecast: VForecast;
+  rank: number;
+  isCurrentUser: boolean;
 }
 
-export default function ForecastsList({ forecasts }: ForecastsListProps) {
+function ForecastRow({ forecast, rank, isCurrentUser }: ForecastRowProps) {
+  const colors = getProbColor(forecast.forecast);
+  const percent = Math.round(forecast.forecast * 100);
+
+  return (
+    <div
+      className={`flex items-center gap-4 p-3 rounded-lg ${
+        isCurrentUser
+          ? "bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800"
+          : "hover:bg-muted/50"
+      }`}
+    >
+      {/* Rank */}
+      <div className="w-8 text-sm text-muted-foreground text-center shrink-0">
+        {rank}
+      </div>
+
+      {/* Color dot + name */}
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        <div className={`w-3 h-3 rounded-full ${colors.dot} shrink-0`} />
+        <span
+          className={`truncate ${
+            isCurrentUser ? "font-medium text-blue-900 dark:text-blue-100" : "text-foreground"
+          }`}
+        >
+          {forecast.user_name}
+          {isCurrentUser && (
+            <span className="text-blue-600 dark:text-blue-400 ml-1">(you)</span>
+          )}
+        </span>
+      </div>
+
+      {/* Mini bar */}
+      <div className="w-24 h-2 bg-muted rounded-full overflow-hidden shrink-0 hidden sm:block">
+        <div
+          className={`h-full rounded-full ${colors.bar} opacity-60`}
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+
+      {/* Percentage */}
+      <div
+        className={`w-16 text-right font-mono text-sm shrink-0 ${
+          isCurrentUser ? "text-blue-900 dark:text-blue-100 font-medium" : "text-foreground"
+        }`}
+      >
+        {percent}%
+      </div>
+    </div>
+  );
+}
+
+interface ForecastsListProps {
+  forecasts: VForecast[];
+  currentUserId: number;
+}
+
+export default function ForecastsList({
+  forecasts,
+  currentUserId,
+}: ForecastsListProps) {
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 
   // Sort forecasts based on current sort order
@@ -25,65 +94,40 @@ export default function ForecastsList({ forecasts }: ForecastsListProps) {
   });
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>All Forecasts ({forecasts.length})</CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
-          >
-            {sortOrder === "desc" ? (
-              <ArrowDown className="h-4 w-4 mr-2" />
-            ) : (
-              <ArrowUp className="h-4 w-4 mr-2" />
-            )}
-            <span className="hidden sm:inline">
-              Sort: {sortOrder === "desc" ? "High to Low" : "Low to High"}
-            </span>
-            <span className="sm:hidden">
-              {sortOrder === "desc" ? "Desc" : "Asc"}
-            </span>
-          </Button>
+    <div className="bg-card border border-border rounded-lg p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-medium text-foreground">
+          All Forecasts ({forecasts.length})
+        </h3>
+        <button
+          onClick={() => setSortOrder((s) => (s === "desc" ? "asc" : "desc"))}
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground px-2 py-1 rounded hover:bg-muted"
+        >
+          <ChevronDown
+            className={`w-4 h-4 transition-transform ${
+              sortOrder === "asc" ? "rotate-180" : ""
+            }`}
+          />
+          {sortOrder === "desc" ? "High to Low" : "Low to High"}
+        </button>
+      </div>
+
+      {forecasts.length === 0 ? (
+        <p className="text-muted-foreground text-center py-8">
+          No forecasts have been made for this prop yet.
+        </p>
+      ) : (
+        <div className="space-y-1">
+          {sortedForecasts.map((forecast, i) => (
+            <ForecastRow
+              key={forecast.forecast_id}
+              forecast={forecast}
+              rank={i + 1}
+              isCurrentUser={forecast.user_id === currentUserId}
+            />
+          ))}
         </div>
-      </CardHeader>
-      <CardContent>
-        {forecasts.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">
-            No forecasts have been made for this prop yet.
-          </p>
-        ) : (
-          <div className="space-y-3">
-            {sortedForecasts.map((forecast) => (
-              <div
-                key={forecast.forecast_id}
-                className="flex items-center justify-between p-3 border rounded-md"
-              >
-                <div className="flex-1">
-                  <p className="font-medium">{forecast.user_name}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-mono text-lg">
-                    {(forecast.forecast * 100).toFixed(1)}%
-                  </p>
-                  {forecast.score !== null && (
-                    <p className="text-sm">
-                      <span className="text-muted-foreground">
-                        <span className="hidden sm:inline">Penalty score:</span>
-                        <span className="sm:hidden">Penalty:</span>
-                      </span>{" "}
-                      <span className="font-mono">
-                        {forecast.score.toFixed(4)}
-                      </span>
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 }

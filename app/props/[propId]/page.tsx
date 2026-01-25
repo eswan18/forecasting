@@ -1,13 +1,12 @@
 import { getForecasts, getPropById } from "@/lib/db_actions";
 import { getUserFromCookies } from "@/lib/get-user";
 import { Suspense } from "react";
-import PageHeading from "@/components/page-heading";
 import ErrorPage from "@/components/pages/error-page";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import ForecastsList from "./forecasts-list";
-import ForecastDensityChart from "./forecast-density-chart";
-import PropDetailsWithActions from "./prop-details-with-actions";
 import { Spinner } from "@/components/ui/spinner";
+import PropPageHeader from "./prop-page-header";
+import PropStatsRow from "./prop-stats-row";
+import ForecastDistributionChart from "./forecast-distribution-chart";
+import ForecastsList from "./forecasts-list";
 
 export default function PropPage({
   params,
@@ -58,29 +57,47 @@ async function PropPageContent({
   }
   const forecasts = forecastsResult.data;
 
-  return (
-    <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
-      <PageHeading title={prop.prop_text} breadcrumbs={{}} />
+  // Find user's forecast
+  const userForecast = forecasts.find((f) => f.user_id === user.id);
 
-      <div className="w-full max-w-4xl space-y-6">
-        {/* Prop Details Card */}
-        <PropDetailsWithActions
+  // Calculate stats
+  const forecastValues = forecasts.map((f) => f.forecast);
+  const average =
+    forecastValues.length > 0
+      ? forecastValues.reduce((a, b) => a + b, 0) / forecastValues.length
+      : null;
+  const min = forecastValues.length > 0 ? Math.min(...forecastValues) : null;
+  const max = forecastValues.length > 0 ? Math.max(...forecastValues) : null;
+
+  return (
+    <main className="min-h-screen bg-muted/30 py-8 px-8 lg:px-24">
+      <div className="max-w-3xl mx-auto">
+        {/* Header */}
+        <PropPageHeader
           prop={prop}
           canResolve={user.is_admin || prop.prop_user_id === user.id}
         />
 
-        {/* Forecast Density Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Forecast Distribution</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ForecastDensityChart forecasts={forecasts} />
-          </CardContent>
-        </Card>
+        {/* Stats Row */}
+        <PropStatsRow
+          userForecast={userForecast?.forecast ?? null}
+          average={average}
+          forecasterCount={forecasts.length}
+          min={min}
+          max={max}
+        />
 
-        {/* Forecasts Section */}
-        <ForecastsList forecasts={forecasts} />
+        {/* Distribution Chart */}
+        <div className="mb-6">
+          <ForecastDistributionChart
+            forecasts={forecasts}
+            userForecast={userForecast?.forecast ?? null}
+            average={average}
+          />
+        </div>
+
+        {/* Forecasts List */}
+        <ForecastsList forecasts={forecasts} currentUserId={user.id} />
       </div>
     </main>
   );
