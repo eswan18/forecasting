@@ -61,11 +61,13 @@ export async function getCompetitionById(
 
   const startTime = Date.now();
   try {
-    const competition = await db
-      .selectFrom("competitions")
-      .selectAll()
-      .where("id", "=", id)
-      .executeTakeFirst();
+    const competition = await withRLS(currentUser?.id, async (trx) => {
+      return trx
+        .selectFrom("competitions")
+        .selectAll()
+        .where("id", "=", id)
+        .executeTakeFirst();
+    });
 
     const duration = Date.now() - startTime;
     if (competition) {
@@ -107,11 +109,13 @@ export async function getCompetitions(): Promise<
 
   const startTime = Date.now();
   try {
-    const query = db
-      .selectFrom("competitions")
-      .orderBy("name", "desc")
-      .selectAll();
-    const results = await query.execute();
+    const results = await withRLS(currentUser?.id, async (trx) => {
+      return trx
+        .selectFrom("competitions")
+        .orderBy("name", "desc")
+        .selectAll()
+        .execute();
+    });
 
     const duration = Date.now() - startTime;
     logger.info(`Retrieved ${results.length} competitions`, {
