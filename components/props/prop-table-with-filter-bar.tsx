@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { PropWithUserForecast } from "@/types/db_types";
-import { PropCard } from "@/components/prop-card";
+import { ForecastCard } from "@/components/forecast-card";
 import { FilterBar } from "./filter-bar";
 import CreateNewPropButton from "@/components/tables/prop-table/create-new-prop-button";
 
@@ -11,6 +11,7 @@ interface PropTableWithFilterBarProps {
   canCreateProps?: boolean;
   competitionId?: number | null;
   defaultUserId?: number;
+  showCommunityAvg?: boolean;
 }
 
 export function PropTableWithFilterBar({
@@ -18,6 +19,7 @@ export function PropTableWithFilterBar({
   canCreateProps = false,
   competitionId,
   defaultUserId,
+  showCommunityAvg = false,
 }: PropTableWithFilterBarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -73,17 +75,17 @@ export function PropTableWithFilterBar({
         )}
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4 max-w-3xl mx-auto">
         {filteredProps.length > 0 ? (
-          <div className="flex flex-col justify-start items-center gap-6">
+          <>
             {filteredProps.map((prop) => (
-              <PropCard
+              <ForecastCard
                 key={prop.prop_id}
                 prop={prop}
-                userForecast={prop.user_forecast ?? undefined}
+                showCommunityAvg={showCommunityAvg}
               />
             ))}
-          </div>
+          </>
         ) : (
           <div className="text-center py-12 bg-card border rounded-lg">
             <p className="text-muted-foreground">

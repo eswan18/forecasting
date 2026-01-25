@@ -111,6 +111,7 @@ export default async function Page({
             canEditProps={allowEdits} // Only admins can edit competition props
             canEditResolutions={allowEdits} // Only admins can resolve competition props
             competitionId={competitionId}
+            showCommunityAvg={competitionStatus !== "upcoming"}
           />
         </>
       )}

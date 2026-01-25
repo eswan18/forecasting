@@ -11,6 +11,7 @@ interface PropsTableProps {
   canEditResolutions?: boolean;
   competitionId?: number | null;
   defaultUserId?: number;
+  showCommunityAvg?: boolean;
 }
 
 export function PropsTable({
@@ -18,6 +19,7 @@ export function PropsTable({
   canCreateProps = false,
   competitionId,
   defaultUserId,
+  showCommunityAvg = false,
 }: PropsTableProps) {
   return (
     <TooltipProvider>
@@ -27,6 +29,7 @@ export function PropsTable({
         canCreateProps={canCreateProps}
         competitionId={competitionId}
         defaultUserId={defaultUserId}
+        showCommunityAvg={showCommunityAvg}
       />
     </TooltipProvider>
   );

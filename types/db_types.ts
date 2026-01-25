@@ -142,6 +142,7 @@ export type VProp = Selectable<VPropsView>;
 export type PropWithUserForecast = VProp & {
   user_forecast: number | null;
   user_forecast_id: number | null;
+  community_average: number | null;
 };
 
 export interface VForecastsView {

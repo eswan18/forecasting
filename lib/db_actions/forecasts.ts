@@ -3,7 +3,7 @@
 import { Database, ForecastUpdate, NewForecast, VForecast, VProp } from "@/types/db_types";
 import { getUserFromCookies } from "@/lib/get-user";
 import { revalidatePath } from "next/cache";
-import { OrderByExpression, OrderByModifiers } from "kysely";
+import { OrderByExpression, OrderByModifiers, sql } from "kysely";
 import { logger } from "@/lib/logger";
 import {
   ServerActionResult,
@@ -336,6 +336,7 @@ export async function getPropsWithUserForecasts({
     (VProp & {
       user_forecast: number | null;
       user_forecast_id: number | null;
+      community_average: number | null;
     })[]
   >
 > {
@@ -349,6 +350,16 @@ export async function getPropsWithUserForecasts({
   const startTime = Date.now();
   try {
     const results = await withRLS(currentUser?.id, async (trx) => {
+      // Subquery to calculate community average per prop
+      const communityAvgSubquery = trx
+        .selectFrom("forecasts")
+        .select([
+          "prop_id",
+          sql<number>`AVG(forecast)`.as("avg_forecast"),
+        ])
+        .groupBy("prop_id")
+        .as("community_stats");
+
       let query = trx
         .selectFrom("v_props")
         .leftJoin("forecasts", (join) =>
@@ -356,9 +367,13 @@ export async function getPropsWithUserForecasts({
             .onRef("v_props.prop_id", "=", "forecasts.prop_id")
             .on("forecasts.user_id", "=", userId),
         )
+        .leftJoin(communityAvgSubquery, (join) =>
+          join.onRef("v_props.prop_id", "=", "community_stats.prop_id"),
+        )
         .selectAll("v_props")
         .select("forecasts.forecast as user_forecast")
-        .select("forecasts.id as user_forecast_id");
+        .select("forecasts.id as user_forecast_id")
+        .select("community_stats.avg_forecast as community_average");
 
       // Handle standalone props (competitionId = null)
       if (competitionId === null) {
