@@ -267,7 +267,24 @@ export async function createCompetition({
     }
 
     await withRLS(currentUser.id, async (trx) => {
-      await trx.insertInto("competitions").values(competition).execute();
+      // Insert the competition and get its ID
+      const result = await trx
+        .insertInto("competitions")
+        .values(competition)
+        .returning("id")
+        .executeTakeFirstOrThrow();
+
+      // For private competitions, add the creator as an admin member
+      if (competition.is_private) {
+        await trx
+          .insertInto("competition_members")
+          .values({
+            competition_id: result.id,
+            user_id: currentUser.id,
+            role: "admin",
+          })
+          .execute();
+      }
     });
 
     const duration = Date.now() - startTime;
@@ -275,6 +292,7 @@ export async function createCompetition({
       operation: "createCompetition",
       table: "competitions",
       competitionName: competition.name,
+      isPrivate: competition.is_private,
       duration,
     });
 
