@@ -270,7 +270,10 @@ export async function createCompetition({
       // Insert the competition and get its ID
       const result = await trx
         .insertInto("competitions")
-        .values(competition)
+        .values({
+          ...competition,
+          created_by_user_id: currentUser.id,
+        })
         .returning("id")
         .executeTakeFirstOrThrow();
 
@@ -284,6 +287,11 @@ export async function createCompetition({
             role: "admin",
           })
           .execute();
+
+        logger.debug("Added creator as admin member", {
+          competitionId: result.id,
+          userId: currentUser.id,
+        });
       }
     });
 
