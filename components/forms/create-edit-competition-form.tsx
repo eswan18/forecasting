@@ -1,6 +1,12 @@
 "use client";
 
-import { AlertTriangle, Trophy, Calendar, CalendarClock } from "lucide-react";
+import {
+  AlertTriangle,
+  Trophy,
+  Calendar,
+  CalendarClock,
+  Lock,
+} from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { createCompetition, updateCompetition } from "@/lib/db_actions";
 import { Button } from "@/components/ui/button";
@@ -8,6 +14,7 @@ import { useServerAction } from "@/hooks/use-server-action";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -19,42 +26,80 @@ import { useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Competition } from "@/types/db_types";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import DatePicker from "../ui/date-picker";
 
 const formSchema = z
   .object({
     name: z.string().min(8).max(1000),
-    forecasts_open_date: z.date(),
-    forecasts_close_date: z.date(),
-    end_date: z.date(),
+    is_private: z.boolean(),
+    forecasts_open_date: z.date().optional(),
+    forecasts_close_date: z.date().optional(),
+    end_date: z.date().optional(),
   })
   .superRefine((values, ctx) => {
-    const { forecasts_open_date, forecasts_close_date, end_date } = values;
+    const {
+      is_private,
+      forecasts_open_date,
+      forecasts_close_date,
+      end_date,
+    } = values;
 
-    if (forecasts_open_date >= forecasts_close_date) {
+    // Private competitions don't require dates (deadlines are per-prop)
+    if (is_private) {
+      return;
+    }
+
+    // Public competitions require all dates
+    if (!forecasts_open_date) {
       ctx.addIssue({
         code: "custom",
-        message: "Open date must be before close date",
+        message: "Open date is required for public competitions",
         path: ["forecasts_open_date"],
       });
+    }
+    if (!forecasts_close_date) {
       ctx.addIssue({
         code: "custom",
-        message: "Close date must be after open date",
+        message: "Close date is required for public competitions",
         path: ["forecasts_close_date"],
       });
     }
-
-    if (forecasts_close_date >= end_date) {
+    if (!end_date) {
       ctx.addIssue({
         code: "custom",
-        message: "Close date must be before end date",
-        path: ["forecasts_close_date"],
-      });
-      ctx.addIssue({
-        code: "custom",
-        message: "End date must be after close date",
+        message: "End date is required for public competitions",
         path: ["end_date"],
       });
+    }
+
+    // Only validate ordering if all dates are present
+    if (forecasts_open_date && forecasts_close_date && end_date) {
+      if (forecasts_open_date >= forecasts_close_date) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Open date must be before close date",
+          path: ["forecasts_open_date"],
+        });
+        ctx.addIssue({
+          code: "custom",
+          message: "Close date must be after open date",
+          path: ["forecasts_close_date"],
+        });
+      }
+
+      if (forecasts_close_date >= end_date) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Close date must be before end date",
+          path: ["forecasts_close_date"],
+        });
+        ctx.addIssue({
+          code: "custom",
+          message: "End date must be after close date",
+          path: ["end_date"],
+        });
+      }
     }
   });
 
@@ -73,6 +118,7 @@ export function CreateEditCompetitionForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: initialCompetition?.name || "",
+      is_private: initialCompetition?.is_private ?? false,
       // Convert null to undefined for form compatibility
       forecasts_open_date: initialCompetition?.forecasts_open_date ?? undefined,
       forecasts_close_date:
@@ -80,6 +126,8 @@ export function CreateEditCompetitionForm({
       end_date: initialCompetition?.end_date ?? undefined,
     },
   });
+
+  const isPrivate = form.watch("is_private");
 
   const createCompetitionAction = useServerAction(createCompetition, {
     successMessage: "Competition Created!",
@@ -147,65 +195,92 @@ export function CreateEditCompetitionForm({
         />
         <FormField
           control={form.control}
-          name="forecasts_open_date"
+          name="is_private"
           render={({ field }) => (
-            <FormItem className="flex flex-col space-y-2">
-              <FormLabel className="text-sm font-medium flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Forecasts Open Date
-              </FormLabel>
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-sm font-medium flex items-center gap-2">
+                  <Lock className="h-4 w-4" />
+                  Private Competition
+                </FormLabel>
+                <FormDescription className="text-xs">
+                  Only invited members can view and participate. Deadlines are
+                  set per-prop instead of competition-wide.
+                </FormDescription>
+              </div>
               <FormControl>
-                <DatePicker
-                  value={field.value ?? undefined}
-                  onChange={field.onChange}
-                  timeZone="UTC"
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
                 />
               </FormControl>
-              <FormMessage />
             </FormItem>
           )}
         />
-
-        <FormField
-          control={form.control}
-          name="forecasts_close_date"
-          render={({ field }) => (
-            <FormItem className="flex flex-col space-y-2">
-              <FormLabel className="text-sm font-medium flex items-center gap-2">
-                <CalendarClock className="h-4 w-4" />
-                Forecasts Due Date
-              </FormLabel>
-              <FormControl>
-                <DatePicker
-                  value={field.value}
-                  onChange={field.onChange}
-                  timeZone="UTC"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="end_date"
-          render={({ field }) => (
-            <FormItem className="flex flex-col space-y-2">
-              <FormLabel className="text-sm font-medium flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Competition End Date
-              </FormLabel>
-              <FormControl>
-                <DatePicker
-                  value={field.value}
-                  onChange={field.onChange}
-                  timeZone="UTC"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {!isPrivate && (
+          <div className="space-y-6">
+            <FormField
+              control={form.control}
+              name="forecasts_open_date"
+              render={({ field }) => (
+                <FormItem className="flex flex-col space-y-2">
+                  <FormLabel className="text-sm font-medium flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Forecasts Open Date
+                  </FormLabel>
+                  <FormControl>
+                    <DatePicker
+                      value={field.value ?? undefined}
+                      onChange={field.onChange}
+                      timeZone="UTC"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="forecasts_close_date"
+              render={({ field }) => (
+                <FormItem className="flex flex-col space-y-2">
+                  <FormLabel className="text-sm font-medium flex items-center gap-2">
+                    <CalendarClock className="h-4 w-4" />
+                    Forecasts Due Date
+                  </FormLabel>
+                  <FormControl>
+                    <DatePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                      timeZone="UTC"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="end_date"
+              render={({ field }) => (
+                <FormItem className="flex flex-col space-y-2">
+                  <FormLabel className="text-sm font-medium flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Competition End Date
+                  </FormLabel>
+                  <FormControl>
+                    <DatePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                      timeZone="UTC"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
         <Button
           type="submit"
           disabled={isLoading}
