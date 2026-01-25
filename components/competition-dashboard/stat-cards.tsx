@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import type { DashboardTab } from "./competition-tabs";
 
 interface StatCardProps {
   label: string;
@@ -43,8 +44,8 @@ interface StatCardsProps {
   toForecast: number;
   closed: number;
   resolved: number;
-  onTabChange?: (tab: string) => void;
-  activeTab?: string;
+  onTabChange?: (tab: DashboardTab) => void;
+  activeTab?: DashboardTab;
 }
 
 export function StatCards({

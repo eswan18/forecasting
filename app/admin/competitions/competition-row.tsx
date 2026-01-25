@@ -80,38 +80,54 @@ export default function CompetitionRow({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-help">
-                    {status === "upcoming" && (
-                      <>
-                        Forecasts open{" "}
-                        {formatDate(competition.forecasts_open_date)}
-                      </>
-                    )}
-                    {status === "forecasts-open" && (
-                      <>
-                        Forecasts close{" "}
-                        {formatDate(competition.forecasts_close_date)}
-                      </>
-                    )}
-                    {status === "forecasts-closed" && (
-                      <>Ends {formatDate(competition.end_date)}</>
-                    )}
-                    {status === "ended" && (
+                    {status === "upcoming" &&
+                      competition.forecasts_open_date && (
+                        <>
+                          Forecasts open{" "}
+                          {formatDate(competition.forecasts_open_date)}
+                        </>
+                      )}
+                    {status === "forecasts-open" &&
+                      competition.forecasts_close_date && (
+                        <>
+                          Forecasts close{" "}
+                          {formatDate(competition.forecasts_close_date)}
+                        </>
+                      )}
+                    {status === "forecasts-closed" &&
+                      competition.end_date && (
+                        <>Ends {formatDate(competition.end_date)}</>
+                      )}
+                    {status === "ended" && competition.end_date && (
                       <>Ended {formatDate(competition.end_date)}</>
+                    )}
+                    {status === "private" && (
+                      <>Uses per-prop deadlines</>
                     )}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <div className="space-y-1">
-                    <p>
-                      Forecasts Open:{" "}
-                      {formatDateTime(competition.forecasts_open_date)}
-                    </p>
-                    <p>
-                      Forecasts Close:{" "}
-                      {formatDateTime(competition.forecasts_close_date)}
-                    </p>
-                    <p>Ends: {formatDateTime(competition.end_date)}</p>
-                  </div>
+                  {status === "private" ? (
+                    <p>Private competition with per-prop deadlines</p>
+                  ) : (
+                    <div className="space-y-1">
+                      {competition.forecasts_open_date && (
+                        <p>
+                          Forecasts Open:{" "}
+                          {formatDateTime(competition.forecasts_open_date)}
+                        </p>
+                      )}
+                      {competition.forecasts_close_date && (
+                        <p>
+                          Forecasts Close:{" "}
+                          {formatDateTime(competition.forecasts_close_date)}
+                        </p>
+                      )}
+                      {competition.end_date && (
+                        <p>Ends: {formatDateTime(competition.end_date)}</p>
+                      )}
+                    </div>
+                  )}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

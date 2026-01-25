@@ -65,14 +65,26 @@ export default async function CompetitionsPage() {
                       <CompetitionStatusBadge status={status} />
                     </div>
                     <div className="text-sm text-muted-foreground space-y-1">
-                      <p>
-                        <span className="font-medium">Forecasts due:</span>{" "}
-                        {formatDate(competition.forecasts_close_date)}
-                      </p>
-                      <p>
-                        <span className="font-medium">Ends:</span>{" "}
-                        {formatDate(competition.end_date)}
-                      </p>
+                      {status === "private" ? (
+                        <p>Private competition — per-prop deadlines</p>
+                      ) : (
+                        <>
+                          {competition.forecasts_close_date && (
+                            <p>
+                              <span className="font-medium">
+                                Forecasts due:
+                              </span>{" "}
+                              {formatDate(competition.forecasts_close_date)}
+                            </p>
+                          )}
+                          {competition.end_date && (
+                            <p>
+                              <span className="font-medium">Ends:</span>{" "}
+                              {formatDate(competition.end_date)}
+                            </p>
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
                   <div className="flex gap-2 ml-6 shrink-0">
@@ -112,14 +124,26 @@ export default async function CompetitionsPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-sm text-muted-foreground space-y-1">
-                      <p>
-                        <span className="font-medium">Forecasts due:</span>{" "}
-                        {formatDate(competition.forecasts_close_date)}
-                      </p>
-                      <p>
-                        <span className="font-medium">Ends:</span>{" "}
-                        {formatDate(competition.end_date)}
-                      </p>
+                      {status === "private" ? (
+                        <p>Private competition — per-prop deadlines</p>
+                      ) : (
+                        <>
+                          {competition.forecasts_close_date && (
+                            <p>
+                              <span className="font-medium">
+                                Forecasts due:
+                              </span>{" "}
+                              {formatDate(competition.forecasts_close_date)}
+                            </p>
+                          )}
+                          {competition.end_date && (
+                            <p>
+                              <span className="font-medium">Ends:</span>{" "}
+                              {formatDate(competition.end_date)}
+                            </p>
+                          )}
+                        </>
+                      )}
                     </div>
                   </CardContent>
                   <CardFooter className="mt-auto">

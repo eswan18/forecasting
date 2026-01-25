@@ -73,9 +73,11 @@ export function CreateEditCompetitionForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: initialCompetition?.name || "",
-      forecasts_open_date: initialCompetition?.forecasts_open_date,
-      forecasts_close_date: initialCompetition?.forecasts_close_date,
-      end_date: initialCompetition?.end_date,
+      // Convert null to undefined for form compatibility
+      forecasts_open_date: initialCompetition?.forecasts_open_date ?? undefined,
+      forecasts_close_date:
+        initialCompetition?.forecasts_close_date ?? undefined,
+      end_date: initialCompetition?.end_date ?? undefined,
     },
   });
 

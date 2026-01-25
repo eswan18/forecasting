@@ -21,10 +21,19 @@ function validateCompetitionDates({
   forecasts_close_date,
   end_date,
 }: {
-  forecasts_open_date: Date;
-  forecasts_close_date: Date;
-  end_date: Date;
+  forecasts_open_date: Date | null | undefined;
+  forecasts_close_date: Date | null | undefined;
+  end_date: Date | null | undefined;
 }): ServerActionResult<void> {
+  // Private competitions have null/undefined dates - skip validation
+  if (
+    forecasts_open_date == null ||
+    forecasts_close_date == null ||
+    end_date == null
+  ) {
+    return success(undefined);
+  }
+
   if (forecasts_open_date >= forecasts_close_date) {
     return error(
       "Open date must be before close date",
