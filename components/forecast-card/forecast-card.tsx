@@ -2,6 +2,7 @@
 
 import { PropWithUserForecast } from "@/types/db_types";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -9,6 +10,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { MarkdownRenderer } from "@/components/markdown";
+import { ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 interface ForecastCardProps {
   prop: PropWithUserForecast;
@@ -49,18 +52,25 @@ export function ForecastCard({ prop, showCommunityAvg }: ForecastCardProps) {
             <div className="text-sm font-medium">--</div>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <Badge variant="secondary" className="text-xs font-medium">
-                {prop.category_name}
-              </Badge>
-              {prop.resolution !== null && (
-                <Badge
-                  variant={prop.resolution ? "default" : "destructive"}
-                  className="text-xs"
-                >
-                  {prop.resolution ? "Yes" : "No"}
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="text-xs font-medium">
+                  {prop.category_name}
                 </Badge>
-              )}
+                {prop.resolution !== null && (
+                  <Badge
+                    variant={prop.resolution ? "default" : "destructive"}
+                    className="text-xs"
+                  >
+                    {prop.resolution ? "Yes" : "No"}
+                  </Badge>
+                )}
+              </div>
+              <Link href={`/props/${prop.prop_id}`}>
+                <Button variant="ghost" size="sm" className="h-7 px-2">
+                  <ExternalLink className="h-3 w-3" />
+                </Button>
+              </Link>
             </div>
             <TooltipProvider>
               <Tooltip>
@@ -119,18 +129,25 @@ export function ForecastCard({ prop, showCommunityAvg }: ForecastCardProps) {
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <Badge variant="secondary" className="text-xs font-medium">
-              {prop.category_name}
-            </Badge>
-            {prop.resolution !== null && (
-              <Badge
-                variant={prop.resolution ? "default" : "destructive"}
-                className="text-xs"
-              >
-                {prop.resolution ? "Yes" : "No"}
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs font-medium">
+                {prop.category_name}
               </Badge>
-            )}
+              {prop.resolution !== null && (
+                <Badge
+                  variant={prop.resolution ? "default" : "destructive"}
+                  className="text-xs"
+                >
+                  {prop.resolution ? "Yes" : "No"}
+                </Badge>
+              )}
+            </div>
+            <Link href={`/props/${prop.prop_id}`}>
+              <Button variant="ghost" size="sm" className="h-7 px-2">
+                <ExternalLink className="h-3 w-3" />
+              </Button>
+            </Link>
           </div>
 
           <TooltipProvider>
