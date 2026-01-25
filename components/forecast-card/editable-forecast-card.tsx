@@ -191,9 +191,14 @@ export function EditableForecastCard({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <h3 className="font-medium text-foreground mb-3 leading-snug cursor-help">
-                  <MarkdownRenderer>{prop.prop_text}</MarkdownRenderer>
-                </h3>
+                <div className="cursor-help">
+                  <h3 className="font-medium text-foreground leading-snug">
+                    <MarkdownRenderer>{prop.prop_text}</MarkdownRenderer>
+                  </h3>
+                  <p className="text-sm text-muted-foreground truncate h-5 mb-3">
+                    {prop.prop_notes || "\u00A0"}
+                  </p>
+                </div>
               </TooltipTrigger>
               <TooltipContent className="max-w-sm bg-popover text-popover-foreground border">
                 <div className="space-y-2">
