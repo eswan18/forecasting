@@ -7,7 +7,8 @@ import PageHeading from "@/components/page-heading";
 import { Suspense } from "react";
 import SkeletonCard from "./skeleton-card";
 import ErrorPage from "@/components/pages/error-page";
-import LeaderboardChart from "@/components/charts/leaderboard-chart";
+import Leaderboard from "@/components/scores/leaderboard";
+import { getUserFromCookies } from "@/lib/get-user";
 
 export default async function Page({
   params,
@@ -21,30 +22,38 @@ export default async function Page({
     return <ErrorPage title={competitionResult.error} />;
   }
   const competition = competitionResult.data;
+  const user = await getUserFromCookies();
   return (
-    <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full">
-      <PageHeading
-        title={`${competition.name} - Scores`}
-        breadcrumbs={{
-          Competitions: "/competitions",
-          [competition.name]: `/competitions/${competition.id}`,
-        }}
-      />
-      <Suspense
-        fallback={
-          <SkeletonCard className="w-full flex flex-col bg-background h-256" />
-        }
-      >
-        <ScoreChartsCardSection competitionId={competitionId} />
-      </Suspense>
+    <main className="min-h-screen bg-muted/30 py-8 px-4">
+      <div className="max-w-3xl mx-auto">
+        <PageHeading
+          title={`${competition.name} - Scores`}
+          breadcrumbs={{
+            Competitions: "/competitions",
+            [competition.name]: `/competitions/${competition.id}`,
+          }}
+        />
+        <Suspense
+          fallback={
+            <SkeletonCard className="w-full flex flex-col bg-background h-256" />
+          }
+        >
+          <ScoreChartsCardSection
+            competitionId={competitionId}
+            currentUserId={user?.id ?? null}
+          />
+        </Suspense>
+      </div>
     </main>
   );
 }
 
 async function ScoreChartsCardSection({
   competitionId,
+  currentUserId,
 }: {
   competitionId: number;
+  currentUserId: number | null;
 }) {
   // We break this out so that we can wrap it in a Suspense component.
   const categoriesResult = await getCategories();
@@ -60,10 +69,11 @@ async function ScoreChartsCardSection({
 
   const scores = scoresResult.data;
   return (
-    <LeaderboardChart
+    <Leaderboard
       scores={scores}
       categories={categories}
       competitionId={competitionId}
+      currentUserId={currentUserId}
     />
   );
 }
