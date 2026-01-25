@@ -152,14 +152,27 @@ export function CreateEditCompetitionForm({
   const error = createCompetitionAction.error || updateCompetitionAction.error;
 
   async function handleSubmit(values: z.infer<typeof formSchema>) {
+    // Build the competition object explicitly to ensure proper values
+    const competition = {
+      name: values.name,
+      is_private: values.is_private,
+      // For private competitions, dates should be null/undefined
+      // For public competitions, dates are required
+      forecasts_open_date: values.is_private ? null : values.forecasts_open_date,
+      forecasts_close_date: values.is_private
+        ? null
+        : values.forecasts_close_date,
+      end_date: values.is_private ? null : values.end_date,
+    };
+
     if (initialCompetition) {
       await updateCompetitionAction.execute({
         id: initialCompetition.id,
-        competition: values,
+        competition,
       });
     } else {
       await createCompetitionAction.execute({
-        competition: values,
+        competition,
       });
     }
   }
