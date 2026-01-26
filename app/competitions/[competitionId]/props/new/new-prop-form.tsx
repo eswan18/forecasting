@@ -63,6 +63,20 @@ const formSchema = z
     }),
   })
   .refine(
+    (data) => data.forecasts_due_date > new Date(),
+    {
+      message: "Forecast deadline must be in the future",
+      path: ["forecasts_due_date"],
+    },
+  )
+  .refine(
+    (data) => data.resolution_due_date > new Date(),
+    {
+      message: "Resolution deadline must be in the future",
+      path: ["resolution_due_date"],
+    },
+  )
+  .refine(
     (data) => data.resolution_due_date > data.forecasts_due_date,
     {
       message: "Resolution deadline must be after forecast deadline",

@@ -404,6 +404,21 @@ export async function createProp({
       validationErrors.category_id = ["Category is required"];
     }
 
+    // Validate dates for props with deadlines (private competition props)
+    if (prop.forecasts_due_date && prop.resolution_due_date) {
+      const now = new Date();
+      if (prop.forecasts_due_date <= now) {
+        validationErrors.forecasts_due_date = ["Forecast deadline must be in the future"];
+      }
+      if (prop.resolution_due_date <= now) {
+        validationErrors.resolution_due_date = ["Resolution deadline must be in the future"];
+      }
+      if (prop.resolution_due_date <= prop.forecasts_due_date) {
+        validationErrors.resolution_due_date = validationErrors.resolution_due_date || [];
+        validationErrors.resolution_due_date.push("Resolution deadline must be after forecast deadline");
+      }
+    }
+
     if (Object.keys(validationErrors).length > 0) {
       logger.warn("Validation error creating prop", {
         validationErrors,
@@ -418,6 +433,33 @@ export async function createProp({
     }
 
     await withRLS(currentUser?.id, async (trx) => {
+      // For competition props, verify the user is a competition admin
+      if (prop.competition_id) {
+        const competition = await trx
+          .selectFrom("competitions")
+          .select(["is_private"])
+          .where("id", "=", prop.competition_id)
+          .executeTakeFirst();
+
+        if (!competition) {
+          throw new Error("NOT_FOUND: Competition not found");
+        }
+
+        // For private competitions, only admins can create props
+        if (competition.is_private) {
+          const membership = await trx
+            .selectFrom("competition_members")
+            .select(["role"])
+            .where("competition_id", "=", prop.competition_id)
+            .where("user_id", "=", currentUser.id)
+            .executeTakeFirst();
+
+          if (membership?.role !== "admin") {
+            throw new Error("UNAUTHORIZED: Only competition admins can create props");
+          }
+        }
+      }
+
       await trx.insertInto("props").values(prop).execute();
     });
 
@@ -445,7 +487,22 @@ export async function createProp({
       duration,
     });
 
-    if (err instanceof Error && err.message.includes("duplicate")) {
+    const errorMessage = (err as Error).message;
+
+    // Handle specific error types thrown from within the transaction
+    if (errorMessage.startsWith("UNAUTHORIZED:")) {
+      return error(
+        errorMessage.replace("UNAUTHORIZED: ", ""),
+        ERROR_CODES.UNAUTHORIZED,
+      );
+    }
+    if (errorMessage.startsWith("NOT_FOUND:")) {
+      return error(
+        errorMessage.replace("NOT_FOUND: ", ""),
+        ERROR_CODES.NOT_FOUND,
+      );
+    }
+    if (errorMessage.includes("duplicate")) {
       return error(
         "A proposition with this text already exists",
         ERROR_CODES.VALIDATION_ERROR,
