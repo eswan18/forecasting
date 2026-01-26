@@ -1,14 +1,17 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CompetitionHeader } from "./competition-header";
 import { CompetitionTabs, type DashboardTab } from "./competition-tabs";
 import { StatCards } from "./stat-cards";
 import { UpcomingDeadlines } from "./upcoming-deadlines";
 import { LeaderboardSidebar } from "./leaderboard-sidebar";
+import { ForecastablePropsTable } from "@/components/forecastable-props-table";
+import { PropsTable } from "@/components/props/props-table";
 import type { CompetitionStats, UpcomingDeadline } from "@/lib/db_actions/competition-stats";
 import type { CompetitionScore } from "@/lib/db_actions";
+import type { PropWithUserForecast } from "@/types/db_types";
 
 interface PrivateCompetitionDashboardProps {
   competitionId: number;
@@ -19,8 +22,7 @@ interface PrivateCompetitionDashboardProps {
   memberCount: number;
   isAdmin: boolean;
   currentUserId: number;
-  /** Content to render for the current tab (passed from server) */
-  tabContent?: React.ReactNode;
+  props: PropWithUserForecast[];
 }
 
 export function PrivateCompetitionDashboard({
@@ -32,7 +34,7 @@ export function PrivateCompetitionDashboard({
   memberCount,
   isAdmin,
   currentUserId,
-  tabContent,
+  props,
 }: PrivateCompetitionDashboardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,6 +49,30 @@ export function PrivateCompetitionDashboard({
     tabParam === "members"
       ? tabParam
       : "overview";
+
+  // Filter props based on tab
+  const now = new Date();
+
+  const openProps = useMemo(() => {
+    return props.filter((prop) => {
+      // Open: forecasts_due_date is in the future (or null for no deadline)
+      const dueDate = prop.prop_forecasts_due_date;
+      return dueDate === null || new Date(dueDate) > now;
+    });
+  }, [props, now]);
+
+  const closedProps = useMemo(() => {
+    return props.filter((prop) => {
+      // Closed: forecasts_due_date is in the past AND not resolved
+      const dueDate = prop.prop_forecasts_due_date;
+      const isResolved = prop.resolution !== null;
+      return dueDate !== null && new Date(dueDate) <= now && !isResolved;
+    });
+  }, [props, now]);
+
+  const resolvedProps = useMemo(() => {
+    return props.filter((prop) => prop.resolution !== null);
+  }, [props]);
 
   const handleTabChange = useCallback(
     (tab: DashboardTab) => {
@@ -134,8 +160,55 @@ export function PrivateCompetitionDashboard({
             </div>
           </div>
         ) : (
-          // Tab-specific content passed from server
-          <div>{tabContent}</div>
+          // Tab-specific content
+          <div>
+            {activeTab === "open" && (
+              <ForecastablePropsTable
+                props={openProps}
+                canCreateProps={isAdmin}
+                competitionId={competitionId}
+              />
+            )}
+            {activeTab === "closed" && (
+              <PropsTable
+                props={closedProps}
+                canCreateProps={false}
+                competitionId={competitionId}
+                showCommunityAvg={true}
+              />
+            )}
+            {activeTab === "resolved" && (
+              <PropsTable
+                props={resolvedProps}
+                canCreateProps={false}
+                competitionId={competitionId}
+                showCommunityAvg={true}
+              />
+            )}
+            {activeTab === "leaderboard" && (
+              <div className="max-w-md">
+                <LeaderboardSidebar
+                  scores={scores}
+                  competitionId={competitionId}
+                  currentUserId={currentUserId}
+                  maxEntries={100}
+                />
+              </div>
+            )}
+            {activeTab === "members" && (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-4">
+                  View and manage competition members
+                </p>
+                <button
+                  onClick={() => router.push(`/competitions/${competitionId}/members`)}
+                  className="text-primary hover:underline"
+                >
+                  Go to Members Page →
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>

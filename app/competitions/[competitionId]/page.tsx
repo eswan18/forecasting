@@ -103,6 +103,7 @@ export default async function Page({
         memberCount={memberCountResult.data}
         isAdmin={isAdmin}
         currentUserId={user.id}
+        props={propsWithForecastsResult.data}
       />
     );
   }
