@@ -211,7 +211,7 @@ export function CompetitionDashboard({
               />
             )}
             {activeTab === "leaderboard" && (
-              <div className="max-w-3xl">
+              <div className="max-w-3xl mx-auto">
                 <Leaderboard
                   scores={scores}
                   categories={categories}
