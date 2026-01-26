@@ -201,9 +201,8 @@ export default function Leaderboard({
     isCurrentUser: user.userId === currentUserId,
   }));
 
-  // Find current user's rank
+  // Find current user's data
   const currentUserData = usersWithRanks.find((u) => u.isCurrentUser);
-  const totalUsers = usersWithRanks.length;
 
   const toggleRow = (userId: number) => {
     setExpandedRows((prev) => {
@@ -230,17 +229,6 @@ export default function Leaderboard({
 
   return (
     <div className="space-y-6">
-      {/* Header with rank context */}
-      {currentUserData && (
-        <p className="text-muted-foreground">
-          You&apos;re ranked{" "}
-          <span className="font-semibold text-foreground">
-            #{currentUserData.rank}
-          </span>{" "}
-          of {totalUsers} forecasters
-        </p>
-      )}
-
       {/* Score explanation */}
       <div className="bg-muted/30 border border-border rounded-lg p-4">
         <div className="flex items-start gap-3">
