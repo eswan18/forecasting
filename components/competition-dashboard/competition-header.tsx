@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { MoreVertical, Plus, Settings, UserPlus, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CompetitionHeader } from "./competition-header";
 import { CompetitionTabs, type DashboardTab } from "./competition-tabs";

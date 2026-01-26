@@ -398,7 +398,9 @@ export async function createProp({
       ];
     }
 
-    if (prop.category_id == null && prop.user_id === null) {
+    // Category is only required for public props without a competition
+    // Personal props (user_id set) and competition props don't require a category
+    if (prop.category_id == null && prop.user_id === null && prop.competition_id === null) {
       validationErrors.category_id = ["Category is required"];
     }
 
@@ -429,6 +431,9 @@ export async function createProp({
     });
 
     revalidatePath("/props");
+    if (prop.competition_id) {
+      revalidatePath(`/competitions/${prop.competition_id}`);
+    }
     return success(undefined);
   } catch (err) {
     const duration = Date.now() - startTime;
@@ -436,6 +441,7 @@ export async function createProp({
       operation: "createProp",
       table: "props",
       categoryId: prop.category_id,
+      competitionId: prop.competition_id,
       duration,
     });
 
