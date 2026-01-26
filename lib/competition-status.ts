@@ -9,18 +9,29 @@ export type CompetitionStatus =
   | "upcoming"
   | "forecasts-open"
   | "forecasts-closed"
-  | "ended";
+  | "ended"
+  | "private"; // Private competitions don't have competition-level dates
 
 /**
  * Get the status of a competition based on current date
  * Returns "upcoming", "forecasts-open", "forecasts-closed", or "ended"
+ * For private competitions with null dates, returns "private"
  */
 export function getCompetitionStatus(
-  forecastsOpenDate: Date,
-  forecastsCloseDate: Date,
-  endDate: Date,
+  forecastsOpenDate: Date | null,
+  forecastsCloseDate: Date | null,
+  endDate: Date | null,
   currentDate: Date = new Date(),
 ): CompetitionStatus {
+  // Private competitions have null dates - they use per-prop dates instead
+  if (
+    forecastsOpenDate === null ||
+    forecastsCloseDate === null ||
+    endDate === null
+  ) {
+    return "private";
+  }
+
   if (currentDate < forecastsOpenDate) {
     return "upcoming";
   } else if (currentDate < forecastsCloseDate) {
@@ -34,13 +45,13 @@ export function getCompetitionStatus(
 
 /**
  * Get the status of a competition from a competition object
- * Returns "upcoming", "forecasts-open", "forecasts-closed", or "ended"
+ * Returns "upcoming", "forecasts-open", "forecasts-closed", "ended", or "private"
  */
 export function getCompetitionStatusFromObject(
   competition: {
-    forecasts_open_date: Date;
-    forecasts_close_date: Date;
-    end_date: Date;
+    forecasts_open_date: Date | null;
+    forecasts_close_date: Date | null;
+    end_date: Date | null;
   },
   currentDate: Date = new Date(),
 ): CompetitionStatus {

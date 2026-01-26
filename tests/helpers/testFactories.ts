@@ -83,6 +83,7 @@ export class TestDataFactory {
       ), // 7 days before close date
       forecasts_close_date: closeDate,
       end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+      is_private: false, // Public competition by default
     };
 
     const competitionData = { ...defaults, ...overrides } as any;

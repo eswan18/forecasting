@@ -39,9 +39,7 @@ describe("getRecentlyResolvedForecasts", () => {
       const user = await factory.createUser({ name: "Test User" });
       vi.mocked(getUserFromCookies).mockResolvedValue(user);
 
-      const competition = await factory.createCompetition({
-        name: "Test Competition",
-      });
+      const competition = await factory.createCompetition();
 
       // Create two props - one resolved, one not
       const resolvedProp = await factory.createCompetitionProp(competition.id, {
@@ -84,9 +82,7 @@ describe("getRecentlyResolvedForecasts", () => {
       const user = await factory.createUser({ name: "Test User" });
       vi.mocked(getUserFromCookies).mockResolvedValue(user);
 
-      const competition = await factory.createCompetition({
-        name: "Test Competition",
-      });
+      const competition = await factory.createCompetition();
 
       // Create 5 resolved props
       for (let i = 0; i < 5; i++) {

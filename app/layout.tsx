@@ -25,7 +25,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class">
           <StatusIndicatorStack />
           <NavBar />
-          <div className="w-full max-w-6xl mx-auto">{children}</div>
+          <div className="w-full">{children}</div>
           <Toaster />
         </ThemeProvider>
         <Analytics />

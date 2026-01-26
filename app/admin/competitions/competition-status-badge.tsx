@@ -18,6 +18,8 @@ export function CompetitionStatusBadge({
         return { label: "Forecasts closed", variant: "secondary" as const };
       case "ended":
         return { label: "Ended", variant: "secondary" as const };
+      case "private":
+        return { label: "Private", variant: "outline" as const };
     }
   };
 

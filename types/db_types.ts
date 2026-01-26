@@ -3,6 +3,7 @@ import { Generated, Insertable, Selectable, Updateable } from "kysely";
 export interface Database {
   categories: CategoriesTable;
   competitions: CompetitionsTable;
+  competition_members: CompetitionMembersTable;
   feature_flags: FeatureFlagsTable;
   forecasts: ForecastsTable;
   props: PropsTable;
@@ -14,6 +15,7 @@ export interface Database {
   v_users: VUsersView;
   v_suggested_props: VSuggestedPropsView;
   v_feature_flags: VFeatureFlagsView;
+  v_competition_members: VCompetitionMembersView;
 }
 
 // Tables
@@ -51,6 +53,9 @@ export interface PropsTable {
   notes: string | null;
   user_id: number | null;
   competition_id: number | null;
+  forecasts_due_date: Date | null;
+  resolution_due_date: Date | null;
+  created_by_user_id: number | null;
   updated_at: Generated<Date>;
   created_at: Generated<Date>;
 }
@@ -109,15 +114,29 @@ export type FeatureFlagUpdate = Updateable<FeatureFlagsTable>;
 export interface CompetitionsTable {
   id: Generated<number>;
   name: string;
-  forecasts_close_date: Date;
-  forecasts_open_date: Date;
-  end_date: Date;
+  forecasts_close_date: Date | null;
+  forecasts_open_date: Date | null;
+  end_date: Date | null;
+  is_private: Generated<boolean>;
+  created_by_user_id: number | null;
   updated_at: Generated<Date>;
   created_at: Generated<Date>;
 }
 export type Competition = Selectable<CompetitionsTable>;
 export type NewCompetition = Insertable<CompetitionsTable>;
 export type CompetitionUpdate = Updateable<CompetitionsTable>;
+
+export interface CompetitionMembersTable {
+  id: Generated<number>;
+  competition_id: number;
+  user_id: number;
+  role: "admin" | "forecaster";
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+export type CompetitionMember = Selectable<CompetitionMembersTable>;
+export type NewCompetitionMember = Insertable<CompetitionMembersTable>;
+export type CompetitionMemberUpdate = Updateable<CompetitionMembersTable>;
 
 // Views
 
@@ -126,10 +145,14 @@ export interface VPropsView {
   prop_text: string;
   prop_notes: string | null;
   prop_user_id: number | null;
+  prop_forecasts_due_date: Date | null;
+  prop_resolution_due_date: Date | null;
+  prop_created_by_user_id: number | null;
   category_id: number | null;
   category_name: string | null;
   competition_id: number | null;
   competition_name: string | null;
+  competition_is_private: boolean | null;
   competition_forecasts_close_date: Date | null;
   competition_forecasts_open_date: Date | null;
   resolution_id: number | null;
@@ -150,6 +173,7 @@ export interface VForecastsView {
   category_name: string | null;
   competition_id: number | null;
   competition_name: string | null;
+  competition_is_private: boolean | null;
   competition_forecasts_close_date: Date | null;
   competition_forecasts_open_date: Date | null;
   forecast_id: number;
@@ -160,6 +184,9 @@ export interface VForecastsView {
   prop_text: string;
   prop_notes: string | null;
   prop_user_id: number | null;
+  prop_forecasts_due_date: Date | null;
+  prop_resolution_due_date: Date | null;
+  prop_created_by_user_id: number | null;
   resolution_id: number | null;
   resolution: boolean | null;
   resolution_user_id: number | null;
@@ -205,3 +232,18 @@ export interface VFeatureFlagsView {
   user_is_admin: boolean | null;
 }
 export type VFeatureFlag = Selectable<VFeatureFlagsView>;
+
+export interface VCompetitionMembersView {
+  membership_id: number;
+  competition_id: number;
+  user_id: number;
+  role: "admin" | "forecaster";
+  membership_created_at: Date;
+  membership_updated_at: Date;
+  competition_name: string;
+  competition_is_private: boolean;
+  user_name: string;
+  user_email: string;
+  user_username: string | null;
+}
+export type VCompetitionMember = Selectable<VCompetitionMembersView>;

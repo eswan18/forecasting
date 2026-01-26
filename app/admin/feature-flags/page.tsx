@@ -7,7 +7,7 @@ export default async function FeatureFlagsPage() {
   const result = await getFeatureFlags();
   if (!result.success) {
     return (
-      <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
+      <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24 max-w-4xl mx-auto">
         <div className="w-full flex flex-col">
           <p className="text-destructive">Error: {result.error}</p>
         </div>
@@ -26,7 +26,7 @@ export default async function FeatureFlagsPage() {
   const featureNames = Array.from(featureFlagsByName.keys());
   featureNames.sort();
   return (
-    <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
+    <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24 max-w-4xl mx-auto">
       <div className="w-full flex flex-col">
         <PageHeading
           title="Feature Flags"

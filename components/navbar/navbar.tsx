@@ -18,7 +18,6 @@ import {
   Flag,
   Medal,
   MessageCircle,
-  User2,
   Users,
   Menu,
 } from "lucide-react";
@@ -31,7 +30,6 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { getCompetitions } from "@/lib/db_actions/competitions";
 import { Competition } from "@/types/db_types";
 import { getCompetitionStatusFromObject } from "@/lib/competition-status";
@@ -41,7 +39,6 @@ import { MobileDropdownItem } from "./mobile-dropdown-item";
 
 export default function NavBar() {
   const { user, isLoading } = useCurrentUser();
-  const { enabled: hasPersonalPropsEnabled } = useFeatureFlag("personal-props");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [competitions, setCompetitions] = useState<Competition[]>([]);
@@ -88,20 +85,6 @@ export default function NavBar() {
         label: competition.name,
         icon: <Medal size={16} />,
       })),
-    });
-  }
-
-  // Add standalone section if user has feature enabled
-  if (user && !isLoading && hasPersonalPropsEnabled) {
-    links.push({
-      label: "Standalone",
-      links: [
-        {
-          href: `/standalone`,
-          label: "Standalone Props",
-          icon: <User2 size={16} />,
-        },
-      ],
     });
   }
 

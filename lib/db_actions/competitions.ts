@@ -1,6 +1,7 @@
 "use server";
 
 import { db } from "@/lib/database";
+import { withRLS } from "@/lib/db-helpers";
 import {
   Competition,
   CompetitionUpdate,
@@ -21,10 +22,19 @@ function validateCompetitionDates({
   forecasts_close_date,
   end_date,
 }: {
-  forecasts_open_date: Date;
-  forecasts_close_date: Date;
-  end_date: Date;
+  forecasts_open_date: Date | null | undefined;
+  forecasts_close_date: Date | null | undefined;
+  end_date: Date | null | undefined;
 }): ServerActionResult<void> {
+  // Private competitions have null/undefined dates - skip validation
+  if (
+    forecasts_open_date == null ||
+    forecasts_close_date == null ||
+    end_date == null
+  ) {
+    return success(undefined);
+  }
+
   if (forecasts_open_date >= forecasts_close_date) {
     return error(
       "Open date must be before close date",
@@ -51,11 +61,13 @@ export async function getCompetitionById(
 
   const startTime = Date.now();
   try {
-    const competition = await db
-      .selectFrom("competitions")
-      .selectAll()
-      .where("id", "=", id)
-      .executeTakeFirst();
+    const competition = await withRLS(currentUser?.id, async (trx) => {
+      return trx
+        .selectFrom("competitions")
+        .selectAll()
+        .where("id", "=", id)
+        .executeTakeFirst();
+    });
 
     const duration = Date.now() - startTime;
     if (competition) {
@@ -97,11 +109,13 @@ export async function getCompetitions(): Promise<
 
   const startTime = Date.now();
   try {
-    const query = db
-      .selectFrom("competitions")
-      .orderBy("name", "desc")
-      .selectAll();
-    const results = await query.execute();
+    const results = await withRLS(currentUser?.id, async (trx) => {
+      return trx
+        .selectFrom("competitions")
+        .orderBy("name", "desc")
+        .selectAll()
+        .execute();
+    });
 
     const duration = Date.now() - startTime;
     logger.info(`Retrieved ${results.length} competitions`, {
@@ -188,11 +202,13 @@ export async function updateCompetition({
       }
     }
 
-    await db
-      .updateTable("competitions")
-      .set(competition)
-      .where("id", "=", id)
-      .execute();
+    await withRLS(currentUser.id, async (trx) => {
+      await trx
+        .updateTable("competitions")
+        .set(competition)
+        .where("id", "=", id)
+        .execute();
+    });
 
     const duration = Date.now() - startTime;
     logger.info("Competition updated successfully", {
@@ -250,13 +266,41 @@ export async function createCompetition({
       return validationResult;
     }
 
-    await db.insertInto("competitions").values(competition).execute();
+    await withRLS(currentUser.id, async (trx) => {
+      // Insert the competition and get its ID
+      const result = await trx
+        .insertInto("competitions")
+        .values({
+          ...competition,
+          created_by_user_id: currentUser.id,
+        })
+        .returning("id")
+        .executeTakeFirstOrThrow();
+
+      // For private competitions, add the creator as an admin member
+      if (competition.is_private) {
+        await trx
+          .insertInto("competition_members")
+          .values({
+            competition_id: result.id,
+            user_id: currentUser.id,
+            role: "admin",
+          })
+          .execute();
+
+        logger.debug("Added creator as admin member", {
+          competitionId: result.id,
+          userId: currentUser.id,
+        });
+      }
+    });
 
     const duration = Date.now() - startTime;
     logger.info("Competition created successfully", {
       operation: "createCompetition",
       table: "competitions",
       competitionName: competition.name,
+      isPrivate: competition.is_private,
       duration,
     });
 

@@ -143,7 +143,7 @@ describe("Props Unit Tests", () => {
       vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
 
       const result = await createProp({
-        prop: { text: "Valid proposition text here", category_id: null, user_id: null },
+        prop: { text: "Valid proposition text here", category_id: null, user_id: null, competition_id: null },
       });
 
       expect(result.success).toBe(false);
@@ -199,6 +199,314 @@ describe("Props Unit Tests", () => {
       });
 
       expect(result.success).toBe(true);
+    });
+
+    it("should allow competition props without category", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+      const mockTrx = {
+        selectFrom: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        executeTakeFirst: vi.fn().mockResolvedValue({ is_private: false }),
+        insertInto: vi.fn().mockReturnThis(),
+        values: vi.fn().mockReturnThis(),
+        execute: vi.fn().mockResolvedValue(undefined),
+      };
+
+      vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+        return fn(mockTrx as any);
+      });
+
+      const result = await createProp({
+        prop: {
+          text: "This is a competition proposition",
+          category_id: null,
+          competition_id: 1, // Competition prop
+          user_id: null,
+        },
+      });
+
+      expect(result.success).toBe(true);
+    });
+
+    describe("date validation", () => {
+      it("should reject forecast deadline in the past", async () => {
+        vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+        const pastDate = new Date(Date.now() - 86400000); // yesterday
+        const futureDate = new Date(Date.now() + 86400000 * 7); // 7 days from now
+
+        const result = await createProp({
+          prop: {
+            text: "Valid proposition text",
+            category_id: null,
+            competition_id: 1,
+            user_id: null,
+            forecasts_due_date: pastDate,
+            resolution_due_date: futureDate,
+          },
+        });
+
+        expect(result.success).toBe(false);
+        if (!result.success) {
+          expect(result.code).toBe("VALIDATION_ERROR");
+          // Check validationErrors for field-specific error
+          const validationResult = result as { validationErrors?: Record<string, string[]> };
+          expect(validationResult.validationErrors?.forecasts_due_date).toContain("Forecast deadline must be in the future");
+        }
+      });
+
+      it("should reject resolution deadline in the past", async () => {
+        vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+        const futureDate = new Date(Date.now() + 86400000); // tomorrow
+        const pastDate = new Date(Date.now() - 86400000); // yesterday
+
+        const result = await createProp({
+          prop: {
+            text: "Valid proposition text",
+            category_id: null,
+            competition_id: 1,
+            user_id: null,
+            forecasts_due_date: futureDate,
+            resolution_due_date: pastDate,
+          },
+        });
+
+        expect(result.success).toBe(false);
+        if (!result.success) {
+          expect(result.code).toBe("VALIDATION_ERROR");
+          const validationResult = result as { validationErrors?: Record<string, string[]> };
+          expect(validationResult.validationErrors?.resolution_due_date).toContain("Resolution deadline must be in the future");
+        }
+      });
+
+      it("should reject resolution deadline before forecast deadline", async () => {
+        vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+        const laterDate = new Date(Date.now() + 86400000 * 7); // 7 days from now
+        const earlierDate = new Date(Date.now() + 86400000 * 3); // 3 days from now
+
+        const result = await createProp({
+          prop: {
+            text: "Valid proposition text",
+            category_id: null,
+            competition_id: 1,
+            user_id: null,
+            forecasts_due_date: laterDate, // forecast is later
+            resolution_due_date: earlierDate, // resolution is earlier - invalid
+          },
+        });
+
+        expect(result.success).toBe(false);
+        if (!result.success) {
+          expect(result.code).toBe("VALIDATION_ERROR");
+          const validationResult = result as { validationErrors?: Record<string, string[]> };
+          expect(validationResult.validationErrors?.resolution_due_date).toContain("Resolution deadline must be after forecast deadline");
+        }
+      });
+
+      it("should accept valid future dates with correct ordering", async () => {
+        vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+        const forecastDate = new Date(Date.now() + 86400000 * 3); // 3 days from now
+        const resolutionDate = new Date(Date.now() + 86400000 * 7); // 7 days from now
+
+        const mockTrx = {
+          selectFrom: vi.fn().mockReturnThis(),
+          select: vi.fn().mockReturnThis(),
+          where: vi.fn().mockReturnThis(),
+          executeTakeFirst: vi.fn().mockResolvedValue({ is_private: false }),
+          insertInto: vi.fn().mockReturnThis(),
+          values: vi.fn().mockReturnThis(),
+          execute: vi.fn().mockResolvedValue(undefined),
+        };
+
+        vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+          return fn(mockTrx as any);
+        });
+
+        const result = await createProp({
+          prop: {
+            text: "Valid proposition text",
+            category_id: null,
+            competition_id: 1,
+            user_id: null,
+            forecasts_due_date: forecastDate,
+            resolution_due_date: resolutionDate,
+          },
+        });
+
+        expect(result.success).toBe(true);
+      });
+    });
+
+    describe("competition admin verification", () => {
+      it("should reject non-admin creating prop for private competition", async () => {
+        vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+        const forecastDate = new Date(Date.now() + 86400000 * 3);
+        const resolutionDate = new Date(Date.now() + 86400000 * 7);
+
+        let selectCallCount = 0;
+        const mockTrx = {
+          selectFrom: vi.fn().mockImplementation(() => {
+            selectCallCount++;
+            return {
+              select: vi.fn().mockReturnValue({
+                where: vi.fn().mockReturnValue({
+                  where: vi.fn().mockReturnValue({
+                    executeTakeFirst: vi.fn().mockResolvedValue({ role: "forecaster" }),
+                  }),
+                  executeTakeFirst: vi.fn().mockResolvedValue({ is_private: true }),
+                }),
+              }),
+            };
+          }),
+        };
+
+        vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+          return fn(mockTrx as any);
+        });
+
+        const result = await createProp({
+          prop: {
+            text: "Valid proposition text",
+            category_id: null,
+            competition_id: 1,
+            user_id: null,
+            forecasts_due_date: forecastDate,
+            resolution_due_date: resolutionDate,
+          },
+        });
+
+        expect(result.success).toBe(false);
+        if (!result.success) {
+          expect(result.error).toContain("Only competition admins can create props");
+          expect(result.code).toBe("UNAUTHORIZED");
+        }
+      });
+
+      it("should reject user who is not a member of private competition", async () => {
+        vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+        const forecastDate = new Date(Date.now() + 86400000 * 3);
+        const resolutionDate = new Date(Date.now() + 86400000 * 7);
+
+        const mockTrx = {
+          selectFrom: vi.fn().mockImplementation(() => {
+            return {
+              select: vi.fn().mockReturnValue({
+                where: vi.fn().mockReturnValue({
+                  where: vi.fn().mockReturnValue({
+                    executeTakeFirst: vi.fn().mockResolvedValue(null), // not a member
+                  }),
+                  executeTakeFirst: vi.fn().mockResolvedValue({ is_private: true }),
+                }),
+              }),
+            };
+          }),
+        };
+
+        vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+          return fn(mockTrx as any);
+        });
+
+        const result = await createProp({
+          prop: {
+            text: "Valid proposition text",
+            category_id: null,
+            competition_id: 1,
+            user_id: null,
+            forecasts_due_date: forecastDate,
+            resolution_due_date: resolutionDate,
+          },
+        });
+
+        expect(result.success).toBe(false);
+        if (!result.success) {
+          expect(result.error).toContain("Only competition admins can create props");
+          expect(result.code).toBe("UNAUTHORIZED");
+        }
+      });
+
+      it("should allow admin to create prop for private competition", async () => {
+        vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+        const forecastDate = new Date(Date.now() + 86400000 * 3);
+        const resolutionDate = new Date(Date.now() + 86400000 * 7);
+
+        const mockTrx = {
+          selectFrom: vi.fn().mockImplementation(() => {
+            return {
+              select: vi.fn().mockReturnValue({
+                where: vi.fn().mockReturnValue({
+                  where: vi.fn().mockReturnValue({
+                    executeTakeFirst: vi.fn().mockResolvedValue({ role: "admin" }),
+                  }),
+                  executeTakeFirst: vi.fn().mockResolvedValue({ is_private: true }),
+                }),
+              }),
+            };
+          }),
+          insertInto: vi.fn().mockReturnThis(),
+          values: vi.fn().mockReturnThis(),
+          execute: vi.fn().mockResolvedValue(undefined),
+        };
+
+        vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+          return fn(mockTrx as any);
+        });
+
+        const result = await createProp({
+          prop: {
+            text: "Valid proposition text",
+            category_id: null,
+            competition_id: 1,
+            user_id: null,
+            forecasts_due_date: forecastDate,
+            resolution_due_date: resolutionDate,
+          },
+        });
+
+        expect(result.success).toBe(true);
+      });
+
+      it("should return not found for non-existent competition", async () => {
+        vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+        const forecastDate = new Date(Date.now() + 86400000 * 3);
+        const resolutionDate = new Date(Date.now() + 86400000 * 7);
+
+        const mockTrx = {
+          selectFrom: vi.fn().mockReturnThis(),
+          select: vi.fn().mockReturnThis(),
+          where: vi.fn().mockReturnThis(),
+          executeTakeFirst: vi.fn().mockResolvedValue(null), // competition not found
+        };
+
+        vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+          return fn(mockTrx as any);
+        });
+
+        const result = await createProp({
+          prop: {
+            text: "Valid proposition text",
+            category_id: null,
+            competition_id: 999,
+            user_id: null,
+            forecasts_due_date: forecastDate,
+            resolution_due_date: resolutionDate,
+          },
+        });
+
+        expect(result.success).toBe(false);
+        if (!result.success) {
+          expect(result.error).toContain("Competition not found");
+          expect(result.code).toBe("NOT_FOUND");
+        }
+      });
     });
   });
 
