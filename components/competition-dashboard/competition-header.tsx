@@ -14,16 +14,20 @@ import {
 interface CompetitionHeaderProps {
   competitionId: number;
   competitionName: string;
-  memberCount: number;
+  isPrivate: boolean;
   isAdmin: boolean;
+  memberCount?: number; // Only for private competitions
+  forecasterCount?: number; // For public competitions
   onAddProp?: () => void;
 }
 
 export function CompetitionHeader({
   competitionId,
   competitionName,
-  memberCount,
+  isPrivate,
   isAdmin,
+  memberCount,
+  forecasterCount,
   onAddProp,
 }: CompetitionHeaderProps) {
   return (
@@ -33,14 +37,22 @@ export function CompetitionHeader({
           <h1 className="text-2xl font-bold text-foreground">
             {competitionName}
           </h1>
-          <Badge
-            variant="secondary"
-            className="bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border-0"
-          >
-            Private
-          </Badge>
+          {isPrivate && (
+            <Badge
+              variant="secondary"
+              className="bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border-0"
+            >
+              Private
+            </Badge>
+          )}
         </div>
-        <p className="text-sm text-muted-foreground">{memberCount} members</p>
+        <p className="text-sm text-muted-foreground">
+          {isPrivate && memberCount !== undefined
+            ? `${memberCount} members`
+            : forecasterCount !== undefined
+              ? `${forecasterCount} forecasters`
+              : null}
+        </p>
       </div>
 
       {isAdmin && (
@@ -59,27 +71,31 @@ export function CompetitionHeader({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              {isPrivate && (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href={`/competitions/${competitionId}/members`}
+                      className="flex items-center"
+                    >
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Invite Members
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href={`/competitions/${competitionId}/members`}
+                      className="flex items-center"
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      Manage Members
+                    </Link>
+                  </DropdownMenuItem>
+                </>
+              )}
               <DropdownMenuItem asChild>
                 <Link
-                  href={`/competitions/${competitionId}/members`}
-                  className="flex items-center"
-                >
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Invite Members
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link
-                  href={`/competitions/${competitionId}/members`}
-                  className="flex items-center"
-                >
-                  <Users className="h-4 w-4 mr-2" />
-                  Manage Members
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link
-                  href={`/admin/competitions/${competitionId}`}
+                  href={`/admin/competitions`}
                   className="flex items-center"
                 >
                   <Settings className="h-4 w-4 mr-2" />

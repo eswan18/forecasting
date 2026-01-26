@@ -53,14 +53,14 @@ interface CompetitionTabsProps {
     closed: number;
     resolved: number;
   };
-  isAdmin: boolean;
+  showMembersTab: boolean;
 }
 
 export function CompetitionTabs({
   activeTab,
   onTabChange,
   stats,
-  isAdmin,
+  showMembersTab,
 }: CompetitionTabsProps) {
   return (
     <div className="flex gap-1 -mb-px overflow-x-auto">
@@ -97,7 +97,7 @@ export function CompetitionTabs({
       >
         Leaderboard
       </TabButton>
-      {isAdmin && (
+      {showMembersTab && (
         <TabButton
           active={activeTab === "members"}
           onClick={() => onTabChange("members")}

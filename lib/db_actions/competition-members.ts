@@ -1,5 +1,6 @@
 "use server";
 
+import { sql } from "kysely";
 import { db } from "@/lib/database";
 import { withRLS } from "@/lib/db-helpers";
 import {
@@ -165,11 +166,11 @@ export async function addCompetitionMember({
         throw new Error("UNAUTHORIZED: Only competition admins can add members");
       }
 
-      // Find user by email
+      // Find user by email (case-insensitive)
       const userToAdd = await trx
         .selectFrom("users")
         .select("id")
-        .where("email", "=", userEmail)
+        .where(sql`lower(email)`, "=", userEmail.toLowerCase())
         .where("deactivated_at", "is", null)
         .executeTakeFirst();
 
@@ -275,55 +276,50 @@ export async function removeCompetitionMember({
       return error("You must be logged in", ERROR_CODES.UNAUTHORIZED);
     }
 
-    // Check if current user is an admin of this competition
-    const currentUserMembership = await db
-      .selectFrom("competition_members")
-      .select("role")
-      .where("competition_id", "=", competitionId)
-      .where("user_id", "=", currentUser.id)
-      .executeTakeFirst();
-
-    if (currentUserMembership?.role !== "admin") {
-      logger.warn("Unauthorized attempt to remove competition member", {
-        competitionId,
-        currentUserId: currentUser.id,
-        currentRole: currentUserMembership?.role,
-      });
-      return error(
-        "Only competition admins can remove members",
-        ERROR_CODES.UNAUTHORIZED,
-      );
-    }
-
-    // If removing self, check that they're not the last admin
-    if (userId === currentUser.id) {
-      const adminCount = await db
+    const result = await withRLS(currentUser.id, async (trx) => {
+      // Check if current user is an admin of this competition
+      const currentUserMembership = await trx
         .selectFrom("competition_members")
-        .select((eb) => eb.fn.count("id").as("count"))
+        .select("role")
         .where("competition_id", "=", competitionId)
-        .where("role", "=", "admin")
+        .where("user_id", "=", currentUser.id)
         .executeTakeFirst();
 
-      if (Number(adminCount?.count) <= 1) {
-        return error(
-          "Cannot remove the last admin from a competition",
-          ERROR_CODES.VALIDATION_ERROR,
-        );
+      if (currentUserMembership?.role !== "admin") {
+        logger.warn("Unauthorized attempt to remove competition member", {
+          competitionId,
+          currentUserId: currentUser.id,
+          currentRole: currentUserMembership?.role,
+        });
+        throw new Error("UNAUTHORIZED: Only competition admins can remove members");
       }
-    }
 
-    const result = await db
-      .deleteFrom("competition_members")
-      .where("competition_id", "=", competitionId)
-      .where("user_id", "=", userId)
-      .executeTakeFirst();
+      // If removing self, check that they're not the last admin
+      if (userId === currentUser.id) {
+        const adminCount = await trx
+          .selectFrom("competition_members")
+          .select((eb) => eb.fn.count("id").as("count"))
+          .where("competition_id", "=", competitionId)
+          .where("role", "=", "admin")
+          .executeTakeFirst();
 
-    if (Number(result.numDeletedRows) === 0) {
-      return error(
-        "Member not found in this competition",
-        ERROR_CODES.NOT_FOUND,
-      );
-    }
+        if (Number(adminCount?.count) <= 1) {
+          throw new Error("VALIDATION: Cannot remove the last admin from a competition");
+        }
+      }
+
+      const deleteResult = await trx
+        .deleteFrom("competition_members")
+        .where("competition_id", "=", competitionId)
+        .where("user_id", "=", userId)
+        .executeTakeFirst();
+
+      if (Number(deleteResult.numDeletedRows) === 0) {
+        throw new Error("NOT_FOUND: Member not found in this competition");
+      }
+
+      return deleteResult;
+    });
 
     const duration = Date.now() - startTime;
     logger.info("Competition member removed successfully", {
@@ -338,6 +334,16 @@ export async function removeCompetitionMember({
     revalidatePath(`/competitions/${competitionId}/members`);
     return success(undefined);
   } catch (err) {
+    const errMessage = (err as Error).message;
+    if (errMessage.startsWith("UNAUTHORIZED:")) {
+      return error(errMessage.replace("UNAUTHORIZED: ", ""), ERROR_CODES.UNAUTHORIZED);
+    }
+    if (errMessage.startsWith("VALIDATION:")) {
+      return error(errMessage.replace("VALIDATION: ", ""), ERROR_CODES.VALIDATION_ERROR);
+    }
+    if (errMessage.startsWith("NOT_FOUND:")) {
+      return error(errMessage.replace("NOT_FOUND: ", ""), ERROR_CODES.NOT_FOUND);
+    }
     const duration = Date.now() - startTime;
     logger.error("Failed to remove competition member", err as Error, {
       operation: "removeCompetitionMember",
@@ -378,64 +384,57 @@ export async function updateMemberRole({
       return error("You must be logged in", ERROR_CODES.UNAUTHORIZED);
     }
 
-    // Check if current user is an admin of this competition
-    const currentUserMembership = await db
-      .selectFrom("competition_members")
-      .select("role")
-      .where("competition_id", "=", competitionId)
-      .where("user_id", "=", currentUser.id)
-      .executeTakeFirst();
-
-    if (currentUserMembership?.role !== "admin") {
-      logger.warn("Unauthorized attempt to update member role", {
-        competitionId,
-        currentUserId: currentUser.id,
-        currentRole: currentUserMembership?.role,
-      });
-      return error(
-        "Only competition admins can update roles",
-        ERROR_CODES.UNAUTHORIZED,
-      );
-    }
-
-    // Get the member's current role
-    const targetMembership = await db
-      .selectFrom("competition_members")
-      .select("role")
-      .where("competition_id", "=", competitionId)
-      .where("user_id", "=", userId)
-      .executeTakeFirst();
-
-    if (!targetMembership) {
-      return error(
-        "Member not found in this competition",
-        ERROR_CODES.NOT_FOUND,
-      );
-    }
-
-    // If demoting an admin, check that they're not the last admin
-    if (targetMembership.role === "admin" && newRole !== "admin") {
-      const adminCount = await db
+    await withRLS(currentUser.id, async (trx) => {
+      // Check if current user is an admin of this competition
+      const currentUserMembership = await trx
         .selectFrom("competition_members")
-        .select((eb) => eb.fn.count("id").as("count"))
+        .select("role")
         .where("competition_id", "=", competitionId)
-        .where("role", "=", "admin")
+        .where("user_id", "=", currentUser.id)
         .executeTakeFirst();
 
-      if (Number(adminCount?.count) <= 1) {
-        return error(
-          "Cannot demote the last admin",
-          ERROR_CODES.VALIDATION_ERROR,
-        );
+      if (currentUserMembership?.role !== "admin") {
+        logger.warn("Unauthorized attempt to update member role", {
+          competitionId,
+          currentUserId: currentUser.id,
+          currentRole: currentUserMembership?.role,
+        });
+        throw new Error("UNAUTHORIZED: Only competition admins can update roles");
       }
-    }
 
-    await db
-      .updateTable("competition_members")
-      .set({ role: newRole, updated_at: new Date() })
-      .where("competition_id", "=", competitionId)
-      .where("user_id", "=", userId)
-      .execute();
+      // Get the member's current role
+      const targetMembership = await trx
+        .selectFrom("competition_members")
+        .select("role")
+        .where("competition_id", "=", competitionId)
+        .where("user_id", "=", userId)
+        .executeTakeFirst();
+
+      if (!targetMembership) {
+        throw new Error("NOT_FOUND: Member not found in this competition");
+      }
+
+      // If demoting an admin, check that they're not the last admin
+      if (targetMembership.role === "admin" && newRole !== "admin") {
+        const adminCount = await trx
+          .selectFrom("competition_members")
+          .select((eb) => eb.fn.count("id").as("count"))
+          .where("competition_id", "=", competitionId)
+          .where("role", "=", "admin")
+          .executeTakeFirst();
+
+        if (Number(adminCount?.count) <= 1) {
+          throw new Error("VALIDATION: Cannot demote the last admin");
+        }
+      }
+
+      await trx
+        .updateTable("competition_members")
+        .set({ role: newRole, updated_at: new Date() })
+        .where("competition_id", "=", competitionId)
+        .where("user_id", "=", userId)
+        .execute();
+    });
 
     const duration = Date.now() - startTime;
     logger.info("Competition member role updated successfully", {
@@ -451,6 +450,16 @@ export async function updateMemberRole({
     revalidatePath(`/competitions/${competitionId}/members`);
     return success(undefined);
   } catch (err) {
+    const errMessage = (err as Error).message;
+    if (errMessage.startsWith("UNAUTHORIZED:")) {
+      return error(errMessage.replace("UNAUTHORIZED: ", ""), ERROR_CODES.UNAUTHORIZED);
+    }
+    if (errMessage.startsWith("VALIDATION:")) {
+      return error(errMessage.replace("VALIDATION: ", ""), ERROR_CODES.VALIDATION_ERROR);
+    }
+    if (errMessage.startsWith("NOT_FOUND:")) {
+      return error(errMessage.replace("NOT_FOUND: ", ""), ERROR_CODES.NOT_FOUND);
+    }
     const duration = Date.now() - startTime;
     logger.error("Failed to update member role", err as Error, {
       operation: "updateMemberRole",

@@ -13,29 +13,31 @@ import type { CompetitionStats, UpcomingDeadline } from "@/lib/db_actions/compet
 import type { CompetitionScore } from "@/lib/db_actions";
 import type { PropWithUserForecast } from "@/types/db_types";
 
-interface PrivateCompetitionDashboardProps {
+interface CompetitionDashboardProps {
   competitionId: number;
   competitionName: string;
+  isPrivate: boolean;
   stats: CompetitionStats;
   upcomingDeadlines: UpcomingDeadline[];
   scores: CompetitionScore;
-  memberCount: number;
   isAdmin: boolean;
   currentUserId: number;
   props: PropWithUserForecast[];
+  memberCount?: number; // Only for private competitions
 }
 
-export function PrivateCompetitionDashboard({
+export function CompetitionDashboard({
   competitionId,
   competitionName,
+  isPrivate,
   stats,
   upcomingDeadlines,
   scores,
-  memberCount,
   isAdmin,
   currentUserId,
   props,
-}: PrivateCompetitionDashboardProps) {
+  memberCount,
+}: CompetitionDashboardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -91,12 +93,17 @@ export function PrivateCompetitionDashboard({
   );
 
   const handleAddProp = useCallback(() => {
-    // Navigate to add prop page or open dialog
     router.push(`/competitions/${competitionId}/props/new`);
   }, [competitionId, router]);
 
   // Show overview dashboard content or tab-specific content
   const showOverview = activeTab === "overview";
+
+  // Calculate forecaster count from scores for public competitions
+  const forecasterCount = scores.overallScores?.length ?? 0;
+
+  // Show members tab only for private competitions where user is admin
+  const showMembersTab = isPrivate && isAdmin;
 
   return (
     <div className="min-h-screen bg-background">
@@ -106,9 +113,11 @@ export function PrivateCompetitionDashboard({
           <CompetitionHeader
             competitionId={competitionId}
             competitionName={competitionName}
-            memberCount={memberCount}
+            isPrivate={isPrivate}
             isAdmin={isAdmin}
-            onAddProp={handleAddProp}
+            memberCount={memberCount}
+            forecasterCount={forecasterCount}
+            onAddProp={isAdmin ? handleAddProp : undefined}
           />
 
           {/* Tabs */}
@@ -120,7 +129,7 @@ export function PrivateCompetitionDashboard({
               closed: stats.closed,
               resolved: stats.resolved,
             }}
-            isAdmin={isAdmin}
+            showMembersTab={showMembersTab}
           />
         </div>
       </div>
@@ -195,7 +204,7 @@ export function PrivateCompetitionDashboard({
                 />
               </div>
             )}
-            {activeTab === "members" && (
+            {activeTab === "members" && showMembersTab && (
               <div className="text-center py-8">
                 <p className="text-muted-foreground mb-4">
                   View and manage competition members
