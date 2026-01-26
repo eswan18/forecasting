@@ -55,22 +55,33 @@ export function CompetitionDashboard({
   // Filter props based on tab
   const now = new Date();
 
+  // Helper to get the effective close date for a prop
+  // Private competitions use per-prop dates, public use competition-level dates
+  const getCloseDate = useCallback(
+    (prop: PropWithUserForecast): Date | null => {
+      return isPrivate
+        ? prop.prop_forecasts_due_date
+        : prop.competition_forecasts_close_date;
+    },
+    [isPrivate],
+  );
+
   const openProps = useMemo(() => {
     return props.filter((prop) => {
-      // Open: forecasts_due_date is in the future (or null for no deadline)
-      const dueDate = prop.prop_forecasts_due_date;
-      return dueDate === null || new Date(dueDate) > now;
+      // Open: close date is in the future (or null for no deadline)
+      const closeDate = getCloseDate(prop);
+      return closeDate === null || new Date(closeDate) > now;
     });
-  }, [props, now]);
+  }, [props, now, getCloseDate]);
 
   const closedProps = useMemo(() => {
     return props.filter((prop) => {
-      // Closed: forecasts_due_date is in the past AND not resolved
-      const dueDate = prop.prop_forecasts_due_date;
+      // Closed: close date is in the past AND not resolved
+      const closeDate = getCloseDate(prop);
       const isResolved = prop.resolution !== null;
-      return dueDate !== null && new Date(dueDate) <= now && !isResolved;
+      return closeDate !== null && new Date(closeDate) <= now && !isResolved;
     });
-  }, [props, now]);
+  }, [props, now, getCloseDate]);
 
   const resolvedProps = useMemo(() => {
     return props.filter((prop) => prop.resolution !== null);
