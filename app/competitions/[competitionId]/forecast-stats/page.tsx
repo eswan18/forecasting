@@ -41,7 +41,7 @@ export default async function Page({
   }
 
   return (
-    <main className="flex flex-col justify-start items-start gap-4 py-4 px-8 lg:py-8 lg:px-24 w-full">
+    <main className="flex flex-col justify-start items-start gap-4 py-4 px-8 lg:py-8 lg:px-24 w-full max-w-6xl mx-auto">
       <PageHeading
         title={`${competition.name} - Stats`}
         breadcrumbs={{

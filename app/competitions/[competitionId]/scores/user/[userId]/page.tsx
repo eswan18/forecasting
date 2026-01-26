@@ -109,7 +109,7 @@ export default async function UserScorePage({
   });
 
   return (
-    <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full">
+    <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full max-w-4xl mx-auto">
       <PageHeading
         title={`${scoreBreakdown.userName} - Score Breakdown`}
         breadcrumbs={{

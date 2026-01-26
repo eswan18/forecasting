@@ -12,7 +12,7 @@ export default async function Page() {
   });
   if (!propsWithForecastsResult.success) {
     return (
-      <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full">
+      <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full max-w-6xl mx-auto">
         <p className="text-destructive">
           Error: {propsWithForecastsResult.error}
         </p>
@@ -22,7 +22,7 @@ export default async function Page() {
   const propsWithForecasts = propsWithForecastsResult.data;
 
   return (
-    <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full">
+    <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full max-w-6xl mx-auto">
       <PageHeading
         title="Standalone Forecasts"
         breadcrumbs={{}}
