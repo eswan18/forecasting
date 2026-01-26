@@ -103,7 +103,7 @@ export default async function CompetitionsPage() {
                       </Link>
                     </Button>
                     <Button asChild variant="ghost">
-                      <Link href={`/competitions/${competition.id}/scores`}>
+                      <Link href={`/competitions/${competition.id}?tab=leaderboard`}>
                         <Trophy className="h-4 w-4 mr-2" />
                         Scores
                       </Link>
@@ -163,7 +163,7 @@ export default async function CompetitionsPage() {
                         </Link>
                       </Button>
                       <Button asChild variant="ghost" className="flex-1">
-                        <Link href={`/competitions/${competition.id}/scores`}>
+                        <Link href={`/competitions/${competition.id}?tab=leaderboard`}>
                           <Trophy className="h-4 w-4 mr-2" />
                           Scores
                         </Link>

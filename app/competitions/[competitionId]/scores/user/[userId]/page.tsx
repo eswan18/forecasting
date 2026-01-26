@@ -115,7 +115,7 @@ export default async function UserScorePage({
         breadcrumbs={{
           Competitions: "/competitions",
           [competition.name]: `/competitions/${competition.id}`,
-          Scores: `/competitions/${competition.id}/scores`,
+          Scores: `/competitions/${competition.id}?tab=leaderboard`,
         }}
       />
 

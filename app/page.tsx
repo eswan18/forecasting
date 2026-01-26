@@ -41,7 +41,7 @@ export default async function Home() {
               title="2025 Scores Finalized"
               buttons={
                 <>
-                  <IconLinkButton icon={Trophy} href="/competitions/2/scores">
+                  <IconLinkButton icon={Trophy} href="/competitions/2?tab=leaderboard">
                     Leaderboard
                   </IconLinkButton>
                   <IconLinkButton

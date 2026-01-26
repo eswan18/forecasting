@@ -44,7 +44,7 @@ export default async function MiniLeaderboard({
   }
 
   return (
-    <Link href={`/competitions/${competitionId}/scores`}>
+    <Link href={`/competitions/${competitionId}?tab=leaderboard`}>
       <Card className="hover:shadow-md transition-shadow">
         <CardContent>
           <div className="flex flex-col gap-2">

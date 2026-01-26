@@ -172,6 +172,7 @@ interface LeaderboardProps {
   categories: Category[];
   competitionId: number;
   currentUserId: number | null;
+  userForecastCount?: number;
 }
 
 export default function Leaderboard({
@@ -179,6 +180,7 @@ export default function Leaderboard({
   categories,
   competitionId,
   currentUserId,
+  userForecastCount,
 }: LeaderboardProps) {
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
@@ -253,6 +255,41 @@ export default function Leaderboard({
         </div>
       </div>
 
+      {/* Your stats card */}
+      {currentUserData && (
+        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-3">
+            Your Performance
+          </h3>
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                #{currentUserData.rank}
+              </div>
+              <div className="text-xs text-blue-700 dark:text-blue-400">
+                Rank
+              </div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                {currentUserData.score.toFixed(3)}
+              </div>
+              <div className="text-xs text-blue-700 dark:text-blue-400">
+                Brier Score
+              </div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                {userForecastCount ?? 0}
+              </div>
+              <div className="text-xs text-blue-700 dark:text-blue-400">
+                Forecasts
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Podium for top 3 */}
       {usersWithRanks.length >= 3 && (
         <div className="grid grid-cols-3 gap-3">
@@ -314,41 +351,6 @@ export default function Leaderboard({
           ))}
         </div>
       </div>
-
-      {/* Your stats card */}
-      {currentUserData && (
-        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-          <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-3">
-            Your Performance
-          </h3>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                #{currentUserData.rank}
-              </div>
-              <div className="text-xs text-blue-700 dark:text-blue-400">
-                Rank
-              </div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                {currentUserData.score.toFixed(3)}
-              </div>
-              <div className="text-xs text-blue-700 dark:text-blue-400">
-                Brier Score
-              </div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                {currentUserData.categoryScores.length}
-              </div>
-              <div className="text-xs text-blue-700 dark:text-blue-400">
-                Categories
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

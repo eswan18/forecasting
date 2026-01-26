@@ -107,7 +107,7 @@ export function LeaderboardSidebar({
         ))}
       </div>
       <Link
-        href={`/competitions/${competitionId}/scores`}
+        href={`/competitions/${competitionId}?tab=leaderboard`}
         className="block w-full mt-4 text-sm text-primary hover:text-primary/80 text-center"
       >
         Full leaderboard →

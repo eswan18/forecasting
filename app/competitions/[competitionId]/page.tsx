@@ -1,6 +1,10 @@
 import { getPropsWithUserForecasts } from "@/lib/db_actions/forecasts";
 import { getUserFromCookies } from "@/lib/get-user";
-import { getCompetitionById, getCompetitionScores } from "@/lib/db_actions";
+import {
+  getCategories,
+  getCompetitionById,
+  getCompetitionScores,
+} from "@/lib/db_actions";
 import {
   getCurrentUserRole,
   getMemberCount,
@@ -60,12 +64,14 @@ export default async function Page({
       scoresResult,
       memberCountResult,
       propsWithForecastsResult,
+      categoriesResult,
     ] = await Promise.all([
       getCompetitionStats({ competitionId, userId: user.id }),
       getUpcomingDeadlines({ competitionId, userId: user.id, limit: 5 }),
       getCompetitionScores({ competitionId }),
       getMemberCount(competitionId),
       getPropsWithUserForecasts({ userId: user.id, competitionId }),
+      getCategories(),
     ]);
 
     if (!statsResult.success) {
@@ -83,6 +89,13 @@ export default async function Page({
     if (!propsWithForecastsResult.success) {
       return <ErrorPage title={propsWithForecastsResult.error} />;
     }
+    if (!categoriesResult.success) {
+      return <ErrorPage title={categoriesResult.error} />;
+    }
+
+    const userForecastCount = propsWithForecastsResult.data.filter(
+      (p) => p.user_forecast !== null
+    ).length;
 
     return (
       <CompetitionDashboard
@@ -92,10 +105,12 @@ export default async function Page({
         stats={statsResult.data}
         upcomingDeadlines={deadlinesResult.data}
         scores={scoresResult.data}
+        categories={categoriesResult.data}
         memberCount={memberCountResult.data}
         isAdmin={isAdmin}
         currentUserId={user.id}
         props={propsWithForecastsResult.data}
+        userForecastCount={userForecastCount}
       />
     );
   }
@@ -127,11 +142,13 @@ export default async function Page({
     deadlinesResult,
     scoresResult,
     propsWithForecastsResult,
+    categoriesResult,
   ] = await Promise.all([
     getCompetitionStats({ competitionId, userId: user.id }),
     getUpcomingDeadlines({ competitionId, userId: user.id, limit: 5 }),
     getCompetitionScores({ competitionId }),
     getPropsWithUserForecasts({ userId: user.id, competitionId }),
+    getCategories(),
   ]);
 
   if (!statsResult.success) {
@@ -146,6 +163,13 @@ export default async function Page({
   if (!propsWithForecastsResult.success) {
     return <ErrorPage title={propsWithForecastsResult.error} />;
   }
+  if (!categoriesResult.success) {
+    return <ErrorPage title={categoriesResult.error} />;
+  }
+
+  const userForecastCount = propsWithForecastsResult.data.filter(
+    (p) => p.user_forecast !== null
+  ).length;
 
   return (
     <CompetitionDashboard
@@ -155,9 +179,11 @@ export default async function Page({
       stats={statsResult.data}
       upcomingDeadlines={deadlinesResult.data}
       scores={scoresResult.data}
+      categories={categoriesResult.data}
       isAdmin={isAdmin}
       currentUserId={user.id}
       props={propsWithForecastsResult.data}
+      userForecastCount={userForecastCount}
     />
   );
 }

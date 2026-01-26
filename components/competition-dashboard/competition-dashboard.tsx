@@ -9,9 +9,10 @@ import { UpcomingDeadlines } from "./upcoming-deadlines";
 import { LeaderboardSidebar } from "./leaderboard-sidebar";
 import { ForecastablePropsTable } from "@/components/forecastable-props-table";
 import { PropsTable } from "@/components/props/props-table";
+import Leaderboard from "@/components/scores/leaderboard";
 import type { CompetitionStats, UpcomingDeadline } from "@/lib/db_actions/competition-stats";
 import type { CompetitionScore } from "@/lib/db_actions";
-import type { PropWithUserForecast } from "@/types/db_types";
+import type { Category, PropWithUserForecast } from "@/types/db_types";
 
 interface CompetitionDashboardProps {
   competitionId: number;
@@ -20,10 +21,12 @@ interface CompetitionDashboardProps {
   stats: CompetitionStats;
   upcomingDeadlines: UpcomingDeadline[];
   scores: CompetitionScore;
+  categories: Category[];
   isAdmin: boolean;
   currentUserId: number;
   props: PropWithUserForecast[];
   memberCount?: number; // Only for private competitions
+  userForecastCount: number;
 }
 
 export function CompetitionDashboard({
@@ -33,10 +36,12 @@ export function CompetitionDashboard({
   stats,
   upcomingDeadlines,
   scores,
+  categories,
   isAdmin,
   currentUserId,
   props,
   memberCount,
+  userForecastCount,
 }: CompetitionDashboardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -206,12 +211,13 @@ export function CompetitionDashboard({
               />
             )}
             {activeTab === "leaderboard" && (
-              <div className="max-w-md">
-                <LeaderboardSidebar
+              <div className="max-w-3xl">
+                <Leaderboard
                   scores={scores}
+                  categories={categories}
                   competitionId={competitionId}
                   currentUserId={currentUserId}
-                  maxEntries={100}
+                  userForecastCount={userForecastCount}
                 />
               </div>
             )}
