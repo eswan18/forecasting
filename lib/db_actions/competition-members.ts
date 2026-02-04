@@ -200,7 +200,7 @@ export async function removeCompetitionMember({
     });
 
     revalidatePath(`/competitions/${competitionId}`);
-    revalidatePath(`/competitions/${competitionId}/members`);
+
     return success(undefined);
   } catch (err) {
     const errMessage = (err as Error).message;
@@ -316,7 +316,7 @@ export async function updateMemberRole({
     });
 
     revalidatePath(`/competitions/${competitionId}`);
-    revalidatePath(`/competitions/${competitionId}/members`);
+
     return success(undefined);
   } catch (err) {
     const errMessage = (err as Error).message;
