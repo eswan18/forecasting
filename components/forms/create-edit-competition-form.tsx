@@ -25,88 +25,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import type { Competition } from "@/types/db_types";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import DatePicker from "../ui/date-picker";
+import { competitionFormSchema } from "./competition-form-schema";
 
 type EditableCompetition = Pick<
   Competition,
   "id" | "name" | "is_private" | "forecasts_open_date" | "forecasts_close_date" | "end_date"
 >;
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import DatePicker from "../ui/date-picker";
-
-const formSchema = z
-  .object({
-    name: z.string().min(8).max(1000),
-    is_private: z.boolean(),
-    forecasts_open_date: z.date().optional(),
-    forecasts_close_date: z.date().optional(),
-    end_date: z.date().optional(),
-  })
-  .superRefine((values, ctx) => {
-    const {
-      is_private,
-      forecasts_open_date,
-      forecasts_close_date,
-      end_date,
-    } = values;
-
-    // Private competitions don't require dates (deadlines are per-prop)
-    if (is_private) {
-      return;
-    }
-
-    // Public competitions require all dates
-    if (!forecasts_open_date) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Open date is required for public competitions",
-        path: ["forecasts_open_date"],
-      });
-    }
-    if (!forecasts_close_date) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Close date is required for public competitions",
-        path: ["forecasts_close_date"],
-      });
-    }
-    if (!end_date) {
-      ctx.addIssue({
-        code: "custom",
-        message: "End date is required for public competitions",
-        path: ["end_date"],
-      });
-    }
-
-    // Only validate ordering if all dates are present
-    if (forecasts_open_date && forecasts_close_date && end_date) {
-      if (forecasts_open_date >= forecasts_close_date) {
-        ctx.addIssue({
-          code: "custom",
-          message: "Open date must be before close date",
-          path: ["forecasts_open_date"],
-        });
-        ctx.addIssue({
-          code: "custom",
-          message: "Close date must be after open date",
-          path: ["forecasts_close_date"],
-        });
-      }
-
-      if (forecasts_close_date >= end_date) {
-        ctx.addIssue({
-          code: "custom",
-          message: "Close date must be before end date",
-          path: ["forecasts_close_date"],
-        });
-        ctx.addIssue({
-          code: "custom",
-          message: "End date must be after close date",
-          path: ["end_date"],
-        });
-      }
-    }
-  });
 
 /*
  * Form for creating or editing a competition..
@@ -119,8 +46,8 @@ export function CreateEditCompetitionForm({
   initialCompetition?: EditableCompetition;
   onSubmit?: () => void;
 }) {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof competitionFormSchema>>({
+    resolver: zodResolver(competitionFormSchema),
     defaultValues: {
       name: initialCompetition?.name || "",
       is_private: initialCompetition?.is_private ?? false,
@@ -156,7 +83,7 @@ export function CreateEditCompetitionForm({
     createCompetitionAction.isLoading || updateCompetitionAction.isLoading;
   const error = createCompetitionAction.error || updateCompetitionAction.error;
 
-  async function handleSubmit(values: z.infer<typeof formSchema>) {
+  async function handleSubmit(values: z.infer<typeof competitionFormSchema>) {
     // Build the competition object explicitly to ensure proper values
     const competition = {
       name: values.name,
