@@ -489,53 +489,58 @@ export async function addCompetitionMemberById({
       return error("You must be logged in", ERROR_CODES.UNAUTHORIZED);
     }
 
+    // Check if current user is an admin of this competition
+    const currentUserMembership = await db
+      .selectFrom("competition_members")
+      .select("role")
+      .where("competition_id", "=", competitionId)
+      .where("user_id", "=", currentUser.id)
+      .executeTakeFirst();
+
+    if (currentUserMembership?.role !== "admin") {
+      return error(
+        "Only competition admins can add members",
+        ERROR_CODES.UNAUTHORIZED,
+      );
+    }
+
+    // Verify the target user exists and is active
+    const userToAdd = await db
+      .selectFrom("users")
+      .select("id")
+      .where("id", "=", userId)
+      .where("deactivated_at", "is", null)
+      .executeTakeFirst();
+
+    if (!userToAdd) {
+      return error(
+        "No active user found with that ID",
+        ERROR_CODES.NOT_FOUND,
+      );
+    }
+
+    // Check if user is already a member
+    const existingMembership = await db
+      .selectFrom("competition_members")
+      .select("id")
+      .where("competition_id", "=", competitionId)
+      .where("user_id", "=", userId)
+      .executeTakeFirst();
+
+    if (existingMembership) {
+      return error(
+        "User is already a member of this competition",
+        ERROR_CODES.VALIDATION_ERROR,
+      );
+    }
+
+    const newMember: NewCompetitionMember = {
+      competition_id: competitionId,
+      user_id: userId,
+      role,
+    };
+
     const inserted = await withRLS(currentUser.id, async (trx) => {
-      // Check if current user is an admin of this competition
-      const currentUserMembership = await trx
-        .selectFrom("competition_members")
-        .select("role")
-        .where("competition_id", "=", competitionId)
-        .where("user_id", "=", currentUser.id)
-        .executeTakeFirst();
-
-      if (currentUserMembership?.role !== "admin") {
-        throw new Error(
-          "UNAUTHORIZED: Only competition admins can add members",
-        );
-      }
-
-      // Verify the target user exists and is active
-      const userToAdd = await trx
-        .selectFrom("users")
-        .select("id")
-        .where("id", "=", userId)
-        .where("deactivated_at", "is", null)
-        .executeTakeFirst();
-
-      if (!userToAdd) {
-        throw new Error("NOT_FOUND: No active user found with that ID");
-      }
-
-      // Check if user is already a member
-      const existingMembership = await trx
-        .selectFrom("competition_members")
-        .select("id")
-        .where("competition_id", "=", competitionId)
-        .where("user_id", "=", userId)
-        .executeTakeFirst();
-
-      if (existingMembership) {
-        throw new Error(
-          "VALIDATION: User is already a member of this competition",
-        );
-      }
-
-      const newMember: NewCompetitionMember = {
-        competition_id: competitionId,
-        user_id: userId,
-        role,
-      };
-
       return trx
         .insertInto("competition_members")
         .values(newMember)
@@ -554,31 +559,9 @@ export async function addCompetitionMemberById({
     });
 
     revalidatePath(`/competitions/${competitionId}`);
-    revalidatePath(`/competitions/${competitionId}/members`);
     return success(inserted);
   } catch (err) {
     const duration = Date.now() - startTime;
-    const errorMessage = (err as Error).message;
-
-    if (errorMessage.startsWith("UNAUTHORIZED:")) {
-      return error(
-        errorMessage.replace("UNAUTHORIZED: ", ""),
-        ERROR_CODES.UNAUTHORIZED,
-      );
-    }
-    if (errorMessage.startsWith("NOT_FOUND:")) {
-      return error(
-        errorMessage.replace("NOT_FOUND: ", ""),
-        ERROR_CODES.NOT_FOUND,
-      );
-    }
-    if (errorMessage.startsWith("VALIDATION:")) {
-      return error(
-        errorMessage.replace("VALIDATION: ", ""),
-        ERROR_CODES.VALIDATION_ERROR,
-      );
-    }
-
     logger.error("Failed to add competition member by ID", err as Error, {
       operation: "addCompetitionMemberById",
       table: "competition_members",
