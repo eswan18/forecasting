@@ -138,8 +138,8 @@ export function CompetitionDashboard({
 
   useEffect(() => {
     if (activeTab !== "members" || !isPrivate) return;
-    setMembersError(null);
     startLoadingMembers(async () => {
+      setMembersError(null);
       const result = await getCompetitionMembers(competitionId);
       if (result.success) {
         setMembers(result.data);

@@ -145,7 +145,7 @@ export async function removeCompetitionMember({
       return error("You must be logged in", ERROR_CODES.UNAUTHORIZED);
     }
 
-    const result = await withRLS(currentUser.id, async (trx) => {
+    await withRLS(currentUser.id, async (trx) => {
       // Check if current user is an admin of this competition
       const currentUserMembership = await trx
         .selectFrom("competition_members")
@@ -186,8 +186,6 @@ export async function removeCompetitionMember({
       if (Number(deleteResult.numDeletedRows) === 0) {
         throw new Error("NOT_FOUND: Member not found in this competition");
       }
-
-      return deleteResult;
     });
 
     const duration = Date.now() - startTime;

@@ -73,8 +73,8 @@ export function InviteMemberDialog({
   // Load eligible users when the dialog opens
   useEffect(() => {
     if (!isOpen) return;
-    setEligibleUsersError(null);
     startLoadingUsers(async () => {
+      setEligibleUsersError(null);
       const result = await getEligibleMembers(competitionId);
       if (result.success) {
         setEligibleUsers(result.data);
