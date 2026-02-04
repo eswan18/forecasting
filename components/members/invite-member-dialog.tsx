@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Check, ChevronsUpDown } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,14 +12,38 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { useServerAction } from "@/hooks/use-server-action";
 import {
-  addCompetitionMember,
+  addCompetitionMemberById,
+  getEligibleMembers,
   type CompetitionRole,
 } from "@/lib/db_actions/competition-members";
+
+interface EligibleUser {
+  id: number;
+  name: string;
+  username: string | null;
+}
+
+function formatUserLabel(user: EligibleUser): string {
+  return user.username ? `${user.name} (${user.username})` : user.name;
+}
 
 interface InviteMemberDialogProps {
   competitionId: number;
@@ -31,40 +56,60 @@ export function InviteMemberDialog({
   isOpen,
   onClose,
 }: InviteMemberDialogProps) {
-  const [email, setEmail] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [role, setRole] = useState<CompetitionRole>("forecaster");
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [eligibleUsers, setEligibleUsers] = useState<EligibleUser[] | null>(
+    null,
+  );
+  const [isLoadingUsers, startLoadingUsers] = useTransition();
   const router = useRouter();
+
+  // Load eligible users when the dialog opens
+  useEffect(() => {
+    if (!isOpen) return;
+    startLoadingUsers(async () => {
+      const result = await getEligibleMembers(competitionId);
+      if (result.success) {
+        setEligibleUsers(result.data);
+      }
+    });
+  }, [isOpen, competitionId]);
 
   const handleSuccess = () => {
     router.refresh();
-    setEmail("");
+    setSelectedUserId(null);
     setRole("forecaster");
+    setEligibleUsers(null);
     onClose();
   };
 
-  const addMemberAction = useServerAction(addCompetitionMember, {
+  const addMemberAction = useServerAction(addCompetitionMemberById, {
     successMessage: "Member added successfully",
     onSuccess: handleSuccess,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    if (selectedUserId === null) return;
 
     await addMemberAction.execute({
       competitionId,
-      userEmail: email.trim(),
+      userId: selectedUserId,
       role,
     });
   };
 
   const handleClose = () => {
     if (!addMemberAction.isLoading) {
-      setEmail("");
+      setSelectedUserId(null);
       setRole("forecaster");
+      setPopoverOpen(false);
       onClose();
     }
   };
+
+  const selectedUser = eligibleUsers?.find((u) => u.id === selectedUserId);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -73,27 +118,71 @@ export function InviteMemberDialog({
           <DialogHeader>
             <DialogTitle>Add Member</DialogTitle>
             <DialogDescription>
-              Add a new member to this competition by their email address.
+              Search for a user to add to this competition.
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">
-                Email Address
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="user@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={addMemberAction.isLoading}
-                required
-              />
-              <p className="text-xs text-muted-foreground">
-                The user must already have an account in the system.
-              </p>
+              <Label className="text-sm font-medium">User</Label>
+              <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={popoverOpen}
+                    className="w-full justify-between font-normal"
+                    disabled={addMemberAction.isLoading}
+                  >
+                    {selectedUser
+                      ? formatUserLabel(selectedUser)
+                      : "Select a user..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search by name or username..." />
+                    <CommandList>
+                      {isLoadingUsers ? (
+                        <div className="flex items-center justify-center py-6">
+                          <Spinner className="h-4 w-4" />
+                        </div>
+                      ) : (
+                        <>
+                          <CommandEmpty>No users found.</CommandEmpty>
+                          <CommandGroup>
+                            {(eligibleUsers ?? []).map((user) => (
+                              <CommandItem
+                                key={user.id}
+                                value={formatUserLabel(user)}
+                                onSelect={() => {
+                                  setSelectedUserId(
+                                    user.id === selectedUserId
+                                      ? null
+                                      : user.id,
+                                  );
+                                  setPopoverOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    selectedUserId === user.id
+                                      ? "opacity-100"
+                                      : "opacity-0",
+                                  )}
+                                />
+                                {formatUserLabel(user)}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </>
+                      )}
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="space-y-3">
@@ -152,7 +241,10 @@ export function InviteMemberDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={addMemberAction.isLoading}>
+            <Button
+              type="submit"
+              disabled={addMemberAction.isLoading || selectedUserId === null}
+            >
               {addMemberAction.isLoading && (
                 <Spinner className="mr-2 h-4 w-4" />
               )}

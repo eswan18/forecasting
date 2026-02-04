@@ -517,3 +517,189 @@ export async function getMemberCount(
     return error("Failed to get member count", ERROR_CODES.DATABASE_ERROR);
   }
 }
+
+/**
+ * Get all active users who are NOT already members of a competition.
+ * Used for the searchable user picker in the invite dialog.
+ */
+export async function getEligibleMembers(
+  competitionId: number,
+): Promise<
+  ServerActionResult<{ id: number; name: string; username: string | null }[]>
+> {
+  const currentUser = await getUserFromCookies();
+  logger.debug("Getting eligible members", {
+    competitionId,
+    currentUserId: currentUser?.id,
+  });
+
+  const startTime = Date.now();
+  try {
+    if (!currentUser) {
+      return error("You must be logged in", ERROR_CODES.UNAUTHORIZED);
+    }
+
+    const users = await withRLS(currentUser.id, async (trx) => {
+      // Get IDs of existing members
+      const existingMemberIds = trx
+        .selectFrom("competition_members")
+        .select("user_id")
+        .where("competition_id", "=", competitionId);
+
+      return trx
+        .selectFrom("users")
+        .select(["id", "name", "username"])
+        .where("deactivated_at", "is", null)
+        .where("id", "not in", existingMemberIds)
+        .orderBy("name", "asc")
+        .execute();
+    });
+
+    const duration = Date.now() - startTime;
+    logger.debug(`Retrieved ${users.length} eligible members`, {
+      operation: "getEligibleMembers",
+      table: "users",
+      competitionId,
+      duration,
+    });
+
+    return success(users);
+  } catch (err) {
+    const duration = Date.now() - startTime;
+    logger.error("Failed to get eligible members", err as Error, {
+      operation: "getEligibleMembers",
+      table: "users",
+      competitionId,
+      duration,
+    });
+    return error("Failed to fetch eligible users", ERROR_CODES.DATABASE_ERROR);
+  }
+}
+
+/**
+ * Add a member to a competition by user ID.
+ * Only competition admins can add members.
+ */
+export async function addCompetitionMemberById({
+  competitionId,
+  userId,
+  role,
+}: {
+  competitionId: number;
+  userId: number;
+  role: CompetitionRole;
+}): Promise<ServerActionResult<CompetitionMember>> {
+  const currentUser = await getUserFromCookies();
+  logger.debug("Adding competition member by ID", {
+    competitionId,
+    userId,
+    role,
+    currentUserId: currentUser?.id,
+  });
+
+  const startTime = Date.now();
+  try {
+    if (!currentUser) {
+      return error("You must be logged in", ERROR_CODES.UNAUTHORIZED);
+    }
+
+    const inserted = await withRLS(currentUser.id, async (trx) => {
+      // Check if current user is an admin of this competition
+      const currentUserMembership = await trx
+        .selectFrom("competition_members")
+        .select("role")
+        .where("competition_id", "=", competitionId)
+        .where("user_id", "=", currentUser.id)
+        .executeTakeFirst();
+
+      if (currentUserMembership?.role !== "admin") {
+        throw new Error(
+          "UNAUTHORIZED: Only competition admins can add members",
+        );
+      }
+
+      // Verify the target user exists and is active
+      const userToAdd = await trx
+        .selectFrom("users")
+        .select("id")
+        .where("id", "=", userId)
+        .where("deactivated_at", "is", null)
+        .executeTakeFirst();
+
+      if (!userToAdd) {
+        throw new Error("NOT_FOUND: No active user found with that ID");
+      }
+
+      // Check if user is already a member
+      const existingMembership = await trx
+        .selectFrom("competition_members")
+        .select("id")
+        .where("competition_id", "=", competitionId)
+        .where("user_id", "=", userId)
+        .executeTakeFirst();
+
+      if (existingMembership) {
+        throw new Error(
+          "VALIDATION: User is already a member of this competition",
+        );
+      }
+
+      const newMember: NewCompetitionMember = {
+        competition_id: competitionId,
+        user_id: userId,
+        role,
+      };
+
+      return trx
+        .insertInto("competition_members")
+        .values(newMember)
+        .returningAll()
+        .executeTakeFirstOrThrow();
+    });
+
+    const duration = Date.now() - startTime;
+    logger.info("Competition member added successfully", {
+      operation: "addCompetitionMemberById",
+      table: "competition_members",
+      competitionId,
+      addedUserId: inserted.user_id,
+      role,
+      duration,
+    });
+
+    revalidatePath(`/competitions/${competitionId}`);
+    revalidatePath(`/competitions/${competitionId}/members`);
+    return success(inserted);
+  } catch (err) {
+    const duration = Date.now() - startTime;
+    const errorMessage = (err as Error).message;
+
+    if (errorMessage.startsWith("UNAUTHORIZED:")) {
+      return error(
+        errorMessage.replace("UNAUTHORIZED: ", ""),
+        ERROR_CODES.UNAUTHORIZED,
+      );
+    }
+    if (errorMessage.startsWith("NOT_FOUND:")) {
+      return error(
+        errorMessage.replace("NOT_FOUND: ", ""),
+        ERROR_CODES.NOT_FOUND,
+      );
+    }
+    if (errorMessage.startsWith("VALIDATION:")) {
+      return error(
+        errorMessage.replace("VALIDATION: ", ""),
+        ERROR_CODES.VALIDATION_ERROR,
+      );
+    }
+
+    logger.error("Failed to add competition member by ID", err as Error, {
+      operation: "addCompetitionMemberById",
+      table: "competition_members",
+      competitionId,
+      userId,
+      duration,
+    });
+    return error("Failed to add member", ERROR_CODES.DATABASE_ERROR);
+  }
+}
