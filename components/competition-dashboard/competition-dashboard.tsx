@@ -128,6 +128,7 @@ export function CompetitionDashboard({
 
   // Members tab state — fetch members when the tab is active
   const [members, setMembers] = useState<VCompetitionMember[] | null>(null);
+  const [membersError, setMembersError] = useState<string | null>(null);
   const [isLoadingMembers, startLoadingMembers] = useTransition();
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [membersRefreshKey, setMembersRefreshKey] = useState(0);
@@ -137,10 +138,13 @@ export function CompetitionDashboard({
 
   useEffect(() => {
     if (activeTab !== "members" || !isPrivate) return;
+    setMembersError(null);
     startLoadingMembers(async () => {
       const result = await getCompetitionMembers(competitionId);
       if (result.success) {
         setMembers(result.data);
+      } else {
+        setMembersError(result.error);
       }
     });
   }, [activeTab, isPrivate, competitionId, membersRefreshKey]);
@@ -258,7 +262,11 @@ export function CompetitionDashboard({
                     </Button>
                   </div>
                 )}
-                {isLoadingMembers || members === null ? (
+                {membersError ? (
+                  <div className="text-center py-12">
+                    <p className="text-sm text-destructive">{membersError}</p>
+                  </div>
+                ) : isLoadingMembers || members === null ? (
                   <div className="flex items-center justify-center py-12">
                     <Spinner className="h-6 w-6" />
                   </div>
