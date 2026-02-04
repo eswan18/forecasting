@@ -539,6 +539,23 @@ export async function getEligibleMembers(
       return error("You must be logged in", ERROR_CODES.UNAUTHORIZED);
     }
 
+    // Only competition admins (or system admins) can view eligible members
+    if (!currentUser.is_admin) {
+      const membership = await db
+        .selectFrom("competition_members")
+        .select("role")
+        .where("competition_id", "=", competitionId)
+        .where("user_id", "=", currentUser.id)
+        .executeTakeFirst();
+
+      if (membership?.role !== "admin") {
+        return error(
+          "Only competition admins can view eligible members",
+          ERROR_CODES.UNAUTHORIZED,
+        );
+      }
+    }
+
     const users = await withRLS(currentUser.id, async (trx) => {
       // Get IDs of existing members
       const existingMemberIds = trx
