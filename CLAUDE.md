@@ -31,6 +31,7 @@ This is a Next.js forecasting application inspired by Philip Tetlock's Good Judg
 **Testing Setup:**
 
 - Unit tests use Vitest with Node.js environment
+- **Gotcha**: Importing components that transitively import `lib/database.ts` will fail in unit tests (requires `DATABASE_URL`). Extract pure logic (e.g., Zod schemas) into separate files for testability.
 - Testcontainers integration available for database testing with real PostgreSQL instances
 - Test files: `**/*.{test,spec}.{ts,tsx}`
 - Coverage provided by V8 with HTML/JSON/text reports
@@ -49,12 +50,16 @@ This is a Next.js forecasting application inspired by Philip Tetlock's Good Judg
 - **Database**: PostgreSQL with Kysely query builder
 - **Connection**: `/lib/database.ts` exports `db` instance
 - **Types**: `/types/db_types.ts` contains all database types and table definitions
-- **Tables**: users, forecasts, props, competitions, categories, resolutions, feature_flags
+- **Tables**: users, forecasts, props, competitions, categories, resolutions, feature_flags, competition_members (roles: `admin`/`forecaster`)
 - **Views**: Prefixed with `v_` (e.g., `v_forecasts`, `v_props`) for complex queries with joins
 
 ### Server Actions Pattern
 
 This codebase follows a structured server action pattern that returns results instead of throwing errors. **See `/docs/server-actions-best-practices.md` for complete documentation and examples.**
+
+- Server actions return `ServerActionResult<T>` — either `success(data)` or `error(message, code)`
+- Use `withRLS(userId, async (trx) => ...)` from `/lib/db-helpers.ts` for queries needing Row Level Security
+- Client components consume server actions via the `useServerAction` hook from `/hooks/use-server-action.ts`
 
 ### Authentication & Authorization
 
