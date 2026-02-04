@@ -200,36 +200,39 @@ export function CreateEditCompetitionForm({
                   {...field}
                   className="h-11"
                   placeholder="Enter competition name"
+                  autoComplete="off"
                 />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="is_private"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-sm font-medium flex items-center gap-2">
-                  <Lock className="h-4 w-4" />
-                  Private Competition
-                </FormLabel>
-                <FormDescription className="text-xs">
-                  Only invited members can view and participate. Deadlines are
-                  set per-prop instead of competition-wide.
-                </FormDescription>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+        {!initialCompetition && (
+          <FormField
+            control={form.control}
+            name="is_private"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-sm font-medium flex items-center gap-2">
+                    <Lock className="h-4 w-4" />
+                    Private Competition
+                  </FormLabel>
+                  <FormDescription className="text-xs">
+                    Only invited members can view and participate. Deadlines are
+                    set per-prop instead of competition-wide.
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        )}
         {!isPrivate && (
           <div className="space-y-6">
             <FormField

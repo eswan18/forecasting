@@ -184,6 +184,11 @@ export async function updateCompetition({
       }
     }
 
+    // Prevent changing is_private — conversions are not supported yet.
+    if ("is_private" in competition) {
+      delete (competition as Record<string, unknown>)["is_private"];
+    }
+
     // If any of the date fields are being changed, validate ordering using the
     // new values overlaid on the existing row.
     if (
