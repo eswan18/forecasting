@@ -64,16 +64,22 @@ export function InviteMemberDialog({
   const [eligibleUsers, setEligibleUsers] = useState<EligibleUser[] | null>(
     null,
   );
+  const [eligibleUsersError, setEligibleUsersError] = useState<string | null>(
+    null,
+  );
   const [isLoadingUsers, startLoadingUsers] = useTransition();
   const router = useRouter();
 
   // Load eligible users when the dialog opens
   useEffect(() => {
     if (!isOpen) return;
+    setEligibleUsersError(null);
     startLoadingUsers(async () => {
       const result = await getEligibleMembers(competitionId);
       if (result.success) {
         setEligibleUsers(result.data);
+      } else {
+        setEligibleUsersError(result.error);
       }
     });
   }, [isOpen, competitionId]);
@@ -147,7 +153,11 @@ export function InviteMemberDialog({
                   <Command>
                     <CommandInput placeholder="Search by name or username..." />
                     <CommandList>
-                      {isLoadingUsers ? (
+                      {eligibleUsersError ? (
+                        <div className="py-6 text-center text-sm text-destructive">
+                          {eligibleUsersError}
+                        </div>
+                      ) : isLoadingUsers ? (
                         <div className="flex items-center justify-center py-6">
                           <Spinner className="h-4 w-4" />
                         </div>
