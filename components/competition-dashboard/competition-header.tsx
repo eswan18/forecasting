@@ -18,7 +18,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CreateEditCompetitionForm } from "@/components/forms/create-edit-competition-form";
-import type { Competition } from "@/types/db_types";
 
 interface CompetitionHeaderProps {
   competitionId: number;
@@ -42,17 +41,13 @@ export function CompetitionHeader({
   const [editOpen, setEditOpen] = useState(false);
   const router = useRouter();
 
-  // Build a minimal Competition object for the edit form
-  const competitionForForm: Competition = {
+  const competitionForForm = {
     id: competitionId,
     name: competitionName,
     is_private: isPrivate,
     forecasts_open_date: null,
     forecasts_close_date: null,
     end_date: null,
-    created_by_user_id: null,
-    created_at: new Date(),
-    updated_at: new Date(),
   };
 
   return (

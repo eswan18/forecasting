@@ -24,7 +24,12 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Competition } from "@/types/db_types";
+import type { Competition } from "@/types/db_types";
+
+type EditableCompetition = Pick<
+  Competition,
+  "id" | "name" | "is_private" | "forecasts_open_date" | "forecasts_close_date" | "end_date"
+>;
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import DatePicker from "../ui/date-picker";
@@ -111,7 +116,7 @@ export function CreateEditCompetitionForm({
   initialCompetition,
   onSubmit,
 }: {
-  initialCompetition?: Competition;
+  initialCompetition?: EditableCompetition;
   onSubmit?: () => void;
 }) {
   const form = useForm<z.infer<typeof formSchema>>({
