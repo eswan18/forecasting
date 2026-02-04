@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { UserPlus } from "lucide-react";
 import { CompetitionHeader } from "./competition-header";
 import { CompetitionTabs, type DashboardTab } from "./competition-tabs";
 import { StatCards } from "./stat-cards";
@@ -10,9 +11,13 @@ import { LeaderboardSidebar } from "./leaderboard-sidebar";
 import { ForecastablePropsTable } from "@/components/forecastable-props-table";
 import { PropsTable } from "@/components/props/props-table";
 import Leaderboard from "@/components/scores/leaderboard";
+import { MembersTable, InviteMemberDialog } from "@/components/members";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { getCompetitionMembers } from "@/lib/db_actions/competition-members";
 import type { CompetitionStats, UpcomingDeadline } from "@/lib/db_actions/competition-stats";
 import type { CompetitionScore } from "@/lib/db_actions";
-import type { Category, PropWithUserForecast } from "@/types/db_types";
+import type { Category, PropWithUserForecast, VCompetitionMember } from "@/types/db_types";
 
 interface CompetitionDashboardProps {
   competitionId: number;
@@ -118,8 +123,27 @@ export function CompetitionDashboard({
   // Calculate forecaster count from scores for public competitions
   const forecasterCount = scores.overallScores?.length ?? 0;
 
-  // Show members tab only for private competitions where user is admin
-  const showMembersTab = isPrivate && isAdmin;
+  // Show members tab for all private competition members
+  const showMembersTab = isPrivate;
+
+  // Members tab state — fetch members when the tab is active
+  const [members, setMembers] = useState<VCompetitionMember[] | null>(null);
+  const [isLoadingMembers, startLoadingMembers] = useTransition();
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
+  const [membersRefreshKey, setMembersRefreshKey] = useState(0);
+  const refreshMembers = useCallback(() => {
+    setMembersRefreshKey((k) => k + 1);
+  }, []);
+
+  useEffect(() => {
+    if (activeTab !== "members" || !isPrivate) return;
+    startLoadingMembers(async () => {
+      const result = await getCompetitionMembers(competitionId);
+      if (result.success) {
+        setMembers(result.data);
+      }
+    });
+  }, [activeTab, isPrivate, competitionId, membersRefreshKey]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -222,16 +246,39 @@ export function CompetitionDashboard({
               </div>
             )}
             {activeTab === "members" && showMembersTab && (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground mb-4">
-                  View and manage competition members
-                </p>
-                <button
-                  onClick={() => router.push(`/competitions/${competitionId}/members`)}
-                  className="text-primary hover:underline"
-                >
-                  Go to Members Page →
-                </button>
+              <div className="max-w-3xl mx-auto space-y-6">
+                {isAdmin && (
+                  <div className="flex items-center justify-between">
+                    <p className="text-muted-foreground">
+                      Manage who has access to this competition.
+                    </p>
+                    <Button onClick={() => setShowInviteDialog(true)}>
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Add Member
+                    </Button>
+                  </div>
+                )}
+                {isLoadingMembers || members === null ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Spinner className="h-6 w-6" />
+                  </div>
+                ) : (
+                  <MembersTable
+                    members={members}
+                    competitionId={competitionId}
+                    currentUserId={currentUserId}
+                    isAdmin={isAdmin}
+                    onMemberChange={refreshMembers}
+                  />
+                )}
+                {isAdmin && (
+                  <InviteMemberDialog
+                    competitionId={competitionId}
+                    isOpen={showInviteDialog}
+                    onClose={() => setShowInviteDialog(false)}
+                    onMemberChange={refreshMembers}
+                  />
+                )}
               </div>
             )}
           </div>

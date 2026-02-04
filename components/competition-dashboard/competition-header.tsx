@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { MoreVertical, Plus, Settings, UserPlus, Users } from "lucide-react";
+import { MoreVertical, Plus, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +22,6 @@ interface CompetitionHeaderProps {
 }
 
 export function CompetitionHeader({
-  competitionId,
   competitionName,
   isPrivate,
   isAdmin,
@@ -71,28 +70,6 @@ export function CompetitionHeader({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {isPrivate && (
-                <>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href={`/competitions/${competitionId}/members`}
-                      className="flex items-center"
-                    >
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Invite Members
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href={`/competitions/${competitionId}/members`}
-                      className="flex items-center"
-                    >
-                      <Users className="h-4 w-4 mr-2" />
-                      Manage Members
-                    </Link>
-                  </DropdownMenuItem>
-                </>
-              )}
               <DropdownMenuItem asChild>
                 <Link
                   href={`/admin/competitions`}

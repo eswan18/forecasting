@@ -49,12 +49,14 @@ interface InviteMemberDialogProps {
   competitionId: number;
   isOpen: boolean;
   onClose: () => void;
+  onMemberChange?: () => void;
 }
 
 export function InviteMemberDialog({
   competitionId,
   isOpen,
   onClose,
+  onMemberChange,
 }: InviteMemberDialogProps) {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [role, setRole] = useState<CompetitionRole>("forecaster");
@@ -81,6 +83,7 @@ export function InviteMemberDialog({
     setSelectedUserId(null);
     setRole("forecaster");
     setEligibleUsers(null);
+    onMemberChange?.();
     onClose();
   };
 
