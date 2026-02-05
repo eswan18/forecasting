@@ -22,7 +22,7 @@ function validPrivate(overrides = {}) {
   };
 }
 
-function getFieldErrors(result: { error?: { issues: { path: (string | number)[]; message: string }[] } }) {
+function getFieldErrors(result: { error?: { issues: { path: PropertyKey[]; message: string }[] } }) {
   const map: Record<string, string[]> = {};
   for (const issue of result.error?.issues ?? []) {
     const key = issue.path.join(".");

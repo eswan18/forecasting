@@ -408,12 +408,14 @@ export async function getEligibleMembers(
 
     // Only competition admins (or system admins) can view eligible members
     if (!currentUser.is_admin) {
-      const membership = await db
-        .selectFrom("competition_members")
-        .select("role")
-        .where("competition_id", "=", competitionId)
-        .where("user_id", "=", currentUser.id)
-        .executeTakeFirst();
+      const membership = await withRLS(currentUser.id, async (trx) =>
+        trx
+          .selectFrom("competition_members")
+          .select("role")
+          .where("competition_id", "=", competitionId)
+          .where("user_id", "=", currentUser.id)
+          .executeTakeFirst(),
+      );
 
       if (membership?.role !== "admin") {
         return error(
@@ -487,28 +489,34 @@ export async function addCompetitionMemberById({
       return error("You must be logged in", ERROR_CODES.UNAUTHORIZED);
     }
 
-    // Check if current user is an admin of this competition
-    const currentUserMembership = await db
-      .selectFrom("competition_members")
-      .select("role")
-      .where("competition_id", "=", competitionId)
-      .where("user_id", "=", currentUser.id)
-      .executeTakeFirst();
-
-    if (currentUserMembership?.role !== "admin") {
-      return error(
-        "Only competition admins can add members",
-        ERROR_CODES.UNAUTHORIZED,
+    // Only competition admins (or system admins) can add members
+    if (!currentUser.is_admin) {
+      const currentUserMembership = await withRLS(currentUser.id, async (trx) =>
+        trx
+          .selectFrom("competition_members")
+          .select("role")
+          .where("competition_id", "=", competitionId)
+          .where("user_id", "=", currentUser.id)
+          .executeTakeFirst(),
       );
+
+      if (currentUserMembership?.role !== "admin") {
+        return error(
+          "Only competition admins can add members",
+          ERROR_CODES.UNAUTHORIZED,
+        );
+      }
     }
 
     // Verify the target user exists and is active
-    const userToAdd = await db
-      .selectFrom("users")
-      .select("id")
-      .where("id", "=", userId)
-      .where("deactivated_at", "is", null)
-      .executeTakeFirst();
+    const userToAdd = await withRLS(currentUser.id, async (trx) =>
+      trx
+        .selectFrom("users")
+        .select("id")
+        .where("id", "=", userId)
+        .where("deactivated_at", "is", null)
+        .executeTakeFirst(),
+    );
 
     if (!userToAdd) {
       return error(
@@ -518,12 +526,14 @@ export async function addCompetitionMemberById({
     }
 
     // Check if user is already a member
-    const existingMembership = await db
-      .selectFrom("competition_members")
-      .select("id")
-      .where("competition_id", "=", competitionId)
-      .where("user_id", "=", userId)
-      .executeTakeFirst();
+    const existingMembership = await withRLS(currentUser.id, async (trx) =>
+      trx
+        .selectFrom("competition_members")
+        .select("id")
+        .where("competition_id", "=", competitionId)
+        .where("user_id", "=", userId)
+        .executeTakeFirst(),
+    );
 
     if (existingMembership) {
       return error(
