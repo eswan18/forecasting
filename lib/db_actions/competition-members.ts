@@ -1,10 +1,8 @@
 "use server";
 
-import { db } from "@/lib/database";
-import { withRLS } from "@/lib/db-helpers";
+import { withRLS, withRLSAction } from "@/lib/db-helpers";
 import {
   CompetitionMember,
-  NewCompetitionMember,
   VCompetitionMember,
 } from "@/types/db_types";
 import { getUserFromCookies } from "../get-user";
@@ -145,7 +143,7 @@ export async function removeCompetitionMember({
       return error("You must be logged in", ERROR_CODES.UNAUTHORIZED);
     }
 
-    await withRLS(currentUser.id, async (trx) => {
+    const result = await withRLSAction(currentUser.id, async (trx) => {
       // Check if current user is an admin of this competition
       const currentUserMembership = await trx
         .selectFrom("competition_members")
@@ -160,7 +158,10 @@ export async function removeCompetitionMember({
           currentUserId: currentUser.id,
           currentRole: currentUserMembership?.role,
         });
-        throw new Error("UNAUTHORIZED: Only competition admins can remove members");
+        return error(
+          "Only competition admins can remove members",
+          ERROR_CODES.UNAUTHORIZED,
+        );
       }
 
       // If removing self, check that they're not the last admin
@@ -173,7 +174,10 @@ export async function removeCompetitionMember({
           .executeTakeFirst();
 
         if (Number(adminCount?.count) <= 1) {
-          throw new Error("VALIDATION: Cannot remove the last admin from a competition");
+          return error(
+            "Cannot remove the last admin from a competition",
+            ERROR_CODES.VALIDATION_ERROR,
+          );
         }
       }
 
@@ -184,33 +188,29 @@ export async function removeCompetitionMember({
         .executeTakeFirst();
 
       if (Number(deleteResult.numDeletedRows) === 0) {
-        throw new Error("NOT_FOUND: Member not found in this competition");
+        return error(
+          "Member not found in this competition",
+          ERROR_CODES.NOT_FOUND,
+        );
       }
+
+      return success(undefined);
     });
 
-    const duration = Date.now() - startTime;
-    logger.info("Competition member removed successfully", {
-      operation: "removeCompetitionMember",
-      table: "competition_members",
-      competitionId,
-      removedUserId: userId,
-      duration,
-    });
+    if (result.success) {
+      const duration = Date.now() - startTime;
+      logger.info("Competition member removed successfully", {
+        operation: "removeCompetitionMember",
+        table: "competition_members",
+        competitionId,
+        removedUserId: userId,
+        duration,
+      });
+      revalidatePath(`/competitions/${competitionId}`);
+    }
 
-    revalidatePath(`/competitions/${competitionId}`);
-
-    return success(undefined);
+    return result;
   } catch (err) {
-    const errMessage = (err as Error).message;
-    if (errMessage.startsWith("UNAUTHORIZED:")) {
-      return error(errMessage.replace("UNAUTHORIZED: ", ""), ERROR_CODES.UNAUTHORIZED);
-    }
-    if (errMessage.startsWith("VALIDATION:")) {
-      return error(errMessage.replace("VALIDATION: ", ""), ERROR_CODES.VALIDATION_ERROR);
-    }
-    if (errMessage.startsWith("NOT_FOUND:")) {
-      return error(errMessage.replace("NOT_FOUND: ", ""), ERROR_CODES.NOT_FOUND);
-    }
     const duration = Date.now() - startTime;
     logger.error("Failed to remove competition member", err as Error, {
       operation: "removeCompetitionMember",
@@ -251,7 +251,7 @@ export async function updateMemberRole({
       return error("You must be logged in", ERROR_CODES.UNAUTHORIZED);
     }
 
-    await withRLS(currentUser.id, async (trx) => {
+    const result = await withRLSAction(currentUser.id, async (trx) => {
       // Check if current user is an admin of this competition
       const currentUserMembership = await trx
         .selectFrom("competition_members")
@@ -266,7 +266,10 @@ export async function updateMemberRole({
           currentUserId: currentUser.id,
           currentRole: currentUserMembership?.role,
         });
-        throw new Error("UNAUTHORIZED: Only competition admins can update roles");
+        return error(
+          "Only competition admins can update roles",
+          ERROR_CODES.UNAUTHORIZED,
+        );
       }
 
       // Get the member's current role
@@ -278,7 +281,10 @@ export async function updateMemberRole({
         .executeTakeFirst();
 
       if (!targetMembership) {
-        throw new Error("NOT_FOUND: Member not found in this competition");
+        return error(
+          "Member not found in this competition",
+          ERROR_CODES.NOT_FOUND,
+        );
       }
 
       // If demoting an admin, check that they're not the last admin
@@ -291,7 +297,10 @@ export async function updateMemberRole({
           .executeTakeFirst();
 
         if (Number(adminCount?.count) <= 1) {
-          throw new Error("VALIDATION: Cannot demote the last admin");
+          return error(
+            "Cannot demote the last admin",
+            ERROR_CODES.VALIDATION_ERROR,
+          );
         }
       }
 
@@ -301,32 +310,25 @@ export async function updateMemberRole({
         .where("competition_id", "=", competitionId)
         .where("user_id", "=", userId)
         .execute();
+
+      return success(undefined);
     });
 
-    const duration = Date.now() - startTime;
-    logger.info("Competition member role updated successfully", {
-      operation: "updateMemberRole",
-      table: "competition_members",
-      competitionId,
-      userId,
-      newRole,
-      duration,
-    });
+    if (result.success) {
+      const duration = Date.now() - startTime;
+      logger.info("Competition member role updated successfully", {
+        operation: "updateMemberRole",
+        table: "competition_members",
+        competitionId,
+        userId,
+        newRole,
+        duration,
+      });
+      revalidatePath(`/competitions/${competitionId}`);
+    }
 
-    revalidatePath(`/competitions/${competitionId}`);
-
-    return success(undefined);
+    return result;
   } catch (err) {
-    const errMessage = (err as Error).message;
-    if (errMessage.startsWith("UNAUTHORIZED:")) {
-      return error(errMessage.replace("UNAUTHORIZED: ", ""), ERROR_CODES.UNAUTHORIZED);
-    }
-    if (errMessage.startsWith("VALIDATION:")) {
-      return error(errMessage.replace("VALIDATION: ", ""), ERROR_CODES.VALIDATION_ERROR);
-    }
-    if (errMessage.startsWith("NOT_FOUND:")) {
-      return error(errMessage.replace("NOT_FOUND: ", ""), ERROR_CODES.NOT_FOUND);
-    }
     const duration = Date.now() - startTime;
     logger.error("Failed to update member role", err as Error, {
       operation: "updateMemberRole",
@@ -406,50 +408,52 @@ export async function getEligibleMembers(
       return error("You must be logged in", ERROR_CODES.UNAUTHORIZED);
     }
 
-    // Only competition admins (or system admins) can view eligible members
-    if (!currentUser.is_admin) {
-      const membership = await withRLS(currentUser.id, async (trx) =>
-        trx
+    const result = await withRLSAction(currentUser.id, async (trx) => {
+      // Only competition admins (or system admins) can view eligible members
+      if (!currentUser.is_admin) {
+        const membership = await trx
           .selectFrom("competition_members")
           .select("role")
           .where("competition_id", "=", competitionId)
           .where("user_id", "=", currentUser.id)
-          .executeTakeFirst(),
-      );
+          .executeTakeFirst();
 
-      if (membership?.role !== "admin") {
-        return error(
-          "Only competition admins can view eligible members",
-          ERROR_CODES.UNAUTHORIZED,
-        );
+        if (membership?.role !== "admin") {
+          return error(
+            "Only competition admins can view eligible members",
+            ERROR_CODES.UNAUTHORIZED,
+          );
+        }
       }
-    }
 
-    const users = await withRLS(currentUser.id, async (trx) => {
       // Get IDs of existing members
       const existingMemberIds = trx
         .selectFrom("competition_members")
         .select("user_id")
         .where("competition_id", "=", competitionId);
 
-      return trx
+      const users = await trx
         .selectFrom("users")
         .select(["id", "name", "username"])
         .where("deactivated_at", "is", null)
         .where("id", "not in", existingMemberIds)
         .orderBy("name", "asc")
         .execute();
+
+      return success(users);
     });
 
-    const duration = Date.now() - startTime;
-    logger.debug(`Retrieved ${users.length} eligible members`, {
-      operation: "getEligibleMembers",
-      table: "users",
-      competitionId,
-      duration,
-    });
+    if (result.success) {
+      const duration = Date.now() - startTime;
+      logger.debug(`Retrieved ${result.data.length} eligible members`, {
+        operation: "getEligibleMembers",
+        table: "users",
+        competitionId,
+        duration,
+      });
+    }
 
-    return success(users);
+    return result;
   } catch (err) {
     const duration = Date.now() - startTime;
     logger.error("Failed to get eligible members", err as Error, {
@@ -489,85 +493,81 @@ export async function addCompetitionMemberById({
       return error("You must be logged in", ERROR_CODES.UNAUTHORIZED);
     }
 
-    // Only competition admins (or system admins) can add members
-    if (!currentUser.is_admin) {
-      const currentUserMembership = await withRLS(currentUser.id, async (trx) =>
-        trx
+    const result = await withRLSAction(currentUser.id, async (trx) => {
+      // Only competition admins (or system admins) can add members
+      if (!currentUser.is_admin) {
+        const currentUserMembership = await trx
           .selectFrom("competition_members")
           .select("role")
           .where("competition_id", "=", competitionId)
           .where("user_id", "=", currentUser.id)
-          .executeTakeFirst(),
-      );
+          .executeTakeFirst();
 
-      if (currentUserMembership?.role !== "admin") {
-        return error(
-          "Only competition admins can add members",
-          ERROR_CODES.UNAUTHORIZED,
-        );
+        if (currentUserMembership?.role !== "admin") {
+          return error(
+            "Only competition admins can add members",
+            ERROR_CODES.UNAUTHORIZED,
+          );
+        }
       }
-    }
 
-    // Verify the target user exists and is active
-    const userToAdd = await withRLS(currentUser.id, async (trx) =>
-      trx
+      // Verify the target user exists and is active
+      const userToAdd = await trx
         .selectFrom("users")
         .select("id")
         .where("id", "=", userId)
         .where("deactivated_at", "is", null)
-        .executeTakeFirst(),
-    );
+        .executeTakeFirst();
 
-    if (!userToAdd) {
-      return error(
-        "No active user found with that ID",
-        ERROR_CODES.NOT_FOUND,
-      );
-    }
+      if (!userToAdd) {
+        return error(
+          "No active user found with that ID",
+          ERROR_CODES.NOT_FOUND,
+        );
+      }
 
-    // Check if user is already a member
-    const existingMembership = await withRLS(currentUser.id, async (trx) =>
-      trx
+      // Check if user is already a member
+      const existingMembership = await trx
         .selectFrom("competition_members")
         .select("id")
         .where("competition_id", "=", competitionId)
         .where("user_id", "=", userId)
-        .executeTakeFirst(),
-    );
+        .executeTakeFirst();
 
-    if (existingMembership) {
-      return error(
-        "User is already a member of this competition",
-        ERROR_CODES.VALIDATION_ERROR,
-      );
-    }
+      if (existingMembership) {
+        return error(
+          "User is already a member of this competition",
+          ERROR_CODES.VALIDATION_ERROR,
+        );
+      }
 
-    const newMember: NewCompetitionMember = {
-      competition_id: competitionId,
-      user_id: userId,
-      role,
-    };
-
-    const inserted = await withRLS(currentUser.id, async (trx) => {
-      return trx
+      const inserted = await trx
         .insertInto("competition_members")
-        .values(newMember)
+        .values({
+          competition_id: competitionId,
+          user_id: userId,
+          role,
+        })
         .returningAll()
         .executeTakeFirstOrThrow();
+
+      return success(inserted);
     });
 
-    const duration = Date.now() - startTime;
-    logger.info("Competition member added successfully", {
-      operation: "addCompetitionMemberById",
-      table: "competition_members",
-      competitionId,
-      addedUserId: inserted.user_id,
-      role,
-      duration,
-    });
+    if (result.success) {
+      const duration = Date.now() - startTime;
+      logger.info("Competition member added successfully", {
+        operation: "addCompetitionMemberById",
+        table: "competition_members",
+        competitionId,
+        addedUserId: result.data.user_id,
+        role,
+        duration,
+      });
+      revalidatePath(`/competitions/${competitionId}`);
+    }
 
-    revalidatePath(`/competitions/${competitionId}`);
-    return success(inserted);
+    return result;
   } catch (err) {
     const duration = Date.now() - startTime;
     logger.error("Failed to add competition member by ID", err as Error, {

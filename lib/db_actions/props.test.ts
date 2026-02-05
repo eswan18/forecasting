@@ -9,6 +9,7 @@ vi.mock("@/lib/get-user", () => ({
 
 vi.mock("@/lib/db-helpers", () => ({
   withRLS: vi.fn(),
+  withRLSAction: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({
@@ -161,7 +162,7 @@ describe("Props Unit Tests", () => {
         execute: vi.fn().mockResolvedValue(undefined),
       };
 
-      vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+      vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
         return fn(mockTrx as any);
       });
 
@@ -186,7 +187,7 @@ describe("Props Unit Tests", () => {
         execute: vi.fn().mockResolvedValue(undefined),
       };
 
-      vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+      vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
         return fn(mockTrx as any);
       });
 
@@ -214,7 +215,7 @@ describe("Props Unit Tests", () => {
         execute: vi.fn().mockResolvedValue(undefined),
       };
 
-      vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+      vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
         return fn(mockTrx as any);
       });
 
@@ -323,7 +324,7 @@ describe("Props Unit Tests", () => {
           execute: vi.fn().mockResolvedValue(undefined),
         };
 
-        vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+        vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
           return fn(mockTrx as any);
         });
 
@@ -366,7 +367,7 @@ describe("Props Unit Tests", () => {
           }),
         };
 
-        vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+        vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
           return fn(mockTrx as any);
         });
 
@@ -409,7 +410,7 @@ describe("Props Unit Tests", () => {
           }),
         };
 
-        vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+        vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
           return fn(mockTrx as any);
         });
 
@@ -455,7 +456,7 @@ describe("Props Unit Tests", () => {
           execute: vi.fn().mockResolvedValue(undefined),
         };
 
-        vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+        vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
           return fn(mockTrx as any);
         });
 
@@ -486,7 +487,7 @@ describe("Props Unit Tests", () => {
           executeTakeFirst: vi.fn().mockResolvedValue(null), // competition not found
         };
 
-        vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+        vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
           return fn(mockTrx as any);
         });
 
@@ -579,7 +580,7 @@ describe("Props Unit Tests", () => {
         execute: vi.fn().mockResolvedValue(undefined),
       };
 
-      vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+      vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
         return fn(mockTrx as any);
       });
 
@@ -605,7 +606,7 @@ describe("Props Unit Tests", () => {
         executeTakeFirst: vi.fn().mockResolvedValue({ resolution: true }),
       };
 
-      vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+      vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
         return fn(mockTrx as any);
       });
 
@@ -638,7 +639,7 @@ describe("Props Unit Tests", () => {
         execute: vi.fn().mockResolvedValue(undefined),
       };
 
-      vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+      vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
         return fn(mockTrx as any);
       });
 

@@ -9,6 +9,7 @@ vi.mock("@/lib/get-user", () => ({
 
 vi.mock("@/lib/db-helpers", () => ({
   withRLS: vi.fn(),
+  withRLSAction: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({
@@ -46,7 +47,7 @@ describe("Forecasts Unit Tests", () => {
         executeTakeFirstOrThrow: vi.fn().mockResolvedValue({ id: 42 }),
       };
 
-      vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+      vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
         return fn(mockTrx as any);
       });
 
@@ -71,7 +72,7 @@ describe("Forecasts Unit Tests", () => {
           .mockResolvedValue({ competition_forecasts_close_date: pastDate }),
       };
 
-      vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+      vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
         return fn(mockTrx as any);
       });
 
@@ -101,7 +102,7 @@ describe("Forecasts Unit Tests", () => {
         executeTakeFirstOrThrow: vi.fn().mockResolvedValue({ id: 99 }),
       };
 
-      vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+      vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
         return fn(mockTrx as any);
       });
 
@@ -113,7 +114,7 @@ describe("Forecasts Unit Tests", () => {
     });
 
     it("should handle database errors gracefully", async () => {
-      vi.mocked(dbHelpers.withRLS).mockRejectedValue(
+      vi.mocked(dbHelpers.withRLSAction).mockRejectedValue(
         new Error("Database connection failed"),
       );
 
@@ -142,7 +143,7 @@ describe("Forecasts Unit Tests", () => {
         execute: vi.fn().mockResolvedValue(undefined),
       };
 
-      vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+      vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
         return fn(mockTrx as any);
       });
 
@@ -164,7 +165,7 @@ describe("Forecasts Unit Tests", () => {
         executeTakeFirst: vi.fn().mockResolvedValue(null),
       };
 
-      vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+      vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
         return fn(mockTrx as any);
       });
 
@@ -191,7 +192,7 @@ describe("Forecasts Unit Tests", () => {
           .mockResolvedValue({ competition_forecasts_close_date: pastDate }),
       };
 
-      vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+      vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
         return fn(mockTrx as any);
       });
 
@@ -219,7 +220,7 @@ describe("Forecasts Unit Tests", () => {
         expect(result.code).toBe("UNAUTHORIZED");
       }
       // Should not even call withRLS
-      expect(dbHelpers.withRLS).not.toHaveBeenCalled();
+      expect(dbHelpers.withRLSAction).not.toHaveBeenCalled();
     });
 
     it("should reject update with no forecast field", async () => {
@@ -232,7 +233,7 @@ describe("Forecasts Unit Tests", () => {
       if (!result.success) {
         expect(result.error).toBe("Unauthorized");
       }
-      expect(dbHelpers.withRLS).not.toHaveBeenCalled();
+      expect(dbHelpers.withRLSAction).not.toHaveBeenCalled();
     });
 
     it("should reject update with empty object", async () => {
@@ -248,7 +249,7 @@ describe("Forecasts Unit Tests", () => {
     });
 
     it("should handle database errors gracefully", async () => {
-      vi.mocked(dbHelpers.withRLS).mockRejectedValue(
+      vi.mocked(dbHelpers.withRLSAction).mockRejectedValue(
         new Error("Connection timeout"),
       );
 
