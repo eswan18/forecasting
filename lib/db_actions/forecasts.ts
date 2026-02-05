@@ -11,7 +11,7 @@ import {
   error,
   ERROR_CODES,
 } from "@/lib/server-action-result";
-import { withRLS } from "@/lib/db-helpers";
+import { withRLS, withRLSAction } from "@/lib/db-helpers";
 
 export type VForecastsOrderByExpression = OrderByExpression<
   Database,
@@ -120,7 +120,7 @@ export async function createForecast({
   const startTime = Date.now();
   try {
     // Check that the competition hasn't ended, then insert the record.
-    const id = await withRLS(currentUser?.id, async (trx) => {
+    const result = await withRLSAction(currentUser?.id, async (trx) => {
       const prop = await trx
         .selectFrom("v_props")
         .where("prop_id", "=", forecast.prop_id)
@@ -132,7 +132,10 @@ export async function createForecast({
           propId: forecast.prop_id,
           dueDate: closeDate.toISOString(),
         });
-        throw new Error("Cannot create forecasts past the due date");
+        return error(
+          "Cannot create forecasts past the due date",
+          ERROR_CODES.VALIDATION_ERROR,
+        );
       }
 
       const { id } = await trx
@@ -140,22 +143,25 @@ export async function createForecast({
         .values(forecast)
         .returning("id")
         .executeTakeFirstOrThrow();
-      return id;
+      return success(id);
     });
 
-    const duration = Date.now() - startTime;
-    logger.info("Forecast created successfully", {
-      operation: "createForecast",
-      table: "forecasts",
-      forecastId: id,
-      propId: forecast.prop_id,
-      userId: forecast.user_id,
-      duration,
-    });
+    if (result.success) {
+      const duration = Date.now() - startTime;
+      logger.info("Forecast created successfully", {
+        operation: "createForecast",
+        table: "forecasts",
+        forecastId: result.data,
+        propId: forecast.prop_id,
+        userId: forecast.user_id,
+        duration,
+      });
 
-    revalidatePath("/competitions");
-    revalidatePath("/standalone/forecasts");
-    return success(id);
+      revalidatePath("/competitions");
+      revalidatePath("/standalone/forecasts");
+    }
+
+    return result;
   } catch (err) {
     const duration = Date.now() - startTime;
     logger.error("Failed to create forecast", err as Error, {
@@ -165,13 +171,6 @@ export async function createForecast({
       userId: forecast.user_id,
       duration,
     });
-    // Check if it's the validation error we threw
-    if (
-      err instanceof Error &&
-      err.message === "Cannot create forecasts past the due date"
-    ) {
-      return error(err.message, ERROR_CODES.VALIDATION_ERROR);
-    }
     return error("Failed to create forecast", ERROR_CODES.DATABASE_ERROR);
   }
 }
@@ -203,7 +202,7 @@ export async function updateForecast({
     }
 
     // Check that the competition hasn't ended, then update the record.
-    await withRLS(currentUser?.id, async (trx) => {
+    const result = await withRLSAction(currentUser?.id, async (trx) => {
       // Check close date via v_forecasts (which joins with competition data)
       const forecastRecord = await trx
         .selectFrom("v_forecasts")
@@ -212,7 +211,7 @@ export async function updateForecast({
         .executeTakeFirst();
 
       if (!forecastRecord) {
-        throw new Error("Forecast not found");
+        return error("Forecast not found", ERROR_CODES.VALIDATION_ERROR);
       }
 
       const closeDate = forecastRecord.competition_forecasts_close_date;
@@ -221,7 +220,10 @@ export async function updateForecast({
           forecastId: id,
           dueDate: closeDate.toISOString(),
         });
-        throw new Error("Cannot update forecasts past the due date");
+        return error(
+          "Cannot update forecasts past the due date",
+          ERROR_CODES.VALIDATION_ERROR,
+        );
       }
 
       await trx
@@ -229,20 +231,25 @@ export async function updateForecast({
         .set(forecast)
         .where("id", "=", id)
         .execute();
+
+      return success(undefined);
     });
 
-    const duration = Date.now() - startTime;
-    logger.debug("Forecast updated successfully", {
-      operation: "updateForecast",
-      table: "forecasts",
-      forecastId: id,
-      currentUserId: currentUser?.id,
-      duration,
-    });
+    if (result.success) {
+      const duration = Date.now() - startTime;
+      logger.debug("Forecast updated successfully", {
+        operation: "updateForecast",
+        table: "forecasts",
+        forecastId: id,
+        currentUserId: currentUser?.id,
+        duration,
+      });
 
-    revalidatePath("/competitions");
-    revalidatePath("/standalone/forecasts");
-    return success(undefined);
+      revalidatePath("/competitions");
+      revalidatePath("/standalone/forecasts");
+    }
+
+    return result;
   } catch (err) {
     const duration = Date.now() - startTime;
     logger.error("Failed to update forecast", err as Error, {
@@ -251,15 +258,6 @@ export async function updateForecast({
       forecastId: id,
       duration,
     });
-    // Check if it's a validation error we threw
-    if (err instanceof Error) {
-      if (
-        err.message === "Cannot update forecasts past the due date" ||
-        err.message === "Forecast not found"
-      ) {
-        return error(err.message, ERROR_CODES.VALIDATION_ERROR);
-      }
-    }
     return error("Failed to update forecast", ERROR_CODES.DATABASE_ERROR);
   }
 }

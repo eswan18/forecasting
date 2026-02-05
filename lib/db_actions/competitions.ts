@@ -1,7 +1,6 @@
 "use server";
 
-import { db } from "@/lib/database";
-import { withRLS } from "@/lib/db-helpers";
+import { withRLS, withRLSAction } from "@/lib/db-helpers";
 import {
   Competition,
   CompetitionUpdate,
@@ -156,103 +155,102 @@ export async function updateCompetition({
       return error("You must be logged in", ERROR_CODES.UNAUTHORIZED);
     }
 
-    // System admins can update any competition.
-    // Competition admins can update their own private competitions.
-    if (!currentUser.is_admin) {
-      const membership = await withRLS(currentUser.id, async (trx) =>
-        trx
-          .selectFrom("competition_members")
-          .select("role")
-          .where("competition_id", "=", id)
-          .where("user_id", "=", currentUser.id)
-          .executeTakeFirst(),
-      );
-
-      const comp = await withRLS(currentUser.id, async (trx) =>
-        trx
-          .selectFrom("competitions")
-          .select("is_private")
-          .where("id", "=", id)
-          .executeTakeFirst(),
-      );
-
-      if (!comp?.is_private || membership?.role !== "admin") {
-        logger.warn("Unauthorized attempt to update competition", {
-          competitionId: id,
-          currentUserId: currentUser.id,
-        });
-        return error(
-          "Only admins can update competitions",
-          ERROR_CODES.UNAUTHORIZED,
-        );
-      }
-    }
-
     // Prevent changing is_private — conversions are not supported yet.
     if ("is_private" in competition) {
       delete (competition as Record<string, unknown>)["is_private"];
     }
 
-    // If any of the date fields are being changed, validate ordering using the
-    // new values overlaid on the existing row.
-    if (
-      "forecasts_open_date" in competition ||
-      "forecasts_close_date" in competition ||
-      "end_date" in competition
-    ) {
-      const existing = await withRLS(currentUser.id, async (trx) =>
-        trx
+    const result = await withRLSAction(currentUser.id, async (trx) => {
+      // System admins can update any competition.
+      // Competition admins can update their own private competitions.
+      if (!currentUser.is_admin) {
+        const membership = await trx
+          .selectFrom("competition_members")
+          .select("role")
+          .where("competition_id", "=", id)
+          .where("user_id", "=", currentUser.id)
+          .executeTakeFirst();
+
+        const comp = await trx
+          .selectFrom("competitions")
+          .select("is_private")
+          .where("id", "=", id)
+          .executeTakeFirst();
+
+        if (!comp?.is_private || membership?.role !== "admin") {
+          logger.warn("Unauthorized attempt to update competition", {
+            competitionId: id,
+            currentUserId: currentUser.id,
+          });
+          return error(
+            "Only admins can update competitions",
+            ERROR_CODES.UNAUTHORIZED,
+          );
+        }
+      }
+
+      // If any of the date fields are being changed, validate ordering using the
+      // new values overlaid on the existing row.
+      if (
+        "forecasts_open_date" in competition ||
+        "forecasts_close_date" in competition ||
+        "end_date" in competition
+      ) {
+        const existing = await trx
           .selectFrom("competitions")
           .select(["forecasts_open_date", "forecasts_close_date", "end_date"])
           .where("id", "=", id)
-          .executeTakeFirst(),
-      );
-      if (!existing) {
-        return error("Competition not found", ERROR_CODES.NOT_FOUND);
+          .executeTakeFirst();
+        if (!existing) {
+          return error("Competition not found", ERROR_CODES.NOT_FOUND);
+        }
+        const openDate =
+          "forecasts_open_date" in competition &&
+          competition.forecasts_open_date !== undefined
+            ? competition.forecasts_open_date
+            : existing.forecasts_open_date;
+        const closeDate =
+          "forecasts_close_date" in competition &&
+          competition.forecasts_close_date !== undefined
+            ? competition.forecasts_close_date
+            : existing.forecasts_close_date;
+        const endDate =
+          "end_date" in competition && competition.end_date !== undefined
+            ? competition.end_date
+            : existing.end_date;
+        const validationResult = validateCompetitionDates({
+          forecasts_open_date: openDate,
+          forecasts_close_date: closeDate,
+          end_date: endDate,
+        });
+        if (!validationResult.success) {
+          return validationResult;
+        }
       }
-      const openDate =
-        "forecasts_open_date" in competition &&
-        competition.forecasts_open_date !== undefined
-          ? competition.forecasts_open_date
-          : existing.forecasts_open_date;
-      const closeDate =
-        "forecasts_close_date" in competition &&
-        competition.forecasts_close_date !== undefined
-          ? competition.forecasts_close_date
-          : existing.forecasts_close_date;
-      const endDate =
-        "end_date" in competition && competition.end_date !== undefined
-          ? competition.end_date
-          : existing.end_date;
-      const validationResult = validateCompetitionDates({
-        forecasts_open_date: openDate,
-        forecasts_close_date: closeDate,
-        end_date: endDate,
-      });
-      if (!validationResult.success) {
-        return validationResult;
-      }
-    }
 
-    await withRLS(currentUser.id, async (trx) => {
       await trx
         .updateTable("competitions")
         .set(competition)
         .where("id", "=", id)
         .execute();
+
+      return success(undefined);
     });
 
-    const duration = Date.now() - startTime;
-    logger.info("Competition updated successfully", {
-      operation: "updateCompetition",
-      table: "competitions",
-      competitionId: id,
-      duration,
-    });
+    if (result.success) {
+      const duration = Date.now() - startTime;
+      logger.info("Competition updated successfully", {
+        operation: "updateCompetition",
+        table: "competitions",
+        competitionId: id,
+        duration,
+      });
 
-    revalidatePath("/competitions");
-    revalidatePath("/admin/competitions");
-    return success(undefined);
+      revalidatePath("/competitions");
+      revalidatePath("/admin/competitions");
+    }
+
+    return result;
   } catch (err) {
     const duration = Date.now() - startTime;
     logger.error("Failed to update competition", err as Error, {

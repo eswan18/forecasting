@@ -10,7 +10,7 @@ import {
   validationError,
 } from "@/lib/server-action-result";
 import { logger } from "@/lib/logger";
-import { withRLS } from "@/lib/db-helpers";
+import { withRLS, withRLSAction } from "@/lib/db-helpers";
 
 export async function getPropById(
   propId: number,
@@ -195,7 +195,7 @@ export async function resolveProp({
 
   const startTime = Date.now();
   try {
-    await withRLS(currentUser?.id, async (trx) => {
+    const result = await withRLSAction(currentUser?.id, async (trx) => {
       // first check that this prop doesn't already have a resolution
       const existingResolution = await trx
         .selectFrom("resolutions")
@@ -208,7 +208,10 @@ export async function resolveProp({
           existingResolution: existingResolution.resolution,
           overwrite,
         });
-        throw new Error(`Proposition ${propId} already has a resolution`);
+        return error(
+          `Proposition ${propId} already has a resolution`,
+          ERROR_CODES.VALIDATION_ERROR,
+        );
       }
 
       if (existingResolution) {
@@ -230,19 +233,23 @@ export async function resolveProp({
         await trx.insertInto("resolutions").values(record).execute();
         logger.debug("Created new resolution", { propId, resolution });
       }
+
+      return success(undefined);
     });
 
-    const duration = Date.now() - startTime;
-    logger.info("Prop resolved successfully", {
-      operation: "resolveProp",
-      table: "resolutions",
-      propId,
-      resolution,
-      duration,
-    });
+    if (result.success) {
+      const duration = Date.now() - startTime;
+      logger.info("Prop resolved successfully", {
+        operation: "resolveProp",
+        table: "resolutions",
+        propId,
+        resolution,
+        duration,
+      });
+      revalidatePath("/props");
+    }
 
-    revalidatePath("/props");
-    return success(undefined);
+    return result;
   } catch (err) {
     const duration = Date.now() - startTime;
     logger.error("Failed to resolve prop", err as Error, {
@@ -251,13 +258,6 @@ export async function resolveProp({
       propId,
       duration,
     });
-    // Check if it's the validation error we threw
-    if (
-      err instanceof Error &&
-      err.message === `Proposition ${propId} already has a resolution`
-    ) {
-      return error(err.message, ERROR_CODES.VALIDATION_ERROR);
-    }
     return error("Failed to resolve prop", ERROR_CODES.DATABASE_ERROR);
   }
 }
@@ -432,7 +432,7 @@ export async function createProp({
       );
     }
 
-    await withRLS(currentUser?.id, async (trx) => {
+    const result = await withRLSAction(currentUser?.id, async (trx) => {
       // For competition props, verify the user is a competition admin
       if (prop.competition_id) {
         const competition = await trx
@@ -442,7 +442,7 @@ export async function createProp({
           .executeTakeFirst();
 
         if (!competition) {
-          throw new Error("NOT_FOUND: Competition not found");
+          return error("Competition not found", ERROR_CODES.NOT_FOUND);
         }
 
         // For private competitions, only admins can create props
@@ -455,28 +455,35 @@ export async function createProp({
             .executeTakeFirst();
 
           if (membership?.role !== "admin") {
-            throw new Error("UNAUTHORIZED: Only competition admins can create props");
+            return error(
+              "Only competition admins can create props",
+              ERROR_CODES.UNAUTHORIZED,
+            );
           }
         }
       }
 
       await trx.insertInto("props").values(prop).execute();
+      return success(undefined);
     });
 
-    const duration = Date.now() - startTime;
-    logger.info("Prop created successfully", {
-      operation: "createProp",
-      table: "props",
-      categoryId: prop.category_id,
-      textLength: prop.text?.length,
-      duration,
-    });
+    if (result.success) {
+      const duration = Date.now() - startTime;
+      logger.info("Prop created successfully", {
+        operation: "createProp",
+        table: "props",
+        categoryId: prop.category_id,
+        textLength: prop.text?.length,
+        duration,
+      });
 
-    revalidatePath("/props");
-    if (prop.competition_id) {
-      revalidatePath(`/competitions/${prop.competition_id}`);
+      revalidatePath("/props");
+      if (prop.competition_id) {
+        revalidatePath(`/competitions/${prop.competition_id}`);
+      }
     }
-    return success(undefined);
+
+    return result;
   } catch (err) {
     const duration = Date.now() - startTime;
     logger.error("Failed to create prop", err as Error, {
@@ -488,20 +495,6 @@ export async function createProp({
     });
 
     const errorMessage = (err as Error).message;
-
-    // Handle specific error types thrown from within the transaction
-    if (errorMessage.startsWith("UNAUTHORIZED:")) {
-      return error(
-        errorMessage.replace("UNAUTHORIZED: ", ""),
-        ERROR_CODES.UNAUTHORIZED,
-      );
-    }
-    if (errorMessage.startsWith("NOT_FOUND:")) {
-      return error(
-        errorMessage.replace("NOT_FOUND: ", ""),
-        ERROR_CODES.NOT_FOUND,
-      );
-    }
     if (errorMessage.includes("duplicate")) {
       return error(
         "A proposition with this text already exists",
