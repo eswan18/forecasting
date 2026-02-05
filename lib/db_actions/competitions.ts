@@ -159,18 +159,22 @@ export async function updateCompetition({
     // System admins can update any competition.
     // Competition admins can update their own private competitions.
     if (!currentUser.is_admin) {
-      const membership = await db
-        .selectFrom("competition_members")
-        .select("role")
-        .where("competition_id", "=", id)
-        .where("user_id", "=", currentUser.id)
-        .executeTakeFirst();
+      const membership = await withRLS(currentUser.id, async (trx) =>
+        trx
+          .selectFrom("competition_members")
+          .select("role")
+          .where("competition_id", "=", id)
+          .where("user_id", "=", currentUser.id)
+          .executeTakeFirst(),
+      );
 
-      const comp = await db
-        .selectFrom("competitions")
-        .select("is_private")
-        .where("id", "=", id)
-        .executeTakeFirst();
+      const comp = await withRLS(currentUser.id, async (trx) =>
+        trx
+          .selectFrom("competitions")
+          .select("is_private")
+          .where("id", "=", id)
+          .executeTakeFirst(),
+      );
 
       if (!comp?.is_private || membership?.role !== "admin") {
         logger.warn("Unauthorized attempt to update competition", {
@@ -196,11 +200,13 @@ export async function updateCompetition({
       "forecasts_close_date" in competition ||
       "end_date" in competition
     ) {
-      const existing = await db
-        .selectFrom("competitions")
-        .select(["forecasts_open_date", "forecasts_close_date", "end_date"])
-        .where("id", "=", id)
-        .executeTakeFirst();
+      const existing = await withRLS(currentUser.id, async (trx) =>
+        trx
+          .selectFrom("competitions")
+          .select(["forecasts_open_date", "forecasts_close_date", "end_date"])
+          .where("id", "=", id)
+          .executeTakeFirst(),
+      );
       if (!existing) {
         return error("Competition not found", ERROR_CODES.NOT_FOUND);
       }
