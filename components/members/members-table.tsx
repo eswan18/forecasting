@@ -37,6 +37,7 @@ interface MembersTableProps {
   competitionId: number;
   currentUserId: number;
   isAdmin: boolean;
+  onMemberChange?: () => void;
 }
 
 function RoleBadge({ role }: { role: CompetitionRole }) {
@@ -65,6 +66,7 @@ interface MemberRowProps {
   currentUserId: number;
   isAdmin: boolean;
   isOnlyAdmin: boolean;
+  onMemberChange?: () => void;
 }
 
 function MemberRow({
@@ -73,6 +75,7 @@ function MemberRow({
   currentUserId,
   isAdmin,
   isOnlyAdmin,
+  onMemberChange,
 }: MemberRowProps) {
   const router = useRouter();
   const [showRemoveDialog, setShowRemoveDialog] = useState(false);
@@ -83,6 +86,7 @@ function MemberRow({
 
   const handleSuccess = () => {
     router.refresh();
+    onMemberChange?.();
   };
 
   const removeMemberAction = useServerAction(removeCompetitionMember, {
@@ -225,6 +229,7 @@ export function MembersTable({
   competitionId,
   currentUserId,
   isAdmin,
+  onMemberChange,
 }: MembersTableProps) {
   // Count admins to prevent removing the last one
   const adminCount = members.filter((m) => m.role === "admin").length;
@@ -261,6 +266,7 @@ export function MembersTable({
             currentUserId={currentUserId}
             isAdmin={isAdmin}
             isOnlyAdmin={isOnlyAdmin}
+            onMemberChange={onMemberChange}
           />
         ))}
       </div>

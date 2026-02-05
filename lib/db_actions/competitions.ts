@@ -152,15 +152,45 @@ export async function updateCompetition({
 
   const startTime = Date.now();
   try {
-    if (!currentUser?.is_admin) {
-      logger.warn("Unauthorized attempt to update competition", {
-        competitionId: id,
-        currentUserId: currentUser?.id,
-      });
-      return error(
-        "Only admins can update competitions",
-        ERROR_CODES.UNAUTHORIZED,
+    if (!currentUser) {
+      return error("You must be logged in", ERROR_CODES.UNAUTHORIZED);
+    }
+
+    // System admins can update any competition.
+    // Competition admins can update their own private competitions.
+    if (!currentUser.is_admin) {
+      const membership = await withRLS(currentUser.id, async (trx) =>
+        trx
+          .selectFrom("competition_members")
+          .select("role")
+          .where("competition_id", "=", id)
+          .where("user_id", "=", currentUser.id)
+          .executeTakeFirst(),
       );
+
+      const comp = await withRLS(currentUser.id, async (trx) =>
+        trx
+          .selectFrom("competitions")
+          .select("is_private")
+          .where("id", "=", id)
+          .executeTakeFirst(),
+      );
+
+      if (!comp?.is_private || membership?.role !== "admin") {
+        logger.warn("Unauthorized attempt to update competition", {
+          competitionId: id,
+          currentUserId: currentUser.id,
+        });
+        return error(
+          "Only admins can update competitions",
+          ERROR_CODES.UNAUTHORIZED,
+        );
+      }
+    }
+
+    // Prevent changing is_private — conversions are not supported yet.
+    if ("is_private" in competition) {
+      delete (competition as Record<string, unknown>)["is_private"];
     }
 
     // If any of the date fields are being changed, validate ordering using the
@@ -170,11 +200,13 @@ export async function updateCompetition({
       "forecasts_close_date" in competition ||
       "end_date" in competition
     ) {
-      const existing = await db
-        .selectFrom("competitions")
-        .select(["forecasts_open_date", "forecasts_close_date", "end_date"])
-        .where("id", "=", id)
-        .executeTakeFirst();
+      const existing = await withRLS(currentUser.id, async (trx) =>
+        trx
+          .selectFrom("competitions")
+          .select(["forecasts_open_date", "forecasts_close_date", "end_date"])
+          .where("id", "=", id)
+          .executeTakeFirst(),
+      );
       if (!existing) {
         return error("Competition not found", ERROR_CODES.NOT_FOUND);
       }

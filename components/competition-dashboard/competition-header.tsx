@@ -1,15 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { MoreVertical, Plus, Settings, UserPlus, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { MoreVertical, Plus, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { CreateEditCompetitionForm } from "@/components/forms/create-edit-competition-form";
 
 interface CompetitionHeaderProps {
   competitionId: number;
@@ -30,6 +38,18 @@ export function CompetitionHeader({
   forecasterCount,
   onAddProp,
 }: CompetitionHeaderProps) {
+  const [editOpen, setEditOpen] = useState(false);
+  const router = useRouter();
+
+  const competitionForForm = {
+    id: competitionId,
+    name: competitionName,
+    is_private: isPrivate,
+    forecasts_open_date: null,
+    forecasts_close_date: null,
+    end_date: null,
+  };
+
   return (
     <div className="flex items-center justify-between mb-4">
       <div>
@@ -71,39 +91,37 @@ export function CompetitionHeader({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {isPrivate && (
-                <>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href={`/competitions/${competitionId}/members`}
-                      className="flex items-center"
-                    >
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Invite Members
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href={`/competitions/${competitionId}/members`}
-                      className="flex items-center"
-                    >
-                      <Users className="h-4 w-4 mr-2" />
-                      Manage Members
-                    </Link>
-                  </DropdownMenuItem>
-                </>
-              )}
-              <DropdownMenuItem asChild>
-                <Link
-                  href={`/admin/competitions`}
-                  className="flex items-center"
-                >
+              {isPrivate ? (
+                <DropdownMenuItem onSelect={() => setEditOpen(true)}>
                   <Settings className="h-4 w-4 mr-2" />
                   Competition Settings
-                </Link>
-              </DropdownMenuItem>
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/admin/competitions"
+                    className="flex items-center"
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Competition Settings
+                  </Link>
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <Dialog open={editOpen} onOpenChange={setEditOpen}>
+            <DialogContent>
+              <DialogTitle>Edit Competition</DialogTitle>
+              <CreateEditCompetitionForm
+                initialCompetition={competitionForForm}
+                onSubmit={() => {
+                  setEditOpen(false);
+                  router.refresh();
+                }}
+              />
+            </DialogContent>
+          </Dialog>
         </div>
       )}
     </div>
