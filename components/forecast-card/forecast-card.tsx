@@ -3,6 +3,8 @@
 import { PropWithUserForecast } from "@/types/db_types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PropStatusBadge } from "@/components/ui/prop-status-badge";
+import { getPropStatusFromProp } from "@/lib/prop-status";
 import {
   Tooltip,
   TooltipContent,
@@ -57,14 +59,7 @@ export function ForecastCard({ prop, showCommunityAvg }: ForecastCardProps) {
                 <Badge variant="secondary" className="text-xs font-medium">
                   {prop.category_name}
                 </Badge>
-                {prop.resolution !== null && (
-                  <Badge
-                    variant={prop.resolution ? "default" : "destructive"}
-                    className="text-xs"
-                  >
-                    {prop.resolution ? "Yes" : "No"}
-                  </Badge>
-                )}
+                <PropStatusBadge status={getPropStatusFromProp(prop)} />
               </div>
               <Link href={`/props/${prop.prop_id}`}>
                 <Button variant="ghost" size="sm" className="h-7 px-2">
@@ -134,14 +129,7 @@ export function ForecastCard({ prop, showCommunityAvg }: ForecastCardProps) {
               <Badge variant="secondary" className="text-xs font-medium">
                 {prop.category_name}
               </Badge>
-              {prop.resolution !== null && (
-                <Badge
-                  variant={prop.resolution ? "default" : "destructive"}
-                  className="text-xs"
-                >
-                  {prop.resolution ? "Yes" : "No"}
-                </Badge>
-              )}
+              <PropStatusBadge status={getPropStatusFromProp(prop)} />
             </div>
             <Link href={`/props/${prop.prop_id}`}>
               <Button variant="ghost" size="sm" className="h-7 px-2">

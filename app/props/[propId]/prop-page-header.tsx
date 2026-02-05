@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, CheckCircle2 } from "lucide-react";
 import { ResolutionDialog } from "@/components/dialogs/resolution-dialog";
 import { MarkdownRenderer } from "@/components/markdown";
+import { PropStatusBadge } from "@/components/ui/prop-status-badge";
+import { getPropStatusFromProp } from "@/lib/prop-status";
 
 interface PropPageHeaderProps {
   prop: VProp;
@@ -41,22 +43,7 @@ export default function PropPageHeader({
                 {prop.category_name}
               </Badge>
             )}
-            <Badge
-              variant={
-                prop.resolution === null
-                  ? "outline"
-                  : prop.resolution
-                    ? "default"
-                    : "destructive"
-              }
-              className="text-xs"
-            >
-              {prop.resolution === null
-                ? "Unresolved"
-                : prop.resolution
-                  ? "Yes"
-                  : "No"}
-            </Badge>
+            <PropStatusBadge status={getPropStatusFromProp(prop)} />
           </div>
           {canResolve && (
             <Button
