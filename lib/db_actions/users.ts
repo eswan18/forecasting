@@ -276,9 +276,9 @@ export async function updateUser({
       );
     }
 
-    // Users can only change a couple of fields: name, email, and timezone.
+    // Users can only change a couple of fields: name and email.
     // If they try to change anything else, return an error.
-    const allowedFields = ["name", "email", "timezone"];
+    const allowedFields = ["name", "email"];
     const invalidFields = Object.keys(user).filter(
       (key) => !allowedFields.includes(key),
     );

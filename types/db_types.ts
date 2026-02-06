@@ -29,7 +29,6 @@ export interface UsersTable {
   idp_user_id: string | null; // UUID from IDP
   username: string | null; // Username from IDP, updated on each login
   picture_url: string | null; // Avatar URL from IDP, updated on each login
-  timezone: string | null; // IANA timezone string e.g. "America/New_York"
   updated_at: Generated<Date>;
   created_at: Generated<Date>;
 }
@@ -209,7 +208,6 @@ export interface VUsersView {
   idp_user_id: string | null; // UUID from IDP
   username: string | null; // Username from IDP
   picture_url: string | null; // Avatar URL from IDP
-  timezone: string | null; // IANA timezone string e.g. "America/New_York"
   created_at: Date;
   updated_at: Date;
 }
