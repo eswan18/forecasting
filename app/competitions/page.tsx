@@ -13,10 +13,12 @@ import { Button } from "@/components/ui/button";
 import { Trophy, BarChart3, List } from "lucide-react";
 import { CompetitionStatusBadge } from "@/app/admin/competitions/competition-status-badge";
 import { formatDate } from "@/lib/time-utils";
+import { DEFAULT_TIMEZONE } from "@/lib/timezones";
 import { getCompetitionStatusFromObject } from "@/lib/competition-status";
 
 export default async function CompetitionsPage() {
   const user = (await getUserFromCookies())!;
+  const timezone = user.timezone ?? DEFAULT_TIMEZONE;
 
   const allCompetitionsResult = await getCompetitions();
   if (!allCompetitionsResult.success) {
@@ -74,13 +76,13 @@ export default async function CompetitionsPage() {
                               <span className="font-medium">
                                 Forecasts due:
                               </span>{" "}
-                              {formatDate(competition.forecasts_close_date)}
+                              {formatDate(competition.forecasts_close_date, timezone)}
                             </p>
                           )}
                           {competition.end_date && (
                             <p>
                               <span className="font-medium">Ends:</span>{" "}
-                              {formatDate(competition.end_date)}
+                              {formatDate(competition.end_date, timezone)}
                             </p>
                           )}
                         </>
@@ -133,13 +135,13 @@ export default async function CompetitionsPage() {
                               <span className="font-medium">
                                 Forecasts due:
                               </span>{" "}
-                              {formatDate(competition.forecasts_close_date)}
+                              {formatDate(competition.forecasts_close_date, timezone)}
                             </p>
                           )}
                           {competition.end_date && (
                             <p>
                               <span className="font-medium">Ends:</span>{" "}
-                              {formatDate(competition.end_date)}
+                              {formatDate(competition.end_date, timezone)}
                             </p>
                           )}
                         </>
