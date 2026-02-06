@@ -1,4 +1,4 @@
-import { DEFAULT_TIMEZONE } from "./timezones";
+const DEFAULT_TIMEZONE = "UTC";
 
 /**
  * Format a date for display (date only)
