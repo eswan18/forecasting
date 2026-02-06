@@ -14,8 +14,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Copy, Shield, User, UserCheck, UserX } from "lucide-react";
-import { format } from "date-fns";
 import { setUserActive } from "@/lib/db_actions/users";
+import { useUserTimezone } from "@/hooks/useUserTimezone";
+import { formatDate, formatDateTime } from "@/lib/time-utils";
 import { startImpersonation } from "@/lib/auth/impersonation";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
 import { toast } from "@/hooks/use-toast";
@@ -32,6 +33,7 @@ export default function UserDetailCard({ user }: UserDetailCardProps) {
   const [isImpersonateDialogOpen, setIsImpersonateDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const timezone = useUserTimezone();
   const isActive = user.deactivated_at === null;
   const canImpersonate = !user.is_admin && isActive;
 
@@ -191,7 +193,7 @@ export default function UserDetailCard({ user }: UserDetailCardProps) {
                 Created
               </span>
               <span className="text-sm">
-                {format(new Date(user.created_at), "MMM d, yyyy")}
+                {formatDate(new Date(user.created_at), timezone)}
               </span>
             </div>
 
@@ -200,7 +202,7 @@ export default function UserDetailCard({ user }: UserDetailCardProps) {
                 Updated
               </span>
               <span className="text-sm">
-                {format(new Date(user.updated_at), "MMM d, yyyy")}
+                {formatDate(new Date(user.updated_at), timezone)}
               </span>
             </div>
 
@@ -210,10 +212,7 @@ export default function UserDetailCard({ user }: UserDetailCardProps) {
                   Deactivated
                 </span>
                 <span className="text-sm">
-                  {format(
-                    new Date(user.deactivated_at),
-                    "MMM d, yyyy 'at' h:mm a",
-                  )}
+                  {formatDateTime(new Date(user.deactivated_at), timezone)}
                 </span>
               </div>
             )}
