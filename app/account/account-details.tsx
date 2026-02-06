@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { ExternalLink, User2 } from "lucide-react";
 import Image from "next/image";
+
 export function AccountDetails({ idpBaseUrl }: { idpBaseUrl?: string }) {
   const { user } = useCurrentUser();
   return (

@@ -1,7 +1,7 @@
 "use client";
 
 import { formatDate, formatDateTime } from "@/lib/time-utils";
-import { useUserTimezone } from "@/hooks/useUserTimezone";
+import { getBrowserTimezone } from "@/hooks/getBrowserTimezone";
 
 interface LocalDateProps {
   date: Date;
@@ -9,6 +9,6 @@ interface LocalDateProps {
 }
 
 export function LocalDate({ date, includeTime = false }: LocalDateProps) {
-  const timezone = useUserTimezone();
+  const timezone = getBrowserTimezone();
   return <>{includeTime ? formatDateTime(date, timezone) : formatDate(date, timezone)}</>;
 }

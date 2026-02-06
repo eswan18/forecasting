@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Copy, Shield, User, UserCheck, UserX } from "lucide-react";
 import { setUserActive } from "@/lib/db_actions/users";
-import { useUserTimezone } from "@/hooks/useUserTimezone";
+import { getBrowserTimezone } from "@/hooks/getBrowserTimezone";
 import { formatDate, formatDateTime } from "@/lib/time-utils";
 import { startImpersonation } from "@/lib/auth/impersonation";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
@@ -33,7 +33,7 @@ export default function UserDetailCard({ user }: UserDetailCardProps) {
   const [isImpersonateDialogOpen, setIsImpersonateDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const timezone = useUserTimezone();
+  const timezone = getBrowserTimezone();
   const isActive = user.deactivated_at === null;
   const canImpersonate = !user.is_admin && isActive;
 

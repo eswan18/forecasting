@@ -1,10 +1,7 @@
-"use client";
-
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
-import { useUserTimezone } from "@/hooks/useUserTimezone";
-import { formatDate } from "@/lib/time-utils";
+import { LocalDate } from "@/components/local-date";
 
 interface ResolvedPropCardProps {
   propId: number;
@@ -23,7 +20,6 @@ export default function ResolvedPropCard({
   resolution,
   resolutionDate,
 }: ResolvedPropCardProps) {
-  const timezone = useUserTimezone();
   return (
     <Link href={`/props/${propId}`}>
       <Card className="hover:shadow-md transition-shadow">
@@ -58,7 +54,7 @@ export default function ResolvedPropCard({
                   <XCircle className="h-5 w-5 text-red-600" />
                 )}
                 <span className="text-sm text-muted-foreground">
-                  {formatDate(resolutionDate, timezone)}
+                  <LocalDate date={resolutionDate} />
                 </span>
               </div>
             </div>

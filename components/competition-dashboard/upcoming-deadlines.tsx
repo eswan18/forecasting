@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { UpcomingDeadline } from "@/lib/db_actions/competition-stats";
-import { useUserTimezone } from "@/hooks/useUserTimezone";
+import { getBrowserTimezone } from "@/hooks/getBrowserTimezone";
 import { formatDate } from "@/lib/time-utils";
 
 interface DeadlineDisplay {
@@ -139,7 +139,7 @@ export function UpcomingDeadlines({
   competitionId,
   onViewAll,
 }: UpcomingDeadlinesProps) {
-  const timezone = useUserTimezone();
+  const timezone = getBrowserTimezone();
 
   if (deadlines.length === 0) {
     return (

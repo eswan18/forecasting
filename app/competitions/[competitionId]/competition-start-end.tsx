@@ -2,7 +2,7 @@
 
 import { Competition } from "@/types/db_types";
 import { getCompetitionStatusFromObject } from "@/lib/competition-status";
-import { useUserTimezone } from "@/hooks/useUserTimezone";
+import { getBrowserTimezone } from "@/hooks/getBrowserTimezone";
 import { formatDate } from "@/lib/time-utils";
 
 export default function CompetitionStartEnd({
@@ -10,7 +10,7 @@ export default function CompetitionStartEnd({
 }: {
   competition: Competition;
 }) {
-  const timezone = useUserTimezone();
+  const timezone = getBrowserTimezone();
   const status = getCompetitionStatusFromObject(competition);
   return (
     <div className="flex flex-row flex-wrap items-center justify-start gap-x-4 sm:gap-x-8 gap-y-2 mb-4 text-sm">

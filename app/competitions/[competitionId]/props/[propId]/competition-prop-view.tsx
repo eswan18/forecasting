@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MarkdownRenderer } from "@/components/markdown";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { useUserTimezone } from "@/hooks/useUserTimezone";
+import { getBrowserTimezone } from "@/hooks/getBrowserTimezone";
 import { createForecast, updateForecast } from "@/lib/db_actions";
 import { useServerAction } from "@/hooks/use-server-action";
 import { Spinner } from "@/components/ui/spinner";
@@ -99,7 +99,7 @@ export function CompetitionPropView({
 }: CompetitionPropViewProps) {
   const router = useRouter();
   const { user } = useCurrentUser();
-  const timezone = useUserTimezone();
+  const timezone = getBrowserTimezone();
   const [localForecast, setLocalForecast] = useState<number | null>(
     prop.user_forecast,
   );

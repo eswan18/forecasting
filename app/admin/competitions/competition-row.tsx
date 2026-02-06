@@ -19,7 +19,7 @@ import {
 import { CreateEditCompetitionForm } from "@/components/forms/create-edit-competition-form";
 import { useState } from "react";
 import { formatDate, formatDateTime } from "@/lib/time-utils";
-import { useUserTimezone } from "@/hooks/useUserTimezone";
+import { getBrowserTimezone } from "@/hooks/getBrowserTimezone";
 import { CompetitionStatusBadge } from "./competition-status-badge";
 import { getCompetitionStatusFromObject } from "@/lib/competition-status";
 
@@ -33,7 +33,7 @@ export default function CompetitionRow({
   nResolvedProps: number;
 }) {
   const [open, setOpen] = useState(false);
-  const timezone = useUserTimezone();
+  const timezone = getBrowserTimezone();
 
   const status = getCompetitionStatusFromObject(competition);
 

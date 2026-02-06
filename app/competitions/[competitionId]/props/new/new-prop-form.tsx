@@ -40,7 +40,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Spinner } from "@/components/ui/spinner";
 import { useServerAction } from "@/hooks/use-server-action";
-import { useUserTimezone } from "@/hooks/useUserTimezone";
+import { getBrowserTimezone } from "@/hooks/getBrowserTimezone";
 import { createProp } from "@/lib/db_actions";
 import { formatDate } from "@/lib/time-utils";
 import type { Category } from "@/types/db_types";
@@ -102,7 +102,7 @@ export function NewPropForm({
   userId,
 }: NewPropFormProps) {
   const router = useRouter();
-  const timezone = useUserTimezone();
+  const timezone = getBrowserTimezone();
   const [showPreview, setShowPreview] = useState(false);
 
   const form = useForm<FormValues>({

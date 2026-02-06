@@ -2,7 +2,7 @@
 
 const DEFAULT_TIMEZONE = "UTC";
 
-export function useUserTimezone(): string {
+export function getBrowserTimezone(): string {
   if (typeof window === "undefined") return DEFAULT_TIMEZONE;
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
