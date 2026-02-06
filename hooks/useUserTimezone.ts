@@ -1,9 +1,12 @@
 "use client";
 
-import { useCurrentUser } from "./useCurrentUser";
-import { DEFAULT_TIMEZONE } from "@/lib/timezones";
+const DEFAULT_TIMEZONE = "UTC";
 
 export function useUserTimezone(): string {
-  const { user } = useCurrentUser();
-  return user?.timezone ?? DEFAULT_TIMEZONE;
+  if (typeof window === "undefined") return DEFAULT_TIMEZONE;
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch {
+    return DEFAULT_TIMEZONE;
+  }
 }
