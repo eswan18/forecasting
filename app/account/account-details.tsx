@@ -4,13 +4,17 @@ import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { ExternalLink, User2 } from "lucide-react";
 import Image from "next/image";
+import { TimezoneSettings } from "./timezone-settings";
 
 export function AccountDetails({ idpBaseUrl }: { idpBaseUrl?: string }) {
   const { user } = useCurrentUser();
   return (
     <div className="mt-4 space-y-12">
       {user && (
-        <AccountSettingsSection email={user.email} username={user.username} name={user.name} pictureUrl={user.picture_url} idpBaseUrl={idpBaseUrl} />
+        <>
+          <AccountSettingsSection email={user.email} username={user.username} name={user.name} pictureUrl={user.picture_url} idpBaseUrl={idpBaseUrl} />
+          <TimezoneSettings />
+        </>
       )}
     </div>
   );
