@@ -18,7 +18,7 @@ import { getCompetitionStatusFromObject } from "@/lib/competition-status";
 
 export default async function CompetitionsPage() {
   const user = (await getUserFromCookies())!;
-  const timezone = user.timezone ?? DEFAULT_TIMEZONE;
+  const timezone = DEFAULT_TIMEZONE;
 
   const allCompetitionsResult = await getCompetitions();
   if (!allCompetitionsResult.success) {
