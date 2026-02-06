@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
+import { LocalDate } from "@/components/local-date";
 
 interface ResolvedPropCardProps {
   propId: number;
@@ -9,10 +10,6 @@ interface ResolvedPropCardProps {
   forecast: number;
   resolution: boolean;
   resolutionDate: Date;
-}
-
-function formatShortDate(date: Date): string {
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 export default function ResolvedPropCard({
@@ -57,7 +54,7 @@ export default function ResolvedPropCard({
                   <XCircle className="h-5 w-5 text-red-600" />
                 )}
                 <span className="text-sm text-muted-foreground">
-                  {formatShortDate(resolutionDate)}
+                  <LocalDate date={resolutionDate} />
                 </span>
               </div>
             </div>

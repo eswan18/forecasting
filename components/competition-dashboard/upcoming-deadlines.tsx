@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { UpcomingDeadline } from "@/lib/db_actions/competition-stats";
+import { getBrowserTimezone } from "@/hooks/getBrowserTimezone";
+import { formatDate } from "@/lib/time-utils";
 
 interface DeadlineDisplay {
   text: string;
@@ -10,16 +12,12 @@ interface DeadlineDisplay {
   urgent: boolean;
 }
 
-function formatDeadline(date: Date): DeadlineDisplay {
+function formatDeadline(date: Date, timezone: string): DeadlineDisplay {
   const now = new Date();
   const diffMs = date.getTime() - now.getTime();
   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
-  const formatted = date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
-  });
+  const formatted = formatDate(date, timezone);
 
   if (diffDays <= 0) {
     return { text: formatted, relative: "Overdue", urgent: true };
@@ -73,10 +71,11 @@ function getProbColor(prob: number | null): { bg: string; text: string } {
 interface UpcomingPropRowProps {
   prop: UpcomingDeadline;
   competitionId: number;
+  timezone: string;
 }
 
-function UpcomingPropRow({ prop, competitionId }: UpcomingPropRowProps) {
-  const deadline = formatDeadline(prop.deadline);
+function UpcomingPropRow({ prop, competitionId, timezone }: UpcomingPropRowProps) {
+  const deadline = formatDeadline(prop.deadline, timezone);
   const colors = getProbColor(prop.userForecast);
   const percent =
     prop.userForecast !== null ? Math.round(prop.userForecast * 100) : null;
@@ -140,6 +139,8 @@ export function UpcomingDeadlines({
   competitionId,
   onViewAll,
 }: UpcomingDeadlinesProps) {
+  const timezone = getBrowserTimezone();
+
   if (deadlines.length === 0) {
     return (
       <div className="bg-card border border-border rounded-lg p-5">
@@ -173,6 +174,7 @@ export function UpcomingDeadlines({
             key={prop.propId}
             prop={prop}
             competitionId={competitionId}
+            timezone={timezone}
           />
         ))}
       </div>

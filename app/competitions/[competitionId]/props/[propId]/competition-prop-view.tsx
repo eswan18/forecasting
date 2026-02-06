@@ -10,10 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MarkdownRenderer } from "@/components/markdown";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { getBrowserTimezone } from "@/hooks/getBrowserTimezone";
 import { createForecast, updateForecast } from "@/lib/db_actions";
 import { useServerAction } from "@/hooks/use-server-action";
 import { Spinner } from "@/components/ui/spinner";
 import { PropEditDialog } from "@/components/dialogs/prop-edit-dialog";
+import { formatDateTime } from "@/lib/time-utils";
 
 interface CompetitionPropViewProps {
   prop: PropWithUserForecast;
@@ -68,17 +70,10 @@ const getProbColor = (prob: number | null) => {
   };
 };
 
-function formatDate(date: Date | string | null): string {
+function formatPropDate(date: Date | string | null, timezone: string): string {
   if (!date) return "No deadline";
   const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
+  return formatDateTime(d, timezone);
 }
 
 function getRelativeDeadline(date: Date | string | null): string | null {
@@ -104,6 +99,7 @@ export function CompetitionPropView({
 }: CompetitionPropViewProps) {
   const router = useRouter();
   const { user } = useCurrentUser();
+  const timezone = getBrowserTimezone();
   const [localForecast, setLocalForecast] = useState<number | null>(
     prop.user_forecast,
   );
@@ -235,7 +231,7 @@ export function CompetitionPropView({
           <div className="flex flex-wrap items-center gap-4 mt-4 text-sm">
             <div className="flex items-center gap-2 text-muted-foreground">
               <CalendarClock className="h-4 w-4" />
-              <span>Forecasts due: {formatDate(prop.prop_forecasts_due_date)}</span>
+              <span>Forecasts due: {formatPropDate(prop.prop_forecasts_due_date, timezone)}</span>
               {relativeDeadline && (
                 <Badge
                   variant={relativeDeadline === "Closed" ? "destructive" : "outline"}
@@ -248,7 +244,7 @@ export function CompetitionPropView({
             {prop.prop_resolution_due_date && (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Calendar className="h-4 w-4" />
-                <span>Resolves: {formatDate(prop.prop_resolution_due_date)}</span>
+                <span>Resolves: {formatPropDate(prop.prop_resolution_due_date, timezone)}</span>
               </div>
             )}
           </div>

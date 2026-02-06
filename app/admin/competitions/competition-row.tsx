@@ -19,6 +19,7 @@ import {
 import { CreateEditCompetitionForm } from "@/components/forms/create-edit-competition-form";
 import { useState } from "react";
 import { formatDate, formatDateTime } from "@/lib/time-utils";
+import { getBrowserTimezone } from "@/hooks/getBrowserTimezone";
 import { CompetitionStatusBadge } from "./competition-status-badge";
 import { getCompetitionStatusFromObject } from "@/lib/competition-status";
 
@@ -32,6 +33,7 @@ export default function CompetitionRow({
   nResolvedProps: number;
 }) {
   const [open, setOpen] = useState(false);
+  const timezone = getBrowserTimezone();
 
   const status = getCompetitionStatusFromObject(competition);
 
@@ -84,22 +86,22 @@ export default function CompetitionRow({
                       competition.forecasts_open_date && (
                         <>
                           Forecasts open{" "}
-                          {formatDate(competition.forecasts_open_date)}
+                          {formatDate(competition.forecasts_open_date, timezone)}
                         </>
                       )}
                     {status === "forecasts-open" &&
                       competition.forecasts_close_date && (
                         <>
                           Forecasts close{" "}
-                          {formatDate(competition.forecasts_close_date)}
+                          {formatDate(competition.forecasts_close_date, timezone)}
                         </>
                       )}
                     {status === "forecasts-closed" &&
                       competition.end_date && (
-                        <>Ends {formatDate(competition.end_date)}</>
+                        <>Ends {formatDate(competition.end_date, timezone)}</>
                       )}
                     {status === "ended" && competition.end_date && (
-                      <>Ended {formatDate(competition.end_date)}</>
+                      <>Ended {formatDate(competition.end_date, timezone)}</>
                     )}
                     {status === "private" && (
                       <>Uses per-prop deadlines</>
@@ -114,17 +116,17 @@ export default function CompetitionRow({
                       {competition.forecasts_open_date && (
                         <p>
                           Forecasts Open:{" "}
-                          {formatDateTime(competition.forecasts_open_date)}
+                          {formatDateTime(competition.forecasts_open_date, timezone)}
                         </p>
                       )}
                       {competition.forecasts_close_date && (
                         <p>
                           Forecasts Close:{" "}
-                          {formatDateTime(competition.forecasts_close_date)}
+                          {formatDateTime(competition.forecasts_close_date, timezone)}
                         </p>
                       )}
                       {competition.end_date && (
-                        <p>Ends: {formatDateTime(competition.end_date)}</p>
+                        <p>Ends: {formatDateTime(competition.end_date, timezone)}</p>
                       )}
                     </div>
                   )}
