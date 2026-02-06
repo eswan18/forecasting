@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Trophy, BarChart3, List } from "lucide-react";
 import { CompetitionStatusBadge } from "@/app/admin/competitions/competition-status-badge";
-import { formatDate } from "@/lib/time-utils";
+import { LocalDate } from "@/components/local-date";
 import { getCompetitionStatusFromObject } from "@/lib/competition-status";
 
 export default async function CompetitionsPage() {
@@ -74,13 +74,13 @@ export default async function CompetitionsPage() {
                               <span className="font-medium">
                                 Forecasts due:
                               </span>{" "}
-                              {formatDate(competition.forecasts_close_date)}
+                              <LocalDate date={competition.forecasts_close_date} />
                             </p>
                           )}
                           {competition.end_date && (
                             <p>
                               <span className="font-medium">Ends:</span>{" "}
-                              {formatDate(competition.end_date)}
+                              <LocalDate date={competition.end_date} />
                             </p>
                           )}
                         </>
@@ -133,13 +133,13 @@ export default async function CompetitionsPage() {
                               <span className="font-medium">
                                 Forecasts due:
                               </span>{" "}
-                              {formatDate(competition.forecasts_close_date)}
+                              <LocalDate date={competition.forecasts_close_date} />
                             </p>
                           )}
                           {competition.end_date && (
                             <p>
                               <span className="font-medium">Ends:</span>{" "}
-                              {formatDate(competition.end_date)}
+                              <LocalDate date={competition.end_date} />
                             </p>
                           )}
                         </>
