@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Trophy, BarChart3, List } from "lucide-react";
 import { CompetitionStatusBadge } from "@/app/admin/competitions/competition-status-badge";
 import { formatDate } from "@/lib/time-utils";
-import { DEFAULT_TIMEZONE } from "@/lib/timezones";
+const DEFAULT_TIMEZONE = "UTC";
 import { getCompetitionStatusFromObject } from "@/lib/competition-status";
 
 export default async function CompetitionsPage() {
