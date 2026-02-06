@@ -10,5 +10,9 @@ interface LocalDateProps {
 
 export function LocalDate({ date, includeTime = false }: LocalDateProps) {
   const timezone = getBrowserTimezone();
-  return <>{includeTime ? formatDateTime(date, timezone) : formatDate(date, timezone)}</>;
+  return (
+    <span suppressHydrationWarning>
+      {includeTime ? formatDateTime(date, timezone) : formatDate(date, timezone)}
+    </span>
+  );
 }
