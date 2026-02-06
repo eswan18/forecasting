@@ -40,7 +40,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Spinner } from "@/components/ui/spinner";
 import { useServerAction } from "@/hooks/use-server-action";
+import { useUserTimezone } from "@/hooks/useUserTimezone";
 import { createProp } from "@/lib/db_actions";
+import { formatDate } from "@/lib/time-utils";
 import type { Category } from "@/types/db_types";
 
 const formSchema = z
@@ -100,6 +102,7 @@ export function NewPropForm({
   userId,
 }: NewPropFormProps) {
   const router = useRouter();
+  const timezone = useUserTimezone();
   const [showPreview, setShowPreview] = useState(false);
 
   const form = useForm<FormValues>({
@@ -346,7 +349,7 @@ export function NewPropForm({
                   {watchedForecastsDueDate && (
                     <p className="text-xs text-muted-foreground">
                       Forecasts due:{" "}
-                      {watchedForecastsDueDate.toLocaleDateString()}
+                      {formatDate(watchedForecastsDueDate, timezone)}
                     </p>
                   )}
                 </div>
