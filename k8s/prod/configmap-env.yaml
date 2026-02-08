@@ -4,6 +4,7 @@ metadata:
   name: forecasting-prod-env-config
 data:
   ENV: "prod"
+  APP_BASE_URL: "https://forecasting.ethanswan.com"
   IDP_BASE_URL: "http://identity.identity-prod.svc.cluster.local"
   NEXT_PUBLIC_IDP_BASE_URL: "https://identity.ethanswan.com"
   SENTRY_DSN: "https://42fb7fde7d5842831f2324ed33c7f50f@o4509062063587328.ingest.us.sentry.io/4509062066012160"

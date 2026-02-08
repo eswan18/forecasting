@@ -17,8 +17,9 @@ export async function GET(request: NextRequest) {
     const codeVerifier = generateRandomString(64);
     const codeChallenge = await generateCodeChallenge(codeVerifier);
 
-    // Determine redirect URI
-    const redirectUri = `${request.nextUrl.origin}/oauth/callback`;
+    // Determine redirect URI from the configured base URL, not the request origin,
+    // since the app runs behind a reverse proxy (Cloudflare Tunnel / Tailscale).
+    const redirectUri = `${process.env.APP_BASE_URL}/oauth/callback`;
 
     // Store state and code verifier in cookies for validation in callback
     const cookieStore = await cookies();

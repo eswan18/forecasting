@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // Determine the redirect URI (must match what was used in the authorization request)
-    const redirectUri = `${request.nextUrl.origin}/oauth/callback`;
+    const redirectUri = `${process.env.APP_BASE_URL}/oauth/callback`;
 
     // Exchange authorization code for tokens
     const tokens = await exchangeCodeForTokens(code, codeVerifier, redirectUri);
