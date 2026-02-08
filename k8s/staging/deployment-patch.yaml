@@ -40,16 +40,6 @@ spec:
                 secretKeyRef:
                   name: forecasting-staging-secrets
                   key: IDP_CLIENT_SECRET
-            - name: IDP_ADMIN_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: forecasting-staging-secrets
-                  key: IDP_ADMIN_CLIENT_ID
-            - name: IDP_ADMIN_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: forecasting-staging-secrets
-                  key: IDP_ADMIN_CLIENT_SECRET
       volumes:
         - name: secrets-store
           csi:
