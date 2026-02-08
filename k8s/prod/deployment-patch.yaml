@@ -20,11 +20,6 @@ spec:
                 secretKeyRef:
                   name: forecasting-prod-secrets
                   key: DATABASE_URL
-            - name: ADMIN_DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: forecasting-prod-secrets
-                  key: ADMIN_DATABASE_URL
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
