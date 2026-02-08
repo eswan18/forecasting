@@ -1,0 +1,16 @@
+apiVersion: argocd-image-updater.argoproj.io/v1alpha1
+kind: ImageUpdater
+metadata:
+  name: forecasting-staging
+  namespace: argocd
+spec:
+  namespace: argocd
+  writeBackConfig:
+    method: argocd
+  applicationRefs:
+    - namePattern: forecasting-staging
+      images:
+        - alias: forecasting
+          imageName: us-central1-docker.pkg.dev/ethans-services/containers/forecasting
+          commonUpdateSettings:
+            updateStrategy: newest-build

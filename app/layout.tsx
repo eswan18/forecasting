@@ -4,7 +4,7 @@ import "./globals.css";
 import { NavBar } from "@/components/navbar";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
-import { Analytics } from "@vercel/analytics/react";
+
 import { StatusIndicatorStack } from "@/components/status-indicators";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -28,7 +28,7 @@ export default function RootLayout({
           <div className="w-full">{children}</div>
           <Toaster />
         </ThemeProvider>
-        <Analytics />
+
       </body>
     </html>
   );

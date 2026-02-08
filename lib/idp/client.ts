@@ -1,8 +1,16 @@
 import "server-only";
 import * as jose from "jose";
 
-// IDP Configuration
-const IDP_BASE_URL = process.env.IDP_BASE_URL || "https://identity.ethanswan.com";
+function requiredEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`Missing required environment variable: ${name}`);
+  return value;
+}
+
+// IDP_BASE_URL: server-to-server calls (internal K8s URL in cluster).
+// IDP_PUBLIC_URL: browser-facing redirects and JWT issuer validation (external URL, baked at build time via NEXT_PUBLIC_IDP_BASE_URL).
+const IDP_BASE_URL = requiredEnv("IDP_BASE_URL");
+const IDP_PUBLIC_URL = requiredEnv("NEXT_PUBLIC_IDP_BASE_URL");
 const IDP_CLIENT_ID = process.env.IDP_CLIENT_ID || "";
 const IDP_CLIENT_SECRET = process.env.IDP_CLIENT_SECRET || "";
 const IDP_ADMIN_CLIENT_ID = process.env.IDP_ADMIN_CLIENT_ID || "";
@@ -184,7 +192,7 @@ export function getAuthorizationUrl(
     code_challenge_method: "S256",
   });
 
-  return `${IDP_BASE_URL}/oauth/authorize?${params.toString()}`;
+  return `${IDP_PUBLIC_URL}/oauth/authorize?${params.toString()}`;
 }
 
 /**
@@ -279,7 +287,7 @@ export async function validateIDPToken(token: string): Promise<IDPClaims> {
   const jwks = await getJWKS();
 
   const { payload } = await jose.jwtVerify(token, jwks, {
-    issuer: IDP_BASE_URL,
+    issuer: IDP_PUBLIC_URL,
     // We don't strictly validate audience since it varies by client
   });
 

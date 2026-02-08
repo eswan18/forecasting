@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: forecasting-config
+data:
+  K8S: "1"
+  NODE_ENV: "production"
+  SENTRY_ORG: "forecasting"
+  SENTRY_PROJECT: "forecasting-app"

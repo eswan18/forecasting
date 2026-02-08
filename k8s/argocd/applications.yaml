@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: forecasting-staging
+  namespace: argocd
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: forecasting=us-central1-docker.pkg.dev/ethans-services/containers/forecasting
+    argocd-image-updater.argoproj.io/forecasting.update-strategy: newest-build
+    argocd-image-updater.argoproj.io/forecasting.allow-tags: "regexp:^[a-f0-9]+-staging$"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/eswan18/forecasting
+    targetRevision: main
+    path: k8s/staging
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: forecasting-staging
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: forecasting-prod
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/eswan18/forecasting
+    targetRevision: main
+    path: k8s/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: forecasting-prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
