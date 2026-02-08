@@ -6,6 +6,7 @@ substitutions:
   _NEXT_PUBLIC_IDP_BASE_URL_STAGING: 'https://identity-staging.tailc06f30.ts.net'
   _SENTRY_ORG: 'forecasting'
   _SENTRY_PROJECT: 'forecasting-app'
+  _IMAGE: 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting'
 
 availableSecrets:
   secretManager:
@@ -13,7 +14,7 @@ availableSecrets:
       env: 'SENTRY_AUTH_TOKEN'
 
 steps:
-  # Build prod image
+  # Build prod image (with BuildKit layer caching to avoid re-running npm ci)
   - id: 'build-prod'
     name: 'gcr.io/cloud-builders/docker'
     waitFor: ['-']
@@ -21,16 +22,20 @@ steps:
     args:
       - '-c'
       - |
-        docker build \
+        docker buildx create --use --name builder-prod
+        docker buildx build \
+          --cache-from type=registry,ref=${_IMAGE}:cache-prod \
+          --cache-to type=registry,ref=${_IMAGE}:cache-prod,mode=max \
+          --push \
           --build-arg NEXT_PUBLIC_IDP_BASE_URL=${_NEXT_PUBLIC_IDP_BASE_URL_PROD} \
           --build-arg SENTRY_ORG=${_SENTRY_ORG} \
           --build-arg SENTRY_PROJECT=${_SENTRY_PROJECT} \
           --build-arg SENTRY_AUTH_TOKEN=$$SENTRY_AUTH_TOKEN \
-          -t us-central1-docker.pkg.dev/ethans-services/containers/forecasting:${SHORT_SHA}-prod \
-          -t us-central1-docker.pkg.dev/ethans-services/containers/forecasting:prod \
+          -t ${_IMAGE}:${SHORT_SHA}-prod \
+          -t ${_IMAGE}:prod \
           .
     secretEnv: ['SENTRY_AUTH_TOKEN']
-  # Build staging image
+  # Build staging image (with BuildKit layer caching to avoid re-running npm ci)
   - id: 'build-staging'
     name: 'gcr.io/cloud-builders/docker'
     waitFor: ['-']
@@ -38,25 +43,16 @@ steps:
     args:
       - '-c'
       - |
-        docker build \
+        docker buildx create --use --name builder-staging
+        docker buildx build \
+          --cache-from type=registry,ref=${_IMAGE}:cache-staging \
+          --cache-to type=registry,ref=${_IMAGE}:cache-staging,mode=max \
+          --push \
           --build-arg NEXT_PUBLIC_IDP_BASE_URL=${_NEXT_PUBLIC_IDP_BASE_URL_STAGING} \
           --build-arg SENTRY_ORG=${_SENTRY_ORG} \
           --build-arg SENTRY_PROJECT=${_SENTRY_PROJECT} \
           --build-arg SENTRY_AUTH_TOKEN=$$SENTRY_AUTH_TOKEN \
-          -t us-central1-docker.pkg.dev/ethans-services/containers/forecasting:${SHORT_SHA}-staging \
-          -t us-central1-docker.pkg.dev/ethans-services/containers/forecasting:staging \
+          -t ${_IMAGE}:${SHORT_SHA}-staging \
+          -t ${_IMAGE}:staging \
           .
     secretEnv: ['SENTRY_AUTH_TOKEN']
-  # Push all tags
-  - name: 'gcr.io/cloud-builders/docker'
-    waitFor: ['build-prod', 'build-staging']
-    args:
-      - 'push'
-      - '--all-tags'
-      - 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting'
-
-images:
-  - 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting:${SHORT_SHA}-prod'
-  - 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting:prod'
-  - 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting:${SHORT_SHA}-staging'
-  - 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting:staging'
