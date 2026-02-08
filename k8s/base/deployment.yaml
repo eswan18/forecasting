@@ -47,7 +47,7 @@ spec:
               cpu: "5m"
           securityContext:
             runAsNonRoot: true
-            runAsUser: 1000
+            runAsUser: 1001
             allowPrivilegeEscalation: false
             capabilities:
               drop:
