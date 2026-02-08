@@ -164,7 +164,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Redirect to the return URL
-    return NextResponse.redirect(new URL(returnUrl, request.url));
+    return NextResponse.redirect(new URL(returnUrl, baseUrl));
   } catch (err) {
     logger.error("OAuth callback error", err as Error, {
       code: code ? "[present]" : "[missing]",

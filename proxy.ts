@@ -33,7 +33,9 @@ export function proxy(request: NextRequest) {
   const token = request.cookies.get("token")?.value;
 
   if (!token) {
-    const loginUrl = new URL("/login", request.url);
+    // Use configured base URL when behind a reverse proxy, falling back to request origin for local dev.
+    const baseUrl = process.env.APP_BASE_URL ?? request.nextUrl.origin;
+    const loginUrl = new URL("/login", baseUrl);
     // Preserve the original URL for redirect after login (except for home page)
     if (pathname !== "/") {
       loginUrl.searchParams.set("redirect", encodeURIComponent(pathname));
