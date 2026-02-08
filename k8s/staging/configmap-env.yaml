@@ -5,4 +5,5 @@ metadata:
 data:
   ENV: "staging"
   IDP_BASE_URL: "http://identity.identity-staging.svc.cluster.local"
+  NEXT_PUBLIC_IDP_BASE_URL: "https://identity-staging.tailc06f30.ts.net"
   SENTRY_DSN: "https://42fb7fde7d5842831f2324ed33c7f50f@o4509062063587328.ingest.us.sentry.io/4509062066012160"
