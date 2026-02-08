@@ -14,7 +14,9 @@ availableSecrets:
 
 steps:
   # Build prod image
-  - name: 'gcr.io/cloud-builders/docker'
+  - id: 'build-prod'
+    name: 'gcr.io/cloud-builders/docker'
+    waitFor: ['-']
     entrypoint: 'bash'
     args:
       - '-c'
@@ -29,7 +31,9 @@ steps:
           .
     secretEnv: ['SENTRY_AUTH_TOKEN']
   # Build staging image
-  - name: 'gcr.io/cloud-builders/docker'
+  - id: 'build-staging'
+    name: 'gcr.io/cloud-builders/docker'
+    waitFor: ['-']
     entrypoint: 'bash'
     args:
       - '-c'
@@ -45,6 +49,7 @@ steps:
     secretEnv: ['SENTRY_AUTH_TOKEN']
   # Push all tags
   - name: 'gcr.io/cloud-builders/docker'
+    waitFor: ['build-prod', 'build-staging']
     args:
       - 'push'
       - '--all-tags'

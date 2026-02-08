@@ -19,9 +19,10 @@ ENV SENTRY_ORG=$SENTRY_ORG
 ENV SENTRY_PROJECT=$SENTRY_PROJECT
 ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
 
-# Dummy DATABASE_URL for build — Next.js compiles server components which
-# import lib/database.ts, but it doesn't actually connect during build.
+# Dummy values for build — Next.js evaluates server-side modules during page
+# data collection, but doesn't actually connect to anything.
 ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+ENV IDP_BASE_URL="http://dummy"
 
 RUN npm run build
 
