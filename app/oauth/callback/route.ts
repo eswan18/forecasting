@@ -19,6 +19,8 @@ export async function GET(request: NextRequest) {
   const state = searchParams.get("state");
   const error = searchParams.get("error");
   const errorDescription = searchParams.get("error_description");
+  // Use configured base URL when behind a reverse proxy, falling back to request origin for local dev.
+  const baseUrl = process.env.APP_BASE_URL ?? request.nextUrl.origin;
 
   // Handle OAuth errors
   if (error) {
@@ -27,14 +29,14 @@ export async function GET(request: NextRequest) {
       errorDescription,
     });
     return NextResponse.redirect(
-      new URL(`/login?error=${encodeURIComponent(errorDescription || error)}`, request.url),
+      new URL(`/login?error=${encodeURIComponent(errorDescription || error)}`, baseUrl),
     );
   }
 
   if (!code || !state) {
     logger.error("Missing code or state in OAuth callback");
     return NextResponse.redirect(
-      new URL("/login?error=Missing+authorization+code", request.url),
+      new URL("/login?error=Missing+authorization+code", baseUrl),
     );
   }
 
@@ -51,20 +53,20 @@ export async function GET(request: NextRequest) {
       storedState: storedState ? "[present]" : "[missing]",
     });
     return NextResponse.redirect(
-      new URL("/login?error=Invalid+state", request.url),
+      new URL("/login?error=Invalid+state", baseUrl),
     );
   }
 
   if (!codeVerifier) {
     logger.error("Missing code verifier in OAuth callback");
     return NextResponse.redirect(
-      new URL("/login?error=Missing+code+verifier", request.url),
+      new URL("/login?error=Missing+code+verifier", baseUrl),
     );
   }
 
   try {
     // Determine the redirect URI (must match what was used in the authorization request)
-    const redirectUri = `${process.env.APP_BASE_URL}/oauth/callback`;
+    const redirectUri = `${baseUrl}/oauth/callback`;
 
     // Exchange authorization code for tokens
     const tokens = await exchangeCodeForTokens(code, codeVerifier, redirectUri);
@@ -99,7 +101,7 @@ export async function GET(request: NextRequest) {
           email: claims.email,
         });
         return NextResponse.redirect(
-          new URL("/login?error=Failed+to+create+user", request.url),
+          new URL("/login?error=Failed+to+create+user", baseUrl),
         );
       }
 
@@ -125,7 +127,7 @@ export async function GET(request: NextRequest) {
         idpUserId: claims.sub,
       });
       return NextResponse.redirect(
-        new URL("/login?error=Account+is+deactivated", request.url),
+        new URL("/login?error=Account+is+deactivated", baseUrl),
       );
     }
 
@@ -168,7 +170,7 @@ export async function GET(request: NextRequest) {
       code: code ? "[present]" : "[missing]",
     });
     return NextResponse.redirect(
-      new URL("/login?error=Authentication+failed", request.url),
+      new URL("/login?error=Authentication+failed", baseUrl),
     );
   }
 }
