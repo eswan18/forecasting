@@ -10,6 +10,9 @@ import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const returnUrl = searchParams.get("returnUrl") || "/";
+  // Use configured base URL when behind a reverse proxy (Cloudflare Tunnel / Tailscale),
+  // falling back to request origin for local development.
+  const baseUrl = process.env.APP_BASE_URL ?? request.nextUrl.origin;
 
   try {
     // Generate PKCE values
@@ -17,9 +20,7 @@ export async function GET(request: NextRequest) {
     const codeVerifier = generateRandomString(64);
     const codeChallenge = await generateCodeChallenge(codeVerifier);
 
-    // Determine redirect URI from the configured base URL, not the request origin,
-    // since the app runs behind a reverse proxy (Cloudflare Tunnel / Tailscale).
-    const redirectUri = `${process.env.APP_BASE_URL}/oauth/callback`;
+    const redirectUri = `${baseUrl}/oauth/callback`;
 
     // Store state and code verifier in cookies for validation in callback
     const cookieStore = await cookies();
@@ -64,7 +65,7 @@ export async function GET(request: NextRequest) {
   } catch (err) {
     logger.error("Failed to initiate OAuth login", err as Error);
     return NextResponse.redirect(
-      new URL("/login?error=Failed+to+start+login", request.url),
+      new URL("/login?error=Failed+to+start+login", baseUrl),
     );
   }
 }
