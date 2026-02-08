@@ -112,4 +112,3 @@ Environment variables are loaded at startup via `instrumentation.ts` and the app
 ### Error Monitoring
 
 - Sentry integration for error tracking and performance monitoring
-- Vercel Analytics for usage tracking
