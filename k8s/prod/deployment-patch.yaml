@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forecasting
+spec:
+  replicas: 2
+  template:
+    spec:
+      serviceAccountName: forecasting-prod-ksa
+      containers:
+        - name: forecasting
+          envFrom:
+            - configMapRef:
+                name: forecasting-config
+            - configMapRef:
+                name: forecasting-prod-env-config
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: forecasting-prod-secrets
+                  key: DATABASE_URL
+            - name: ADMIN_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: forecasting-prod-secrets
+                  key: ADMIN_DATABASE_URL
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: forecasting-prod-secrets
+                  key: JWT_SECRET
+            - name: ARGON2_SALT
+              valueFrom:
+                secretKeyRef:
+                  name: forecasting-prod-secrets
+                  key: ARGON2_SALT
+            - name: IDP_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: forecasting-prod-secrets
+                  key: IDP_CLIENT_ID
+            - name: IDP_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: forecasting-prod-secrets
+                  key: IDP_CLIENT_SECRET
+            - name: IDP_ADMIN_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: forecasting-prod-secrets
+                  key: IDP_ADMIN_CLIENT_ID
+            - name: IDP_ADMIN_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: forecasting-prod-secrets
+                  key: IDP_ADMIN_CLIENT_SECRET
+      volumes:
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: forecasting-prod-secrets

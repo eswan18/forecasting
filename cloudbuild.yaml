@@ -1,0 +1,56 @@
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  _NEXT_PUBLIC_IDP_BASE_URL_PROD: 'https://identity.ethanswan.com'
+  _NEXT_PUBLIC_IDP_BASE_URL_STAGING: 'https://identity-staging.tailc06f30.ts.net'
+  _SENTRY_ORG: 'forecasting'
+  _SENTRY_PROJECT: 'forecasting-app'
+
+steps:
+  # Build prod image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_IDP_BASE_URL=${_NEXT_PUBLIC_IDP_BASE_URL_PROD}'
+      - '--build-arg'
+      - 'SENTRY_ORG=${_SENTRY_ORG}'
+      - '--build-arg'
+      - 'SENTRY_PROJECT=${_SENTRY_PROJECT}'
+      - '--build-arg'
+      - 'SENTRY_AUTH_TOKEN=${_SENTRY_AUTH_TOKEN}'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting:${SHORT_SHA}-prod'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting:prod'
+      - '.'
+  # Build staging image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_IDP_BASE_URL=${_NEXT_PUBLIC_IDP_BASE_URL_STAGING}'
+      - '--build-arg'
+      - 'SENTRY_ORG=${_SENTRY_ORG}'
+      - '--build-arg'
+      - 'SENTRY_PROJECT=${_SENTRY_PROJECT}'
+      - '--build-arg'
+      - 'SENTRY_AUTH_TOKEN=${_SENTRY_AUTH_TOKEN}'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting:${SHORT_SHA}-staging'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting:staging'
+      - '.'
+  # Push all tags
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '--all-tags'
+      - 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting'
+
+images:
+  - 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting:${SHORT_SHA}-prod'
+  - 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting:prod'
+  - 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting:${SHORT_SHA}-staging'
+  - 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting:staging'
