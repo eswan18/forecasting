@@ -49,8 +49,10 @@ export interface UserScoreBreakdown {
 
 export async function getCompetitionScores({
   competitionId,
+  excludeIncomplete = false,
 }: {
   competitionId: number;
+  excludeIncomplete?: boolean;
 }): Promise<ServerActionResult<CompetitionScore>> {
   // Scores are computed as the mean of the squared differences between the forecast and the resolution.
   const currentUser = await getUserFromCookies();
@@ -96,7 +98,32 @@ export async function getCompetitionScores({
           .execute(),
       ]);
 
-      return { overallResults, categoryResults };
+      // When excludeIncomplete is true, filter out users who haven't
+      // forecasted on every prop in the competition.
+      let completeUserIds: Set<number> | null = null;
+      if (excludeIncomplete) {
+        const [totalPropsResult, userForecastCounts] = await Promise.all([
+          trx
+            .selectFrom("props")
+            .select(sql`COUNT(*)`.as("count"))
+            .where("competition_id", "=", competitionId)
+            .executeTakeFirstOrThrow(),
+          trx
+            .selectFrom("v_forecasts")
+            .select(["user_id", sql`COUNT(DISTINCT prop_id)`.as("count")])
+            .where("competition_id", "=", competitionId)
+            .groupBy("user_id")
+            .execute(),
+        ]);
+        const totalProps = Number(totalPropsResult.count);
+        completeUserIds = new Set(
+          userForecastCounts
+            .filter((row) => Number(row.count) >= totalProps)
+            .map((row) => row.user_id),
+        );
+      }
+
+      return { overallResults, categoryResults, completeUserIds };
     });
 
     const duration = Date.now() - startTime;
@@ -110,21 +137,28 @@ export async function getCompetitionScores({
       categoryCount: results.categoryResults.length,
     });
 
-    // Transform results into the expected array format
-    const overallScores: UserScore[] = results.overallResults.map((row) => ({
-      userId: row.user_id,
-      userName: row.user_name,
-      score: Number(row.average_score),
-    }));
+    // Transform results into the expected array format, filtering out
+    // incomplete users if requested.
+    const { completeUserIds } = results;
+    const includeUser = (userId: number) =>
+      completeUserIds === null || completeUserIds.has(userId);
 
-    const categoryScores: UserCategoryScore[] = results.categoryResults.map(
-      (row) => ({
+    const overallScores: UserScore[] = results.overallResults
+      .filter((row) => includeUser(row.user_id))
+      .map((row) => ({
+        userId: row.user_id,
+        userName: row.user_name,
+        score: Number(row.average_score),
+      }));
+
+    const categoryScores: UserCategoryScore[] = results.categoryResults
+      .filter((row) => includeUser(row.user_id))
+      .map((row) => ({
         userId: row.user_id,
         userName: row.user_name,
         categoryId: row.category_id!,
         score: Number(row.average_score),
-      }),
-    );
+      }));
 
     logger.info("Competition scores calculated successfully", {
       operation: "getCompetitionScores",
