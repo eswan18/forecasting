@@ -135,6 +135,7 @@ describe("Identity Login Functions", () => {
         username: "testuser",
         name: "John Doe",
         picture_url: "https://example.com/photo.jpg",
+        last_login_at: expect.any(Date),
       });
     });
 
@@ -153,6 +154,7 @@ describe("Identity Login Functions", () => {
         email: "test@example.com",
         username: "testuser",
         picture_url: "https://example.com/photo.jpg",
+        last_login_at: expect.any(Date),
       });
       expect(mockSetData).not.toHaveProperty("name");
     });

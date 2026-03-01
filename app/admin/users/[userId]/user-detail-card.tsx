@@ -206,6 +206,17 @@ export default function UserDetailCard({ user }: UserDetailCardProps) {
               </span>
             </div>
 
+            <div className="flex justify-between items-center py-2 border-b border-border">
+              <span className="text-sm font-medium text-muted-foreground">
+                Last Login
+              </span>
+              <span className="text-sm">
+                {user.last_login_at
+                  ? formatDateTime(new Date(user.last_login_at), timezone)
+                  : "Never"}
+              </span>
+            </div>
+
             {!isActive && user.deactivated_at && (
               <div className="flex justify-between items-center py-2 border-b border-border">
                 <span className="text-sm font-medium text-muted-foreground">

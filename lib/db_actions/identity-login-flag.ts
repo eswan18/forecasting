@@ -106,6 +106,7 @@ export async function createUserFromIdp({
         idp_user_id: idpUserId,
         username,
         picture_url: pictureUrl,
+        last_login_at: new Date(),
       })
       .returning("id")
       .executeTakeFirstOrThrow();
@@ -152,10 +153,11 @@ export async function syncUserFromIdp(
 
   try {
     // Only include name in update if IDP provides it
-    const updateData: { email: string; username: string | null; picture_url: string | null; name?: string } = {
+    const updateData: { email: string; username: string | null; picture_url: string | null; last_login_at: Date; name?: string } = {
       email,
       username,
       picture_url: pictureUrl,
+      last_login_at: new Date(),
     };
     if (name) {
       updateData.name = name;
