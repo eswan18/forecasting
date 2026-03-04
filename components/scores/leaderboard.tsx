@@ -37,6 +37,7 @@ interface UserWithRank {
   score: number;
   categoryScores: UserCategoryScore[];
   isCurrentUser: boolean;
+  isIncomplete: boolean;
 }
 
 interface ScoreRowProps {
@@ -85,6 +86,11 @@ function ScoreRow({
             {user.isCurrentUser && (
               <span className="text-blue-600 dark:text-blue-400 text-sm ml-1">
                 (you)
+              </span>
+            )}
+            {user.isIncomplete && (
+              <span className="text-muted-foreground text-sm ml-1">
+                (incomplete)
               </span>
             )}
           </span>
@@ -189,6 +195,8 @@ export default function Leaderboard({
     (a, b) => a.score - b.score
   );
 
+  const incompleteSet = new Set(scores.incompleteUserIds);
+
   // Build users with ranks and category scores
   const usersWithRanks: UserWithRank[] = sortedUsers.map((user, index) => ({
     rank: index + 1,
@@ -199,6 +207,7 @@ export default function Leaderboard({
       (cs) => cs.userId === user.userId
     ),
     isCurrentUser: user.userId === currentUserId,
+    isIncomplete: incompleteSet.has(user.userId),
   }));
 
   // Find current user's data
@@ -305,6 +314,11 @@ export default function Leaderboard({
                 </div>
                 <div className="font-medium text-gray-900 truncate text-sm">
                   {user.userName}
+                  {user.isIncomplete && (
+                    <span className="text-muted-foreground text-xs ml-1">
+                      (incomplete)
+                    </span>
+                  )}
                 </div>
                 <div className={`text-lg font-mono font-bold ${colors.text}`}>
                   {user.score.toFixed(3)}
@@ -339,6 +353,13 @@ export default function Leaderboard({
           ))}
         </div>
       </div>
+
+      {/* Footnote for incomplete users */}
+      {scores.incompleteUserIds.length > 0 && (
+        <p className="text-xs text-muted-foreground">
+          Users marked incomplete have not forecasted all propositions.
+        </p>
+      )}
     </div>
   );
 }

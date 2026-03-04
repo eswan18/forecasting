@@ -26,6 +26,7 @@ export interface UserCategoryScore {
 export interface CompetitionScore {
   overallScores: UserScore[];
   categoryScores: UserCategoryScore[];
+  incompleteUserIds: number[];
 }
 
 export interface UserForecastScore {
@@ -98,32 +99,35 @@ export async function getCompetitionScores({
           .execute(),
       ]);
 
-      // When excludeIncomplete is true, filter out users who haven't
-      // forecasted on every prop in the competition.
-      let completeUserIds: Set<number> | null = null;
-      if (excludeIncomplete) {
-        const [totalPropsResult, userForecastCounts] = await Promise.all([
-          trx
-            .selectFrom("props")
-            .select(sql`COUNT(*)`.as("count"))
-            .where("competition_id", "=", competitionId)
-            .executeTakeFirstOrThrow(),
-          trx
-            .selectFrom("v_forecasts")
-            .select(["user_id", sql`COUNT(DISTINCT prop_id)`.as("count")])
-            .where("competition_id", "=", competitionId)
-            .groupBy("user_id")
-            .execute(),
-        ]);
-        const totalProps = Number(totalPropsResult.count);
-        completeUserIds = new Set(
-          userForecastCounts
-            .filter((row) => Number(row.count) >= totalProps)
-            .map((row) => row.user_id),
-        );
-      }
+      // Compute which users have forecasted on every prop in the competition.
+      const [totalPropsResult, userForecastCounts] = await Promise.all([
+        trx
+          .selectFrom("props")
+          .select(sql`COUNT(*)`.as("count"))
+          .where("competition_id", "=", competitionId)
+          .executeTakeFirstOrThrow(),
+        trx
+          .selectFrom("v_forecasts")
+          .select(["user_id", sql`COUNT(DISTINCT prop_id)`.as("count")])
+          .where("competition_id", "=", competitionId)
+          .groupBy("user_id")
+          .execute(),
+      ]);
+      const totalProps = Number(totalPropsResult.count);
+      const completeUserIds = new Set(
+        userForecastCounts
+          .filter((row) => Number(row.count) >= totalProps)
+          .map((row) => row.user_id),
+      );
+      // All user IDs that appear in scores but aren't complete
+      const allScoredUserIds = new Set(
+        overallResults.map((row) => row.user_id),
+      );
+      const incompleteUserIds = [...allScoredUserIds].filter(
+        (id) => !completeUserIds.has(id),
+      );
 
-      return { overallResults, categoryResults, completeUserIds };
+      return { overallResults, categoryResults, completeUserIds, incompleteUserIds };
     });
 
     const duration = Date.now() - startTime;
@@ -141,7 +145,7 @@ export async function getCompetitionScores({
     // incomplete users if requested.
     const { completeUserIds } = results;
     const includeUser = (userId: number) =>
-      completeUserIds === null || completeUserIds.has(userId);
+      !excludeIncomplete || completeUserIds.has(userId);
 
     const overallScores: UserScore[] = results.overallResults
       .filter((row) => includeUser(row.user_id))
@@ -172,6 +176,7 @@ export async function getCompetitionScores({
     return success({
       overallScores,
       categoryScores,
+      incompleteUserIds: results.incompleteUserIds,
     });
   } catch (err) {
     const duration = Date.now() - startTime;

@@ -69,6 +69,7 @@ describe("getCompetitionScores", () => {
         if (result.success) {
           expect(result.data.overallScores).toEqual([]);
           expect(result.data.categoryScores).toEqual([]);
+          expect(result.data.incompleteUserIds).toEqual([]);
         }
       },
     );
@@ -143,7 +144,10 @@ describe("getCompetitionScores", () => {
 
         expect(result.success).toBe(true);
         if (result.success) {
-          const { overallScores, categoryScores } = result.data;
+          const { overallScores, categoryScores, incompleteUserIds } = result.data;
+
+          // All users forecasted all props, so none are incomplete
+          expect(incompleteUserIds).toEqual([]);
 
           // Check overall scores (both users have resolved forecasts)
           expect(overallScores).toHaveLength(2);
@@ -231,7 +235,10 @@ describe("getCompetitionScores", () => {
 
         expect(result.success).toBe(true);
         if (result.success) {
-          const { overallScores } = result.data;
+          const { overallScores, incompleteUserIds } = result.data;
+
+          // Single user forecasted the only prop, so they are complete
+          expect(incompleteUserIds).toEqual([]);
 
           // Brier score = (resolution - forecast)^2 = (1 - 0.8)^2 = 0.04
           expect(overallScores).toHaveLength(1);
@@ -301,13 +308,14 @@ describe("getCompetitionScores", () => {
           user_id: completeUser.id,
         });
 
-        // Without excludeIncomplete: both users appear
+        // Without excludeIncomplete: both users appear, incomplete user is flagged
         const allResult = await getCompetitionScores({
           competitionId: competition.id,
         });
         expect(allResult.success).toBe(true);
         if (allResult.success) {
           expect(allResult.data.overallScores).toHaveLength(2);
+          expect(allResult.data.incompleteUserIds).toEqual([incompleteUser.id]);
         }
 
         // With excludeIncomplete: only the complete user appears
@@ -350,6 +358,7 @@ describe("getCompetitionScores", () => {
         if (result.success) {
           expect(result.data.overallScores).toEqual([]);
           expect(result.data.categoryScores).toEqual([]);
+          expect(result.data.incompleteUserIds).toEqual([]);
         }
       },
     );
@@ -369,6 +378,7 @@ describe("getCompetitionScores", () => {
           // Non-existent competition should return empty scores
           expect(result.data.overallScores).toEqual([]);
           expect(result.data.categoryScores).toEqual([]);
+          expect(result.data.incompleteUserIds).toEqual([]);
         }
       },
     );

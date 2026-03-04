@@ -10,6 +10,7 @@ interface LeaderboardEntry {
   userName: string;
   score: number;
   isCurrentUser: boolean;
+  isIncomplete: boolean;
 }
 
 interface LeaderboardRowProps {
@@ -42,6 +43,9 @@ function LeaderboardRow({ entry }: LeaderboardRowProps) {
         {entry.isCurrentUser && (
           <span className="text-primary text-xs ml-1">(you)</span>
         )}
+        {entry.isIncomplete && (
+          <span className="text-muted-foreground text-xs ml-1">(incomplete)</span>
+        )}
       </div>
       <div
         className={cn(
@@ -73,6 +77,8 @@ export function LeaderboardSidebar({
     (a, b) => a.score - b.score,
   );
 
+  const incompleteSet = new Set(scores.incompleteUserIds);
+
   // Build entries with ranks
   const entries: LeaderboardEntry[] = sortedUsers
     .slice(0, maxEntries)
@@ -82,6 +88,7 @@ export function LeaderboardSidebar({
       userName: user.userName,
       score: user.score,
       isCurrentUser: user.userId === currentUserId,
+      isIncomplete: incompleteSet.has(user.userId),
     }));
 
   if (entries.length === 0) {
