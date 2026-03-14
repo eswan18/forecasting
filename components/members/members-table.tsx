@@ -31,6 +31,7 @@ import {
 } from "@/lib/db_actions/competition-members";
 import type { VCompetitionMember } from "@/types/db_types";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface MembersTableProps {
   members: VCompetitionMember[];
@@ -126,9 +127,19 @@ function MemberRow({
         )}
       >
         {/* Avatar / Initial */}
-        <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-foreground font-medium shrink-0">
-          {member.user_name.charAt(0).toUpperCase()}
-        </div>
+        {member.user_picture_url ? (
+          <Image
+            src={member.user_picture_url}
+            alt={member.user_name}
+            width={40}
+            height={40}
+            className="h-10 w-10 rounded-full object-cover shrink-0"
+          />
+        ) : (
+          <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-foreground font-medium shrink-0">
+            {member.user_name.charAt(0).toUpperCase()}
+          </div>
+        )}
 
         {/* Name and email */}
         <div className="flex-1 min-w-0">
