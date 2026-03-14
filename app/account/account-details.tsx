@@ -65,7 +65,7 @@ function AccountSettingsSection({
                 />
               </button>
               <Dialog open={avatarOpen} onOpenChange={setAvatarOpen}>
-                <DialogContent className="flex items-center justify-center bg-transparent border-none shadow-none p-0 max-w-fit [&>button]:hidden">
+                <DialogContent className="flex items-center justify-center bg-transparent border-none shadow-none p-0 max-w-fit outline-none focus:outline-none [&>button]:hidden">
                   <DialogTitle className="sr-only">Profile picture</DialogTitle>
                   <Image
                     src={pictureUrl}
