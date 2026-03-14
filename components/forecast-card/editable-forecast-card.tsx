@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { PropWithUserForecast } from "@/types/db_types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -96,10 +96,37 @@ export function EditableForecastCard({
   const isSubmitting =
     createForecastAction.isLoading || updateForecastAction.isLoading;
 
+  const [isEditingPercent, setIsEditingPercent] = useState(false);
+  const [percentInputValue, setPercentInputValue] = useState("");
+  const percentInputRef = useRef<HTMLInputElement>(null);
+
   const hasChanges = localForecast !== prop.user_forecast;
   const colors = getProbColor(localForecast);
   const percent =
     localForecast !== null ? Math.round(localForecast * 100) : null;
+
+  const handlePercentClick = () => {
+    setPercentInputValue(percent !== null ? String(percent) : "");
+    setIsEditingPercent(true);
+    setTimeout(() => percentInputRef.current?.select(), 0);
+  };
+
+  const commitPercentInput = () => {
+    setIsEditingPercent(false);
+    const trimmed = percentInputValue.trim();
+    if (trimmed === "") return;
+    const num = Number(trimmed);
+    if (isNaN(num) || num < 0 || num > 100) return;
+    setLocalForecast(Math.round(num) / 100);
+  };
+
+  const handlePercentKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      commitPercentInput();
+    } else if (e.key === "Escape") {
+      setIsEditingPercent(false);
+    }
+  };
 
   const handleBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -162,11 +189,30 @@ export function EditableForecastCard({
       <div className="flex items-stretch gap-4">
         {/* Probability box */}
         <div
-          className={`${colors.bg} ${colors.text} rounded-lg w-20 flex items-center justify-center shrink-0 transition-colors`}
+          className={`${colors.bg} ${colors.text} rounded-lg w-20 flex items-center justify-center shrink-0 transition-colors cursor-pointer`}
+          onClick={!isEditingPercent ? handlePercentClick : undefined}
+          title="Click to type a value"
         >
-          <div className="text-2xl font-bold">
-            {percent !== null ? `${percent}%` : "—"}
-          </div>
+          {isEditingPercent ? (
+            <div className="flex items-center">
+              <input
+                ref={percentInputRef}
+                type="text"
+                inputMode="numeric"
+                value={percentInputValue}
+                onChange={(e) => setPercentInputValue(e.target.value)}
+                onBlur={commitPercentInput}
+                onKeyDown={handlePercentKeyDown}
+                className="w-12 text-2xl font-bold text-center bg-transparent outline-none border-b-2 border-current"
+                aria-label="Forecast percentage"
+              />
+              <span className="text-2xl font-bold">%</span>
+            </div>
+          ) : (
+            <div className="text-2xl font-bold">
+              {percent !== null ? `${percent}%` : "—"}
+            </div>
+          )}
         </div>
 
         <div className="flex-1 min-w-0">
