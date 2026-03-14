@@ -245,5 +245,6 @@ export interface VCompetitionMembersView {
   user_name: string;
   user_email: string;
   user_username: string | null;
+  user_picture_url: string | null;
 }
 export type VCompetitionMember = Selectable<VCompetitionMembersView>;
