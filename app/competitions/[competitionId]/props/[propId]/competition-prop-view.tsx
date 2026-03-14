@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight, Calendar, CalendarClock, Lock } from "lucide-react";
@@ -123,12 +123,40 @@ export function CompetitionPropView({
   const isSubmitting =
     createForecastAction.isLoading || updateForecastAction.isLoading;
 
+  const [isEditingPercent, setIsEditingPercent] = useState(false);
+  const [percentInputValue, setPercentInputValue] = useState("");
+  const percentInputRef = useRef<HTMLInputElement>(null);
+
   const hasChanges = localForecast !== prop.user_forecast;
   const colors = getProbColor(localForecast);
   const percent =
     localForecast !== null ? Math.round(localForecast * 100) : null;
 
   const relativeDeadline = getRelativeDeadline(prop.prop_forecasts_due_date);
+
+  const handlePercentClick = () => {
+    if (!isForecastingOpen) return;
+    setPercentInputValue(percent !== null ? String(percent) : "");
+    setIsEditingPercent(true);
+    setTimeout(() => percentInputRef.current?.select(), 0);
+  };
+
+  const commitPercentInput = () => {
+    setIsEditingPercent(false);
+    const trimmed = percentInputValue.trim();
+    if (trimmed === "") return;
+    const num = Number(trimmed);
+    if (isNaN(num) || num < 0 || num > 100) return;
+    setLocalForecast(Math.round(num) / 100);
+  };
+
+  const handlePercentKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      commitPercentInput();
+    } else if (e.key === "Escape") {
+      setIsEditingPercent(false);
+    }
+  };
 
   const handleBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isForecastingOpen) return;
@@ -275,14 +303,40 @@ export function CompetitionPropView({
             <div className="flex items-center gap-6 mb-6">
               {/* Probability display */}
               <div
-                className={`${colors.bg} ${colors.text} rounded-xl w-28 h-24 flex flex-col items-center justify-center shrink-0 transition-colors`}
+                className={`${colors.bg} ${colors.text} rounded-xl w-28 h-24 flex flex-col items-center justify-center shrink-0 transition-colors ${
+                  isForecastingOpen ? "cursor-pointer" : ""
+                }`}
+                onClick={!isEditingPercent ? handlePercentClick : undefined}
+                title={isForecastingOpen ? "Click to type a value" : undefined}
               >
-                <div className="text-4xl font-bold">
-                  {percent !== null ? `${percent}%` : "—"}
-                </div>
-                <div className="text-xs opacity-70">
-                  {percent !== null ? "Your forecast" : "Not set"}
-                </div>
+                {isEditingPercent ? (
+                  <>
+                    <div className="flex items-center">
+                      <input
+                        ref={percentInputRef}
+                        type="text"
+                        inputMode="numeric"
+                        value={percentInputValue}
+                        onChange={(e) => setPercentInputValue(e.target.value)}
+                        onBlur={commitPercentInput}
+                        onKeyDown={handlePercentKeyDown}
+                        className="w-16 text-4xl font-bold text-center bg-transparent outline-none border-b-2 border-current"
+                        aria-label="Forecast percentage"
+                      />
+                      <span className="text-4xl font-bold">%</span>
+                    </div>
+                    <div className="text-xs opacity-70">Your forecast</div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-4xl font-bold">
+                      {percent !== null ? `${percent}%` : "—"}
+                    </div>
+                    <div className="text-xs opacity-70">
+                      {percent !== null ? "Your forecast" : "Not set"}
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Slider */}
