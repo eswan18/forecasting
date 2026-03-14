@@ -1,6 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { ExternalLink, User2 } from "lucide-react";
 import Image from "next/image";
@@ -29,6 +35,8 @@ function AccountSettingsSection({
   pictureUrl: string | null;
   idpBaseUrl?: string;
 }) {
+  const [avatarOpen, setAvatarOpen] = useState(false);
+
   function getAccountSettingsUrl() {
     if (idpBaseUrl) {
       const normalizedBaseUrl = idpBaseUrl.replace(/\/+$/, "");
@@ -42,13 +50,33 @@ function AccountSettingsSection({
       <div className="space-y-6">
         <div className="flex flex-col items-center gap-4">
           {pictureUrl ? (
-            <Image
-              src={pictureUrl}
-              alt="Your avatar"
-              width={80}
-              height={80}
-              className="h-20 w-20 rounded-full object-cover border border-border"
-            />
+            <>
+              <button
+                type="button"
+                onClick={() => setAvatarOpen(true)}
+                className="cursor-pointer rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              >
+                <Image
+                  src={pictureUrl}
+                  alt="Your avatar"
+                  width={80}
+                  height={80}
+                  className="h-20 w-20 rounded-full object-cover border border-border"
+                />
+              </button>
+              <Dialog open={avatarOpen} onOpenChange={setAvatarOpen}>
+                <DialogContent className="flex items-center justify-center bg-transparent border-none shadow-none p-0 max-w-fit [&>button]:hidden">
+                  <DialogTitle className="sr-only">Profile picture</DialogTitle>
+                  <Image
+                    src={pictureUrl}
+                    alt="Your avatar"
+                    width={300}
+                    height={300}
+                    className="h-72 w-72 rounded-full object-cover"
+                  />
+                </DialogContent>
+              </Dialog>
+            </>
           ) : (
             <div className="h-20 w-20 rounded-full border border-border bg-muted flex items-center justify-center">
               <User2 className="h-10 w-10 text-muted-foreground" />
