@@ -27,6 +27,7 @@ export default async function MiniLeaderboard({
   }
 
   const scores = scoresResult.data;
+  const incompleteSet = new Set(scores.incompleteUserIds);
   const sortedUsers = [...scores.overallScores]
     .sort((a, b) => a.score - b.score)
     .slice(0, limit);
@@ -57,7 +58,12 @@ export default async function MiniLeaderboard({
                   <span className="text-muted-foreground w-5 text-right">
                     {index + 1}.
                   </span>
-                  <span className="font-medium">{userScore.userName}</span>
+                  <span className="font-medium">
+                    {userScore.userName}
+                    {incompleteSet.has(userScore.userId) && (
+                      <span className="text-muted-foreground text-xs ml-1">(incomplete)</span>
+                    )}
+                  </span>
                 </div>
                 <span className="text-muted-foreground tabular-nums">
                   {userScore.score.toFixed(2)}

@@ -69,6 +69,7 @@ describe("getCompetitionScores", () => {
         if (result.success) {
           expect(result.data.overallScores).toEqual([]);
           expect(result.data.categoryScores).toEqual([]);
+          expect(result.data.incompleteUserIds).toEqual([]);
         }
       },
     );
@@ -143,7 +144,10 @@ describe("getCompetitionScores", () => {
 
         expect(result.success).toBe(true);
         if (result.success) {
-          const { overallScores, categoryScores } = result.data;
+          const { overallScores, categoryScores, incompleteUserIds } = result.data;
+
+          // All users forecasted all props, so none are incomplete
+          expect(incompleteUserIds).toEqual([]);
 
           // Check overall scores (both users have resolved forecasts)
           expect(overallScores).toHaveLength(2);
@@ -231,13 +235,104 @@ describe("getCompetitionScores", () => {
 
         expect(result.success).toBe(true);
         if (result.success) {
-          const { overallScores } = result.data;
+          const { overallScores, incompleteUserIds } = result.data;
+
+          // Single user forecasted the only prop, so they are complete
+          expect(incompleteUserIds).toEqual([]);
 
           // Brier score = (resolution - forecast)^2 = (1 - 0.8)^2 = 0.04
           expect(overallScores).toHaveLength(1);
           expect(overallScores[0].userId).toBe(user.id);
           expect(overallScores[0].userName).toBe(user.name);
           expect(overallScores[0].score).toBeCloseTo(0.04, 6); // (1 - 0.8)^2 = 0.04
+        }
+      },
+    );
+
+    ifRunningContainerTestsIt(
+      "should exclude users who haven't forecasted all props when excludeIncomplete is true",
+      async () => {
+        const completeUser = await factory.createUser({
+          name: "Complete User",
+        });
+        const incompleteUser = await factory.createUser({
+          name: "Incomplete User",
+        });
+        vi.mocked(getUserFromCookies).mockResolvedValue(completeUser);
+
+        const competition = await factory.createCompetition();
+
+        const prop1 = await factory.createCompetitionProp(competition.id, {
+          text: "Prop 1",
+        });
+        const prop2 = await factory.createCompetitionProp(competition.id, {
+          text: "Prop 2",
+        });
+        const prop3 = await factory.createCompetitionProp(competition.id, {
+          text: "Prop 3",
+        });
+
+        // Complete user forecasts on all 3 props
+        await factory.createForecast(completeUser.id, prop1.id, {
+          forecast: 0.7,
+        });
+        await factory.createForecast(completeUser.id, prop2.id, {
+          forecast: 0.4,
+        });
+        await factory.createForecast(completeUser.id, prop3.id, {
+          forecast: 0.6,
+        });
+
+        // Incomplete user only forecasts on 2 of 3 props
+        await factory.createForecast(incompleteUser.id, prop1.id, {
+          forecast: 0.8,
+        });
+        await factory.createForecast(incompleteUser.id, prop2.id, {
+          forecast: 0.3,
+        });
+
+        // Resolve all props
+        await factory.createResolution(prop1.id, {
+          resolution: true,
+          notes: "resolved",
+          user_id: completeUser.id,
+        });
+        await factory.createResolution(prop2.id, {
+          resolution: false,
+          notes: "resolved",
+          user_id: completeUser.id,
+        });
+        await factory.createResolution(prop3.id, {
+          resolution: true,
+          notes: "resolved",
+          user_id: completeUser.id,
+        });
+
+        // Without excludeIncomplete: both users appear, incomplete user is flagged
+        const allResult = await getCompetitionScores({
+          competitionId: competition.id,
+        });
+        expect(allResult.success).toBe(true);
+        if (allResult.success) {
+          expect(allResult.data.overallScores).toHaveLength(2);
+          expect(allResult.data.incompleteUserIds).toEqual([incompleteUser.id]);
+        }
+
+        // With excludeIncomplete: only the complete user appears
+        const filteredResult = await getCompetitionScores({
+          competitionId: competition.id,
+          excludeIncomplete: true,
+        });
+        expect(filteredResult.success).toBe(true);
+        if (filteredResult.success) {
+          expect(filteredResult.data.overallScores).toHaveLength(1);
+          expect(filteredResult.data.overallScores[0].userId).toBe(
+            completeUser.id,
+          );
+          // Category scores should also be filtered
+          filteredResult.data.categoryScores.forEach((cs) => {
+            expect(cs.userId).toBe(completeUser.id);
+          });
         }
       },
     );
@@ -263,6 +358,7 @@ describe("getCompetitionScores", () => {
         if (result.success) {
           expect(result.data.overallScores).toEqual([]);
           expect(result.data.categoryScores).toEqual([]);
+          expect(result.data.incompleteUserIds).toEqual([]);
         }
       },
     );
@@ -282,6 +378,7 @@ describe("getCompetitionScores", () => {
           // Non-existent competition should return empty scores
           expect(result.data.overallScores).toEqual([]);
           expect(result.data.categoryScores).toEqual([]);
+          expect(result.data.incompleteUserIds).toEqual([]);
         }
       },
     );
