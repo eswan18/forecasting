@@ -36,10 +36,18 @@ export const propFormSchema = z
     message: "Props associated with a competition must be public.",
     path: ["user_id"],
   })
-  .refine((data) => !(data.user_id === null && data.category_id === null), {
-    message: "Public props must have a category",
-    path: ["category_id"],
-  });
+  .refine(
+    (data) =>
+      !(
+        data.user_id === null &&
+        data.category_id === null &&
+        data.competition_id === null
+      ),
+    {
+      message: "Public props must have a category",
+      path: ["category_id"],
+    },
+  );
 
 export type PropFormValues = z.infer<typeof propFormSchema>;
 

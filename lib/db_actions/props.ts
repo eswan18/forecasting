@@ -398,8 +398,7 @@ export async function createProp({
       ];
     }
 
-    // Category is only required for public props without a competition
-    // Personal props (user_id set) and competition props don't require a category
+    // Category is required for non-personal, non-competition props
     if (prop.category_id == null && prop.user_id === null && prop.competition_id === null) {
       validationErrors.category_id = ["Category is required"];
     }
@@ -443,6 +442,15 @@ export async function createProp({
 
         if (!competition) {
           return error("Competition not found", ERROR_CODES.NOT_FOUND);
+        }
+
+        // Public competition props must have a category
+        if (!competition.is_private && prop.category_id == null) {
+          return validationError(
+            "Please fix the validation errors",
+            { category_id: ["Category is required for public competition props"] },
+            ERROR_CODES.VALIDATION_ERROR,
+          );
         }
 
         // For private competitions, only admins can create props
