@@ -202,14 +202,22 @@ describe("Props Unit Tests", () => {
       expect(result.success).toBe(true);
     });
 
-    it("should allow competition props without category", async () => {
+    it("should allow private competition props without category", async () => {
       vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
 
       const mockTrx = {
-        selectFrom: vi.fn().mockReturnThis(),
-        select: vi.fn().mockReturnThis(),
-        where: vi.fn().mockReturnThis(),
-        executeTakeFirst: vi.fn().mockResolvedValue({ is_private: false }),
+        selectFrom: vi.fn().mockImplementation(() => {
+          return {
+            select: vi.fn().mockReturnValue({
+              where: vi.fn().mockReturnValue({
+                where: vi.fn().mockReturnValue({
+                  executeTakeFirst: vi.fn().mockResolvedValue({ role: "admin" }),
+                }),
+                executeTakeFirst: vi.fn().mockResolvedValue({ is_private: true }),
+              }),
+            }),
+          };
+        }),
         insertInto: vi.fn().mockReturnThis(),
         values: vi.fn().mockReturnThis(),
         execute: vi.fn().mockResolvedValue(undefined),
@@ -221,14 +229,43 @@ describe("Props Unit Tests", () => {
 
       const result = await createProp({
         prop: {
-          text: "This is a competition proposition",
+          text: "This is a private competition proposition",
           category_id: null,
-          competition_id: 1, // Competition prop
+          competition_id: 1,
           user_id: null,
         },
       });
 
       expect(result.success).toBe(true);
+    });
+
+    it("should require category for public competition props", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+      const mockTrx = {
+        selectFrom: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        executeTakeFirst: vi.fn().mockResolvedValue({ is_private: false }),
+      };
+
+      vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
+        return fn(mockTrx as any);
+      });
+
+      const result = await createProp({
+        prop: {
+          text: "This is a public competition proposition",
+          category_id: null,
+          competition_id: 1,
+          user_id: null,
+        },
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe("VALIDATION_ERROR");
+      }
     });
 
     describe("date validation", () => {
@@ -315,10 +352,18 @@ describe("Props Unit Tests", () => {
         const resolutionDate = new Date(Date.now() + 86400000 * 7); // 7 days from now
 
         const mockTrx = {
-          selectFrom: vi.fn().mockReturnThis(),
-          select: vi.fn().mockReturnThis(),
-          where: vi.fn().mockReturnThis(),
-          executeTakeFirst: vi.fn().mockResolvedValue({ is_private: false }),
+          selectFrom: vi.fn().mockImplementation(() => {
+            return {
+              select: vi.fn().mockReturnValue({
+                where: vi.fn().mockReturnValue({
+                  where: vi.fn().mockReturnValue({
+                    executeTakeFirst: vi.fn().mockResolvedValue({ role: "admin" }),
+                  }),
+                  executeTakeFirst: vi.fn().mockResolvedValue({ is_private: true }),
+                }),
+              }),
+            };
+          }),
           insertInto: vi.fn().mockReturnThis(),
           values: vi.fn().mockReturnThis(),
           execute: vi.fn().mockResolvedValue(undefined),
