@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { refreshAccessToken } from "@/lib/idp/client";
 import { isTokenNearExpiry } from "@/lib/auth/token-refresh";
+import { logger } from "@/lib/logger";
 
 /**
  * Routes that don't require authentication.
@@ -73,7 +74,14 @@ export async function proxy(request: NextRequest) {
   // Try to refresh the access token using the refresh token.
   try {
     const tokens = await refreshAccessToken(refreshToken);
-    const response = NextResponse.next();
+    if (!tokens.access_token || !tokens.expires_in) {
+      throw new Error("IDP returned invalid token response");
+    }
+    // Forward the new token to downstream handlers on THIS request — without
+    // this, Server Components rendered during this request would read the
+    // stale cookie and treat the user as logged out for one render.
+    request.cookies.set("token", tokens.access_token);
+    const response = NextResponse.next({ request });
     response.cookies.set("token", tokens.access_token, {
       ...sharedCookieOpts,
       maxAge: tokens.expires_in,
@@ -86,11 +94,21 @@ export async function proxy(request: NextRequest) {
       });
     }
     return response;
-  } catch {
-    // Refresh failed (stale refresh token, IDP down, etc.). Clear the
-    // expired access token and redirect to login.
+  } catch (err) {
+    // Refresh failed (stale refresh token, IDP down, etc.). Log so we can
+    // distinguish normal expirations from IDP outages, clear both auth
+    // cookies (leaving the stale refresh token would cause every subsequent
+    // navigation to re-trigger the same failing refresh), and redirect.
+    logger.warn("Token refresh failed, redirecting to login", {
+      operation: "proxy.refreshAccessToken",
+      error: err instanceof Error ? err.message : String(err),
+    });
     const response = redirectToLogin(request, pathname);
     response.cookies.set("token", "", { ...sharedCookieOpts, maxAge: 0 });
+    response.cookies.set("refresh_token", "", {
+      ...sharedCookieOpts,
+      maxAge: 0,
+    });
     return response;
   }
 }

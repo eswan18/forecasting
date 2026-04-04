@@ -25,6 +25,15 @@ describe("decodeJwtExp", () => {
     expect(decodeJwtExp(makeJwt({ sub: "u1" }))).toBeNull();
   });
 
+  it("returns null when exp is a string (wrong type)", () => {
+    expect(decodeJwtExp(makeJwt({ exp: "1700000000" }))).toBeNull();
+  });
+
+  it("returns null when exp is null", () => {
+    expect(decodeJwtExp(makeJwt({ exp: null }))).toBeNull();
+  });
+
+
   it("returns the exp claim (seconds) from a valid payload", () => {
     expect(decodeJwtExp(makeJwt({ sub: "u1", exp: 1700000000 }))).toBe(
       1700000000,

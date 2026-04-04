@@ -64,6 +64,14 @@ describe("proxy: protected routes with no token", () => {
     expect(mockRefreshAccessToken).not.toHaveBeenCalled();
   });
 
+  it("does not add a redirect query param when coming from the home page", async () => {
+    const { proxy } = await import("./proxy");
+    const res = await proxy(makeRequest("/"));
+    const url = new URL(res.headers.get("location") ?? "");
+    expect(url.pathname).toBe("/login");
+    expect(url.searchParams.get("redirect")).toBeNull();
+  });
+
   it("preserves the original path in the redirect query string", async () => {
     const { proxy } = await import("./proxy");
   const res = await proxy(makeRequest("/forecasts"));
@@ -115,7 +123,50 @@ describe("proxy: protected routes with expired token", () => {
     const tokenCookie = res.cookies.get("token");
     expect(tokenCookie?.value).toBe("new-access");
     expect(tokenCookie?.maxAge).toBe(3600);
+    // Cookie security attributes — protect against accidental regressions.
+    expect(tokenCookie?.httpOnly).toBe(true);
+    expect(tokenCookie?.sameSite).toBe("lax");
+    expect(tokenCookie?.path).toBe("/");
     expect(res.cookies.get("refresh_token")).toBeUndefined();
+  });
+
+  it("forwards the new token to downstream handlers on the same request", async () => {
+    mockRefreshAccessToken.mockResolvedValue({
+      access_token: "new-access",
+      token_type: "Bearer",
+      expires_in: 3600,
+    });
+
+    const { proxy } = await import("./proxy");
+    const req = makeRequest(
+      "/forecasts",
+      `token=${EXPIRED_JWT}; refresh_token=refresh-xyz`,
+    );
+    await proxy(req);
+
+    // Server components rendered on THIS request should see the new token,
+    // not the stale one the browser sent.
+    expect(req.cookies.get("token")?.value).toBe("new-access");
+  });
+
+  it("treats an empty access_token in the refresh response as failure", async () => {
+    mockRefreshAccessToken.mockResolvedValue({
+      access_token: "",
+      token_type: "Bearer",
+      expires_in: 3600,
+    });
+
+    const { proxy } = await import("./proxy");
+    const res = await proxy(
+      makeRequest(
+        "/forecasts",
+        `token=${EXPIRED_JWT}; refresh_token=refresh-xyz`,
+      ),
+    );
+
+    expect(res.status).toBe(307);
+    expect(res.cookies.get("token")?.value).toBe("");
+    expect(res.cookies.get("token")?.maxAge).toBe(0);
   });
 
   it("updates both cookies when refresh response rotates the refresh_token", async () => {
@@ -158,5 +209,10 @@ describe("proxy: protected routes with expired token", () => {
     const tokenCookie = res.cookies.get("token");
     expect(tokenCookie?.value).toBe("");
     expect(tokenCookie?.maxAge).toBe(0);
+    // Stale refresh_token must also be cleared, otherwise every subsequent
+    // navigation triggers the same failing refresh call.
+    const refreshCookie = res.cookies.get("refresh_token");
+    expect(refreshCookie?.value).toBe("");
+    expect(refreshCookie?.maxAge).toBe(0);
   });
 });
