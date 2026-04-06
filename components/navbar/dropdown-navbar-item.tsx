@@ -23,7 +23,7 @@ function LinkItem({ href, label, icon }: NavLink) {
         >
           <div className="flex items-center space-x-2">
             {icon}
-            <div className="text-sm font-medium leading-none">{label}</div>
+            <div className="text-sm font-medium leading-snug">{label}</div>
           </div>
         </Link>
       </NavigationMenuLink>
@@ -41,7 +41,7 @@ export function DropdownNavbarItem({
       </NavigationMenuTrigger>
       <NavigationMenuContent>
         {sections ? (
-          <div className="flex w-[400px] gap-4 p-4 md:w-[500px] lg:w-[600px]">
+          <div className="flex w-max max-w-[600px] gap-4 p-4">
             {sections.map((section) => (
               <div key={section.heading} className="flex-1">
                 <h4 className="mb-2 px-3 text-sm font-semibold text-muted-foreground">
