@@ -7,14 +7,32 @@ import {
   NavigationMenuLink,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
-import { NavLinkGroup } from "./nav-types";
+import { NavLink, NavLinkGroup } from "./nav-types";
 
 interface DropdownNavbarItemProps {
   group: NavLinkGroup;
 }
 
+function LinkItem({ href, label, icon }: NavLink) {
+  return (
+    <li key={href}>
+      <NavigationMenuLink asChild>
+        <Link
+          href={href}
+          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+        >
+          <div className="flex items-center space-x-2">
+            {icon}
+            <div className="text-sm font-medium leading-snug">{label}</div>
+          </div>
+        </Link>
+      </NavigationMenuLink>
+    </li>
+  );
+}
+
 export function DropdownNavbarItem({
-  group: { label, links },
+  group: { label, links, sections },
 }: DropdownNavbarItemProps) {
   return (
     <NavigationMenuItem>
@@ -22,25 +40,28 @@ export function DropdownNavbarItem({
         {label}
       </NavigationMenuTrigger>
       <NavigationMenuContent>
-        <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-          {links.map(({ href, label, icon }) => (
-            <li key={href}>
-              <NavigationMenuLink asChild>
-                <Link
-                  href={href}
-                  className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                >
-                  <div className="flex items-center space-x-2">
-                    {icon}
-                    <div className="text-sm font-medium leading-none">
-                      {label}
-                    </div>
-                  </div>
-                </Link>
-              </NavigationMenuLink>
-            </li>
-          ))}
-        </ul>
+        {sections ? (
+          <div className="flex w-max max-w-[600px] gap-4 p-4">
+            {sections.map((section) => (
+              <div key={section.heading} className="flex-1">
+                <h4 className="mb-2 px-3 text-sm font-semibold text-muted-foreground">
+                  {section.heading}
+                </h4>
+                <ul className="grid gap-1">
+                  {section.links.map((link) => (
+                    <LinkItem key={link.href} {...link} />
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+            {links?.map((link) => (
+              <LinkItem key={link.href} {...link} />
+            ))}
+          </ul>
+        )}
       </NavigationMenuContent>
     </NavigationMenuItem>
   );
