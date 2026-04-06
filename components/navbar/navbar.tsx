@@ -33,7 +33,7 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { getCompetitions } from "@/lib/db_actions/competitions";
 import { Competition } from "@/types/db_types";
 import { getCompetitionStatusFromObject } from "@/lib/competition-status";
-import { NavLink, NavLinkGroup } from "./nav-types";
+import { NavLink, NavLinkGroup, NavLinkSection } from "./nav-types";
 import { DropdownNavbarItem } from "./dropdown-navbar-item";
 import { MobileDropdownItem } from "./mobile-dropdown-item";
 
@@ -78,13 +78,25 @@ export default function NavBar() {
 
   // Add competitions section if there are any competitions
   if (competitions.length > 0) {
+    const privateComps = competitions.filter((c) => c.is_private);
+    const publicComps = competitions.filter((c) => !c.is_private);
+    const toNavLink = (competition: Competition): NavLink => ({
+      href: `/competitions/${competition.id}`,
+      label: competition.name,
+      icon: <Medal size={16} />,
+    });
+
+    const sections: NavLinkSection[] = [];
+    if (privateComps.length > 0) {
+      sections.push({ heading: "Private", links: privateComps.map(toNavLink) });
+    }
+    if (publicComps.length > 0) {
+      sections.push({ heading: "Public", links: publicComps.map(toNavLink) });
+    }
+
     links.push({
       label: "Competitions",
-      links: competitions.map((competition) => ({
-        href: `/competitions/${competition.id}`,
-        label: competition.name,
-        icon: <Medal size={16} />,
-      })),
+      sections,
     });
   }
 

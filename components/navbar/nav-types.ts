@@ -6,7 +6,13 @@ export type NavLink = {
   icon?: ReactElement;
 };
 
+export type NavLinkSection = {
+  heading: string;
+  links: NavLink[];
+};
+
 export type NavLinkGroup = {
   label: string;
-  links: NavLink[];
+  links?: NavLink[];
+  sections?: NavLinkSection[];
 };
