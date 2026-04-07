@@ -8,6 +8,7 @@ import {
 import { getUserFromCookies } from "../get-user";
 import { revalidatePath } from "next/cache";
 import { logger } from "@/lib/logger";
+import { publishEvent } from "@/lib/pubsub/client";
 import {
   ServerActionResult,
   success,
@@ -514,7 +515,7 @@ export async function addCompetitionMemberById({
       // Verify the target user exists and is active
       const userToAdd = await trx
         .selectFrom("users")
-        .select("id")
+        .select(["id", "name", "email"])
         .where("id", "=", userId)
         .where("deactivated_at", "is", null)
         .executeTakeFirst();
@@ -551,20 +552,49 @@ export async function addCompetitionMemberById({
         .returningAll()
         .executeTakeFirstOrThrow();
 
-      return success(inserted);
+      // Look up competition for notification
+      const competition = await trx
+        .selectFrom("competitions")
+        .select(["name", "is_private"])
+        .where("id", "=", competitionId)
+        .executeTakeFirst();
+
+      return success({ inserted, userToAdd: userToAdd!, competition });
     });
 
     if (result.success) {
+      const { inserted, userToAdd, competition } = result.data;
       const duration = Date.now() - startTime;
       logger.info("Competition member added successfully", {
         operation: "addCompetitionMemberById",
         table: "competition_members",
         competitionId,
-        addedUserId: result.data.user_id,
+        addedUserId: inserted.user_id,
         role,
         duration,
       });
       revalidatePath(`/competitions/${competitionId}`);
+
+      // Notify the added user (fire-and-forget, only for private competitions)
+      if (competition?.is_private) {
+        publishEvent({
+          event_type: "competition.member_added",
+          source: "forecasting",
+          timestamp: new Date().toISOString(),
+          recipients: [{ email: userToAdd.email, name: userToAdd.name }],
+          data: {
+            competition_name: competition.name,
+            competition_id: competitionId,
+          },
+        }).catch((err) => {
+          logger.error("Failed to publish competition.member_added event", err as Error, {
+            competitionId,
+            userId,
+          });
+        });
+      }
+
+      return success(inserted);
     }
 
     return result;
