@@ -582,6 +582,7 @@ export async function addCompetitionMemberById({
           source: "forecasting",
           timestamp: new Date().toISOString(),
           notify: [{ email: userToAdd.email, name: userToAdd.name }],
+          notify_link: `${process.env.APP_BASE_URL}/competitions/${competitionId}`,
           data: {
             competition_name: competition.name,
             competition_id: competitionId,
