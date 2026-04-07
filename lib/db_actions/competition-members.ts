@@ -581,7 +581,7 @@ export async function addCompetitionMemberById({
           event_type: "competition.member_added",
           source: "forecasting",
           timestamp: new Date().toISOString(),
-          recipients: [{ email: userToAdd.email, name: userToAdd.name }],
+          notify: [{ email: userToAdd.email, name: userToAdd.name }],
           data: {
             competition_name: competition.name,
             competition_id: competitionId,

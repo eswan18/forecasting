@@ -28,7 +28,7 @@ describe("publishEvent", () => {
       event_type: "test.notification",
       source: "forecasting",
       timestamp: "2026-04-07T00:00:00Z",
-      recipients: [{ email: "test@example.com", name: "Test" }],
+      notify: [{ email: "test@example.com", name: "Test" }],
       data: { message: "hello" },
     };
 
@@ -47,7 +47,7 @@ describe("publishEvent", () => {
       event_type: "some.event",
       source: "forecasting",
       timestamp: "2026-04-07T00:00:00Z",
-      recipients: [],
+
       data: {},
     };
 
@@ -63,7 +63,7 @@ describe("publishEvent", () => {
       event_type: "test.notification",
       source: "forecasting",
       timestamp: "2026-04-07T00:00:00Z",
-      recipients: [],
+
       data: {},
     };
 
@@ -78,7 +78,7 @@ describe("publishEvent", () => {
       event_type: "test.notification",
       source: "forecasting",
       timestamp: "2026-04-07T00:00:00Z",
-      recipients: [],
+
       data: {},
     };
 
