@@ -3,6 +3,12 @@ import * as getUser from "@/lib/get-user";
 import * as dbHelpers from "@/lib/db-helpers";
 
 // Mock dependencies
+vi.mock("server-only", () => ({}));
+
+vi.mock("@/lib/pubsub/client", () => ({
+  publishEvent: vi.fn().mockResolvedValue("msg-mock"),
+}));
+
 vi.mock("@/lib/get-user", () => ({
   getUserFromCookies: vi.fn(),
 }));
