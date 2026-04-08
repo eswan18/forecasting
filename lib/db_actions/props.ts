@@ -11,6 +11,7 @@ import {
 } from "@/lib/server-action-result";
 import { logger } from "@/lib/logger";
 import { withRLS, withRLSAction } from "@/lib/db-helpers";
+import { publishEvent } from "@/lib/pubsub/client";
 
 export async function getPropById(
   propId: number,
@@ -488,6 +489,15 @@ export async function createProp({
       revalidatePath("/props");
       if (prop.competition_id) {
         revalidatePath(`/competitions/${prop.competition_id}`);
+
+        // Notify competition members about the new prop (fire-and-forget)
+        notifyPropCreated(currentUser.id, prop.competition_id, prop.text).catch(
+          (err) => {
+            logger.error("Failed to publish prop.created event", err as Error, {
+              competitionId: prop.competition_id,
+            });
+          },
+        );
       }
     }
 
@@ -592,4 +602,45 @@ export async function deleteProp({
     });
     return error("Failed to delete prop", ERROR_CODES.DATABASE_ERROR);
   }
+}
+
+async function notifyPropCreated(
+  creatorUserId: number,
+  competitionId: number,
+  propText: string,
+): Promise<void> {
+  const comp = await withRLS(undefined, async (trx) => {
+    return trx
+      .selectFrom("competitions")
+      .select("name")
+      .where("id", "=", competitionId)
+      .executeTakeFirst();
+  });
+
+  if (!comp) return;
+
+  const members = await withRLS(undefined, async (trx) => {
+    return trx
+      .selectFrom("competition_members")
+      .innerJoin("users", "users.id", "competition_members.user_id")
+      .select(["users.name", "users.email"])
+      .where("competition_members.competition_id", "=", competitionId)
+      .where("users.id", "!=", creatorUserId)
+      .execute();
+  });
+
+  if (members.length === 0) return;
+
+  await publishEvent({
+    event_type: "prop.created",
+    source: "forecasting",
+    timestamp: new Date().toISOString(),
+    notify: members.map((m) => ({ email: m.email, name: m.name })),
+    notify_link: `${process.env.APP_BASE_URL}/competitions/${competitionId}`,
+    data: {
+      competition_name: comp.name,
+      competition_id: competitionId,
+      prop_text: propText,
+    },
+  });
 }
