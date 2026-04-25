@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight, Calendar, CalendarClock, Lock } from "lucide-react";
+import { ChevronRight, Calendar, CalendarClock, Lock, Pencil } from "lucide-react";
 import { PropWithUserForecast } from "@/types/db_types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -253,6 +253,17 @@ export function CompetitionPropView({
                 </p>
               )}
             </div>
+            {isAdmin && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditDialogOpen(true)}
+                className="shrink-0"
+              >
+                <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                Edit
+              </Button>
+            )}
           </div>
 
           {/* Deadline info */}

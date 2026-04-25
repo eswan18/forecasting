@@ -58,21 +58,20 @@ async function CompetitionPropPageContent({
   }
   const competition = competitionResult.data;
 
-  // For private competitions, verify membership
-  if (competition.is_private) {
-    const roleResult = await getCurrentUserRole(competitionId);
-    if (!roleResult.success) {
-      return <ErrorPage title={roleResult.error} />;
-    }
+  const roleResult = await getCurrentUserRole(competitionId);
+  if (!roleResult.success) {
+    return <ErrorPage title={roleResult.error} />;
+  }
+  const userRole = roleResult.data;
 
-    if (roleResult.data === null) {
-      return (
-        <InaccessiblePage
-          title="Private Competition"
-          message="You are not a member of this competition."
-        />
-      );
-    }
+  // For private competitions, verify membership
+  if (competition.is_private && userRole === null) {
+    return (
+      <InaccessiblePage
+        title="Private Competition"
+        message="You are not a member of this competition."
+      />
+    );
   }
 
   // Get the prop with user's forecast
@@ -102,7 +101,7 @@ async function CompetitionPropPageContent({
       competitionId={competitionId}
       competitionName={competition.name}
       isForecastingOpen={isForecastingOpen}
-      isAdmin={user.is_admin}
+      isAdmin={user.is_admin || userRole === "admin"}
     />
   );
 }
