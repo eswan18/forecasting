@@ -1,4 +1,5 @@
 import { getForecasts, getPropById } from "@/lib/db_actions";
+import { getCurrentUserRole } from "@/lib/db_actions/competition-members";
 import { getUserFromCookies } from "@/lib/get-user";
 import { Suspense } from "react";
 import ErrorPage from "@/components/pages/error-page";
@@ -60,6 +61,17 @@ async function PropPageContent({
   // Find user's forecast
   const userForecast = forecasts.find((f) => f.user_id === user.id);
 
+  // Determine if the user is an admin of this prop's competition (if any)
+  let isCompetitionAdmin = false;
+  if (prop.competition_id !== null) {
+    const roleResult = await getCurrentUserRole(prop.competition_id);
+    if (roleResult.success && roleResult.data === "admin") {
+      isCompetitionAdmin = true;
+    }
+  }
+  const canEdit =
+    user.is_admin || isCompetitionAdmin || prop.prop_user_id === user.id;
+
   // Calculate stats
   const forecastValues = forecasts.map((f) => f.forecast);
   const average =
@@ -76,6 +88,7 @@ async function PropPageContent({
         <PropPageHeader
           prop={prop}
           canResolve={user.is_admin || prop.prop_user_id === user.id}
+          canEdit={canEdit}
         />
 
         {/* Stats Row */}
