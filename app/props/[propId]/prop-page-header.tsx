@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { VProp } from "@/types/db_types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, CheckCircle2, Pencil } from "lucide-react";
 import { ResolutionDialog } from "@/components/dialogs/resolution-dialog";
+import { PropEditDialog } from "@/components/dialogs/prop-edit-dialog";
 import { MarkdownRenderer } from "@/components/markdown";
 import { PropStatusBadge } from "@/components/ui/prop-status-badge";
 import { getPropStatusFromProp } from "@/lib/prop-status";
@@ -14,14 +15,17 @@ import { getPropStatusFromProp } from "@/lib/prop-status";
 interface PropPageHeaderProps {
   prop: VProp;
   canResolve: boolean;
+  canEdit: boolean;
 }
 
 export default function PropPageHeader({
   prop,
   canResolve,
+  canEdit,
 }: PropPageHeaderProps) {
   const router = useRouter();
   const [isResolutionDialogOpen, setIsResolutionDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   return (
     <>
@@ -45,17 +49,28 @@ export default function PropPageHeader({
             )}
             <PropStatusBadge status={getPropStatusFromProp(prop)} />
           </div>
-          {canResolve && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsResolutionDialogOpen(true)}
-              className="shrink-0"
-            >
-              <CheckCircle2 className="h-4 w-4 mr-2" />
-              Resolve
-            </Button>
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            {canEdit && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditDialogOpen(true)}
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+            )}
+            {canResolve && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsResolutionDialogOpen(true)}
+              >
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+                Resolve
+              </Button>
+            )}
+          </div>
         </div>
         <h1 className="text-2xl font-bold text-foreground mb-2">
           <MarkdownRenderer>{prop.prop_text}</MarkdownRenderer>
@@ -81,6 +96,15 @@ export default function PropPageHeader({
         prop={prop}
         isOpen={isResolutionDialogOpen}
         onClose={() => setIsResolutionDialogOpen(false)}
+      />
+
+      <PropEditDialog
+        prop={prop}
+        isOpen={isEditDialogOpen}
+        onClose={() => {
+          setIsEditDialogOpen(false);
+          router.refresh();
+        }}
       />
     </>
   );
