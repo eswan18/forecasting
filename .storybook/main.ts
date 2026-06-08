@@ -22,6 +22,15 @@ const config: StorybookConfig = {
     // Ensure proper alias resolution
     config.resolve = config.resolve || {};
     config.resolve.alias = {
+      // Mock DB-coupled server actions so components that import them can render
+      // in Storybook without bundling the Postgres client or next/cache. The
+      // more specific subpath must be listed before the barrel.
+      "@/lib/db_actions/props": new URL(
+        "./mocks/db_actions-props.ts",
+        import.meta.url,
+      ).pathname,
+      "@/lib/db_actions": new URL("./mocks/db_actions.ts", import.meta.url)
+        .pathname,
       ...config.resolve.alias,
       "@": new URL("../", import.meta.url).pathname,
     };
