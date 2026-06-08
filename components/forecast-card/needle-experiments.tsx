@@ -38,15 +38,9 @@ function MetaRow({ prop }: { prop: PropWithUserForecast }) {
   );
 }
 
-function PropText({
-  prop,
-  centered = false,
-}: {
-  prop: PropWithUserForecast;
-  centered?: boolean;
-}) {
+function PropText({ prop }: { prop: PropWithUserForecast }) {
   return (
-    <div className={centered ? "text-center" : undefined}>
+    <div>
       <h3 className="font-medium text-foreground leading-snug">
         <MarkdownRenderer>{prop.prop_text}</MarkdownRenderer>
       </h3>
@@ -112,63 +106,5 @@ export function ForecastCardNeedleRight({ prop, showCommunityAvg }: VariantProps
         </div>
       </div>
     </Link>
-  );
-}
-
-// 2. Needle as the prominent left "hero" panel, replacing the % box.
-export function ForecastCardNeedleHero({ prop, showCommunityAvg }: VariantProps) {
-  const forecast = prop.user_forecast;
-  const baseline = baselineOf(prop, showCommunityAvg);
-  return (
-    <div className={cardClass}>
-      <div className="flex items-stretch gap-5">
-        <div className="flex w-[200px] shrink-0 flex-col items-center justify-center rounded-lg bg-muted/30 py-3">
-          {forecast != null ? (
-            <>
-              <ForecastNeedle
-                forecast={forecast}
-                baseline={baseline}
-                size="md"
-              />
-              <PercentReadout value={forecast} className="mt-1 text-2xl" />
-            </>
-          ) : (
-            <EmptyState className="px-4 text-center" />
-          )}
-        </div>
-        <div className="min-w-0 flex-1">
-          <MetaRow prop={prop} />
-          <PropText prop={prop} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// 3. Centered tile: badges + prop text on top, needle below.
-export function ForecastCardNeedleTile({ prop, showCommunityAvg }: VariantProps) {
-  const forecast = prop.user_forecast;
-  const baseline = baselineOf(prop, showCommunityAvg);
-  return (
-    <div className={cardClass}>
-      <MetaRow prop={prop} />
-      <div className="mt-1">
-        <PropText prop={prop} centered />
-      </div>
-      <div className="mt-3 flex flex-col items-center">
-        {forecast != null ? (
-          <>
-            <ForecastNeedle
-              forecast={forecast}
-              baseline={baseline}
-              size="md"
-            />
-            <PercentReadout value={forecast} className="mt-1 text-2xl" />
-          </>
-        ) : (
-          <EmptyState className="py-6" />
-        )}
-      </div>
-    </div>
   );
 }
