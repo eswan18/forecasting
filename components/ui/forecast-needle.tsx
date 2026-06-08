@@ -4,29 +4,32 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-/**
- * A single needle on the half-wheel.
- * - `value` is a probability in [0, 1] (clamped).
- * - `color` is any CSS color string used as the needle's fill. It can be a
- *   Tailwind palette var (`var(--color-red-500)`), a chart token
- *   (`var(--chart-1)`), or a hex/rgb string. Defaults to the theme `--primary`.
- * - `label` is an optional short caption shown in the hover/tap tooltip
- *   (e.g. "You", "Avg").
- */
-export type Needle = {
-  value: number;
-  color?: string;
-  label?: string;
-};
-
 export interface ForecastNeedleProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, "color"> {
-  /** One or more needles drawn on the same half-wheel. */
-  needles: Needle[];
+  /** The user's forecast in [0, 1]. Always drawn in the primary color. */
+  forecast: number;
+  /**
+   * Optional baseline to compare against (e.g. the community average) in
+   * [0, 1]. When provided, it's drawn behind the forecast as a muted needle.
+   */
+  baseline?: number;
+  /** Tooltip label for the user's forecast. Defaults to "You". */
+  forecastLabel?: string;
+  /** Tooltip label for the baseline. Defaults to "Avg". */
+  baselineLabel?: string;
   size?: "sm" | "md" | "lg";
   /** Show the 0% / 100% axis labels. Defaults to true. */
   showAxisLabels?: boolean;
 }
+
+/** Internal representation of one drawn needle. */
+type Needle = {
+  value: number;
+  label: string;
+  fill: string;
+  stroke: string;
+  strokeWidth: number;
+};
 
 // ---------------------------------------------------------------------------
 // Geometry (pure, exported for testing)
@@ -92,6 +95,12 @@ const HUB_R = 7;
 const OUTLINE = "var(--foreground)";
 const OUTLINE_WIDTH = 2;
 
+// The user's forecast is a solid, ink-outlined primary needle; the baseline is
+// a lighter, outline-only "ghost" needle in a muted gray.
+const FORECAST_COLOR = "var(--primary)";
+const BASELINE_COLOR = "var(--muted-foreground)";
+const BASELINE_OUTLINE_WIDTH = 2.5;
+
 // Cartoony red -> white -> green likelihood gradient.
 const GRADIENT_STOPS = [
   { offset: "0%", color: "var(--color-red-500)" },
@@ -146,7 +155,10 @@ const needleVariants = cva("relative inline-block align-top", {
 const pct = (value: number) => `${value.toFixed(4)}%`;
 
 export function ForecastNeedle({
-  needles,
+  forecast,
+  baseline,
+  forecastLabel = "You",
+  baselineLabel = "Avg",
   size = "md",
   showAxisLabels = true,
   className,
@@ -155,6 +167,25 @@ export function ForecastNeedle({
   const gradientId = React.useId();
   const [animated, setAnimated] = React.useState(false);
   const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
+
+  // Baseline is drawn first (behind); the user's forecast sits on top.
+  const needles: Needle[] = [];
+  if (baseline != null) {
+    needles.push({
+      value: baseline,
+      label: baselineLabel,
+      fill: "none",
+      stroke: BASELINE_COLOR,
+      strokeWidth: BASELINE_OUTLINE_WIDTH,
+    });
+  }
+  needles.push({
+    value: forecast,
+    label: forecastLabel,
+    fill: FORECAST_COLOR,
+    stroke: OUTLINE,
+    strokeWidth: OUTLINE_WIDTH,
+  });
 
   // Sweep needles in from the center (straight up) on mount.
   React.useEffect(() => {
@@ -212,7 +243,6 @@ export function ForecastNeedle({
 
         {/* Needles */}
         {needles.map((needle, i) => {
-          const color = needle.color ?? "var(--primary)";
           const rotation = animated ? valueToRotation(needle.value) : 0;
           return (
             <g
@@ -226,9 +256,9 @@ export function ForecastNeedle({
             >
               <polygon
                 points={NEEDLE_POINTS}
-                fill={color}
-                stroke={OUTLINE}
-                strokeWidth={OUTLINE_WIDTH}
+                fill={needle.fill}
+                stroke={needle.stroke}
+                strokeWidth={needle.strokeWidth}
                 strokeLinejoin="round"
               />
               {/* Wider transparent hit-area for hover / tap */}

@@ -9,45 +9,52 @@ const meta = {
   },
   tags: ["autodocs"],
   argTypes: {
+    forecast: {
+      control: { type: "range", min: 0, max: 1, step: 0.01 },
+      description: "The user's forecast (0–1), drawn in the primary color",
+    },
+    baseline: {
+      control: { type: "range", min: 0, max: 1, step: 0.01 },
+      description: "Optional baseline, e.g. community average (0–1), drawn muted",
+    },
+    forecastLabel: {
+      control: "text",
+      description: 'Tooltip label for the forecast (default "You")',
+    },
+    baselineLabel: {
+      control: "text",
+      description: 'Tooltip label for the baseline (default "Avg")',
+    },
     size: {
       control: "select",
       options: ["sm", "md", "lg"],
-      description: "Overall width of the gauge",
     },
     showAxisLabels: {
       control: "boolean",
-      description: "Show the 0% / 50% / 100% axis labels",
-    },
-    needles: {
-      control: "object",
-      description:
-        "One or more needles. Each has { value (0–1), color?, label? }.",
     },
   },
   args: {
+    forecast: 0.72,
     size: "md",
     showAxisLabels: true,
-    needles: [{ value: 0.6 }],
   },
 } satisfies Meta<typeof ForecastNeedle>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// (a) Just a user's forecast.
-export const SingleForecast: Story = {
+// (a) The user's forecast on its own.
+export const UserForecast: Story = {
   args: {
-    needles: [{ value: 0.72 }],
+    forecast: 0.72,
   },
 };
 
-// (b) A user's forecast plus a baseline (e.g. the community average).
-export const ForecastWithBaseline: Story = {
+// (b) The user's forecast plus a muted baseline (e.g. the community average).
+export const WithBaseline: Story = {
   args: {
-    needles: [
-      { value: 0.72, color: "var(--primary)", label: "You" },
-      { value: 0.55, color: "var(--color-muted-foreground)", label: "Avg" },
-    ],
+    forecast: 0.72,
+    baseline: 0.55,
   },
 };
 
@@ -55,38 +62,37 @@ export const ForecastWithBaseline: Story = {
 export const LowMidHigh: Story = {
   render: (args) => (
     <div className="flex items-end gap-8">
-      <ForecastNeedle {...args} needles={[{ value: 0.15 }]} />
-      <ForecastNeedle {...args} needles={[{ value: 0.5 }]} />
-      <ForecastNeedle {...args} needles={[{ value: 0.85 }]} />
+      <ForecastNeedle {...args} forecast={0.15} />
+      <ForecastNeedle {...args} forecast={0.5} />
+      <ForecastNeedle {...args} forecast={0.85} />
     </div>
   ),
-};
-
-// The color prop accepts any CSS color string.
-export const CustomColors: Story = {
-  args: {
-    needles: [
-      { value: 0.8, color: "var(--chart-1)", label: "Chart 1" },
-      { value: 0.45, color: "var(--color-red-500)", label: "Red 500" },
-      { value: 0.2, color: "#7c3aed", label: "Hex" },
-    ],
-  },
 };
 
 export const Sizes: Story = {
   render: (args) => (
     <div className="flex items-end gap-8">
-      <ForecastNeedle {...args} size="sm" needles={[{ value: 0.6 }]} />
-      <ForecastNeedle {...args} size="md" needles={[{ value: 0.6 }]} />
-      <ForecastNeedle {...args} size="lg" needles={[{ value: 0.6 }]} />
+      <ForecastNeedle {...args} size="sm" />
+      <ForecastNeedle {...args} size="md" />
+      <ForecastNeedle {...args} size="lg" />
     </div>
   ),
 };
 
+export const CustomLabels: Story = {
+  args: {
+    forecast: 0.66,
+    baseline: 0.4,
+    forecastLabel: "Me",
+    baselineLabel: "Community",
+  },
+};
+
 export const NoAxisLabels: Story = {
   args: {
+    forecast: 0.68,
+    baseline: 0.5,
     showAxisLabels: false,
-    needles: [{ value: 0.68, label: "You" }],
   },
 };
 
@@ -99,13 +105,7 @@ export const InContext: Story = {
         Will the temperature exceed 30°C tomorrow?
       </h3>
       <div className="flex justify-center">
-        <ForecastNeedle
-          {...args}
-          needles={[
-            { value: 0.72, color: "var(--primary)", label: "You" },
-            { value: 0.58, color: "var(--color-muted-foreground)", label: "Avg" },
-          ]}
-        />
+        <ForecastNeedle {...args} forecast={0.72} baseline={0.58} />
       </div>
     </div>
   ),
