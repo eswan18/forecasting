@@ -19,7 +19,8 @@ const meta = {
   argTypes: {
     showCommunityAvg: {
       control: "boolean",
-      description: "Whether to show the community-average comparison bar",
+      description:
+        "Whether to show the community average (baseline ghost needle + readout)",
     },
     prop: {
       control: false,
@@ -50,7 +51,7 @@ export const WithoutCommunityAverage: Story = {
   },
 };
 
-// The user hasn't forecasted yet -> placeholder box, no comparison bar.
+// The user hasn't forecasted yet -> "No forecast yet" placeholder.
 export const NoForecast: Story = {
   args: {
     prop: makeProp({ user_forecast: null, user_forecast_id: null }),
@@ -58,7 +59,7 @@ export const NoForecast: Story = {
   },
 };
 
-// Low probability -> red color scale.
+// Low probability -> needle points left, into the red.
 export const LowProbability: Story = {
   args: {
     prop: makeProp({ user_forecast: 0.12, community_average: 0.25 }),
@@ -66,7 +67,7 @@ export const LowProbability: Story = {
   },
 };
 
-// High probability -> green color scale.
+// High probability -> needle points right, into the green.
 export const HighProbability: Story = {
   args: {
     prop: makeProp({ user_forecast: 0.91, community_average: 0.8 }),
@@ -74,18 +75,10 @@ export const HighProbability: Story = {
   },
 };
 
-// "you" and "avg" land on the same value -> combined "you / avg" label.
-export const YouAndAvgIdentical: Story = {
+// Forecast equals the average -> the baseline ghost needle sits behind yours.
+export const ForecastEqualsAverage: Story = {
   args: {
     prop: makeProp({ user_forecast: 0.6, community_average: 0.6 }),
-    showCommunityAvg: true,
-  },
-};
-
-// "you" and "avg" within ~12% -> collision-avoidance label offsetting.
-export const YouAndAvgClose: Story = {
-  args: {
-    prop: makeProp({ user_forecast: 0.55, community_average: 0.5 }),
     showCommunityAvg: true,
   },
 };
