@@ -47,8 +47,8 @@ function PropText({ prop }: { prop: PropWithUserForecast }) {
         <h3 className="font-medium leading-snug text-foreground">
           <MarkdownRenderer>{prop.prop_text}</MarkdownRenderer>
         </h3>
-        <p className="h-5 truncate text-sm text-muted-foreground">
-          {prop.prop_notes || " "}
+        <p className="text-sm text-muted-foreground">
+          {prop.prop_notes || " "}
         </p>
       </div>
       <button
