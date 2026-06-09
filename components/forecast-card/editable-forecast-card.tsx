@@ -1,72 +1,72 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { PropWithUserForecast } from "@/types/db_types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { MarkdownRenderer } from "@/components/markdown";
+import { ForecastNeedle } from "@/components/ui/forecast-needle";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { createForecast, updateForecast } from "@/lib/db_actions";
 import { useServerAction } from "@/hooks/use-server-action";
 import { PropEditDialog } from "@/components/dialogs/prop-edit-dialog";
 import { Spinner } from "@/components/ui/spinner";
+import { cn } from "@/lib/utils";
 
 interface EditableForecastCardProps {
   prop: PropWithUserForecast;
   onForecastUpdate?: () => void;
 }
 
-// Helper to get color based on probability
-const getProbColor = (prob: number | null) => {
-  if (prob === null)
-    return {
-      bg: "bg-muted",
-      text: "text-muted-foreground",
-      bar: "bg-muted-foreground/30",
-      border: "border-muted-foreground/30",
-    };
-  if (prob <= 0.2)
-    return {
-      bg: "bg-red-100",
-      text: "text-red-700",
-      bar: "bg-red-400",
-      border: "border-red-400",
-    };
-  if (prob <= 0.4)
-    return {
-      bg: "bg-orange-100",
-      text: "text-orange-700",
-      bar: "bg-orange-400",
-      border: "border-orange-400",
-    };
-  if (prob <= 0.6)
-    return {
-      bg: "bg-yellow-100",
-      text: "text-yellow-700",
-      bar: "bg-yellow-500",
-      border: "border-yellow-500",
-    };
-  if (prob <= 0.8)
-    return {
-      bg: "bg-lime-100",
-      text: "text-lime-700",
-      bar: "bg-lime-500",
-      border: "border-lime-500",
-    };
-  return {
-    bg: "bg-green-100",
-    text: "text-green-700",
-    bar: "bg-green-500",
-    border: "border-green-500",
+// Raw number entry for the forecast percentage (0–100). Commits on Enter/blur,
+// Escape reverts; while unfocused it mirrors the current value.
+function PercentInput({
+  value,
+  onChange,
+}: {
+  value: number | null;
+  onChange: (v: number) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const formatted = value == null ? "" : String(Math.round(value * 100));
+  const display = editing ? draft : formatted;
+
+  const commit = () => {
+    setEditing(false);
+    const n = Number(draft);
+    if (draft.trim() === "" || Number.isNaN(n)) return;
+    onChange(Math.max(0, Math.min(100, Math.round(n))) / 100);
   };
-};
+
+  return (
+    <label className="inline-flex items-center rounded-md border border-input bg-background px-2 py-1 focus-within:ring-2 focus-within:ring-ring/40">
+      <input
+        value={display}
+        inputMode="numeric"
+        placeholder="––"
+        aria-label="Forecast percentage"
+        onFocus={() => {
+          setDraft(formatted);
+          setEditing(true);
+        }}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.currentTarget.blur();
+          } else if (e.key === "Escape") {
+            setEditing(false);
+            e.currentTarget.blur();
+          }
+        }}
+        className="w-10 bg-transparent text-right text-lg font-bold leading-none text-foreground outline-none"
+      />
+      <span className="text-lg font-bold leading-none text-foreground">%</span>
+    </label>
+  );
+}
 
 export function EditableForecastCard({
   prop,
@@ -76,7 +76,6 @@ export function EditableForecastCard({
   const [localForecast, setLocalForecast] = useState<number | null>(
     prop.user_forecast,
   );
-  const [isDragging, setIsDragging] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const createForecastAction = useServerAction(createForecast, {
@@ -96,61 +95,8 @@ export function EditableForecastCard({
   const isSubmitting =
     createForecastAction.isLoading || updateForecastAction.isLoading;
 
-  const [isEditingPercent, setIsEditingPercent] = useState(false);
-  const [percentInputValue, setPercentInputValue] = useState("");
-  const percentInputRef = useRef<HTMLInputElement>(null);
-
   const hasChanges = localForecast !== prop.user_forecast;
-  const colors = getProbColor(localForecast);
-  const percent =
-    localForecast !== null ? Math.round(localForecast * 100) : null;
-
-  const handlePercentClick = () => {
-    setPercentInputValue(percent !== null ? String(percent) : "");
-    setIsEditingPercent(true);
-    setTimeout(() => percentInputRef.current?.select(), 0);
-  };
-
-  const commitPercentInput = () => {
-    setIsEditingPercent(false);
-    const trimmed = percentInputValue.trim();
-    if (trimmed === "") return;
-    const num = Number(trimmed);
-    if (isNaN(num) || num < 0 || num > 100) return;
-    setLocalForecast(Math.round(num) / 100);
-  };
-
-  const handlePercentKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      commitPercentInput();
-    } else if (e.key === "Escape") {
-      setIsEditingPercent(false);
-    }
-  };
-
-  const handleBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const newValue = Math.max(0, Math.min(1, x / rect.width));
-    setLocalForecast(Math.round(newValue * 100) / 100);
-  };
-
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    setIsDragging(true);
-    handleBarClick(e);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDragging) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const newValue = Math.max(0, Math.min(1, x / rect.width));
-    setLocalForecast(Math.round(newValue * 100) / 100);
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
+  const baseline = prop.community_average ?? undefined;
 
   const handleSave = async () => {
     if (!user || localForecast === null) return;
@@ -177,136 +123,44 @@ export function EditableForecastCard({
 
   return (
     <div
-      className={`bg-card rounded-lg border p-5 transition-all ${
+      className={cn(
+        "rounded-lg border bg-card p-5 transition-all",
         hasChanges
           ? "border-blue-300 ring-2 ring-blue-100"
-          : "border-border hover:border-muted-foreground/30"
-      }`}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
+          : "border-border hover:border-muted-foreground/30",
+      )}
     >
       <div className="flex items-stretch gap-4">
-        {/* Probability box */}
-        <div
-          className={`${colors.bg} ${colors.text} rounded-lg w-20 flex items-center justify-center shrink-0 transition-colors cursor-pointer`}
-          onClick={!isEditingPercent ? handlePercentClick : undefined}
-          title="Click to type a value"
-        >
-          {isEditingPercent ? (
-            <div className="flex items-center">
-              <input
-                ref={percentInputRef}
-                type="text"
-                inputMode="numeric"
-                value={percentInputValue}
-                onChange={(e) => setPercentInputValue(e.target.value)}
-                onBlur={commitPercentInput}
-                onKeyDown={handlePercentKeyDown}
-                className="w-12 text-2xl font-bold text-center bg-transparent outline-none border-b-2 border-current"
-                aria-label="Forecast percentage"
-              />
-              <span className="text-2xl font-bold">%</span>
-            </div>
-          ) : (
-            <div className="text-2xl font-bold">
-              {percent !== null ? `${percent}%` : "—"}
-            </div>
-          )}
-        </div>
+        <div className="min-w-0 flex-1">
+          <div className="mb-2.5 flex items-center gap-2">
+            <Badge variant="secondary" className="text-xs font-medium">
+              {prop.category_name}
+            </Badge>
+          </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2 mb-1">
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="text-xs font-medium">
-                {prop.category_name}
-              </Badge>
+          <div className="flex w-fit items-center gap-5">
+            <div className="min-w-0">
+              <h3 className="font-medium leading-snug text-foreground">
+                <MarkdownRenderer>{prop.prop_text}</MarkdownRenderer>
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {prop.prop_notes || " "}
+              </p>
             </div>
             {user?.is_admin && (
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
+                type="button"
                 onClick={() => setIsEditDialogOpen(true)}
-                className="h-7 px-2"
+                aria-label="Edit prop"
+                className="shrink-0 text-muted-foreground hover:text-foreground"
               >
-                <Pencil className="h-3 w-3" />
-              </Button>
+                <Pencil className="h-5 w-5" />
+              </button>
             )}
           </div>
 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="cursor-help">
-                  <h3 className="font-medium text-foreground leading-snug">
-                    <MarkdownRenderer>{prop.prop_text}</MarkdownRenderer>
-                  </h3>
-                  <p className="text-sm text-muted-foreground truncate h-5 mb-3">
-                    {prop.prop_notes || "\u00A0"}
-                  </p>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-sm bg-popover text-popover-foreground border">
-                <div className="space-y-2">
-                  <p className="font-medium">{prop.prop_text}</p>
-                  {prop.prop_notes && (
-                    <p className="text-sm text-muted-foreground">
-                      {prop.prop_notes}
-                    </p>
-                  )}
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          {/* Slider bar */}
-          <div className="relative">
-            <div
-              className="h-3 bg-muted rounded-full relative cursor-pointer select-none"
-              onMouseDown={handleMouseDown}
-            >
-              {/* Filled portion */}
-              {percent !== null && (
-                <div
-                  className={`absolute h-3 rounded-full ${colors.bar} opacity-60 transition-all`}
-                  style={{ width: `${percent}%` }}
-                />
-              )}
-
-              {/* Draggable handle */}
-              {percent !== null && (
-                <div
-                  className={`absolute top-1/2 w-5 h-5 bg-background border-2 ${colors.border} rounded-full shadow-md transition-transform ${
-                    isDragging ? "scale-110" : "hover:scale-110"
-                  }`}
-                  style={{
-                    left: `${percent}%`,
-                    transform: "translate(-50%, -50%)",
-                  }}
-                />
-              )}
-
-              {/* Click hint for empty state */}
-              {percent === null && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xs text-muted-foreground">
-                    Click to set forecast
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Scale labels */}
-            <div className="flex justify-between text-xs text-muted-foreground/50 mt-1 px-1">
-              <span>0%</span>
-              <span>50%</span>
-              <span>100%</span>
-            </div>
-          </div>
-
-          {/* Action buttons when there are changes */}
           {hasChanges && (
-            <div className="flex items-center gap-2 mt-3">
+            <div className="mt-3 flex items-center gap-2">
               <Button
                 onClick={handleSave}
                 disabled={isSubmitting || localForecast === null}
@@ -328,6 +182,33 @@ export function EditableForecastCard({
                 Cancel
               </Button>
             </div>
+          )}
+        </div>
+
+        {/* Forecast needle (with community-average ghost) + number entry */}
+        <div className="flex w-[150px] shrink-0 flex-col items-center justify-center gap-1.5">
+          {localForecast != null ? (
+            <>
+              <ForecastNeedle
+                forecast={localForecast}
+                baseline={baseline}
+                size="sm"
+                showAxisLabels={false}
+              />
+              <PercentInput value={localForecast} onChange={setLocalForecast} />
+              {baseline != null && (
+                <div className="text-xs text-muted-foreground">
+                  Average: {Math.round(baseline * 100)}%
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="text-sm text-muted-foreground">
+                No forecast yet
+              </div>
+              <PercentInput value={null} onChange={setLocalForecast} />
+            </>
           )}
         </div>
       </div>

@@ -4,9 +4,8 @@ import { makeProp } from "./forecast-card.fixtures";
 
 // Note: in Storybook there's no logged-in user (the /api/me fetch returns
 // null), so the admin "edit prop" pencil is hidden. The Save / Cancel buttons
-// only appear after you drag the slider or type a new value (i.e. once the
-// local forecast differs from the saved one). Saving is mocked — see
-// .storybook/mocks/db_actions.ts.
+// only appear once you change the forecast (type a new value in the % box).
+// Saving is mocked — see .storybook/mocks/db_actions.ts.
 const meta = {
   title: "Forecast/EditableForecastCard",
   component: EditableForecastCard,
@@ -36,35 +35,35 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// The user already has a forecast: probability box, filled slider, and handle.
+// Has a forecast: needle (with community-average ghost) and the editable % box.
 export const Default: Story = {
   args: {
     prop: makeProp({ user_forecast: 0.6, user_forecast_id: 10 }),
   },
 };
 
-// No forecast yet: "—" box and a "Click to set forecast" slider hint.
+// No forecast yet: placeholder + empty % box; type a value to set it.
 export const NoForecast: Story = {
   args: {
     prop: makeProp({ user_forecast: null, user_forecast_id: null }),
   },
 };
 
-// Low probability -> red color scale on the box, bar, and handle.
+// Low probability -> needle points left, into the red.
 export const LowProbability: Story = {
   args: {
     prop: makeProp({ user_forecast: 0.12, user_forecast_id: 10 }),
   },
 };
 
-// High probability -> green color scale.
+// High probability -> needle points right, into the green.
 export const HighProbability: Story = {
   args: {
     prop: makeProp({ user_forecast: 0.91, user_forecast_id: 10 }),
   },
 };
 
-// Long prop text wraps; markdown is rendered.
+// Long prop text wraps; the edit pencil stays beside it.
 export const LongPropText: Story = {
   args: {
     prop: makeProp({
@@ -74,6 +73,18 @@ export const LongPropText: Story = {
         "Will at least three of the five largest economies report **negative** quarterly GDP growth in the same quarter before the end of the year?",
       prop_notes:
         "Measured by nominal GDP; figures from each country's official statistics agency.",
+    }),
+  },
+};
+
+// Long notes wrap rather than spilling off the side.
+export const LongNotes: Story = {
+  args: {
+    prop: makeProp({
+      user_forecast: 0.6,
+      user_forecast_id: 10,
+      prop_notes:
+        "Resolution uses the seasonally adjusted figures published by each country's primary national statistics office; preliminary estimates count, and later revisions will not change a resolution once it has been finalized by the competition admins.",
     }),
   },
 };
