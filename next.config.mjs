@@ -1,7 +1,18 @@
 import { withSentryConfig } from "@sentry/nextjs";
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
+
+// Pin the workspace root to this project so the standalone build and Turbopack
+// don't infer a parent directory (which broke `tailwindcss` resolution in dev).
+const projectRoot = dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
+  outputFileTracingRoot: projectRoot,
+  turbopack: {
+    root: projectRoot,
+  },
   images: {
     remotePatterns: [
       {
