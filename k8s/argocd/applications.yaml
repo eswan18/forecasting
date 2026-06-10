@@ -6,7 +6,6 @@ metadata:
   annotations:
     argocd-image-updater.argoproj.io/image-list: forecasting=us-central1-docker.pkg.dev/ethans-services/containers/forecasting
     argocd-image-updater.argoproj.io/forecasting.update-strategy: newest-build
-    argocd-image-updater.argoproj.io/forecasting.allow-tags: "regexp:^[a-f0-9]+-staging$"
 spec:
   project: default
   source:
