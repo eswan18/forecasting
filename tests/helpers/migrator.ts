@@ -1,11 +1,11 @@
 // migrator.ts
+import { Kysely } from "kysely";
 import {
-  Kysely,
   Migrator,
+  FileMigrationProvider,
   type Migration,
   type MigrationProvider,
-} from "kysely";
-import { FileMigrationProvider } from "kysely";
+} from "kysely/migration";
 import * as path from "path";
 import { promises as fs } from "fs";
 
