@@ -14,9 +14,9 @@ function TabButton({ active, children, onClick, count }: TabButtonProps) {
     <button
       onClick={onClick}
       className={cn(
-        "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+        "flex items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors",
         active
-          ? "border-primary text-primary"
+          ? "border-primary text-foreground"
           : "border-transparent text-muted-foreground hover:text-foreground",
       )}
     >
@@ -24,7 +24,7 @@ function TabButton({ active, children, onClick, count }: TabButtonProps) {
       {count !== undefined && (
         <span
           className={cn(
-            "ml-1.5 px-1.5 py-0.5 rounded text-xs",
+            "rounded px-1.5 py-0.5 font-mono text-[11px] tabular-nums",
             active
               ? "bg-primary/10 text-primary"
               : "bg-muted text-muted-foreground",

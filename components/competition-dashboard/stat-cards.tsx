@@ -24,17 +24,19 @@ export function StatCard({
     <Component
       onClick={onClick}
       className={cn(
-        "bg-card border rounded-lg p-4 text-left transition-all",
-        onClick && "hover:shadow-md cursor-pointer",
-        active
-          ? "border-primary ring-2 ring-primary/20"
-          : "border-border",
+        "flex flex-col gap-1.5 rounded-lg border bg-card p-4 text-left transition-colors",
+        onClick && "cursor-pointer hover:border-foreground/20",
+        active && "border-primary/60 bg-primary/[0.03]",
       )}
     >
-      <div className="text-sm text-muted-foreground mb-1">{label}</div>
-      <div className="text-3xl font-bold text-foreground">{value}</div>
+      <span className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+        {label}
+      </span>
+      <span className="font-mono text-3xl font-semibold tabular-nums tracking-tight text-foreground">
+        {value}
+      </span>
       {sublabel && (
-        <div className="text-xs text-muted-foreground mt-1">{sublabel}</div>
+        <span className="text-xs text-muted-foreground">{sublabel}</span>
       )}
     </Component>
   );

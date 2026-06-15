@@ -8,7 +8,7 @@ const propStatusBadgeVariants = cva(
   {
     variants: {
       status: {
-        open: "border-green-200 bg-green-100 text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-400",
+        open: "border-transparent bg-success-muted text-success-muted-foreground",
         closed: "border-transparent bg-secondary text-secondary-foreground",
         "resolved-yes":
           "border-transparent bg-primary text-primary-foreground shadow-sm",

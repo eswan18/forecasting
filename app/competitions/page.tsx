@@ -1,14 +1,7 @@
-import PageHeading from "@/components/page-heading";
 import { getCompetitions } from "@/lib/db_actions/competitions";
 import { getUserFromCookies } from "@/lib/get-user";
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { Trophy, BarChart3, List } from "lucide-react";
 import { CompetitionStatusBadge } from "@/app/admin/competitions/competition-status-badge";
@@ -21,12 +14,12 @@ export default async function CompetitionsPage() {
   const allCompetitionsResult = await getCompetitions();
   if (!allCompetitionsResult.success) {
     return (
-      <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
-        <div className="w-full max-w-6xl">
+      <main className="py-10 lg:py-14">
+        <Container>
           <p className="text-destructive">
             Error: {allCompetitionsResult.error}
           </p>
-        </div>
+        </Container>
       </main>
     );
   }
@@ -41,150 +34,100 @@ export default async function CompetitionsPage() {
       });
 
   return (
-    <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
-      <div className="w-full max-w-6xl">
-        <PageHeading title="Competitions" breadcrumbs={{}} className="mb-8" />
+    <main className="py-10 lg:py-14">
+      <Container>
+        <header className="mb-8">
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            Competitions
+          </h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            Browse tournaments and jump into props, stats, or standings.
+          </p>
+        </header>
 
-        <div className="grid grid-cols-1 gap-6">
+        <div className="flex flex-col gap-3">
           {competitions.map((competition) => {
             const status = getCompetitionStatusFromObject(competition);
 
             return (
-              <Card
+              <div
                 key={competition.id}
-                className="hover:shadow-md transition-shadow"
+                className="rounded-lg border bg-card p-5 transition-colors hover:border-foreground/20"
               >
-                {/* Desktop layout */}
-                <div className="hidden md:flex items-center justify-between p-6">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Trophy className="h-5 w-5 text-primary shrink-0" />
-                      <h3 className="text-lg font-semibold truncate">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2.5">
+                      <h2 className="truncate text-lg font-semibold tracking-tight">
                         {competition.name}
-                      </h3>
+                      </h2>
                       <CompetitionStatusBadge status={status} />
                     </div>
-                    <div className="text-sm text-muted-foreground space-y-1">
+                    <div className="mt-1.5 flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
                       {status === "private" ? (
-                        <p>Private competition — per-prop deadlines</p>
+                        <span>Private competition — per-prop deadlines</span>
                       ) : (
                         <>
                           {competition.forecasts_close_date && (
-                            <p>
-                              <span className="font-medium">
-                                Forecasts due:
-                              </span>{" "}
-                              <LocalDate date={competition.forecasts_close_date} />
-                            </p>
+                            <span>
+                              Forecasts due{" "}
+                              <span className="font-mono tabular-nums text-foreground">
+                                <LocalDate
+                                  date={competition.forecasts_close_date}
+                                />
+                              </span>
+                            </span>
                           )}
                           {competition.end_date && (
-                            <p>
-                              <span className="font-medium">Ends:</span>{" "}
-                              <LocalDate date={competition.end_date} />
-                            </p>
+                            <span>
+                              Ends{" "}
+                              <span className="font-mono tabular-nums text-foreground">
+                                <LocalDate date={competition.end_date} />
+                              </span>
+                            </span>
                           )}
                         </>
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-2 ml-6 shrink-0">
-                    <Button asChild variant="ghost">
+
+                  <div className="flex shrink-0 gap-1.5">
+                    <Button asChild variant="ghost" size="sm" className="flex-1 sm:flex-none">
                       <Link href={`/competitions/${competition.id}`}>
-                        <List className="h-4 w-4 mr-2" />
-                        Props
+                        <List className="h-4 w-4 sm:mr-1.5" />
+                        <span className="hidden sm:inline">Props</span>
                       </Link>
                     </Button>
-                    <Button asChild variant="ghost">
+                    <Button asChild variant="ghost" size="sm" className="flex-1 sm:flex-none">
                       <Link
                         href={`/competitions/${competition.id}/forecast-stats`}
                       >
-                        <BarChart3 className="h-4 w-4 mr-2" />
-                        Stats
+                        <BarChart3 className="h-4 w-4 sm:mr-1.5" />
+                        <span className="hidden sm:inline">Stats</span>
                       </Link>
                     </Button>
-                    <Button asChild variant="ghost">
-                      <Link href={`/competitions/${competition.id}?tab=leaderboard`}>
-                        <Trophy className="h-4 w-4 mr-2" />
-                        Scores
+                    <Button asChild variant="ghost" size="sm" className="flex-1 sm:flex-none">
+                      <Link
+                        href={`/competitions/${competition.id}?tab=leaderboard`}
+                      >
+                        <Trophy className="h-4 w-4 sm:mr-1.5" />
+                        <span className="hidden sm:inline">Scores</span>
                       </Link>
                     </Button>
                   </div>
                 </div>
-
-                {/* Mobile layout */}
-                <div className="md:hidden">
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <Trophy className="h-5 w-5 text-primary" />
-                      <CardTitle className="text-lg">
-                        {competition.name}
-                      </CardTitle>
-                      <CompetitionStatusBadge status={status} />
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      {status === "private" ? (
-                        <p>Private competition — per-prop deadlines</p>
-                      ) : (
-                        <>
-                          {competition.forecasts_close_date && (
-                            <p>
-                              <span className="font-medium">
-                                Forecasts due:
-                              </span>{" "}
-                              <LocalDate date={competition.forecasts_close_date} />
-                            </p>
-                          )}
-                          {competition.end_date && (
-                            <p>
-                              <span className="font-medium">Ends:</span>{" "}
-                              <LocalDate date={competition.end_date} />
-                            </p>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </CardContent>
-                  <CardFooter className="mt-auto">
-                    <div className="flex gap-x-2 w-full">
-                      <Button asChild variant="ghost" className="flex-1">
-                        <Link href={`/competitions/${competition.id}`}>
-                          <List className="h-4 w-4 mr-2" />
-                          Props
-                        </Link>
-                      </Button>
-                      <Button asChild variant="ghost" className="flex-1">
-                        <Link
-                          href={`/competitions/${competition.id}/forecast-stats`}
-                        >
-                          <BarChart3 className="h-4 w-4 mr-2" />
-                          Stats
-                        </Link>
-                      </Button>
-                      <Button asChild variant="ghost" className="flex-1">
-                        <Link href={`/competitions/${competition.id}?tab=leaderboard`}>
-                          <Trophy className="h-4 w-4 mr-2" />
-                          Scores
-                        </Link>
-                      </Button>
-                    </div>
-                  </CardFooter>
-                </div>
-              </Card>
+              </div>
             );
           })}
         </div>
 
         {competitions.length === 0 && (
-          <div className="text-center py-12">
-            <Trophy className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-lg text-muted-foreground">
+          <div className="rounded-lg border bg-card p-10 text-center">
+            <p className="text-sm text-muted-foreground">
               No competitions available at this time.
             </p>
           </div>
         )}
-      </div>
+      </Container>
     </main>
   );
 }

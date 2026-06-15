@@ -13,6 +13,7 @@ import { PropsTable } from "@/components/props/props-table";
 import Leaderboard from "@/components/scores/leaderboard";
 import { MembersTable, InviteMemberDialog } from "@/components/members";
 import { Button } from "@/components/ui/button";
+import { Container } from "@/components/ui/container";
 import { Spinner } from "@/components/ui/spinner";
 import { getCompetitionMembers } from "@/lib/db_actions/competition-members";
 import type { CompetitionStats, UpcomingDeadline } from "@/lib/db_actions/competition-stats";
@@ -150,10 +151,10 @@ export function CompetitionDashboard({
   }, [activeTab, isPrivate, competitionId, membersRefreshKey]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Header */}
-      <div className="bg-card border-b border-border">
-        <div className="max-w-6xl mx-auto px-6 py-4">
+      <div className="border-b bg-card">
+        <Container className="pt-6">
           <CompetitionHeader
             competitionId={competitionId}
             competitionName={competitionName}
@@ -165,21 +166,23 @@ export function CompetitionDashboard({
           />
 
           {/* Tabs */}
-          <CompetitionTabs
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-            stats={{
-              toForecast: stats.toForecast,
-              closed: stats.closed,
-              resolved: stats.resolved,
-            }}
-            showMembersTab={showMembersTab}
-          />
-        </div>
+          <div className="mt-4">
+            <CompetitionTabs
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+              stats={{
+                toForecast: stats.toForecast,
+                closed: stats.closed,
+                resolved: stats.resolved,
+              }}
+              showMembersTab={showMembersTab}
+            />
+          </div>
+        </Container>
       </div>
 
       {/* Content */}
-      <div className="max-w-6xl mx-auto px-6 py-6">
+      <Container className="py-8">
         {showOverview ? (
           <div className="flex gap-6">
             {/* Main content */}
@@ -291,7 +294,7 @@ export function CompetitionDashboard({
             )}
           </div>
         )}
-      </div>
+      </Container>
     </div>
   );
 }

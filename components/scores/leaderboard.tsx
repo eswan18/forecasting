@@ -3,31 +3,18 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown, Info } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { Category } from "@/types/db_types";
 import type { CompetitionScore, UserCategoryScore } from "@/lib/db_actions";
 
-// Logarithmic scale: emphasizes differences at the good (low) end
-// log(1 + score*9) maps 0→0 and 1→1, but with log compression
-// This gives more visual separation between 0.1 and 0.2 than between 0.8 and 0.9
+// Logarithmic scale: emphasizes differences at the good (low) end.
+// log(1 + score*9) maps 0→0 and 1→1, but with log compression, giving more
+// visual separation between 0.1 and 0.2 than between 0.8 and 0.9.
+// Lower score → longer bar (length is the score encoding; the bar is a single
+// hue so the calm palette is preserved).
 const getScoreBarWidth = (score: number) => {
   const logScale = Math.log10(1 + score * 9);
   return Math.max(0, (1 - logScale) * 100);
-};
-
-const getScoreColor = (score: number) => {
-  if (score <= 0.1) return { bar: "bg-green-500", text: "text-green-700 dark:text-green-400" };
-  if (score <= 0.18) return { bar: "bg-lime-500", text: "text-lime-700 dark:text-lime-400" };
-  if (score <= 0.25) return { bar: "bg-yellow-500", text: "text-yellow-700 dark:text-yellow-400" };
-  if (score <= 0.35) return { bar: "bg-orange-500", text: "text-orange-700 dark:text-orange-400" };
-  return { bar: "bg-red-500", text: "text-red-700 dark:text-red-400" };
-};
-
-const getRankStyle = (rank: number) => {
-  if (rank === 1) return "bg-yellow-100 text-yellow-800 border-yellow-300";
-  if (rank === 2) return "bg-gray-100 text-gray-700 border-gray-300";
-  if (rank === 3) return "bg-orange-100 text-orange-800 border-orange-300";
-  // Invisible circle for alignment, just show the number
-  return "bg-transparent text-muted-foreground border-transparent";
 };
 
 interface UserWithRank {
@@ -55,7 +42,6 @@ function ScoreRow({
   categories,
   competitionId,
 }: ScoreRowProps) {
-  const colors = getScoreColor(user.score);
   const barWidth = getScoreBarWidth(user.score);
 
   // Build category lookup map
@@ -63,58 +49,65 @@ function ScoreRow({
 
   return (
     <div
-      className={`${user.isCurrentUser ? "bg-blue-50 dark:bg-blue-950/30 border-l-2 border-l-blue-500" : "hover:bg-muted/50"}`}
+      className={cn(
+        "transition-colors",
+        user.isCurrentUser
+          ? "border-l-2 border-l-primary bg-primary/[0.04]"
+          : "hover:bg-muted/40",
+      )}
     >
       {/* Main row */}
       <div
-        className="flex items-center gap-3 p-3 cursor-pointer"
+        className="flex cursor-pointer items-center gap-3 p-3"
         onClick={onToggle}
       >
-        {/* Rank badge */}
-        <div
-          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border shrink-0 ${getRankStyle(user.rank)}`}
-        >
+        {/* Rank */}
+        <div className="w-8 shrink-0 text-center font-mono text-sm tabular-nums text-muted-foreground">
           {user.rank}
         </div>
 
         {/* Name */}
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <span
-            className={`font-medium ${user.isCurrentUser ? "text-blue-900 dark:text-blue-100" : "text-foreground"}`}
+            className={cn(
+              "truncate text-foreground",
+              user.isCurrentUser ? "font-semibold" : "font-medium",
+            )}
           >
             {user.userName}
             {user.isCurrentUser && (
-              <span className="text-blue-600 dark:text-blue-400 text-sm ml-1">
-                (you)
-              </span>
+              <span className="ml-1 text-sm font-normal text-primary">you</span>
             )}
             {user.isIncomplete && (
-              <span className="text-muted-foreground text-sm ml-1">
-                (incomplete)
+              <span className="ml-1.5 text-sm font-normal text-muted-foreground">
+                incomplete
               </span>
             )}
           </span>
         </div>
 
         {/* Score bar */}
-        <div className="w-32 flex items-center gap-2 hidden sm:flex">
-          <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+        <div className="hidden w-32 items-center sm:flex">
+          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
             <div
-              className={`h-full rounded-full ${colors.bar}`}
+              className="h-full rounded-full bg-primary"
               style={{ width: `${barWidth}%` }}
             />
           </div>
         </div>
 
         {/* Score value */}
-        <div className={`w-16 text-right font-mono text-sm ${colors.text}`}>
+        <div className="w-16 text-right font-mono text-sm tabular-nums text-foreground">
           {user.score.toFixed(3)}
         </div>
 
         {/* Expand chevron */}
-        <div className="w-6 text-muted-foreground shrink-0">
+        <div className="w-6 shrink-0 text-muted-foreground">
           <ChevronDown
-            className={`w-4 h-4 transition-transform ${expanded ? "rotate-180" : ""}`}
+            className={cn(
+              "h-4 w-4 transition-transform",
+              expanded && "rotate-180",
+            )}
           />
         </div>
       </div>
@@ -122,50 +115,50 @@ function ScoreRow({
       {/* Expanded category breakdown */}
       {expanded && (
         <div className="px-3 pb-3 pl-14">
-          <div className="bg-muted/50 rounded-lg p-3 space-y-2">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-muted-foreground font-medium">
+          <div className="rounded-lg border bg-muted/30 p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
                 Category Breakdown
               </span>
               <Link
                 href={`/competitions/${competitionId}/scores/user/${user.userId}`}
-                className="text-xs text-primary hover:underline"
+                className="text-xs font-medium text-primary hover:underline"
                 onClick={(e) => e.stopPropagation()}
               >
                 View details
               </Link>
             </div>
-            {user.categoryScores.map((cs) => {
-              const catColors = getScoreColor(cs.score);
-              const catBarWidth = getScoreBarWidth(cs.score);
-              const categoryName = categoryMap.get(cs.categoryId) || "Unknown";
-              return (
-                <div
-                  key={cs.categoryId}
-                  className="flex items-center gap-2 text-sm"
-                >
-                  <span className="w-24 text-muted-foreground truncate">
-                    {categoryName}
-                  </span>
-                  <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${catColors.bar}`}
-                      style={{ width: `${catBarWidth}%` }}
-                    />
-                  </div>
-                  <span
-                    className={`w-12 text-right font-mono text-xs ${catColors.text}`}
+            <div className="flex flex-col gap-2">
+              {user.categoryScores.map((cs) => {
+                const catBarWidth = getScoreBarWidth(cs.score);
+                const categoryName =
+                  categoryMap.get(cs.categoryId) || "Unknown";
+                return (
+                  <div
+                    key={cs.categoryId}
+                    className="flex items-center gap-2 text-sm"
                   >
-                    {cs.score.toFixed(3)}
-                  </span>
-                </div>
-              );
-            })}
-            {user.categoryScores.length === 0 && (
-              <p className="text-xs text-muted-foreground">
-                No category scores available
-              </p>
-            )}
+                    <span className="w-24 truncate text-muted-foreground">
+                      {categoryName}
+                    </span>
+                    <div className="h-1 flex-1 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-primary"
+                        style={{ width: `${catBarWidth}%` }}
+                      />
+                    </div>
+                    <span className="w-12 text-right font-mono text-xs tabular-nums text-foreground">
+                      {cs.score.toFixed(3)}
+                    </span>
+                  </div>
+                );
+              })}
+              {user.categoryScores.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  No category scores available
+                </p>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -192,7 +185,7 @@ export default function Leaderboard({
 
   // Sort users by score (lower is better for Brier scores)
   const sortedUsers = [...scores.overallScores].sort(
-    (a, b) => a.score - b.score
+    (a, b) => a.score - b.score,
   );
 
   const incompleteSet = new Set(scores.incompleteUserIds);
@@ -204,7 +197,7 @@ export default function Leaderboard({
     userName: user.userName,
     score: user.score,
     categoryScores: scores.categoryScores.filter(
-      (cs) => cs.userId === user.userId
+      (cs) => cs.userId === user.userId,
     ),
     isCurrentUser: user.userId === currentUserId,
     isIncomplete: incompleteSet.has(user.userId),
@@ -227,9 +220,9 @@ export default function Leaderboard({
 
   if (sortedUsers.length === 0) {
     return (
-      <div className="bg-card border border-border rounded-lg p-8 text-center">
-        <p className="text-lg text-muted-foreground">No scores available yet</p>
-        <p className="text-sm text-muted-foreground mt-1">
+      <div className="rounded-lg border bg-card p-8 text-center">
+        <p className="text-muted-foreground">No scores available yet</p>
+        <p className="mt-1 text-sm text-muted-foreground">
           Scores will appear once propositions are resolved
         </p>
       </div>
@@ -239,49 +232,45 @@ export default function Leaderboard({
   return (
     <div className="space-y-6">
       {/* Score explanation */}
-      <div className="bg-muted/30 border border-border rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-muted-foreground mt-0.5 shrink-0" />
-          <div className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">
-              Lower is better.
-            </span>{" "}
-            Brier scores range from 0 (perfect) to 1 (completely wrong). A score
-            of 0.25 is equivalent to random guessing.
-          </div>
+      <div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-4">
+        <Info className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+        <div className="text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">Lower is better.</span>{" "}
+          Brier scores range from 0 (perfect) to 1 (completely wrong). A score
+          of 0.25 is equivalent to random guessing.
         </div>
       </div>
 
       {/* Your stats card */}
       {currentUserData && (
-        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-          <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-3">
+        <div className="rounded-lg border border-primary/30 bg-primary/[0.03] p-4">
+          <div className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
             Your Performance
-          </h3>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+          </div>
+          <div className="mt-3 grid grid-cols-3 gap-4">
+            <div className="flex flex-col gap-0.5">
+              <span className="font-mono text-2xl font-semibold tabular-nums text-foreground">
                 #{currentUserData.rank}
-              </div>
-              <div className="text-xs text-blue-700 dark:text-blue-400">
+              </span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                 Rank
-              </div>
+              </span>
             </div>
-            <div>
-              <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+            <div className="flex flex-col gap-0.5">
+              <span className="font-mono text-2xl font-semibold tabular-nums text-foreground">
                 {currentUserData.score.toFixed(3)}
-              </div>
-              <div className="text-xs text-blue-700 dark:text-blue-400">
+              </span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                 Brier Score
-              </div>
+              </span>
             </div>
-            <div>
-              <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+            <div className="flex flex-col gap-0.5">
+              <span className="font-mono text-2xl font-semibold tabular-nums text-foreground">
                 {userForecastCount ?? 0}
-              </div>
-              <div className="text-xs text-blue-700 dark:text-blue-400">
+              </span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                 Forecasts
-              </div>
+              </span>
             </div>
           </div>
         </div>
@@ -290,57 +279,45 @@ export default function Leaderboard({
       {/* Podium for top 3 */}
       {usersWithRanks.length >= 3 && (
         <div className="grid grid-cols-3 gap-3">
-          {usersWithRanks.slice(0, 3).map((user, i) => {
-            const colors = getScoreColor(user.score);
-            const medals = ["1st", "2nd", "3rd"];
-            const medalColors = [
-              "bg-yellow-100 border-yellow-300",
-              "bg-gray-100 border-gray-300",
-              "bg-orange-100 border-orange-300",
-            ];
-            const labelColors = [
-              "text-yellow-700",
-              "text-gray-500",
-              "text-orange-700",
-            ];
-            return (
-              <Link
-                key={user.userId}
-                href={`/competitions/${competitionId}/scores/user/${user.userId}`}
-                className={`border rounded-lg p-4 text-center hover:shadow-md transition-shadow ${medalColors[i]}`}
-              >
-                <div className={`text-xs font-bold mb-1 ${labelColors[i]}`}>
-                  {medals[i]}
-                </div>
-                <div className="font-medium text-gray-900 truncate text-sm">
-                  {user.userName}
-                  {user.isIncomplete && (
-                    <span className="text-muted-foreground text-xs ml-1">
-                      (incomplete)
-                    </span>
-                  )}
-                </div>
-                <div className={`text-lg font-mono font-bold ${colors.text}`}>
-                  {user.score.toFixed(3)}
-                </div>
-              </Link>
-            );
-          })}
+          {usersWithRanks.slice(0, 3).map((user, i) => (
+            <Link
+              key={user.userId}
+              href={`/competitions/${competitionId}/scores/user/${user.userId}`}
+              className={cn(
+                "rounded-lg border bg-card p-4 text-center transition-colors hover:border-foreground/20",
+                i === 0 && "border-primary/40",
+              )}
+            >
+              <div className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                {["1st", "2nd", "3rd"][i]}
+              </div>
+              <div className="mt-1 truncate text-sm font-medium text-foreground">
+                {user.userName}
+                {user.isIncomplete && (
+                  <span className="ml-1 text-xs font-normal text-muted-foreground">
+                    incomplete
+                  </span>
+                )}
+              </div>
+              <div className="mt-1 font-mono text-lg font-semibold tabular-nums text-foreground">
+                {user.score.toFixed(3)}
+              </div>
+            </Link>
+          ))}
         </div>
       )}
 
       {/* Main leaderboard */}
-      <div className="bg-card border border-border rounded-lg overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
-          <span className="text-sm font-medium text-foreground">
-            All Rankings
-          </span>
-          <span className="text-xs text-muted-foreground">
-            Click row to expand
-          </span>
+      <div className="overflow-hidden rounded-lg border bg-card">
+        <div className="flex items-center gap-3 border-b bg-muted/30 px-3 py-2 font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+          <span className="w-8 shrink-0 text-center">#</span>
+          <span className="flex-1">Forecaster</span>
+          <span className="hidden w-32 sm:block" />
+          <span className="w-16 text-right">Brier</span>
+          <span className="w-6 shrink-0" />
         </div>
 
-        <div className="divide-y divide-border">
+        <div className="divide-y">
           {usersWithRanks.map((user) => (
             <ScoreRow
               key={user.userId}

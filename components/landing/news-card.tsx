@@ -1,10 +1,3 @@
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { LucideIcon } from "lucide-react";
 
 interface NewsCardProps {
@@ -21,21 +14,17 @@ export default function NewsCard({
   buttons,
 }: NewsCardProps) {
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="pb-0 grid-rows-[auto]">
-        <div className="flex items-center gap-2">
-          <Icon className="h-4 w-4 text-primary" />
-          <CardTitle className="text-lg">{title}</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="text-sm text-muted-foreground">
+    <div className="rounded-lg border bg-card p-5 transition-colors hover:border-foreground/20">
+      <div className="flex items-center gap-2">
+        <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <h3 className="text-sm font-semibold tracking-tight text-foreground">
+          {title}
+        </h3>
+      </div>
+      <div className="mt-2 text-sm leading-relaxed text-muted-foreground">
         {children}
-      </CardContent>
-      {buttons && (
-        <CardFooter className="flex gap-2 flex-wrap justify-center">
-          {buttons}
-        </CardFooter>
-      )}
-    </Card>
+      </div>
+      {buttons && <div className="mt-4 flex flex-col gap-2">{buttons}</div>}
+    </div>
   );
 }

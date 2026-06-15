@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MoreVertical, Plus, Settings } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -53,25 +52,32 @@ export function CompetitionHeader({
   return (
     <div className="flex items-center justify-between mb-4">
       <div>
-        <div className="flex items-center gap-2 mb-1">
-          <h1 className="text-2xl font-bold text-foreground">
+        <div className="flex items-center gap-2.5 mb-1">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             {competitionName}
           </h1>
           {isPrivate && (
-            <Badge
-              variant="secondary"
-              className="bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border-0"
-            >
+            <span className="rounded-md border px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               Private
-            </Badge>
+            </span>
           )}
         </div>
         <p className="text-sm text-muted-foreground">
-          {isPrivate && memberCount !== undefined
-            ? `${memberCount} members`
-            : forecasterCount !== undefined
-              ? `${forecasterCount} forecasters`
-              : null}
+          {isPrivate && memberCount !== undefined ? (
+            <>
+              <span className="font-mono tabular-nums text-foreground">
+                {memberCount}
+              </span>{" "}
+              members
+            </>
+          ) : forecasterCount !== undefined ? (
+            <>
+              <span className="font-mono tabular-nums text-foreground">
+                {forecasterCount}
+              </span>{" "}
+              forecasters
+            </>
+          ) : null}
         </p>
       </div>
 
