@@ -5,17 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  AlertTriangle,
-  FileText,
-  Hash,
-  Tag,
-  CalendarClock,
-  Calendar,
-  Eye,
-  EyeOff,
-  Lightbulb,
-} from "lucide-react";
+import { AlertTriangle, Eye, EyeOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -152,10 +142,7 @@ export function NewPropForm({
             name="text"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Proposition
-                </FormLabel>
+                <FormLabel className="text-sm font-medium">Proposition</FormLabel>
                 <FormControl>
                   <Textarea
                     {...field}
@@ -183,10 +170,9 @@ export function NewPropForm({
             name="notes"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium flex items-center gap-2">
-                  <Hash className="h-4 w-4" />
+                <FormLabel className="flex items-center gap-2 text-sm font-medium">
                   Notes
-                  <span className="text-xs text-muted-foreground font-normal">
+                  <span className="text-xs font-normal text-muted-foreground">
                     (Optional)
                   </span>
                 </FormLabel>
@@ -218,10 +204,9 @@ export function NewPropForm({
             name="category_id"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium flex items-center gap-2">
-                  <Tag className="h-4 w-4" />
+                <FormLabel className="flex items-center gap-2 text-sm font-medium">
                   Category
-                  <span className="text-xs text-muted-foreground font-normal">
+                  <span className="text-xs font-normal text-muted-foreground">
                     (Optional)
                   </span>
                 </FormLabel>
@@ -258,8 +243,7 @@ export function NewPropForm({
               name="forecasts_due_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel className="text-sm font-medium flex items-center gap-2">
-                    <CalendarClock className="h-4 w-4" />
+                  <FormLabel className="text-sm font-medium">
                     Forecast Deadline
                   </FormLabel>
                   <FormControl>
@@ -284,8 +268,7 @@ export function NewPropForm({
               name="resolution_due_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel className="text-sm font-medium flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
+                  <FormLabel className="text-sm font-medium">
                     Resolution Deadline
                   </FormLabel>
                   <FormControl>
@@ -359,20 +342,17 @@ export function NewPropForm({
 
           {/* Tips */}
           <div className="rounded-lg border bg-muted/30 p-4">
-            <div className="flex items-start gap-3">
-              <Lightbulb className="h-5 w-5 text-yellow-500 mt-0.5" />
-              <div className="space-y-2 text-sm">
-                <p className="font-medium">Tips for good propositions:</p>
-                <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                  <li>Frame as a clear yes/no question</li>
-                  <li>Include specific dates or metrics when possible</li>
-                  <li>Define resolution criteria in the notes</li>
-                  <li>
-                    Set forecast deadline before the event could reasonably occur
-                  </li>
-                </ul>
-              </div>
-            </div>
+            <p className="mb-2 font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+              Tips for good propositions
+            </p>
+            <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
+              <li>Frame as a clear yes/no question</li>
+              <li>Include specific dates or metrics when possible</li>
+              <li>Define resolution criteria in the notes</li>
+              <li>
+                Set forecast deadline before the event could reasonably occur
+              </li>
+            </ul>
           </div>
 
           {/* Error Alert */}
