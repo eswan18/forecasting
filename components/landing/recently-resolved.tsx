@@ -1,10 +1,17 @@
 import { getRecentlyResolvedForecasts } from "@/lib/db_actions";
-import { Card, CardContent } from "@/components/ui/card";
 import ResolvedPropCard from "./resolved-prop-card";
 
 interface RecentlyResolvedProps {
   userId: number;
   limit?: number;
+}
+
+function Panel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-lg border bg-card p-5 text-sm text-muted-foreground">
+      {children}
+    </div>
+  );
 }
 
 export default async function RecentlyResolved({
@@ -14,29 +21,13 @@ export default async function RecentlyResolved({
   const result = await getRecentlyResolvedForecasts({ userId, limit });
 
   if (!result.success) {
-    return (
-      <Card>
-        <CardContent className="py-6">
-          <p className="text-sm text-muted-foreground">
-            Unable to load recently resolved props.
-          </p>
-        </CardContent>
-      </Card>
-    );
+    return <Panel>Unable to load recently resolved props.</Panel>;
   }
 
   const forecasts = result.data;
 
   if (forecasts.length === 0) {
-    return (
-      <Card>
-        <CardContent className="py-6">
-          <p className="text-sm text-muted-foreground">
-            No resolved props yet.
-          </p>
-        </CardContent>
-      </Card>
-    );
+    return <Panel>No resolved props yet.</Panel>;
   }
 
   return (

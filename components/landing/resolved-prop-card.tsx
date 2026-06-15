@@ -1,7 +1,7 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle, XCircle } from "lucide-react";
+import { Check, X } from "lucide-react";
 import Link from "next/link";
 import { LocalDate } from "@/components/local-date";
+import { cn } from "@/lib/utils";
 
 interface ResolvedPropCardProps {
   propId: number;
@@ -21,54 +21,61 @@ export default function ResolvedPropCard({
   resolutionDate,
 }: ResolvedPropCardProps) {
   return (
-    <Link href={`/props/${propId}`}>
-      <Card className="hover:shadow-md transition-shadow">
-        <CardContent>
-          {/* Top: prop text and notes */}
-          <div className="mb-3">
-            <p className="text-sm line-clamp-2" title={propText}>
-              {propText}
-            </p>
-            {propNotes && (
-              <p
-                className="text-xs text-muted-foreground mt-1 line-clamp-3"
-                title={propNotes}
-              >
-                {propNotes}
-              </p>
-            )}
-          </div>
+    <Link
+      href={`/props/${propId}`}
+      className="block rounded-lg border bg-card p-4 transition-colors hover:border-foreground/20"
+    >
+      <p
+        className="text-sm font-medium leading-snug text-foreground line-clamp-2"
+        title={propText}
+      >
+        {propText}
+      </p>
+      {propNotes && (
+        <p
+          className="mt-1 text-xs leading-relaxed text-muted-foreground line-clamp-2"
+          title={propNotes}
+        >
+          {propNotes}
+        </p>
+      )}
 
-          {/* Bottom row: resolution info and forecast */}
-          <div className="flex items-end justify-between">
-            {/* Left: Resolution with date */}
-            <div>
-              <p className="text-xs text-muted-foreground">Resolution</p>
-              <div className="flex items-center gap-1 mt-0.5">
-                <span className="text-sm font-medium">
-                  {resolution ? "Yes" : "No"}
-                </span>
-                {resolution ? (
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                ) : (
-                  <XCircle className="h-5 w-5 text-red-600" />
-                )}
-                <span className="text-sm text-muted-foreground">
-                  <LocalDate date={resolutionDate} />
-                </span>
-              </div>
-            </div>
-
-            {/* Right: User's forecast */}
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground">You said</p>
-              <p className="text-sm font-medium tabular-nums mt-0.5">
-                {forecast.toFixed(2)}
-              </p>
-            </div>
+      <div className="mt-3 flex items-end justify-between gap-3">
+        <div className="min-w-0">
+          <div className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+            Resolved
           </div>
-        </CardContent>
-      </Card>
+          <div className="mt-1.5 flex items-center gap-2">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium",
+                resolution
+                  ? "bg-success-muted text-success-muted-foreground"
+                  : "bg-destructive-muted text-destructive-muted-foreground",
+              )}
+            >
+              {resolution ? (
+                <Check className="h-3 w-3" />
+              ) : (
+                <X className="h-3 w-3" />
+              )}
+              {resolution ? "Yes" : "No"}
+            </span>
+            <span className="truncate text-xs text-muted-foreground">
+              <LocalDate date={resolutionDate} />
+            </span>
+          </div>
+        </div>
+
+        <div className="shrink-0 text-right">
+          <div className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+            You said
+          </div>
+          <div className="mt-1.5 font-mono text-sm font-medium tabular-nums text-foreground">
+            {forecast.toFixed(2)}
+          </div>
+        </div>
+      </div>
     </Link>
   );
 }

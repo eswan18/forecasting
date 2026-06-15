@@ -135,7 +135,7 @@ export default function NavBar() {
   if (isLoading) {
     return (
       <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex h-16 items-center justify-between px-4 w-full">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5 sm:px-6 lg:px-8">
           <div className="flex items-center space-x-4">
             <Link href="/">
               <Button variant="ghost" className="font-semibold text-lg">
