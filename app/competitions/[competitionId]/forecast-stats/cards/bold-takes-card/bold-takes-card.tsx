@@ -5,9 +5,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { getForecasts } from "@/lib/db_actions";
 import { VForecast } from "@/types/db_types";
+import BoldTakesContent, { BoldTake } from "./bold-takes-content";
 
 export default async function BoldTakesCard({
   competitionId,
@@ -19,7 +19,16 @@ export default async function BoldTakesCard({
     throw new Error(forecastsResult.error);
   }
   const forecasts = forecastsResult.data;
-  const boldestForecasts = getForecastsFurthestFromMean(forecasts);
+  const takes: BoldTake[] = getForecastsFurthestFromMean(forecasts).map(
+    ({ forecast, meanForecast, differenceFromMean }) => ({
+      forecastId: forecast.forecast_id,
+      propText: forecast.prop_text,
+      userName: forecast.user_name,
+      userForecast: forecast.forecast,
+      meanForecast,
+      differenceFromMean,
+    }),
+  );
   return (
     <Card className="w-80 h-96">
       <CardHeader className="pb-4">
@@ -27,40 +36,7 @@ export default async function BoldTakesCard({
         <CardDescription>Straying from the pack.</CardDescription>
       </CardHeader>
       <CardContent className="max-h-full">
-        <ScrollArea className="h-64" type="auto">
-          <div className="flex flex-col gap-y-4 h-fit">
-            {boldestForecasts.map(
-              ({ forecast, meanForecast, differenceFromMean }) => (
-                <div
-                  key={forecast.forecast_id}
-                  className="flex flex-col justify-start items-center w-full text-xs"
-                >
-                  <span className="w-full">{forecast.prop_text}</span>
-                  <div className="w-full grid grid-cols-[1fr_1fr_1fr] mt-1 text-right">
-                    <div className="flex flex-col justify-start items-end gap-0.5">
-                      <span className="text-muted-foreground">
-                        {forecast.user_name}
-                      </span>
-                      <span className="text-sm">
-                        {forecast.forecast.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex flex-col justify-start items-end gap-0.5">
-                      <span className="text-muted-foreground">Others</span>
-                      <span className="text-sm">{meanForecast.toFixed(2)}</span>
-                    </div>
-                    <div className="flex flex-col justify-start items-end gap-0.5">
-                      <span className="text-muted-foreground">Difference</span>
-                      <span className="text-sm">
-                        {Math.abs(differenceFromMean).toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ),
-            )}
-          </div>
-        </ScrollArea>
+        <BoldTakesContent takes={takes} />
       </CardContent>
     </Card>
   );

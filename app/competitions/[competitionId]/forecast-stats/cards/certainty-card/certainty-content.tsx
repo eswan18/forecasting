@@ -1,7 +1,6 @@
 "use client";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { ArrowUpDown } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -18,45 +17,45 @@ export default function CertaintyContent({
   certainties: AvgCertaintyForUser[];
 }) {
   const [reversed, setReversed] = useState(false);
-  // Sort by most certain to least certain.
-  if (reversed) {
-    certainties.sort((a, b) => a.avgCertainty - b.avgCertainty);
-  } else {
-    certainties.sort((a, b) => b.avgCertainty - a.avgCertainty);
-  }
+  // Sort a copy (most-certain first by default) so we don't mutate props.
+  const sorted = [...certainties].sort((a, b) =>
+    reversed
+      ? a.avgCertainty - b.avgCertainty
+      : b.avgCertainty - a.avgCertainty,
+  );
   return (
     <>
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between">
+        <span className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+          Forecaster
+        </span>
         <Button
           size="sm"
           variant="ghost"
           onClick={() => setReversed(!reversed)}
-          className="gap-x-1.5"
+          className="h-7 gap-x-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground"
         >
-          {reversed ? "Least" : "Most"} certain <ArrowUpDown size={16} />
+          {reversed ? "Least" : "Most"} certain <ArrowUpDown size={14} />
         </Button>
       </div>
       <ScrollArea className="h-[13rem] px-1" type="auto">
-        <Table className="mt-1">
-          <TableBody>
-            {certainties.map(({ userId, userName, avgCertainty }) => (
-              <TableRow key={userId} className="odd:bg-background">
-                <TableCell className="text-muted-foreground text-xs">
-                  {userName}
-                </TableCell>
-                <TableCell className="text-right text-xs">
-                  {avgCertainty.toFixed(3)}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <div className="divide-y">
+          {sorted.map(({ userId, userName, avgCertainty }) => (
+            <div
+              key={userId}
+              className="flex items-center justify-between gap-3 py-1.5 text-sm"
+            >
+              <span className="truncate text-muted-foreground">{userName}</span>
+              <span className="font-mono tabular-nums text-foreground">
+                {avgCertainty.toFixed(3)}
+              </span>
+            </div>
+          ))}
+        </div>
       </ScrollArea>
-      <div className="w-full flex justify-center mt-2">
-        <p className="text-muted-foreground text-sm text-center">
-          Certainty is computed as the distance from 0.5
-        </p>
-      </div>
+      <p className="mt-2 text-center text-xs text-muted-foreground">
+        Certainty is the average distance from 0.5.
+      </p>
     </>
   );
 }

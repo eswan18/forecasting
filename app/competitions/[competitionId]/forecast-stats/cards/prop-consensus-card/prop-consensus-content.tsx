@@ -90,23 +90,23 @@ function AllPropsConsensusChart({
         <Tooltip content={<CustomTooltip />} />
         <Scatter
           dataKey="mean"
-          shape={<RenderDot radius={5} fill="hsl(var(--primary))" />}
+          shape={<RenderDot radius={5} fill="var(--primary)" />}
         />
         <Scatter
           dataKey="p25"
-          shape={<RenderDot radius={3} fill="hsl(var(--foreground))" />}
+          shape={<RenderDot radius={3} fill="var(--foreground)" />}
         />
         <Scatter
           dataKey="p75"
-          shape={<RenderDot radius={3} fill="hsl(var(--foreground))" />}
+          shape={<RenderDot radius={3} fill="var(--foreground)" />}
         />
         <Scatter
           dataKey="min"
-          shape={<RenderDot radius={2} fill="hsl(var(--secondary))" />}
+          shape={<RenderDot radius={2} fill="var(--muted-foreground)" />}
         />
         <Scatter
           dataKey="max"
-          shape={<RenderDot radius={2} fill="hsl(var(--secondary))" />}
+          shape={<RenderDot radius={2} fill="var(--muted-foreground)" />}
         />
       </ComposedChart>
     </ChartContainer>
@@ -142,19 +142,29 @@ const CustomTooltip = ({
   if (active && payload && payload.length) {
     const stats = payload[0].payload;
     return (
-      <div className="grid min-w-32 items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
+      <div className="grid min-w-32 items-start gap-1.5 rounded-lg border bg-popover px-2.5 py-1.5 text-xs text-popover-foreground shadow-xl">
         <span className="font-semibold">{payload[0].payload.prop_text}</span>
-        <div className="grid grid-cols-2 w-full">
+        <div className="grid w-full grid-cols-2 gap-x-3">
           <p className="text-muted-foreground">Mean</p>
-          <p>{stats.mean.toFixed(2)}</p>
+          <p className="text-right font-mono tabular-nums">
+            {stats.mean.toFixed(2)}
+          </p>
           <p className="text-muted-foreground">P25</p>
-          <p>{stats.p25.toFixed(2)}</p>
+          <p className="text-right font-mono tabular-nums">
+            {stats.p25.toFixed(2)}
+          </p>
           <p className="text-muted-foreground">P75</p>
-          <p>{stats.p75.toFixed(2)}</p>
+          <p className="text-right font-mono tabular-nums">
+            {stats.p75.toFixed(2)}
+          </p>
           <p className="text-muted-foreground">Min</p>
-          <p>{stats.min.toFixed(2)}</p>
+          <p className="text-right font-mono tabular-nums">
+            {stats.min.toFixed(2)}
+          </p>
           <p className="text-muted-foreground">Max</p>
-          <p>{stats.max.toFixed(2)}</p>
+          <p className="text-right font-mono tabular-nums">
+            {stats.max.toFixed(2)}
+          </p>
         </div>
       </div>
     );
