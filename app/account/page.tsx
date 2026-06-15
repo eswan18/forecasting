@@ -8,7 +8,7 @@ export default async function Page() {
       <div className="w-full max-w-lg flex flex-col">
         <PageHeading
           title="Account Settings"
-          className="mb-2"
+          subtitle="Manage your profile and identity provider details."
         />
         <AccountDetails idpBaseUrl={idpBaseUrl} />
       </div>

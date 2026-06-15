@@ -8,47 +8,53 @@ import {
 } from "@/components/ui/breadcrumb";
 import { MarkdownRenderer } from "@/components/markdown";
 
+/**
+ * Left-aligned page heading: optional breadcrumbs, a title (markdown-aware),
+ * an optional muted subtitle, and an optional right-aligned action slot
+ * (`children`). The soft-minimal type treatment — semibold, tight-tracked —
+ * matches the section headers used across the app.
+ */
 export default function PageHeading({
   title,
+  subtitle,
   className,
   children,
   breadcrumbs,
 }: {
   title: string;
+  /** Optional muted line rendered under the title. */
+  subtitle?: string;
   className?: string;
+  /** Optional trailing action (e.g. a button); right-aligned on sm+. */
   children?: React.ReactNode;
   breadcrumbs?: Record<string, string>;
 }) {
-  const defaultClassName = "w-full mb-8 flex flex-col items-center gap-y-1";
-  className = cn(defaultClassName, className);
   const hasBreadcrumbs = breadcrumbs && Object.keys(breadcrumbs).length > 0;
   return (
-    <header className={className}>
-      {/* Always reserve space for breadcrumbs to maintain consistent layout */}
-      <div className="flex flex-row items-start w-full min-h-[20px]">
-        {hasBreadcrumbs && (
-          <Breadcrumb>
-            <BreadcrumbList>
-              {Object.entries(breadcrumbs).map(([label, href]) => (
-                <div key={label} className="flex items-center">
-                  <BreadcrumbItem>
-                    <BreadcrumbLink href={href}>{label}</BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator />
-                </div>
-              ))}
-            </BreadcrumbList>
-          </Breadcrumb>
-        )}
+    <header className={cn("mb-8 w-full", className)}>
+      {hasBreadcrumbs && (
+        <Breadcrumb className="mb-2">
+          <BreadcrumbList>
+            {Object.entries(breadcrumbs).map(([label, href]) => (
+              <div key={label} className="flex items-center">
+                <BreadcrumbItem>
+                  <BreadcrumbLink href={href}>{label}</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+              </div>
+            ))}
+          </BreadcrumbList>
+        </Breadcrumb>
+      )}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <h1 className="min-w-0 text-2xl font-semibold tracking-tight text-foreground">
+          <MarkdownRenderer>{title}</MarkdownRenderer>
+        </h1>
+        {children && <div className="shrink-0">{children}</div>}
       </div>
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full">
-        <div className="min-w-0 flex items-center gap-x-4">
-          <h1 className="text-2xl font-bold inline">
-            <MarkdownRenderer>{title}</MarkdownRenderer>
-          </h1>
-          {children}
-        </div>
-      </div>
+      {subtitle && (
+        <p className="mt-1.5 text-sm text-muted-foreground">{subtitle}</p>
+      )}
     </header>
   );
 }
