@@ -16,6 +16,7 @@ import { useServerAction } from "@/hooks/use-server-action";
 import { Spinner } from "@/components/ui/spinner";
 import { PropEditDialog } from "@/components/dialogs/prop-edit-dialog";
 import { formatDateTime } from "@/lib/time-utils";
+import { getProbabilityColors } from "@/lib/forecast-colors";
 
 interface CompetitionPropViewProps {
   prop: PropWithUserForecast;
@@ -24,51 +25,6 @@ interface CompetitionPropViewProps {
   isForecastingOpen: boolean;
   isAdmin: boolean;
 }
-
-// Helper to get color based on probability
-const getProbColor = (prob: number | null) => {
-  if (prob === null)
-    return {
-      bg: "bg-muted",
-      text: "text-muted-foreground",
-      bar: "bg-muted-foreground/30",
-      border: "border-muted-foreground/30",
-    };
-  if (prob <= 0.2)
-    return {
-      bg: "bg-red-100 dark:bg-red-950",
-      text: "text-red-700 dark:text-red-400",
-      bar: "bg-red-400",
-      border: "border-red-400",
-    };
-  if (prob <= 0.4)
-    return {
-      bg: "bg-orange-100 dark:bg-orange-950",
-      text: "text-orange-700 dark:text-orange-400",
-      bar: "bg-orange-400",
-      border: "border-orange-400",
-    };
-  if (prob <= 0.6)
-    return {
-      bg: "bg-yellow-100 dark:bg-yellow-950",
-      text: "text-yellow-700 dark:text-yellow-400",
-      bar: "bg-yellow-500",
-      border: "border-yellow-500",
-    };
-  if (prob <= 0.8)
-    return {
-      bg: "bg-lime-100 dark:bg-lime-950",
-      text: "text-lime-700 dark:text-lime-400",
-      bar: "bg-lime-500",
-      border: "border-lime-500",
-    };
-  return {
-    bg: "bg-green-100 dark:bg-green-950",
-    text: "text-green-700 dark:text-green-400",
-    bar: "bg-green-500",
-    border: "border-green-500",
-  };
-};
 
 function formatPropDate(date: Date | string | null, timezone: string): string {
   if (!date) return "No deadline";
@@ -128,7 +84,7 @@ export function CompetitionPropView({
   const percentInputRef = useRef<HTMLInputElement>(null);
 
   const hasChanges = localForecast !== prop.user_forecast;
-  const colors = getProbColor(localForecast);
+  const colors = getProbabilityColors(localForecast);
   const percent =
     localForecast !== null ? Math.round(localForecast * 100) : null;
 
@@ -296,7 +252,7 @@ export function CompetitionPropView({
         <Card
           className={`mb-6 transition-all ${
             hasChanges && isForecastingOpen
-              ? "border-blue-300 ring-2 ring-blue-100"
+              ? "border-primary/50 ring-2 ring-primary/15"
               : ""
           }`}
         >
@@ -340,7 +296,7 @@ export function CompetitionPropView({
                   </>
                 ) : (
                   <>
-                    <div className="text-4xl font-bold">
+                    <div className="text-4xl font-bold tabular-nums">
                       {percent !== null ? `${percent}%` : "—"}
                     </div>
                     <div className="text-xs opacity-70">

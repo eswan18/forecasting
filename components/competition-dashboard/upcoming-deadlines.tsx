@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import type { UpcomingDeadline } from "@/lib/db_actions/competition-stats";
 import { getBrowserTimezone } from "@/hooks/getBrowserTimezone";
 import { formatDate } from "@/lib/time-utils";
+import { getProbabilityColors } from "@/lib/forecast-colors";
 
 interface DeadlineDisplay {
   text: string;
@@ -31,43 +32,6 @@ function formatDeadline(date: Date, timezone: string): DeadlineDisplay {
   return { text: formatted, relative: null, urgent: false };
 }
 
-function getProbColor(prob: number | null): { bg: string; text: string } {
-  if (prob === null) {
-    return {
-      bg: "bg-muted",
-      text: "text-muted-foreground",
-    };
-  }
-  if (prob <= 0.2) {
-    return {
-      bg: "bg-red-100 dark:bg-red-950",
-      text: "text-red-700 dark:text-red-400",
-    };
-  }
-  if (prob <= 0.4) {
-    return {
-      bg: "bg-orange-100 dark:bg-orange-950",
-      text: "text-orange-700 dark:text-orange-400",
-    };
-  }
-  if (prob <= 0.6) {
-    return {
-      bg: "bg-yellow-100 dark:bg-yellow-950",
-      text: "text-yellow-700 dark:text-yellow-400",
-    };
-  }
-  if (prob <= 0.8) {
-    return {
-      bg: "bg-lime-100 dark:bg-lime-950",
-      text: "text-lime-700 dark:text-lime-400",
-    };
-  }
-  return {
-    bg: "bg-green-100 dark:bg-green-950",
-    text: "text-green-700 dark:text-green-400",
-  };
-}
-
 interface UpcomingPropRowProps {
   prop: UpcomingDeadline;
   competitionId: number;
@@ -76,7 +40,7 @@ interface UpcomingPropRowProps {
 
 function UpcomingPropRow({ prop, competitionId, timezone }: UpcomingPropRowProps) {
   const deadline = formatDeadline(prop.deadline, timezone);
-  const colors = getProbColor(prop.userForecast);
+  const colors = getProbabilityColors(prop.userForecast);
   const percent =
     prop.userForecast !== null ? Math.round(prop.userForecast * 100) : null;
 

@@ -81,8 +81,8 @@ export default function PropPageHeader({
           </p>
         )}
         {prop.resolution_notes && (
-          <div className="mt-3 pt-3 border-t border-border/50">
-            <p className="text-xs font-medium text-muted-foreground/70 mb-1">
+          <div className="mt-3 border-t pt-3">
+            <p className="mb-1 font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
               Resolution Notes
             </p>
             <p className="text-sm text-muted-foreground">

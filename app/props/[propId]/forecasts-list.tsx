@@ -2,18 +2,11 @@
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { VForecast } from "@/types/db_types";
+import { cn } from "@/lib/utils";
+import { getProbabilityColors } from "@/lib/forecast-colors";
+import type { VForecast } from "@/types/db_types";
 
 type SortOrder = "asc" | "desc";
-
-// Helper to get color based on probability
-const getProbColor = (prob: number) => {
-  if (prob <= 0.2) return { dot: "bg-red-500", bar: "bg-red-400" };
-  if (prob <= 0.4) return { dot: "bg-orange-500", bar: "bg-orange-400" };
-  if (prob <= 0.6) return { dot: "bg-yellow-500", bar: "bg-yellow-500" };
-  if (prob <= 0.8) return { dot: "bg-lime-500", bar: "bg-lime-500" };
-  return { dot: "bg-green-500", bar: "bg-green-500" };
-};
 
 interface ForecastRowProps {
   forecast: VForecast;
@@ -22,50 +15,54 @@ interface ForecastRowProps {
 }
 
 function ForecastRow({ forecast, rank, isCurrentUser }: ForecastRowProps) {
-  const colors = getProbColor(forecast.forecast);
+  const colors = getProbabilityColors(forecast.forecast);
   const percent = Math.round(forecast.forecast * 100);
 
   return (
     <div
-      className={`flex items-center gap-4 p-3 rounded-lg ${
+      className={cn(
+        "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors",
         isCurrentUser
-          ? "bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800"
-          : "hover:bg-muted/50"
-      }`}
+          ? "border-l-2 border-l-primary bg-primary/[0.04]"
+          : "hover:bg-muted/40",
+      )}
     >
       {/* Rank */}
-      <div className="w-8 text-sm text-muted-foreground text-center shrink-0">
+      <div className="w-7 shrink-0 text-center font-mono text-sm tabular-nums text-muted-foreground">
         {rank}
       </div>
 
-      {/* Color dot + name */}
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <div className={`w-3 h-3 rounded-full ${colors.dot} shrink-0`} />
+      {/* Name */}
+      <div className="min-w-0 flex-1">
         <span
-          className={`truncate ${
-            isCurrentUser ? "font-medium text-blue-900 dark:text-blue-100" : "text-foreground"
-          }`}
+          className={cn(
+            "truncate text-foreground",
+            isCurrentUser ? "font-semibold" : "font-medium",
+          )}
         >
           {forecast.user_name}
           {isCurrentUser && (
-            <span className="text-blue-600 dark:text-blue-400 ml-1">(you)</span>
+            <span className="ml-1 text-sm font-normal text-primary">you</span>
           )}
         </span>
       </div>
 
-      {/* Mini bar */}
-      <div className="w-24 h-2 bg-muted rounded-full overflow-hidden shrink-0 hidden sm:block">
-        <div
-          className={`h-full rounded-full ${colors.bar} opacity-60`}
-          style={{ width: `${percent}%` }}
-        />
+      {/* Mini bar — the probability hue is a deliberate data encoding */}
+      <div className="hidden w-24 items-center sm:flex">
+        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+          <div
+            className={cn("h-full rounded-full", colors.bar)}
+            style={{ width: `${percent}%` }}
+          />
+        </div>
       </div>
 
       {/* Percentage */}
       <div
-        className={`w-16 text-right font-mono text-sm shrink-0 ${
-          isCurrentUser ? "text-blue-900 dark:text-blue-100 font-medium" : "text-foreground"
-        }`}
+        className={cn(
+          "w-12 text-right font-mono text-sm tabular-nums",
+          isCurrentUser ? "font-semibold text-foreground" : "text-foreground",
+        )}
       >
         {percent}%
       </div>
@@ -94,30 +91,31 @@ export default function ForecastsList({
   });
 
   return (
-    <div className="bg-card border border-border rounded-lg p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-medium text-foreground">
+    <section className="overflow-hidden rounded-lg border bg-card">
+      <div className="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-5">
+        <span className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
           All Forecasts ({forecasts.length})
-        </h3>
+        </span>
         <button
           onClick={() => setSortOrder((s) => (s === "desc" ? "asc" : "desc"))}
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground px-2 py-1 rounded hover:bg-muted"
+          className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <ChevronDown
-            className={`w-4 h-4 transition-transform ${
-              sortOrder === "asc" ? "rotate-180" : ""
-            }`}
+            className={cn(
+              "h-4 w-4 transition-transform",
+              sortOrder === "asc" && "rotate-180",
+            )}
           />
           {sortOrder === "desc" ? "High to Low" : "Low to High"}
         </button>
       </div>
 
       {forecasts.length === 0 ? (
-        <p className="text-muted-foreground text-center py-8">
+        <p className="py-8 text-center text-sm text-muted-foreground">
           No forecasts have been made for this prop yet.
         </p>
       ) : (
-        <div className="space-y-1">
+        <div className="p-2 sm:p-3">
           {sortedForecasts.map((forecast, i) => (
             <ForecastRow
               key={forecast.forecast_id}
@@ -128,6 +126,6 @@ export default function ForecastsList({
           ))}
         </div>
       )}
-    </div>
+    </section>
   );
 }

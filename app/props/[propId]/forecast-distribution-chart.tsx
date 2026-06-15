@@ -1,20 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import { VForecast } from "@/types/db_types";
+import { cn } from "@/lib/utils";
+import type { VForecast } from "@/types/db_types";
 import {
   computeKDE,
   calculateBandwidth,
 } from "@/lib/kernel-density-estimation";
-
-// Helper to get color based on probability
-const getProbColor = (prob: number) => {
-  if (prob <= 0.2) return "bg-red-500";
-  if (prob <= 0.4) return "bg-orange-500";
-  if (prob <= 0.6) return "bg-yellow-500";
-  if (prob <= 0.8) return "bg-lime-500";
-  return "bg-green-500";
-};
 
 interface ForecastDistributionChartProps {
   forecasts: VForecast[];
@@ -31,6 +23,17 @@ const generateHistogram = (forecasts: VForecast[]) => {
   });
   return buckets;
 };
+
+function ChartShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-lg border bg-card p-5">
+      <h3 className="mb-4 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+        Forecast Distribution
+      </h3>
+      {children}
+    </div>
+  );
+}
 
 export default function ForecastDistributionChart({
   forecasts,
@@ -49,31 +52,24 @@ export default function ForecastDistributionChart({
   }, [forecasts]);
 
   // Find max KDE density for scaling
-  const maxDensity = kdeData
-    ? Math.max(...kdeData.map((d) => d.density))
-    : 1;
+  const maxDensity = kdeData ? Math.max(...kdeData.map((d) => d.density)) : 1;
 
   if (forecasts.length === 0) {
     return (
-      <div className="bg-card border border-border rounded-lg p-5">
-        <h3 className="font-medium text-foreground mb-4">
-          Forecast Distribution
-        </h3>
-        <div className="flex items-center justify-center h-32 text-muted-foreground">
+      <ChartShell>
+        <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
           No forecasts available
         </div>
-      </div>
+      </ChartShell>
     );
   }
 
   return (
-    <div className="bg-card border border-border rounded-lg p-5">
-      <h3 className="font-medium text-foreground mb-4">Forecast Distribution</h3>
-
+    <ChartShell>
       {/* Histogram with optional KDE overlay */}
       <div className="relative">
         {/* Bars */}
-        <div className="flex items-end gap-1 h-32 mb-2 relative">
+        <div className="relative mb-2 flex h-32 items-end gap-1">
           {histogram.map((count, i) => {
             const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
             const bucketStart = i * 10;
@@ -86,12 +82,13 @@ export default function ForecastDistributionChart({
             return (
               <div
                 key={i}
-                className="flex-1 flex flex-col items-center justify-end h-full"
+                className="flex h-full flex-1 flex-col items-center justify-end"
               >
                 <div
-                  className={`w-full rounded-t transition-all ${
-                    isUserBucket ? "bg-blue-500" : "bg-muted-foreground/30"
-                  }`}
+                  className={cn(
+                    "w-full rounded-t transition-all",
+                    isUserBucket ? "bg-primary" : "bg-muted-foreground/25",
+                  )}
                   style={{
                     height: `${height}%`,
                     minHeight: count > 0 ? "4px" : "0",
@@ -104,7 +101,7 @@ export default function ForecastDistributionChart({
           {/* KDE curve overlay */}
           {kdeData && kdeData.length > 0 && (
             <svg
-              className="absolute inset-0 w-full h-full pointer-events-none"
+              className="pointer-events-none absolute inset-0 h-full w-full"
               viewBox="0 0 100 100"
               preserveAspectRatio="none"
             >
@@ -117,7 +114,7 @@ export default function ForecastDistributionChart({
                   })
                   .join(" ")}`}
                 fill="none"
-                stroke="hsl(var(--primary))"
+                stroke="var(--primary)"
                 strokeWidth="2"
                 vectorEffect="non-scaling-stroke"
               />
@@ -126,7 +123,7 @@ export default function ForecastDistributionChart({
         </div>
 
         {/* X-axis */}
-        <div className="flex justify-between text-xs text-muted-foreground mb-4">
+        <div className="mb-4 flex justify-between font-mono text-[10px] tabular-nums text-muted-foreground">
           <span>0%</span>
           <span>25%</span>
           <span>50%</span>
@@ -136,20 +133,18 @@ export default function ForecastDistributionChart({
 
         {/* Marker bar showing you vs avg */}
         {(userForecast !== null || average !== null) && (
-          <div className="relative h-8 bg-muted rounded-lg">
+          <div className="relative h-8 rounded-lg bg-muted">
             {/* Your position */}
             {userForecast !== null && (
               <div
-                className="absolute top-0 bottom-0 flex flex-col items-center justify-center"
+                className="absolute bottom-0 top-0 flex flex-col items-center justify-center"
                 style={{
                   left: `${userForecast * 100}%`,
                   transform: "translateX(-50%)",
                 }}
               >
-                <div
-                  className={`w-4 h-4 rounded-full ${getProbColor(userForecast)} border-2 border-background shadow`}
-                />
-                <div className="absolute -bottom-5 text-xs font-medium text-foreground whitespace-nowrap">
+                <div className="h-4 w-4 rounded-full border-2 border-background bg-primary shadow" />
+                <div className="absolute -bottom-5 whitespace-nowrap text-xs font-medium text-foreground">
                   you
                 </div>
               </div>
@@ -158,20 +153,20 @@ export default function ForecastDistributionChart({
             {/* Average position */}
             {average !== null && (
               <div
-                className="absolute top-0 bottom-0 flex flex-col items-center justify-center"
+                className="absolute bottom-0 top-0 flex flex-col items-center justify-center"
                 style={{
                   left: `${average * 100}%`,
                   transform: "translateX(-50%)",
                 }}
               >
                 <div
-                  className="w-0 h-0 border-l-4 border-r-4 border-transparent"
+                  className="h-0 w-0 border-l-4 border-r-4 border-transparent"
                   style={{
                     borderTopWidth: "8px",
-                    borderTopColor: "hsl(var(--muted-foreground))",
+                    borderTopColor: "var(--muted-foreground)",
                   }}
                 />
-                <div className="absolute -bottom-5 text-xs text-muted-foreground whitespace-nowrap">
+                <div className="absolute -bottom-5 whitespace-nowrap text-xs text-muted-foreground">
                   avg
                 </div>
               </div>
@@ -179,6 +174,6 @@ export default function ForecastDistributionChart({
           </div>
         )}
       </div>
-    </div>
+    </ChartShell>
   );
 }
