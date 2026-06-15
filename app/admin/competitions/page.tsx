@@ -1,9 +1,8 @@
+import Link from "next/link";
 import { getCompetitions, getProps } from "@/lib/db_actions";
 import CompetitionRow from "./competition-row";
 import CreateCompetitionButton from "./create-competition-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy } from "lucide-react";
-import PageHeading from "@/components/page-heading";
+import { Container } from "@/components/ui/container";
 
 export default async function Page() {
   const competitionsResult = await getCompetitions();
@@ -51,46 +50,52 @@ export default async function Page() {
   );
 
   return (
-    <main className="flex flex-col py-4 px-4 sm:py-6 sm:px-6 lg:py-8 lg:px-8 xl:py-12 xl:px-24">
-      <div className="w-full max-w-6xl mx-auto space-y-6 sm:space-y-8">
-        <PageHeading
-          title="Competitions"
-          breadcrumbs={{
-            Admin: "/admin",
-          }}
-          className="mb-2"
-        />
-
-        <div className="flex items-center justify-between">
-          <div className="flex gap-2 sm:gap-4">
-            <CreateCompetitionButton className="w-full sm:w-auto flex items-center justify-center gap-2 text-sm sm:text-base" />
+    <main className="py-10 lg:py-14">
+      <Container>
+        <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <Link
+              href="/admin"
+              className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Admin
+            </Link>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
+              Competitions
+            </h1>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              Create competitions and review their props and resolutions.
+            </p>
           </div>
-        </div>
+          <CreateCompetitionButton className="shrink-0" />
+        </header>
 
-        {/* Competitions Table */}
-        <Card className="shadow-lg border-0">
-          <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6">
-            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-              <Trophy className="h-4 w-4 sm:h-5 sm:w-5" />
-              All Competitions
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
-            <div className="space-y-0">
-              {competitions.map((competition) => (
-                <CompetitionRow
-                  key={competition.id}
-                  competition={competition}
-                  nProps={propCountsByCompetitionId[competition.id] ?? 0}
-                  nResolvedProps={
-                    resolvedPropCountsByCompetitionId[competition.id] ?? 0
-                  }
-                />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        {/* Competitions table */}
+        <section className="overflow-hidden rounded-lg border bg-card">
+          <div className="border-b px-4 py-3 sm:px-5">
+            <span className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              All Competitions ({competitions.length})
+            </span>
+          </div>
+          <div className="divide-y">
+            {competitions.map((competition) => (
+              <CompetitionRow
+                key={competition.id}
+                competition={competition}
+                nProps={propCountsByCompetitionId[competition.id] ?? 0}
+                nResolvedProps={
+                  resolvedPropCountsByCompetitionId[competition.id] ?? 0
+                }
+              />
+            ))}
+            {competitions.length === 0 && (
+              <p className="px-5 py-10 text-center text-sm text-muted-foreground">
+                No competitions yet.
+              </p>
+            )}
+          </div>
+        </section>
+      </Container>
     </main>
   );
 }

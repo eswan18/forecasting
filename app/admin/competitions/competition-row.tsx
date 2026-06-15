@@ -38,7 +38,7 @@ export default function CompetitionRow({
   const status = getCompetitionStatusFromObject(competition);
 
   return (
-    <div className="flex items-center justify-between p-4 border-b border-border hover:bg-muted/50 transition-colors">
+    <div className="flex items-center justify-between p-4 transition-colors hover:bg-muted/40">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-3 mb-2">
           <div className="flex items-center gap-2">
@@ -136,14 +136,22 @@ export default function CompetitionRow({
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-4 ml-4">
+      <div className="ml-4 flex items-center gap-5">
         <div className="text-right">
-          <div className="text-2xl font-bold">{nProps}</div>
-          <div className="text-xs text-muted-foreground">total props</div>
+          <div className="font-mono text-2xl font-semibold tabular-nums">
+            {nProps}
+          </div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+            total props
+          </div>
         </div>
         <div className="text-right">
-          <div className="text-2xl font-bold">{nResolvedProps}</div>
-          <div className="text-xs text-muted-foreground">resolved</div>
+          <div className="font-mono text-2xl font-semibold tabular-nums">
+            {nResolvedProps}
+          </div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+            resolved
+          </div>
         </div>
       </div>
     </div>
