@@ -82,8 +82,8 @@ async function PropPageContent({
   const max = forecastValues.length > 0 ? Math.max(...forecastValues) : null;
 
   return (
-    <main className="min-h-screen bg-muted/30 py-8 px-8 lg:px-24">
-      <div className="max-w-3xl mx-auto">
+    <main className="min-h-screen bg-background px-6 py-8">
+      <div className="mx-auto max-w-3xl">
         {/* Header */}
         <PropPageHeader
           prop={prop}
