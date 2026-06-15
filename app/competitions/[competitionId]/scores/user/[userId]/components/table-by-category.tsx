@@ -1,15 +1,13 @@
-import Link from "next/link";
-import { ExternalLink } from "lucide-react";
+import { Fragment } from "react";
 import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Category } from "@/types/db_types";
-import { UserForecastScore, UserCategoryScore } from "@/lib/db_actions";
+import type { Category } from "@/types/db_types";
+import type { UserForecastScore, UserCategoryScore } from "@/lib/db_actions";
+import { ForecastScoreRow, ScoreTableHead } from "./score-table-parts";
 
 interface TableByCategoryProps {
   sortedCategoryEntries: Array<[number | "uncategorized", UserForecastScore[]]>;
@@ -24,14 +22,7 @@ export function TableByCategory({
 }: TableByCategoryProps) {
   return (
     <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Proposition</TableHead>
-          <TableHead className="text-right">Forecast</TableHead>
-          <TableHead className="text-right">Resolution</TableHead>
-          <TableHead className="text-right">Penalty</TableHead>
-        </TableRow>
-      </TableHeader>
+      <ScoreTableHead />
       <TableBody>
         {sortedCategoryEntries.map(([categoryKey, forecasts]) => {
           const categoryId =
@@ -49,49 +40,27 @@ export function TableByCategory({
           );
 
           return (
-            <>
-              {/* Category Header Row */}
-              <TableRow key={`category-${categoryKey}`}>
+            <Fragment key={`category-${categoryKey}`}>
+              {/* Category header row: mono kicker label + aggregate penalty */}
+              <TableRow className="border-y bg-muted/40 hover:bg-muted/40">
                 <TableCell
                   colSpan={3}
-                  className="font-semibold text-lg bg-muted/50 py-3"
+                  className="py-2 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground"
                 >
                   {category?.name || "Uncategorized"}
                 </TableCell>
-                <TableCell className="text-right font-semibold text-lg bg-muted/50 py-3">
-                  {categoryScore ? categoryScore.score.toFixed(3) : "-"}
+                <TableCell className="py-2 text-right font-mono font-medium tabular-nums text-foreground">
+                  {categoryScore ? categoryScore.score.toFixed(3) : "—"}
                 </TableCell>
               </TableRow>
-              {/* Forecast Rows */}
+              {/* Forecast rows */}
               {forecasts.map((forecast) => (
-                <TableRow key={forecast.forecastId}>
-                  <TableCell className="max-w-md">
-                    <div className="flex items-center gap-2">
-                      <div className="truncate flex-1">{forecast.propText}</div>
-                      <Link
-                        href={`/props/${forecast.propId}`}
-                        className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                      </Link>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {(forecast.forecast * 100).toFixed(1)}%
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {forecast.resolution === null
-                      ? "-"
-                      : forecast.resolution
-                        ? "Yes"
-                        : "No"}
-                  </TableCell>
-                  <TableCell className="text-right font-medium">
-                    {forecast.score !== null ? forecast.score.toFixed(3) : "-"}
-                  </TableCell>
-                </TableRow>
+                <ForecastScoreRow
+                  key={forecast.forecastId}
+                  forecast={forecast}
+                />
               ))}
-            </>
+            </Fragment>
           );
         })}
       </TableBody>

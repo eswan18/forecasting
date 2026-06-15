@@ -9,7 +9,14 @@ import {
 import ErrorPage from "@/components/pages/error-page";
 import { getCompetitionById } from "@/lib/db_actions";
 import { InaccessiblePage } from "@/components/inaccessible-page";
-import PageHeading from "@/components/page-heading";
+import { Container } from "@/components/ui/container";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { getCompetitionStatus } from "@/lib/competition-status";
 
 export default async function Page({
@@ -41,41 +48,65 @@ export default async function Page({
   }
 
   return (
-    <main className="flex flex-col justify-start items-start gap-4 py-4 px-8 lg:py-8 lg:px-24 w-full max-w-6xl mx-auto">
-      <PageHeading
-        title={`${competition.name} - Stats`}
-        breadcrumbs={{
-          Competitions: "/competitions",
-          [competition.name]: `/competitions/${competition.id}`,
-        }}
-      />
-      {/* Stats Cards */}
-      <div className="flex flex-row flex-wrap justify-center items-start gap-4">
-        <Suspense
-          fallback={
-            <SkeletonCard
-              title="Consensus Forecasts"
-              className="w-full h-72 sm:h-128"
-            />
-          }
-        >
-          <PropConsensusCard competitionId={competitionId} />
-        </Suspense>
-        <Suspense
-          fallback={
-            <SkeletonCard title="Average Certainty" className="w-80 h-96" />
-          }
-        >
-          <CertaintyCard competitionId={competitionId} />
-        </Suspense>
-        <Suspense
-          fallback={
-            <SkeletonCard title="Boldest Takes" className="w-80 h-96" />
-          }
-        >
-          <BoldTakesCard competitionId={competitionId} />
-        </Suspense>
-      </div>
+    <main className="py-10 lg:py-14">
+      <Container>
+        <header className="mb-8">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/competitions">
+                  Competitions
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href={`/competitions/${competition.id}`}>
+                  {competition.name}
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <div className="mt-4">
+            <div className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              Forecast Stats
+            </div>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
+              {competition.name}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Where the crowd agrees, diverges, and commits.
+            </p>
+          </div>
+        </header>
+
+        {/* Stats Cards */}
+        <div className="flex flex-row flex-wrap items-start justify-center gap-4">
+          <Suspense
+            fallback={
+              <SkeletonCard
+                title="Consensus Forecasts"
+                className="w-full h-72 sm:h-128"
+              />
+            }
+          >
+            <PropConsensusCard competitionId={competitionId} />
+          </Suspense>
+          <Suspense
+            fallback={
+              <SkeletonCard title="Average Certainty" className="w-80 h-96" />
+            }
+          >
+            <CertaintyCard competitionId={competitionId} />
+          </Suspense>
+          <Suspense
+            fallback={
+              <SkeletonCard title="Boldest Takes" className="w-80 h-96" />
+            }
+          >
+            <BoldTakesCard competitionId={competitionId} />
+          </Suspense>
+        </div>
+      </Container>
     </main>
   );
 }

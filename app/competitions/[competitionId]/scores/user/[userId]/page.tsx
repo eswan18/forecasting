@@ -3,10 +3,15 @@ import {
   getUserScoreBreakdown,
   getCategories,
 } from "@/lib/db_actions";
-import PageHeading from "@/components/page-heading";
 import ErrorPage from "@/components/pages/error-page";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Medal } from "lucide-react";
+import { Container } from "@/components/ui/container";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { ForecastScoresTable } from "./components/forecast-scores-table";
 
 export default async function UserScorePage({
@@ -109,62 +114,79 @@ export default async function UserScorePage({
   });
 
   return (
-    <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full max-w-4xl mx-auto">
-      <PageHeading
-        title={`${scoreBreakdown.userName} - Score Breakdown`}
-        breadcrumbs={{
-          Competitions: "/competitions",
-          [competition.name]: `/competitions/${competition.id}`,
-          Scores: `/competitions/${competition.id}?tab=leaderboard`,
-        }}
-      />
-
-      <div className="flex flex-col gap-6 w-full">
-        {/* Overall Score Summary */}
-        <Card className="w-full">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Medal className="h-4 w-4" />
-              Overall Score
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="flex flex-col gap-2">
-              <div className="text-5xl font-bold tracking-tight">
-                {scoreBreakdown.overallScore.toFixed(3)}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Average Brier Score across all categories
-              </div>
+    <main className="py-10 lg:py-14">
+      <Container>
+        <header className="mb-8">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/competitions">
+                  Competitions
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href={`/competitions/${competition.id}`}>
+                  {competition.name}
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink
+                  href={`/competitions/${competition.id}?tab=leaderboard`}
+                >
+                  Scores
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <div className="mt-4">
+            <div className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              Score Breakdown
             </div>
-          </CardContent>
-        </Card>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
+              {scoreBreakdown.userName}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {competition.name}
+            </p>
+          </div>
+        </header>
 
-        {/* Forecast Penalties */}
-        {scoreBreakdown.forecastScores.length > 0 && (
-          <Card className="w-full">
+        <div className="flex flex-col gap-6">
+          {/* Overall score — flat instrument panel */}
+          <div className="rounded-lg border bg-card p-5 sm:p-6">
+            <div className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+              Overall Brier Score
+            </div>
+            <div className="mt-2 font-mono text-5xl font-semibold tabular-nums tracking-tight text-foreground">
+              {scoreBreakdown.overallScore.toFixed(3)}
+            </div>
+            <div className="mt-1.5 text-sm text-muted-foreground">
+              Average across all categories · lower is better
+            </div>
+          </div>
+
+          {/* Forecast Penalties */}
+          {scoreBreakdown.forecastScores.length > 0 ? (
             <ForecastScoresTable
               sortedCategoryEntries={sortedCategoryEntries}
               sortedCategoryScores={sortedCategoryScores}
               sortedForecasts={sortedForecasts}
               categories={categories}
             />
-          </Card>
-        )}
-
-        {scoreBreakdown.forecastScores.length === 0 && (
-          <Card className="w-full">
-            <CardContent className="py-8">
-              <div className="text-center text-muted-foreground">
-                <p className="text-lg">No resolved forecasts found</p>
-                <p className="text-sm mt-1">
-                  Scores will appear once propositions are resolved
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+          ) : (
+            <div className="rounded-lg border bg-card p-8 text-center">
+              <p className="text-muted-foreground">
+                No resolved forecasts found
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Scores will appear once propositions are resolved
+              </p>
+            </div>
+          )}
+        </div>
+      </Container>
     </main>
   );
 }
