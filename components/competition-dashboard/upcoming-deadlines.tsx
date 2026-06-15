@@ -88,7 +88,7 @@ function UpcomingPropRow({ prop, competitionId, timezone }: UpcomingPropRowProps
       {/* Forecast status indicator */}
       <div
         className={cn(
-          "w-12 h-10 rounded flex items-center justify-center text-sm font-bold shrink-0",
+          "flex h-10 w-12 shrink-0 items-center justify-center rounded font-mono text-sm font-semibold tabular-nums",
           colors.bg,
           colors.text,
         )}
@@ -143,11 +143,11 @@ export function UpcomingDeadlines({
 
   if (deadlines.length === 0) {
     return (
-      <div className="bg-card border border-border rounded-lg p-5">
-        <h2 className="font-semibold text-foreground mb-4">
+      <div className="rounded-lg border bg-card p-5">
+        <div className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
           Upcoming Deadlines
-        </h2>
-        <p className="text-sm text-muted-foreground">
+        </div>
+        <p className="mt-2 text-sm text-muted-foreground">
           No upcoming deadlines. All props are either closed or fully
           forecasted.
         </p>
@@ -156,19 +156,21 @@ export function UpcomingDeadlines({
   }
 
   return (
-    <div className="bg-card border border-border rounded-lg p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="font-semibold text-foreground">Upcoming Deadlines</h2>
+    <div className="rounded-lg border bg-card p-2">
+      <div className="flex items-center justify-between px-3 pb-2 pt-1.5">
+        <span className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+          Upcoming Deadlines
+        </span>
         {onViewAll && (
           <button
             onClick={onViewAll}
-            className="text-sm text-primary hover:text-primary/80"
+            className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             View all →
           </button>
         )}
       </div>
-      <div className="space-y-1">
+      <div className="flex flex-col">
         {deadlines.map((prop) => (
           <UpcomingPropRow
             key={prop.propId}

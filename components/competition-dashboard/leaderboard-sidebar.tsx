@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CompetitionScore } from "@/lib/db_actions";
 
@@ -18,43 +19,38 @@ interface LeaderboardRowProps {
 }
 
 function LeaderboardRow({ entry }: LeaderboardRowProps) {
+  const emphasized = entry.isCurrentUser || entry.rank === 1;
   return (
-    <div
-      className={cn(
-        "flex items-center gap-3 py-2",
-        entry.isCurrentUser && "font-medium",
-      )}
-    >
-      <div
-        className={cn(
-          "w-6 text-center text-sm",
-          entry.isCurrentUser ? "text-primary" : "text-muted-foreground",
-        )}
-      >
-        {entry.rank}
+    <div className="flex items-center justify-between gap-3 px-3 py-1.5">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="w-4 shrink-0 text-right font-mono text-xs tabular-nums text-muted-foreground">
+          {entry.rank}
+        </span>
+        <span
+          className={cn(
+            "truncate text-sm text-foreground",
+            emphasized ? "font-semibold" : "font-medium",
+          )}
+        >
+          {entry.userName}
+          {entry.isCurrentUser && (
+            <span className="ml-1 text-xs font-normal text-primary">you</span>
+          )}
+          {entry.isIncomplete && (
+            <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+              incomplete
+            </span>
+          )}
+        </span>
       </div>
-      <div
+      <span
         className={cn(
-          "flex-1 truncate",
-          entry.isCurrentUser ? "text-primary" : "text-foreground",
-        )}
-      >
-        {entry.userName}
-        {entry.isCurrentUser && (
-          <span className="text-primary text-xs ml-1">(you)</span>
-        )}
-        {entry.isIncomplete && (
-          <span className="text-muted-foreground text-xs ml-1">(incomplete)</span>
-        )}
-      </div>
-      <div
-        className={cn(
-          "text-sm font-mono",
-          entry.isCurrentUser ? "text-primary" : "text-muted-foreground",
+          "shrink-0 font-mono text-sm tabular-nums",
+          emphasized ? "font-medium text-foreground" : "text-muted-foreground",
         )}
       >
         {entry.score.toFixed(3)}
-      </div>
+      </span>
     </div>
   );
 }
@@ -93,9 +89,11 @@ export function LeaderboardSidebar({
 
   if (entries.length === 0) {
     return (
-      <div className="bg-card border border-border rounded-lg p-5 sticky top-6">
-        <h2 className="font-semibold text-foreground mb-4">Leaderboard</h2>
-        <p className="text-sm text-muted-foreground">
+      <div className="sticky top-6 rounded-lg border bg-card p-5">
+        <div className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+          Standings
+        </div>
+        <p className="mt-2 text-sm text-muted-foreground">
           No scores yet. Scores appear after props are resolved.
         </p>
       </div>
@@ -103,21 +101,24 @@ export function LeaderboardSidebar({
   }
 
   return (
-    <div className="bg-card border border-border rounded-lg p-5 sticky top-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="font-semibold text-foreground">Leaderboard</h2>
-        <span className="text-xs text-muted-foreground">Avg Brier</span>
+    <div className="sticky top-6 rounded-lg border bg-card p-2">
+      <div className="flex items-center justify-between px-3 pb-2 pt-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+        <span>Forecaster</span>
+        <span>Avg Brier</span>
       </div>
-      <div className="space-y-1">
+
+      <div className="flex flex-col">
         {entries.map((entry) => (
           <LeaderboardRow key={entry.userId} entry={entry} />
         ))}
       </div>
+
       <Link
         href={`/competitions/${competitionId}?tab=leaderboard`}
-        className="block w-full mt-4 text-sm text-primary hover:text-primary/80 text-center"
+        className="mt-1 flex items-center justify-center gap-1 border-t pt-2.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
-        Full leaderboard →
+        Full leaderboard
+        <ArrowRight className="h-3.5 w-3.5" />
       </Link>
     </div>
   );
