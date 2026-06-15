@@ -36,6 +36,7 @@ import { getCompetitionStatusFromObject } from "@/lib/competition-status";
 import { NavLink, NavLinkGroup, NavLinkSection } from "./nav-types";
 import { DropdownNavbarItem } from "./dropdown-navbar-item";
 import { MobileDropdownItem } from "./mobile-dropdown-item";
+import { Wordmark } from "./wordmark";
 
 export default function NavBar() {
   const { user, isLoading } = useCurrentUser();
@@ -137,10 +138,12 @@ export default function NavBar() {
       <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5 sm:px-6 lg:px-8">
           <div className="flex items-center space-x-4">
-            <Link href="/">
-              <Button variant="ghost" className="font-semibold text-lg">
-                Forecasting
-              </Button>
+            <Link
+              href="/"
+              aria-label="Forecasting home"
+              className="inline-flex items-center rounded-md px-2 py-1.5 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+            >
+              <Wordmark />
             </Link>
           </div>
           <div className="flex items-center space-x-2">
@@ -174,13 +177,12 @@ export default function NavBar() {
                 <SheetHeader>
                   <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                   <SheetClose asChild>
-                    <Link href="/">
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start h-12 text-lg font-semibold p-0"
-                      >
-                        Forecasting
-                      </Button>
+                    <Link
+                      href="/"
+                      aria-label="Forecasting home"
+                      className="flex w-full items-center rounded-md px-2 py-2 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                    >
+                      <Wordmark />
                     </Link>
                   </SheetClose>
                 </SheetHeader>
@@ -211,10 +213,12 @@ export default function NavBar() {
             </Sheet>
           )}
 
-          <Link href="/">
-            <Button variant="ghost" className="font-semibold text-lg ">
-              Forecasting
-            </Button>
+          <Link
+            href="/"
+            aria-label="Forecasting home"
+            className="inline-flex items-center rounded-md px-2 py-1.5 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+          >
+            <Wordmark />
           </Link>
 
           {user && (
