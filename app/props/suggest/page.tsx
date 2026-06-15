@@ -1,11 +1,9 @@
-import PageHeading from "@/components/page-heading";
 import { SuggestPropForm } from "./suggest-prop-form";
 
 export default async function SuggestPropPage() {
   return (
-    <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
-      <div className="w-full max-w-lg">
-        <PageHeading title="Suggest Prop" breadcrumbs={{}} className="mb-2" />
+    <main className="px-6 py-8 lg:py-12">
+      <div className="mx-auto w-full max-w-2xl">
         <SuggestPropForm />
       </div>
     </main>

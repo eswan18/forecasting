@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  AlertTriangle,
-  Trophy,
-  Calendar,
-  CalendarClock,
-  Lock,
-} from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { createCompetition, updateCompetition } from "@/lib/db_actions";
 import { Button } from "@/components/ui/button";
@@ -123,8 +117,7 @@ export function CreateEditCompetitionForm({
           name="name"
           render={({ field }) => (
             <FormItem className="space-y-2">
-              <FormLabel className="text-sm font-medium flex items-center gap-2">
-                <Trophy className="h-4 w-4" />
+              <FormLabel className="text-sm font-medium">
                 Competition Name
               </FormLabel>
               <FormControl>
@@ -146,8 +139,7 @@ export function CreateEditCompetitionForm({
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-sm font-medium flex items-center gap-2">
-                    <Lock className="h-4 w-4" />
+                  <FormLabel className="text-sm font-medium">
                     Private Competition
                   </FormLabel>
                   <FormDescription className="text-xs">
@@ -172,8 +164,7 @@ export function CreateEditCompetitionForm({
               name="forecasts_open_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col space-y-2">
-                  <FormLabel className="text-sm font-medium flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
+                  <FormLabel className="text-sm font-medium">
                     Forecasts Open Date
                   </FormLabel>
                   <FormControl>
@@ -192,8 +183,7 @@ export function CreateEditCompetitionForm({
               name="forecasts_close_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col space-y-2">
-                  <FormLabel className="text-sm font-medium flex items-center gap-2">
-                    <CalendarClock className="h-4 w-4" />
+                  <FormLabel className="text-sm font-medium">
                     Forecasts Due Date
                   </FormLabel>
                   <FormControl>
@@ -212,8 +202,7 @@ export function CreateEditCompetitionForm({
               name="end_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col space-y-2">
-                  <FormLabel className="text-sm font-medium flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
+                  <FormLabel className="text-sm font-medium">
                     Competition End Date
                   </FormLabel>
                   <FormControl>

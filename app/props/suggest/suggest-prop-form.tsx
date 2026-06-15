@@ -15,7 +15,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, FileText, Hash } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
 
@@ -96,12 +96,12 @@ export function SuggestPropForm() {
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto shadow-xl border-0 bg-card/50 backdrop-blur-sm">
-      <CardHeader className="text-center">
-        <CardTitle className="text-xl sm:text-2xl font-semibold">
+    <Card className="mx-auto w-full max-w-2xl">
+      <CardHeader>
+        <CardTitle className="text-xl font-semibold tracking-tight">
           Suggest a Proposition
         </CardTitle>
-        <p className="text-sm sm:text-base text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Submit a new proposition for consideration in forecasting competitions
         </p>
       </CardHeader>
@@ -113,10 +113,9 @@ export function SuggestPropForm() {
               name="propText"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm sm:text-base font-medium flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
+                  <FormLabel className="flex items-center gap-2 text-sm font-medium">
                     Prop Text
-                    <span className="text-xs text-muted-foreground font-normal">
+                    <span className="text-xs font-normal text-muted-foreground">
                       (Markdown supported)
                     </span>
                   </FormLabel>
@@ -124,7 +123,7 @@ export function SuggestPropForm() {
                     <Textarea
                       {...field}
                       placeholder="Enter the proposition text here. Be clear and specific about what you're asking people to forecast. Markdown formatting (links, bold, italic) is supported."
-                      className="min-h-[120px] resize-none text-sm sm:text-base"
+                      className="min-h-[120px] resize-none"
                       rows={5}
                     />
                   </FormControl>
@@ -138,10 +137,9 @@ export function SuggestPropForm() {
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm sm:text-base font-medium flex items-center gap-2">
-                    <Hash className="h-4 w-4" />
+                  <FormLabel className="flex items-center gap-2 text-sm font-medium">
                     Additional Notes (Optional)
-                    <span className="text-xs text-muted-foreground font-normal">
+                    <span className="text-xs font-normal text-muted-foreground">
                       (Markdown supported)
                     </span>
                   </FormLabel>
@@ -149,7 +147,7 @@ export function SuggestPropForm() {
                     <Textarea
                       {...field}
                       placeholder="Add any additional context, clarification, or background information that might be helpful for reviewers. Markdown formatting (links, bold, italic) is supported."
-                      className="min-h-[80px] resize-none text-sm sm:text-base"
+                      className="min-h-[80px] resize-none"
                       rows={3}
                     />
                   </FormControl>
@@ -158,21 +156,14 @@ export function SuggestPropForm() {
               )}
             />
 
-            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+            <div className="flex flex-col gap-3 pt-4 sm:flex-row">
               {loading ? (
-                <Button
-                  type="submit"
-                  disabled
-                  className="flex-1 text-sm sm:text-base"
-                >
+                <Button type="submit" disabled className="h-11 flex-1 font-medium">
                   <Spinner className="mr-2 h-4 w-4" />
                   Submitting...
                 </Button>
               ) : (
-                <Button
-                  type="submit"
-                  className="flex-1 text-sm sm:text-base h-11 font-medium"
-                >
+                <Button type="submit" className="h-11 flex-1 font-medium">
                   Submit Proposition
                 </Button>
               )}
