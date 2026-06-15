@@ -130,7 +130,7 @@ The app is being incrementally remodeled toward a **soft-minimal / Linear-like**
 
 **Storybook**: when restyling a notable component, add a story beside it (`*.stories.tsx`, `title: "<Group>/…"`, `@storybook/react-vite`, `tags: ["autodocs"]`). Story presentational leaf components (plain props); skip router-coupled orchestrators that need `next/navigation`. Storybook aliases `@/lib/db_actions*` to mocks, so keep leaf-component db imports `import type` (erased at build). Verify with `npm run build-storybook`.
 
-**Progress**: done — home dashboard (`app/page.tsx` + `components/landing/*`) and the competition overview (`components/competition-dashboard/*`). Remaining, one surface at a time: the `/competitions` list page, the full leaderboard/standings + per-user score tables, prop/resolved tables, navbar wordmark, then polish.
+**Progress**: done — home dashboard (`app/page.tsx` + `components/landing/*`), the competition overview (`components/competition-dashboard/*`), the `/competitions` list page, the full leaderboard (`components/scores/leaderboard.tsx`), and the members table (`components/members/members-table.tsx`). The Open/Closed/Resolved prop tabs already render the restyled `ForecastCard`s (+ a clean filter bar), so they need no separate pass. Remaining, one surface at a time: the per-user score-breakdown tables (`.../scores/user/[userId]/*`), the forecast-stats cards (`.../forecast-stats/cards/*`), the single-prop view (`app/props/[propId]/*`), login, the admin pages, the navbar wordmark, then polish.
 
 ### Error Monitoring
 

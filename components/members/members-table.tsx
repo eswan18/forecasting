@@ -46,7 +46,7 @@ function RoleBadge({ role }: { role: CompetitionRole }) {
     return (
       <Badge
         variant="secondary"
-        className="bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300"
+        className="border-transparent bg-primary/10 text-primary"
       >
         <Shield className="h-3 w-3 mr-1" />
         Admin
@@ -248,8 +248,8 @@ export function MembersTable({
 
   if (members.length === 0) {
     return (
-      <div className="bg-card border border-border rounded-lg p-8 text-center">
-        <p className="text-muted-foreground">No members yet</p>
+      <div className="rounded-lg border bg-card p-8 text-center">
+        <p className="text-sm text-muted-foreground">No members yet</p>
       </div>
     );
   }
@@ -262,13 +262,14 @@ export function MembersTable({
   });
 
   return (
-    <div className="bg-card border border-border rounded-lg overflow-hidden">
-      <div className="px-4 py-3 border-b border-border bg-muted/30">
-        <span className="text-sm font-medium text-foreground">
-          {members.length} {members.length === 1 ? "member" : "members"}
+    <div className="overflow-hidden rounded-lg border bg-card">
+      <div className="border-b bg-muted/30 px-4 py-2.5">
+        <span className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+          <span className="tabular-nums">{members.length}</span>{" "}
+          {members.length === 1 ? "Member" : "Members"}
         </span>
       </div>
-      <div className="divide-y divide-border">
+      <div className="divide-y">
         {sortedMembers.map((member) => (
           <MemberRow
             key={member.membership_id}
