@@ -2,7 +2,7 @@
 
 import { Competition } from "@/types/db_types";
 import Link from "next/link";
-import { Edit, ExternalLink } from "lucide-react";
+import { Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -41,20 +41,15 @@ export default function CompetitionRow({
     <div className="flex items-center justify-between p-4 transition-colors hover:bg-muted/40">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-3 mb-2">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0">
             <h3 className="text-lg font-semibold truncate">
               <Link
-                href={`/competitions/${competition.id}/forecasts`}
+                href={`/competitions/${competition.id}`}
                 className="hover:text-primary transition-colors"
               >
                 {competition.name}
               </Link>
             </h3>
-            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-              <Link href={`/competitions/${competition.id}`}>
-                <ExternalLink className="h-4 w-4" />
-              </Link>
-            </Button>
           </div>
           <div className="flex items-center gap-1 ml-auto">
             <Dialog open={open} onOpenChange={setOpen}>

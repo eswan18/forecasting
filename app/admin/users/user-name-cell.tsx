@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ExternalLink, User } from "lucide-react";
+import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -65,10 +65,9 @@ export function UserNameCell({ user }: UserNameCellProps) {
         <div className="flex items-center gap-x-1 min-w-0 flex-1">
           <Link
             href={`/admin/users/${user.id}`}
-            className="flex items-center gap-x-1 hover:text-primary transition-colors min-w-0"
+            className="flex items-center hover:text-primary transition-colors min-w-0"
           >
             <span className="truncate">{name}</span>
-            <ExternalLink className="h-3 w-3 flex-shrink-0" />
           </Link>
           {/* Impersonate button - only show for non-admin, active users */}
           {!user.is_admin && !user.deactivated_at && (

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ExternalLink } from "lucide-react";
 import {
   TableCell,
   TableHead,
@@ -51,17 +50,12 @@ export function ForecastScoreRow({
   return (
     <TableRow>
       <TableCell className="max-w-md">
-        <div className="flex items-center gap-2">
-          <div className="flex-1 truncate text-foreground">
-            {forecast.propText}
-          </div>
-          <Link
-            href={`/props/${forecast.propId}`}
-            className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <ExternalLink className="h-3 w-3" />
-          </Link>
-        </div>
+        <Link
+          href={`/props/${forecast.propId}`}
+          className="block truncate text-foreground transition-colors hover:text-primary"
+        >
+          {forecast.propText}
+        </Link>
       </TableCell>
       <TableCell className="text-right font-mono tabular-nums text-foreground">
         {(forecast.forecast * 100).toFixed(1)}%
