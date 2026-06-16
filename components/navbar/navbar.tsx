@@ -18,6 +18,7 @@ import {
   Flag,
   Medal,
   MessageCircle,
+  Target,
   Users,
   Menu,
 } from "lucide-react";
@@ -98,6 +99,14 @@ export default function NavBar() {
     links.push({
       label: "Competitions",
       sections,
+    });
+  }
+
+  if (user) {
+    links.push({
+      href: "/standalone/calibration",
+      label: "Calibration",
+      icon: <Target size={16} />,
     });
   }
 
