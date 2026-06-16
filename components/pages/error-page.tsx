@@ -1,4 +1,5 @@
 import PageHeading from "@/components/page-heading";
+import { Container } from "@/components/ui/container";
 
 export default function ErrorPage({
   title,
@@ -8,13 +9,13 @@ export default function ErrorPage({
   children?: React.ReactNode;
 }) {
   return (
-    <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
-      <div className="w-full max-w-lg">
+    <main className="flex min-h-[60vh] items-center py-12 lg:py-16">
+      <Container className="max-w-xl">
         <PageHeading title={title} />
-        <div className="flex flex-col justify-start items-start gap-3">
+        <div className="flex flex-col items-start gap-3 text-sm text-muted-foreground">
           {children}
         </div>
-      </div>
+      </Container>
     </main>
   );
 }
