@@ -6,6 +6,7 @@ import ErrorPage from "@/components/pages/error-page";
 import { InaccessiblePage } from "@/components/inaccessible-page";
 import { NewPropForm } from "./new-prop-form";
 import PageHeading from "@/components/page-heading";
+import { Container } from "@/components/ui/container";
 
 export default async function NewPropPage({
   params,
@@ -68,22 +69,24 @@ export default async function NewPropPage({
   const categories = categoriesResult.success ? categoriesResult.data : [];
 
   return (
-    <main className="flex flex-col items-start py-4 px-8 lg:py-8 lg:px-24 w-full max-w-4xl mx-auto">
-      <PageHeading
-        title="New Proposition"
-        breadcrumbs={{
-          Competitions: "/competitions",
-          [competition.name]: `/competitions/${competitionId}`,
-        }}
-        className="mb-6"
-      />
+    <main className="py-10 lg:py-14">
+      <Container className="max-w-3xl">
+        <PageHeading
+          title="New Proposition"
+          breadcrumbs={{
+            Competitions: "/competitions",
+            [competition.name]: `/competitions/${competitionId}`,
+          }}
+          className="mb-6"
+        />
 
-      <NewPropForm
-        competitionId={competitionId}
-        competitionName={competition.name}
-        categories={categories}
-        userId={user.id}
-      />
+        <NewPropForm
+          competitionId={competitionId}
+          competitionName={competition.name}
+          categories={categories}
+          userId={user.id}
+        />
+      </Container>
     </main>
   );
 }

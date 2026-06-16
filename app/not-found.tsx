@@ -2,20 +2,23 @@
 
 import PageHeading from "@/components/page-heading";
 import { Button } from "@/components/ui/button";
+import { Container } from "@/components/ui/container";
 import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
-      <div className="w-full max-w-lg">
-        <PageHeading title="404: Not Found" />
-        <div className="flex flex-col justify-start items-start gap-3">
-          <p>Could not find requested resource</p>
-          <Link href="/">
-            <Button>Return Home</Button>
-          </Link>
+    <main className="flex min-h-[60vh] items-center py-12 lg:py-16">
+      <Container className="max-w-xl">
+        <PageHeading title="Page not found" />
+        <div className="flex flex-col items-start gap-5">
+          <p className="text-sm text-muted-foreground">
+            We couldn&apos;t find the page you were looking for.
+          </p>
+          <Button asChild>
+            <Link href="/">Return home</Link>
+          </Button>
         </div>
-      </div>
+      </Container>
     </main>
   );
 }

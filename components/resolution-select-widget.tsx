@@ -60,7 +60,7 @@ export default function ResolutionSelectWidget({
             <Check
               size={20}
               strokeWidth={3}
-              className={resolution === true ? "text-green-500" : ""}
+              className={resolution === true ? "text-success" : ""}
             />
           </button>
         </DialogTrigger>
