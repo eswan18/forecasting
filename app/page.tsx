@@ -36,7 +36,7 @@ export default async function Home() {
 
         <div className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2 lg:grid-cols-3">
           {/* News */}
-          <section className="flex flex-col gap-4">
+          <section className="flex flex-col gap-4 motion-safe:animate-fade-in-up">
             <SectionHeader kicker="News" />
             <NewsCard icon={MessageCircleWarning} title="New Login System">
               <p>
@@ -70,7 +70,7 @@ export default async function Home() {
           </section>
 
           {/* 2026 Standings */}
-          <section className="flex flex-col gap-4">
+          <section className="flex flex-col gap-4 motion-safe:animate-fade-in-up motion-safe:[animation-delay:120ms]">
             <SectionHeader kicker="2026 Standings" />
             <Suspense fallback={<PanelSkeleton lines={5} />}>
               {/* Competition ID 6 = 2026 */}
@@ -79,7 +79,7 @@ export default async function Home() {
           </section>
 
           {/* Recently Resolved */}
-          <section className="flex flex-col gap-4">
+          <section className="flex flex-col gap-4 motion-safe:animate-fade-in-up motion-safe:[animation-delay:240ms]">
             <SectionHeader kicker="Recently Resolved" />
             <Suspense fallback={<PanelSkeleton lines={3} />}>
               <RecentlyResolved userId={user.id} />
