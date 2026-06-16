@@ -1,8 +1,6 @@
 "use client";
 
 import { VUser } from "@/types/db_types";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Copy, Shield, User, UserCheck, UserX } from "lucide-react";
+import { Copy, User, UserCheck, UserX } from "lucide-react";
 import { setUserActive } from "@/lib/db_actions/users";
 import { getBrowserTimezone } from "@/hooks/getBrowserTimezone";
 import { formatDate, formatDateTime } from "@/lib/time-utils";
@@ -23,9 +21,46 @@ import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { UserRoleBadge, UserStatusBadge } from "../user-badges";
 
 interface UserDetailCardProps {
   user: VUser;
+}
+
+/** A label/value row inside the details panel. Label is a mono kicker. */
+function DetailRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-5">
+      <span className="shrink-0 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+        {label}
+      </span>
+      <div className="flex min-w-0 items-center justify-end gap-2 text-sm">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function CopyButton({ value, label }: { value: string; label: string }) {
+  return (
+    <Button
+      size="sm"
+      variant="ghost"
+      className="h-6 w-6 shrink-0 p-0 text-muted-foreground"
+      onClick={() => {
+        navigator.clipboard.writeText(value);
+        toast({ title: "Copied", description: `${label} copied to clipboard` });
+      }}
+    >
+      <Copy className="h-3 w-3" />
+    </Button>
+  );
 }
 
 export default function UserDetailCard({ user }: UserDetailCardProps) {
@@ -96,188 +131,116 @@ export default function UserDetailCard({ user }: UserDetailCardProps) {
   };
 
   return (
-    <div className="flex flex-col items-center">
-      {/* Avatar above card */}
-      {user.picture_url && (
-        <div className="mb-4">
+    <div className="space-y-6">
+      {/* Identity header */}
+      <div className="flex items-center gap-4 rounded-lg border bg-card p-5">
+        {user.picture_url ? (
           <Image
             src={user.picture_url}
             alt={`${user.name}'s avatar`}
-            width={144}
-            height={144}
-            className="rounded-full object-cover border-4 border-background shadow-lg"
+            width={64}
+            height={64}
+            className="h-16 w-16 rounded-full border border-border object-cover"
           />
-        </div>
-      )}
-
-      <Card className="w-full">
-        <CardHeader className="flex flex-row">
-          {/* Badges at top */}
-          {user.is_admin ? (
-            <Badge variant="default" className="bg-red-100 text-red-800">
-              <Shield className="h-3 w-3 mr-1" />
-              Admin
-            </Badge>
-          ) : (
-            <Badge variant="secondary">Regular User</Badge>
-          )}
-          <Badge
-            className={
-              isActive
-                ? "bg-green-100 text-green-800"
-                : "bg-gray-100 text-gray-800"
-            }
-            variant="outline"
-          >
-            {isActive ? "Active" : "Inactive"}
-          </Badge>
-        </CardHeader>
-        <CardContent className="pt-4">
-          <div className="space-y-4">
-            <div className="flex justify-between items-center py-2 border-b border-border">
-              <span className="text-sm font-medium text-muted-foreground">
-                Username
-              </span>
-              <div className="flex items-center gap-2">
-                {user.username ? (
-                  <>
-                    <span className="text-sm">{user.username}</span>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-6 w-6 p-0"
-                      onClick={() => {
-                        navigator.clipboard.writeText(user.username!);
-                        toast({
-                          title: "Copied",
-                          description: "Username copied to clipboard",
-                        });
-                      }}
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                  </>
-                ) : (
-                  <span className="text-sm text-muted-foreground">None</span>
-                )}
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center py-2 border-b border-border">
-              <span className="text-sm font-medium text-muted-foreground">
-                Email
-              </span>
-              <span className="text-sm">{user.email || "None"}</span>
-            </div>
-
-            <div className="flex justify-between items-center py-2 border-b border-border">
-              <span className="text-sm font-medium text-muted-foreground">
-                Photo
-              </span>
-              {user.picture_url ? (
-                <a
-                  href={user.picture_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline truncate max-w-48"
-                >
-                  {user.picture_url}
-                </a>
-              ) : (
-                <span className="text-sm text-muted-foreground">None</span>
-              )}
-            </div>
-
-            <div className="flex justify-between items-center py-2 border-b border-border">
-              <span className="text-sm font-medium text-muted-foreground">
-                Created
-              </span>
-              <span className="text-sm">
-                {formatDate(new Date(user.created_at), timezone)}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center py-2 border-b border-border">
-              <span className="text-sm font-medium text-muted-foreground">
-                Updated
-              </span>
-              <span className="text-sm">
-                {formatDate(new Date(user.updated_at), timezone)}
-              </span>
-            </div>
-
-            {!isActive && user.deactivated_at && (
-              <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-sm font-medium text-muted-foreground">
-                  Deactivated
-                </span>
-                <span className="text-sm">
-                  {formatDateTime(new Date(user.deactivated_at), timezone)}
-                </span>
-              </div>
-            )}
-
-            <div className="flex justify-between items-center py-2 border-b border-border">
-              <span className="text-sm font-medium text-muted-foreground">
-                User ID
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-mono bg-muted px-2 py-1 rounded">
-                  {user.id}
-                </span>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-6 w-6 p-0"
-                  onClick={() => {
-                    navigator.clipboard.writeText(user.id.toString());
-                    toast({
-                      title: "Copied",
-                      description: "User ID copied to clipboard",
-                    });
-                  }}
-                >
-                  <Copy className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center py-2 border-b border-border">
-              <span className="text-sm font-medium text-muted-foreground">
-                IDP User ID
-              </span>
-              <div className="flex items-center gap-2">
-                {user.idp_user_id ? (
-                  <>
-                    <span className="text-sm font-mono bg-muted px-2 py-1 rounded truncate max-w-48">
-                      {user.idp_user_id}
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-6 w-6 p-0"
-                      onClick={() => {
-                        navigator.clipboard.writeText(user.idp_user_id!);
-                        toast({
-                          title: "Copied",
-                          description: "IDP User ID copied to clipboard",
-                        });
-                      }}
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                  </>
-                ) : (
-                  <span className="text-sm text-muted-foreground">None</span>
-                )}
-              </div>
-            </div>
-
+        ) : (
+          <div className="flex h-16 w-16 items-center justify-center rounded-full border border-border bg-muted text-xl font-medium text-foreground">
+            {user.name?.charAt(0).toUpperCase()}
           </div>
-        </CardContent>
+        )}
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate text-lg font-semibold tracking-tight">
+            {user.name}
+          </h2>
+          {user.email && (
+            <p className="truncate text-sm text-muted-foreground">
+              {user.email}
+            </p>
+          )}
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <UserRoleBadge isAdmin={user.is_admin} />
+            <UserStatusBadge active={isActive} />
+          </div>
+        </div>
+      </div>
 
-      {/* Actions Section */}
-      <CardFooter className="flex flex-row gap-4 justify-center mt-10">
+      {/* Account details */}
+      <div className="overflow-hidden rounded-lg border bg-card">
+        <div className="border-b px-4 py-3 sm:px-5">
+          <span className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            Account Details
+          </span>
+        </div>
+        <div className="divide-y">
+          <DetailRow label="Username">
+            {user.username ? (
+              <>
+                <span className="truncate">{user.username}</span>
+                <CopyButton value={user.username} label="Username" />
+              </>
+            ) : (
+              <span className="text-muted-foreground">None</span>
+            )}
+          </DetailRow>
+
+          <DetailRow label="Email">
+            <span className="truncate">{user.email || "None"}</span>
+          </DetailRow>
+
+          <DetailRow label="Photo">
+            {user.picture_url ? (
+              <a
+                href={user.picture_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="truncate text-primary hover:underline"
+              >
+                {user.picture_url}
+              </a>
+            ) : (
+              <span className="text-muted-foreground">None</span>
+            )}
+          </DetailRow>
+
+          <DetailRow label="Created">
+            <span className="font-mono tabular-nums">
+              {formatDate(new Date(user.created_at), timezone)}
+            </span>
+          </DetailRow>
+
+          <DetailRow label="Updated">
+            <span className="font-mono tabular-nums">
+              {formatDate(new Date(user.updated_at), timezone)}
+            </span>
+          </DetailRow>
+
+          {!isActive && user.deactivated_at && (
+            <DetailRow label="Deactivated">
+              <span className="font-mono tabular-nums">
+                {formatDateTime(new Date(user.deactivated_at), timezone)}
+              </span>
+            </DetailRow>
+          )}
+
+          <DetailRow label="User ID">
+            <span className="font-mono tabular-nums">{user.id}</span>
+            <CopyButton value={user.id.toString()} label="User ID" />
+          </DetailRow>
+
+          <DetailRow label="IDP User ID">
+            {user.idp_user_id ? (
+              <>
+                <span className="truncate font-mono">{user.idp_user_id}</span>
+                <CopyButton value={user.idp_user_id} label="IDP User ID" />
+              </>
+            ) : (
+              <span className="text-muted-foreground">None</span>
+            )}
+          </DetailRow>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex flex-wrap items-center gap-3">
         {canImpersonate && (
           <Dialog
             open={isImpersonateDialogOpen}
@@ -285,7 +248,7 @@ export default function UserDetailCard({ user }: UserDetailCardProps) {
           >
             <DialogTrigger asChild>
               <Button variant="outline" size="sm" disabled={isLoading}>
-                <User className="h-4 w-4 mr-2" />
+                <User className="mr-2 h-4 w-4" />
                 Impersonate
               </Button>
             </DialogTrigger>
@@ -294,8 +257,8 @@ export default function UserDetailCard({ user }: UserDetailCardProps) {
                 <DialogTitle>Impersonate User?</DialogTitle>
                 <DialogDescription>
                   You will view the app as {user.name}. Your admin session
-                  remains active - click &quot;Stop Impersonating&quot; in
-                  the banner to return to your own view.
+                  remains active - click &quot;Stop Impersonating&quot; in the
+                  banner to return to your own view.
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
@@ -313,10 +276,7 @@ export default function UserDetailCard({ user }: UserDetailCardProps) {
           </Dialog>
         )}
 
-        <Dialog
-          open={isStatusDialogOpen}
-          onOpenChange={setIsStatusDialogOpen}
-        >
+        <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
           <DialogTrigger asChild>
             <Button
               variant={isActive ? "destructive" : "outline"}
@@ -325,12 +285,12 @@ export default function UserDetailCard({ user }: UserDetailCardProps) {
             >
               {isActive ? (
                 <>
-                  <UserX className="h-4 w-4 mr-2" />
+                  <UserX className="mr-2 h-4 w-4" />
                   Deactivate
                 </>
               ) : (
                 <>
-                  <UserCheck className="h-4 w-4 mr-2" />
+                  <UserCheck className="mr-2 h-4 w-4" />
                   Activate
                 </>
               )}
@@ -364,8 +324,7 @@ export default function UserDetailCard({ user }: UserDetailCardProps) {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </CardFooter>
-      </Card>
+      </div>
     </div>
   );
 }

@@ -61,7 +61,7 @@ export function UserNameCell({ user }: UserNameCellProps) {
 
   return (
     <div className="px-2">
-      <div className="flex flex-row gap-x-1 sm:gap-x-2 items-center text-sm sm:text-lg">
+      <div className="flex flex-row gap-x-1 sm:gap-x-2 items-center text-sm font-medium">
         <div className="flex items-center gap-x-1 min-w-0 flex-1">
           <Link
             href={`/admin/users/${user.id}`}
@@ -112,9 +112,6 @@ export function UserNameCell({ user }: UserNameCellProps) {
             </Dialog>
           )}
         </div>
-      </div>
-      <div className="text-xs sm:text-sm text-muted-foreground truncate">
-        {user.email}
       </div>
     </div>
   );

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VFeatureFlag } from "@/types/db_types";
 import { FeatureToggle } from "./feature-toggle";
 import {
@@ -35,15 +34,15 @@ export function FeatureWidget({ featureName, flags }: FeatureWidgetProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   userValues.sort((a, b) => a.user_id! - b.user_id!);
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-lg">{featureName}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-row justify-between items-end">
+    <div className="rounded-lg border bg-card p-4 sm:p-5">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h2 className="min-w-0 truncate font-mono text-sm font-medium text-foreground">
+          {featureName}
+        </h2>
+        <div className="flex items-center gap-5">
           {defaultValue !== undefined ? (
             <FeatureToggle
-              name="Default Value"
+              name="Default"
               checked={defaultValue.enabled}
               onCheckedChange={async (checked) => {
                 const result = await updateFeatureFlag({
@@ -67,17 +66,19 @@ export function FeatureWidget({ featureName, flags }: FeatureWidgetProps) {
               }}
             />
           ) : (
-            <div className="flex flex-col gap-1 items-center">
-              <span className="text-muted-foreground">Default Value</span>
+            <div className="flex flex-col items-center gap-1.5">
+              <span className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                Default
+              </span>
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="gap-2 font-normal"
+                    className="h-7 gap-1.5 font-normal text-muted-foreground"
                   >
-                    <span className="text-sm">None</span>
-                    <Edit size={14} />
+                    None
+                    <Edit size={13} />
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -95,11 +96,9 @@ export function FeatureWidget({ featureName, flags }: FeatureWidgetProps) {
           )}
           <Popover>
             <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="flex flex-row justify-end gap-2"
-              >
-                {userValues.length} user-level flag
+              <Button variant="outline" size="sm">
+                <span className="tabular-nums">{userValues.length}</span>
+                &nbsp;user-level flag
                 {userValues.length != 1 && "s"}
               </Button>
             </PopoverTrigger>
@@ -111,8 +110,8 @@ export function FeatureWidget({ featureName, flags }: FeatureWidgetProps) {
             </PopoverContent>
           </Popover>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 

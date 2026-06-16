@@ -2,6 +2,7 @@ import { getUserById } from "@/lib/db_actions";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
 import { redirect } from "next/navigation";
 import UserDetailCard from "./user-detail-card";
+import { Container } from "@/components/ui/container";
 import PageHeading from "@/components/page-heading";
 
 interface PageProps {
@@ -24,17 +25,17 @@ export default async function UserDetailPage({ params }: PageProps) {
   }
 
   return (
-    <main className="flex flex-col items-center py-8 px-8 lg:py-12 lg:px-24">
-      <div className="w-full max-w-4xl">
+    <main className="py-10 lg:py-14">
+      <Container className="max-w-3xl">
         <PageHeading
-          title={user.name}
+          title={user.name ?? "User"}
           breadcrumbs={{
             Admin: "/admin",
             Users: "/admin/users",
           }}
         />
         <UserDetailCard user={user} />
-      </div>
+      </Container>
     </main>
   );
 }

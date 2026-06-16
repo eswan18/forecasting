@@ -34,9 +34,6 @@ export default function UsersTable({ data }: { data: VUser[] }) {
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
     state: { sorting, columnFilters },
-    initialState: {
-      columnFilters: [{ id: "resolution", value: [] }],
-    },
   });
 
   return (
@@ -44,12 +41,12 @@ export default function UsersTable({ data }: { data: VUser[] }) {
       <Table>
         <TableHeader className="bg-muted/30">
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="border-b">
+            <TableRow key={headerGroup.id} className="border-b hover:bg-transparent">
               {headerGroup.headers.map((header) => {
                 return (
                   <TableHead
                     key={header.id}
-                    className="font-semibold text-muted-foreground text-xs sm:text-sm"
+                    className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground"
                   >
                     {header.isPlaceholder
                       ? null

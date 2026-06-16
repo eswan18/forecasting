@@ -2,15 +2,15 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { VUser } from "@/types/db_types";
-import { Badge } from "@/components/ui/badge";
 import { UserNameCell } from "./user-name-cell";
 import { UserStatusCell } from "./user-status-cell";
+import { UserRoleBadge } from "./user-badges";
 
 export function getColumns(): ColumnDef<VUser>[] {
   return [
     {
       accessorKey: "name",
-      header: () => <div className="px-2">Name</div>,
+      header: () => <span className="px-2">Name</span>,
       cell: ({ row }) => <UserNameCell user={row.original} />,
     },
     {
@@ -20,16 +20,10 @@ export function getColumns(): ColumnDef<VUser>[] {
     },
     {
       accessorKey: "is_admin",
-      header: "Admin",
+      header: "Role",
       cell: ({ row }) => (
         <div className="px-2">
-          {row.original.is_admin ? (
-            <Badge variant="outline" className="text-xs">
-              Admin
-            </Badge>
-          ) : (
-            <span className="text-xs text-muted-foreground">User</span>
-          )}
+          <UserRoleBadge isAdmin={row.original.is_admin} />
         </div>
       ),
     },
@@ -39,7 +33,7 @@ export function getColumns(): ColumnDef<VUser>[] {
       cell: ({ row }) =>
         row.original.email && (
           <div
-            className="px-2 truncate text-xs sm:text-sm"
+            className="px-2 truncate text-xs text-muted-foreground sm:text-sm"
             title={row.original.email}
           >
             {row.original.email}
