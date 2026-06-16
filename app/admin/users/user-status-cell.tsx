@@ -12,11 +12,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { setUserActive } from "@/lib/db_actions/users";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
 import { VUser } from "@/types/db_types";
+import { UserStatusBadge } from "./user-badges";
 
 interface UserStatusCellProps {
   user: VUser;
@@ -60,9 +60,7 @@ export function UserStatusCell({ user }: UserStatusCellProps) {
   return (
     <div className="px-2">
       <div className="flex flex-row gap-x-1 sm:gap-x-2 items-center">
-        <Badge variant={isActive ? "default" : "secondary"} className="text-xs">
-          {isActive ? "Active" : "Inactive"}
-        </Badge>
+        <UserStatusBadge active={isActive} />
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button
