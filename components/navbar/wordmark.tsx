@@ -37,9 +37,16 @@ function GaugeGlyph() {
       className="h-5 w-[22px] shrink-0 overflow-visible"
       aria-hidden="true"
     >
+      {/*
+        The artwork is vertically centered in the 22x20 viewBox so the glyph
+        sits on the same mid-line as the adjacent wordmark under `items-center`.
+        The gauge baseline is at y=13: the arc rises ~9 units above it while the
+        hub drops ~2.75 below, centering the painted bounds on y≈10. (Authoring
+        the arc at y=15 left the glyph bottom-heavy, so it rendered low.)
+      */}
       {/* Gauge band */}
       <path
-        d="M 3 15 A 8 8 0 0 1 19 15"
+        d="M 3 13 A 8 8 0 0 1 19 13"
         fill="none"
         stroke="var(--muted-foreground)"
         strokeWidth={2}
@@ -48,9 +55,9 @@ function GaugeGlyph() {
       {/* Needle — the single indigo accent, pointing up and to the right */}
       <line
         x1={11}
-        y1={15}
+        y1={13}
         x2={14.5}
-        y2={8.2}
+        y2={6.2}
         stroke="var(--primary)"
         strokeWidth={2.5}
         strokeLinecap="round"
@@ -58,7 +65,7 @@ function GaugeGlyph() {
       {/* Hub */}
       <circle
         cx={11}
-        cy={15}
+        cy={13}
         r={2}
         fill="var(--background)"
         stroke="var(--foreground)"
