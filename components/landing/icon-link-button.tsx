@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, LucideIcon } from "lucide-react";
+import { cn, focusRing } from "@/lib/utils";
 
 interface IconLinkButtonProps {
   icon: LucideIcon;
@@ -15,7 +16,10 @@ export default function IconLinkButton({
   return (
     <Link
       href={href}
-      className="group flex items-center justify-between gap-2 rounded-md border bg-card px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
+      className={cn(
+        "group flex items-center justify-between gap-2 rounded-md border bg-card px-3 py-2 text-sm font-medium transition-colors hover:bg-muted",
+        focusRing,
+      )}
     >
       <span className="flex min-w-0 items-center gap-2">
         <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />

@@ -1,7 +1,7 @@
 import { getCompetitionScores } from "@/lib/db_actions";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, focusRing } from "@/lib/utils";
 
 interface MiniLeaderboardProps {
   competitionId: number;
@@ -39,7 +39,10 @@ export default async function MiniLeaderboard({
   return (
     <Link
       href={`/competitions/${competitionId}?tab=leaderboard`}
-      className="group block rounded-lg border bg-card p-2 transition-colors hover:border-foreground/20"
+      className={cn(
+        "group block rounded-lg border bg-card p-2 transition-colors hover:border-foreground/20",
+        focusRing,
+      )}
     >
       <div className="flex items-center justify-between px-3 pb-2 pt-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
         <span>Forecaster</span>

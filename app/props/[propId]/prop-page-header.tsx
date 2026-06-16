@@ -11,6 +11,7 @@ import { PropEditDialog } from "@/components/dialogs/prop-edit-dialog";
 import { MarkdownRenderer } from "@/components/markdown";
 import { PropStatusBadge } from "@/components/ui/prop-status-badge";
 import { getPropStatusFromProp } from "@/lib/prop-status";
+import { cn, focusRing } from "@/lib/utils";
 
 interface PropPageHeaderProps {
   prop: VProp;
@@ -32,7 +33,10 @@ export default function PropPageHeader({
       {/* Back button */}
       <button
         onClick={() => router.back()}
-        className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-4"
+        className={cn(
+          "mb-4 flex items-center gap-1 rounded-sm text-sm text-muted-foreground hover:text-foreground",
+          focusRing,
+        )}
       >
         <ChevronLeft className="w-4 h-4" />
         Back

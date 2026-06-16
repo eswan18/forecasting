@@ -1,7 +1,7 @@
 import { Check, X } from "lucide-react";
 import Link from "next/link";
 import { LocalDate } from "@/components/local-date";
-import { cn } from "@/lib/utils";
+import { cn, focusRing } from "@/lib/utils";
 
 interface ResolvedPropCardProps {
   propId: number;
@@ -23,7 +23,10 @@ export default function ResolvedPropCard({
   return (
     <Link
       href={`/props/${propId}`}
-      className="block rounded-lg border bg-card p-4 transition-colors hover:border-foreground/20"
+      className={cn(
+        "block rounded-lg border bg-card p-4 transition-colors hover:border-foreground/20",
+        focusRing,
+      )}
     >
       <p
         className="text-sm font-medium leading-snug text-foreground line-clamp-2"
