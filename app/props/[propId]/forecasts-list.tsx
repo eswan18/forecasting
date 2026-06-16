@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, focusRing } from "@/lib/utils";
 import { getProbabilityColors } from "@/lib/forecast-colors";
 import type { VForecast } from "@/types/db_types";
 
@@ -98,7 +98,10 @@ export default function ForecastsList({
         </span>
         <button
           onClick={() => setSortOrder((s) => (s === "desc" ? "asc" : "desc"))}
-          className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className={cn(
+            "flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+            focusRing,
+          )}
         >
           <ChevronDown
             className={cn(

@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn, focusRing } from "@/lib/utils";
 import type { DashboardTab } from "./competition-tabs";
 
 interface StatCardProps {
@@ -25,7 +25,7 @@ export function StatCard({
       onClick={onClick}
       className={cn(
         "flex flex-col gap-1.5 rounded-lg border bg-card p-4 text-left transition-colors",
-        onClick && "cursor-pointer hover:border-foreground/20",
+        onClick && cn("cursor-pointer hover:border-foreground/20", focusRing),
         active && "border-primary/60 bg-primary/[0.03]",
       )}
     >

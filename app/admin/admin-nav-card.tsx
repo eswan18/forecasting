@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { cn, focusRing } from "@/lib/utils";
 
 export interface AdminNavCardProps {
   href: string;
@@ -23,7 +24,10 @@ export function AdminNavCard({
   return (
     <Link
       href={href}
-      className="group flex flex-col gap-4 rounded-lg border bg-card p-5 transition-colors hover:border-foreground/20"
+      className={cn(
+        "group flex flex-col gap-4 rounded-lg border bg-card p-5 transition-colors hover:border-foreground/20",
+        focusRing,
+      )}
     >
       <div className="flex items-start justify-between">
         <span className="flex h-9 w-9 items-center justify-center rounded-md border bg-muted/40 text-muted-foreground transition-colors group-hover:text-foreground">

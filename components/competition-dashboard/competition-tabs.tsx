@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn, focusRing } from "@/lib/utils";
 
 interface TabButtonProps {
   active: boolean;
@@ -14,7 +14,8 @@ function TabButton({ active, children, onClick, count }: TabButtonProps) {
     <button
       onClick={onClick}
       className={cn(
-        "flex items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors",
+        "flex items-center gap-1.5 rounded-sm border-b-2 px-3 py-2.5 text-sm font-medium transition-colors",
+        focusRing,
         active
           ? "border-primary text-foreground"
           : "border-transparent text-muted-foreground hover:text-foreground",

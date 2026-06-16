@@ -12,7 +12,7 @@ import { createForecast, updateForecast } from "@/lib/db_actions";
 import { useServerAction } from "@/hooks/use-server-action";
 import { PropEditDialog } from "@/components/dialogs/prop-edit-dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { cn } from "@/lib/utils";
+import { cn, focusRing } from "@/lib/utils";
 
 interface EditableForecastCardProps {
   prop: PropWithUserForecast;
@@ -152,7 +152,10 @@ export function EditableForecastCard({
                 type="button"
                 onClick={() => setIsEditDialogOpen(true)}
                 aria-label="Edit prop"
-                className="shrink-0 text-muted-foreground hover:text-foreground"
+                className={cn(
+                  "shrink-0 rounded-sm text-muted-foreground hover:text-foreground",
+                  focusRing,
+                )}
               >
                 <Pencil className="h-5 w-5" />
               </button>

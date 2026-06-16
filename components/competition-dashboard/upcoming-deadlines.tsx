@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn, focusRing } from "@/lib/utils";
 import type { UpcomingDeadline } from "@/lib/db_actions/competition-stats";
 import { getBrowserTimezone } from "@/hooks/getBrowserTimezone";
 import { formatDate } from "@/lib/time-utils";
@@ -128,7 +128,10 @@ export function UpcomingDeadlines({
         {onViewAll && (
           <button
             onClick={onViewAll}
-            className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className={cn(
+              "rounded-sm text-xs font-medium text-muted-foreground transition-colors hover:text-foreground",
+              focusRing,
+            )}
           >
             View all →
           </button>
