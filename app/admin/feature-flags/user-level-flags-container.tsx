@@ -56,9 +56,12 @@ export function UserLevelFlagsContainer({
       {flags.map((flag, index) => (
         <div key={flag.user_id} className="flex flex-col gap-2">
           {index > 0 && <Separator />}
-          <div className="flex flex-row justify-between px-2">
-            <span>
-              {flag.user_id} ({flag.user_name})
+          <div className="flex flex-row items-center justify-between gap-3 px-2">
+            <span className="min-w-0 truncate text-sm">
+              <span className="font-mono tabular-nums text-muted-foreground">
+                {flag.user_id}
+              </span>{" "}
+              {flag.user_name}
             </span>
             <FeatureToggle
               checked={flag.enabled}

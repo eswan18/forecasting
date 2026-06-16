@@ -2,15 +2,17 @@ import PageHeading from "@/components/page-heading";
 import { getFeatureFlags } from "@/lib/db_actions";
 import { VFeatureFlag } from "@/types/db_types";
 import { FeatureWidget } from "./feature-widget";
+import { Container } from "@/components/ui/container";
 
 export default async function FeatureFlagsPage() {
   const result = await getFeatureFlags();
   if (!result.success) {
     return (
-      <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24 max-w-4xl mx-auto">
-        <div className="w-full flex flex-col">
-          <p className="text-destructive">Error: {result.error}</p>
-        </div>
+      <main className="py-10 lg:py-14">
+        <Container className="max-w-3xl">
+          <PageHeading title="Feature Flags" breadcrumbs={{ Admin: "/admin" }} />
+          <p className="text-sm text-destructive">Error: {result.error}</p>
+        </Container>
       </main>
     );
   }
@@ -26,24 +28,31 @@ export default async function FeatureFlagsPage() {
   const featureNames = Array.from(featureFlagsByName.keys());
   featureNames.sort();
   return (
-    <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24 max-w-4xl mx-auto">
-      <div className="w-full flex flex-col">
+    <main className="py-10 lg:py-14">
+      <Container className="max-w-3xl">
         <PageHeading
           title="Feature Flags"
-          breadcrumbs={{
-            Admin: "/admin",
-          }}
+          subtitle="Toggle features globally or for individual users."
+          breadcrumbs={{ Admin: "/admin" }}
         />
-        <div className="flex flex-col gap-2">
-          {featureNames.map((name) => (
-            <FeatureWidget
-              key={name}
-              featureName={name}
-              flags={featureFlagsByName.get(name)!}
-            />
-          ))}
-        </div>
-      </div>
+        {featureNames.length === 0 ? (
+          <div className="rounded-lg border bg-card p-10 text-center">
+            <p className="text-sm text-muted-foreground">
+              No feature flags defined.
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {featureNames.map((name) => (
+              <FeatureWidget
+                key={name}
+                featureName={name}
+                flags={featureFlagsByName.get(name)!}
+              />
+            ))}
+          </div>
+        )}
+      </Container>
     </main>
   );
 }
