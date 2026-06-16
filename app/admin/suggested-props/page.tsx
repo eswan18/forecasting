@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import PageHeading from "@/components/page-heading";
 import { getSuggestedProps, deleteSuggestedProp } from "@/lib/db_actions";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { User, MessageSquare, Trash } from "lucide-react";
+import { User, Trash } from "lucide-react";
 import { VSuggestedProp } from "@/types/db_types";
 import {
   useServerAction,
@@ -82,87 +82,73 @@ export default function SuggestedProps() {
   };
 
   return (
-    <main className="flex flex-col items-center justify-between py-8 px-8 lg:py-12 lg:px-24">
-      <div className="w-full max-w-4xl">
+    <main className="py-10 lg:py-14">
+      <Container className="max-w-3xl">
         <PageHeading
           title="Suggested Props"
+          subtitle="Review propositions submitted by forecasters."
           breadcrumbs={{
             Admin: "/admin",
           }}
         />
 
         {loading ? (
-          <Card>
-            <CardContent className="text-center py-12">
-              <Spinner className="h-8 w-8 mx-auto" />
-              <p className="text-muted-foreground mt-4">
-                Loading suggested props...
-              </p>
-            </CardContent>
-          </Card>
+          <div className="rounded-lg border bg-card p-12 text-center">
+            <Spinner className="mx-auto h-7 w-7 text-muted-foreground" />
+            <p className="mt-3 text-sm text-muted-foreground">
+              Loading suggested props…
+            </p>
+          </div>
         ) : suggestedProps.length === 0 ? (
-          <Card>
-            <CardContent className="text-center py-12">
-              <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">No suggested props</h3>
-              <p className="text-muted-foreground">
-                No propositions have been suggested yet.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="rounded-lg border bg-card p-12 text-center">
+            <p className="text-sm font-medium text-foreground">
+              No suggested props
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              No propositions have been suggested yet.
+            </p>
+          </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {suggestedProps.map((prop) => {
               const { mainText, notes } = parsePropText(prop.prop_text);
 
               return (
-                <Card
+                <div
                   key={prop.id}
-                  className="hover:shadow-md transition-shadow"
+                  className="rounded-lg border bg-card p-5 transition-colors hover:border-foreground/20"
                 >
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg leading-relaxed mb-3">
-                          <MarkdownRenderer>{mainText}</MarkdownRenderer>
-                        </CardTitle>
-
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <User className="h-4 w-4" />
-                            <span className="font-medium">
-                              {prop.user_name}
-                            </span>
-                          </div>
-                        </div>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                      <div className="text-base font-medium leading-relaxed text-foreground">
+                        <MarkdownRenderer>{mainText}</MarkdownRenderer>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-destructive h-8 w-8"
-                        onClick={() => openDeleteDialog(prop.id)}
-                      >
-                        <Trash className="h-4 w-4" />
-                      </Button>
+                      <div className="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <User className="h-3.5 w-3.5" />
+                        <span>{prop.user_name}</span>
+                      </div>
                     </div>
-                  </CardHeader>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                      onClick={() => openDeleteDialog(prop.id)}
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </div>
 
                   {notes && (
-                    <CardContent className="pt-0">
-                      <div className="mt-3 pt-3 border-t border-border/50">
-                        <div className="flex items-center gap-2 mb-2">
-                          <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium text-muted-foreground">
-                            Additional Notes
-                          </span>
-                        </div>
-                        <div className="text-sm text-muted-foreground leading-relaxed pl-6">
-                          <MarkdownRenderer>{notes}</MarkdownRenderer>
-                        </div>
+                    <div className="mt-4 border-t pt-4">
+                      <div className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                        Notes
                       </div>
-                    </CardContent>
+                      <div className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                        <MarkdownRenderer>{notes}</MarkdownRenderer>
+                      </div>
+                    </div>
                   )}
-                </Card>
+                </div>
               );
             })}
           </div>
@@ -202,7 +188,7 @@ export default function SuggestedProps() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
+      </Container>
     </main>
   );
 }
