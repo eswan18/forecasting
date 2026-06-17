@@ -142,28 +142,6 @@ export default function NavBar() {
     return (link as NavLink).href !== undefined;
   }
 
-  if (isLoading) {
-    return (
-      <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5 sm:px-6 lg:px-8">
-          <div className="flex items-center space-x-4">
-            <Link
-              href="/"
-              aria-label="Forecasting home"
-              className="inline-flex items-center rounded-md px-2 py-1.5 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-            >
-              <Wordmark />
-            </Link>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="h-9 w-9 bg-muted animate-pulse rounded-md" />
-            <div className="h-9 w-9 bg-muted animate-pulse rounded-md" />
-          </div>
-        </div>
-      </nav>
-    );
-  }
-
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-16 items-center justify-between px-4 w-full">
