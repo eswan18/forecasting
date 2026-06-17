@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CompetitionScore } from "@/lib/db_actions";
+import { IncompleteIndicator } from "@/components/incomplete-indicator";
 
 interface LeaderboardEntry {
   rank: number;
@@ -26,22 +27,22 @@ function LeaderboardRow({ entry }: LeaderboardRowProps) {
         <span className="w-4 shrink-0 text-right font-mono text-xs tabular-nums text-muted-foreground">
           {entry.rank}
         </span>
-        <span
-          className={cn(
-            "truncate text-sm text-foreground",
-            emphasized ? "font-semibold" : "font-medium",
-          )}
-        >
-          {entry.userName}
+        <div className="flex min-w-0 items-center gap-1.5">
+          <span
+            className={cn(
+              "truncate text-sm text-foreground",
+              emphasized ? "font-semibold" : "font-medium",
+            )}
+          >
+            {entry.userName}
+          </span>
           {entry.isCurrentUser && (
-            <span className="ml-1 text-xs font-normal text-primary">you</span>
-          )}
-          {entry.isIncomplete && (
-            <span className="ml-1.5 text-xs font-normal text-muted-foreground">
-              incomplete
+            <span className="shrink-0 text-xs font-normal text-primary">
+              you
             </span>
           )}
-        </span>
+          {entry.isIncomplete && <IncompleteIndicator />}
+        </div>
       </div>
       <span
         className={cn(

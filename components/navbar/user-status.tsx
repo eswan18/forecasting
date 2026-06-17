@@ -13,7 +13,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { useLogout } from "@/hooks/useLogout";
-import { Spinner } from "@/components/ui/spinner";
 
 export function UserStatus() {
   const { user, isLoading, error } = useCurrentUser();
@@ -75,10 +74,14 @@ export function UserStatus() {
           </DropdownMenuContent>
         </DropdownMenu>
       ) : isLoading ? (
-        <Button disabled variant="outline" size="sm">
-          <Spinner className="h-4 w-4" />
-          <span className="sr-only">Loading...</span>
-        </Button>
+        // Round, avatar-sized placeholder so it morphs into the avatar without
+        // a shape/size shift once the user resolves.
+        <div
+          role="status"
+          className="h-9 w-9 animate-pulse rounded-full bg-muted"
+        >
+          <span className="sr-only">Loading…</span>
+        </div>
       ) : (
         <Link href="/login">
           <Button size="sm">Log in</Button>
