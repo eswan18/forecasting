@@ -14,7 +14,7 @@ import Image from "next/image";
 export function AccountDetails({ idpBaseUrl }: { idpBaseUrl?: string }) {
   const { user } = useCurrentUser();
   return (
-    <div className="mt-4 space-y-12">
+    <div className="mt-4 max-w-xl space-y-12">
       {user && (
         <AccountSettingsSection email={user.email} username={user.username} name={user.name} pictureUrl={user.picture_url} idpBaseUrl={idpBaseUrl} />
       )}
@@ -48,7 +48,7 @@ function AccountSettingsSection({
   return (
     <div>
       <div className="space-y-6">
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex items-center gap-4">
           {pictureUrl ? (
             <>
               <button
@@ -82,14 +82,14 @@ function AccountSettingsSection({
               <User2 className="h-10 w-10 text-muted-foreground" />
             </div>
           )}
-          <div className="flex flex-col items-center gap-1">
+          <div className="flex flex-col gap-1">
             {username && <p className="font-medium">{username}</p>}
             {name && <p className="text-sm text-muted-foreground">{name}</p>}
             <p className="text-sm text-muted-foreground">{email}</p>
           </div>
         </div>
         <div className="rounded-lg bg-muted/50 p-4">
-          <p className="text-sm text-muted-foreground mb-4 text-center">
+          <p className="text-sm text-muted-foreground mb-4">
             Account details are managed by the identity provider.
           </p>
           <Button

@@ -6,7 +6,7 @@ export default async function Page() {
   const idpBaseUrl = process.env.IDP_BASE_URL;
   return (
     <main className="py-10 lg:py-14">
-      <Container className="max-w-xl">
+      <Container>
         <PageHeading
           title="Account Settings"
           subtitle="Manage your profile and identity provider details."

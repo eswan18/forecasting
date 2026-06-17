@@ -15,11 +15,16 @@ interface StatusIndicatorProps {
 }
 
 const variantStyles: Record<StatusIndicatorVariant, string> = {
+  // Environment-identity banners: deliberately distinct hues so local/dev are
+  // instantly recognizable. No semantic token maps to these, so they stay as
+  // explicit colors.
   info: "bg-blue-500 text-white",
   warning: "bg-amber-500 text-black",
-  danger: "bg-red-500 text-white",
-  accent: "bg-accent text-accent-foreground",
-  success: "bg-green-500 text-white",
+  // Brand / mode banner (admin, staging): indigo, on-palette with `--primary`.
+  accent: "bg-primary text-primary-foreground",
+  // Status banners use the shared semantic tokens.
+  danger: "bg-destructive text-destructive-foreground",
+  success: "bg-success text-success-foreground",
 };
 
 /**
