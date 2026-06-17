@@ -1,10 +1,17 @@
 /**
  * Probability → color mapping for forecast surfaces.
  *
- * This is a genuine *data encoding* (low = red, high = green), the same graded
- * scale used by the `upcoming-deadlines` heatmap. Per the design language in
- * CLAUDE.md, graded scales are the sanctioned exception to the "semantic colors
- * only" rule because the color *is* information here, not decoration.
+ * This is a genuine *data encoding*, the same graded scale used by the
+ * `upcoming-deadlines` heatmap. Per the design language in CLAUDE.md, graded
+ * scales are the sanctioned exception to the "semantic colors only" rule
+ * because the color *is* information here, not decoration.
+ *
+ * The ramp is a single-hue *indigo* sequential scale (the brand hue), not a
+ * red→green diverging one: probability is a magnitude, not a good/bad axis, so
+ * a stoplight ramp both reads as garish and implies a value judgment that
+ * doesn't apply. Higher probability = more prominent indigo in *both* themes
+ * (light: pale → deep; dark: dim → bright), so the encoding survives a theme
+ * switch.
  *
  * Centralized so every probability surface (stats, distribution chart,
  * forecaster list, the competition prop view, upcoming deadlines) reads from a
@@ -24,8 +31,8 @@ export interface ProbabilityColors {
 
 /**
  * Map a probability in [0, 1] (or `null` for "no forecast") to the shared
- * heatmap color set. Buckets at 20% intervals: ≤20 red, ≤40 orange, ≤60
- * yellow, ≤80 lime, else green.
+ * indigo ramp. Buckets at 20% intervals: ≤20 palest, ≤40, ≤60, ≤80, else
+ * deepest.
  */
 export function getProbabilityColors(prob: number | null): ProbabilityColors {
   if (prob === null) {
@@ -38,40 +45,40 @@ export function getProbabilityColors(prob: number | null): ProbabilityColors {
   }
   if (prob <= 0.2) {
     return {
-      bg: "bg-red-100 dark:bg-red-950",
-      text: "text-red-700 dark:text-red-400",
-      bar: "bg-red-400",
-      border: "border-red-400",
+      bg: "bg-indigo-100 dark:bg-indigo-950",
+      text: "text-indigo-700 dark:text-indigo-300",
+      bar: "bg-indigo-300 dark:bg-indigo-700",
+      border: "border-indigo-300 dark:border-indigo-700",
     };
   }
   if (prob <= 0.4) {
     return {
-      bg: "bg-orange-100 dark:bg-orange-950",
-      text: "text-orange-700 dark:text-orange-400",
-      bar: "bg-orange-400",
-      border: "border-orange-400",
+      bg: "bg-indigo-200 dark:bg-indigo-900",
+      text: "text-indigo-800 dark:text-indigo-200",
+      bar: "bg-indigo-400 dark:bg-indigo-600",
+      border: "border-indigo-400 dark:border-indigo-600",
     };
   }
   if (prob <= 0.6) {
     return {
-      bg: "bg-yellow-100 dark:bg-yellow-950",
-      text: "text-yellow-700 dark:text-yellow-400",
-      bar: "bg-yellow-500",
-      border: "border-yellow-500",
+      bg: "bg-indigo-300 dark:bg-indigo-800",
+      text: "text-indigo-900 dark:text-indigo-100",
+      bar: "bg-indigo-500 dark:bg-indigo-500",
+      border: "border-indigo-500 dark:border-indigo-500",
     };
   }
   if (prob <= 0.8) {
     return {
-      bg: "bg-lime-100 dark:bg-lime-950",
-      text: "text-lime-700 dark:text-lime-400",
-      bar: "bg-lime-500",
-      border: "border-lime-500",
+      bg: "bg-indigo-400 dark:bg-indigo-700",
+      text: "text-indigo-950 dark:text-indigo-50",
+      bar: "bg-indigo-600 dark:bg-indigo-400",
+      border: "border-indigo-600 dark:border-indigo-400",
     };
   }
   return {
-    bg: "bg-green-100 dark:bg-green-950",
-    text: "text-green-700 dark:text-green-400",
-    bar: "bg-green-500",
-    border: "border-green-500",
+    bg: "bg-indigo-600 dark:bg-indigo-500",
+    text: "text-white dark:text-indigo-50",
+    bar: "bg-indigo-700 dark:bg-indigo-300",
+    border: "border-indigo-700 dark:border-indigo-300",
   };
 }
