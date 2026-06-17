@@ -42,16 +42,11 @@ export default function LoginFormCard({
             Sign in
           </CardTitle>
           <CardDescription>
-            Sign in with your identity provider account
+            You&apos;ll be redirected to your identity provider to continue.
           </CardDescription>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
-          You&apos;ll be redirected to sign in with your identity provider
-          account.
-        </p>
-
         <Button
           onClick={handleSignIn}
           className="h-11 w-full font-medium"
