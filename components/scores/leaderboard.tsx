@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronDown, Info } from "lucide-react";
+import { ChevronDown, CircleDashed, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Category } from "@/types/db_types";
 import type { CompetitionScore, UserCategoryScore } from "@/lib/db_actions";
+import { IncompleteIndicator } from "@/components/incomplete-indicator";
 
 // Logarithmic scale: emphasizes differences at the good (low) end.
 // log(1 + score*9) maps 0→0 and 1→1, but with log compression, giving more
@@ -67,7 +68,7 @@ function ScoreRow({
         </div>
 
         {/* Name */}
-        <div className="min-w-0 flex-1">
+        <div className="flex min-w-0 flex-1 items-center gap-1.5">
           <span
             className={cn(
               "truncate text-foreground",
@@ -75,15 +76,11 @@ function ScoreRow({
             )}
           >
             {user.userName}
-            {user.isCurrentUser && (
-              <span className="ml-1 text-sm font-normal text-primary">you</span>
-            )}
-            {user.isIncomplete && (
-              <span className="ml-1.5 text-sm font-normal text-muted-foreground">
-                incomplete
-              </span>
-            )}
           </span>
+          {user.isCurrentUser && (
+            <span className="shrink-0 text-sm font-normal text-primary">you</span>
+          )}
+          {user.isIncomplete && <IncompleteIndicator />}
         </div>
 
         {/* Score bar */}
@@ -291,13 +288,11 @@ export default function Leaderboard({
               <div className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
                 {["1st", "2nd", "3rd"][i]}
               </div>
-              <div className="mt-1 truncate text-sm font-medium text-foreground">
-                {user.userName}
-                {user.isIncomplete && (
-                  <span className="ml-1 text-xs font-normal text-muted-foreground">
-                    incomplete
-                  </span>
-                )}
+              <div className="mt-1 flex items-center justify-center gap-1.5">
+                <span className="truncate text-sm font-medium text-foreground">
+                  {user.userName}
+                </span>
+                {user.isIncomplete && <IncompleteIndicator />}
               </div>
               <div className="mt-1 font-mono text-lg font-semibold tabular-nums text-foreground">
                 {user.score.toFixed(3)}
@@ -333,8 +328,9 @@ export default function Leaderboard({
 
       {/* Footnote for incomplete users */}
       {scores.incompleteUserIds.length > 0 && (
-        <p className="text-xs text-muted-foreground">
-          Users marked incomplete have not forecasted all propositions.
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <CircleDashed className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          Marks forecasters who haven&apos;t forecasted every proposition.
         </p>
       )}
     </div>

@@ -2,6 +2,7 @@ import { getCompetitionScores } from "@/lib/db_actions";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { cn, focusRing } from "@/lib/utils";
+import { IncompleteIndicator } from "@/components/incomplete-indicator";
 
 interface MiniLeaderboardProps {
   competitionId: number;
@@ -61,19 +62,19 @@ export default async function MiniLeaderboard({
                 <span className="w-4 shrink-0 text-right font-mono text-xs tabular-nums text-muted-foreground">
                   {index + 1}
                 </span>
-                <span
-                  className={cn(
-                    "truncate text-sm text-foreground",
-                    isLeader ? "font-semibold" : "font-medium",
-                  )}
-                >
-                  {userScore.userName}
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <span
+                    className={cn(
+                      "truncate text-sm text-foreground",
+                      isLeader ? "font-semibold" : "font-medium",
+                    )}
+                  >
+                    {userScore.userName}
+                  </span>
                   {incompleteSet.has(userScore.userId) && (
-                    <span className="ml-1.5 text-xs font-normal text-muted-foreground">
-                      incomplete
-                    </span>
+                    <IncompleteIndicator />
                   )}
-                </span>
+                </div>
               </div>
               <span
                 className={cn(
