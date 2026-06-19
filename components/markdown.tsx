@@ -1,5 +1,4 @@
 import Markdown from "markdown-to-jsx";
-import { cn } from "@/lib/utils";
 
 interface MarkdownProps {
   children: string;
