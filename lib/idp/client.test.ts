@@ -14,7 +14,7 @@ describe("IDP Client", () => {
   beforeEach(() => {
     vi.resetModules();
     vi.stubEnv("IDP_BASE_URL", "https://identity.example.com");
-    vi.stubEnv("NEXT_PUBLIC_IDP_BASE_URL", "https://identity.example.com");
+    vi.stubEnv("IDP_PUBLIC_URL", "https://identity.example.com");
   });
 
   describe("buildNameFromUserInfo", () => {

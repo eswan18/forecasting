@@ -8,9 +8,9 @@ function requiredEnv(name: string): string {
 }
 
 // IDP_BASE_URL: server-to-server calls (internal K8s URL in cluster).
-// IDP_PUBLIC_URL: browser-facing redirects and JWT issuer validation (external URL, baked at build time via NEXT_PUBLIC_IDP_BASE_URL).
+// IDP_PUBLIC_URL: browser-facing redirects and JWT issuer validation (external URL, provided at runtime via the IDP_PUBLIC_URL env var).
 const IDP_BASE_URL = requiredEnv("IDP_BASE_URL");
-const IDP_PUBLIC_URL = requiredEnv("NEXT_PUBLIC_IDP_BASE_URL");
+const IDP_PUBLIC_URL = requiredEnv("IDP_PUBLIC_URL");
 const IDP_CLIENT_ID = process.env.IDP_CLIENT_ID || "";
 const IDP_CLIENT_SECRET = process.env.IDP_CLIENT_SECRET || "";
 const IDP_ADMIN_CLIENT_ID = process.env.IDP_ADMIN_CLIENT_ID || "";

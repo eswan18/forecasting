@@ -2,8 +2,6 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 substitutions:
-  _NEXT_PUBLIC_IDP_BASE_URL_PROD: 'https://identity.ethanswan.com'
-  _NEXT_PUBLIC_IDP_BASE_URL_STAGING: 'https://identity-staging.tailc06f30.ts.net'
   _SENTRY_ORG: 'forecasting'
   _SENTRY_PROJECT: 'forecasting-app'
   _IMAGE: 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting'
@@ -14,45 +12,25 @@ availableSecrets:
       env: 'SENTRY_AUTH_TOKEN'
 
 steps:
-  # Build prod image (with BuildKit layer caching to avoid re-running npm ci)
-  - id: 'build-prod'
-    name: 'gcr.io/cloud-builders/docker'
-    waitFor: ['-']
-    entrypoint: 'bash'
+  # Single environment-agnostic image, consumed by both staging and prod.
+  # The IDP URL that used to differ per env is read at runtime from the K8s
+  # configmap (IDP_PUBLIC_URL), so there's no build-time difference between envs.
+  # BuildKit layer cache persists to a `buildcache` tag (mode=max) since Cloud
+  # Build workers are ephemeral and would otherwise start cold every time.
+  - name: gcr.io/cloud-builders/docker
+    entrypoint: bash
     args:
-      - '-c'
+      - -c
       - |
-        docker buildx create --use --name builder-prod
+        docker buildx create --use --driver docker-container
         docker buildx build \
-          --cache-from type=registry,ref=${_IMAGE}:cache-prod \
-          --cache-to type=registry,ref=${_IMAGE}:cache-prod,mode=max \
-          --push \
-          --build-arg NEXT_PUBLIC_IDP_BASE_URL=${_NEXT_PUBLIC_IDP_BASE_URL_PROD} \
+          --cache-from type=registry,ref=${_IMAGE}:buildcache \
+          --cache-to type=registry,ref=${_IMAGE}:buildcache,mode=max \
           --build-arg SENTRY_ORG=${_SENTRY_ORG} \
           --build-arg SENTRY_PROJECT=${_SENTRY_PROJECT} \
           --build-arg SENTRY_AUTH_TOKEN=$$SENTRY_AUTH_TOKEN \
-          -t ${_IMAGE}:${SHORT_SHA}-prod \
-          -t ${_IMAGE}:prod \
-          .
-    secretEnv: ['SENTRY_AUTH_TOKEN']
-  # Build staging image (with BuildKit layer caching to avoid re-running npm ci)
-  - id: 'build-staging'
-    name: 'gcr.io/cloud-builders/docker'
-    waitFor: ['-']
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        docker buildx create --use --name builder-staging
-        docker buildx build \
-          --cache-from type=registry,ref=${_IMAGE}:cache-staging \
-          --cache-to type=registry,ref=${_IMAGE}:cache-staging,mode=max \
+          -t ${_IMAGE}:${SHORT_SHA} \
+          -t ${_IMAGE}:latest \
           --push \
-          --build-arg NEXT_PUBLIC_IDP_BASE_URL=${_NEXT_PUBLIC_IDP_BASE_URL_STAGING} \
-          --build-arg SENTRY_ORG=${_SENTRY_ORG} \
-          --build-arg SENTRY_PROJECT=${_SENTRY_PROJECT} \
-          --build-arg SENTRY_AUTH_TOKEN=$$SENTRY_AUTH_TOKEN \
-          -t ${_IMAGE}:${SHORT_SHA}-staging \
-          -t ${_IMAGE}:staging \
           .
     secretEnv: ['SENTRY_AUTH_TOKEN']
