@@ -10,14 +10,11 @@ const projectRoot = dirname(fileURLToPath(import.meta.url));
 const nextConfig = {
   output: "standalone",
   outputFileTracingRoot: projectRoot,
-  // Lint and type-check already run as dedicated PR-check steps (`npm run lint`,
-  // `tsc --noEmit`) before anything merges to main, so re-running them inside
-  // `next build` during the Docker image build is redundant work. Skipping both
-  // here keeps the production build focused on compilation. `main` stays gated
-  // by the PR checks.
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // `tsc --noEmit` already runs as a dedicated PR-check step before anything
+  // merges to main, so re-running the type-check inside `next build` during the
+  // Docker image build is redundant work (~45s saved). Skip it; `main` stays
+  // gated by the PR checks. (Next 16 no longer runs ESLint during `next build`,
+  // and lint runs in the PR checks regardless.)
   typescript: {
     ignoreBuildErrors: true,
   },
