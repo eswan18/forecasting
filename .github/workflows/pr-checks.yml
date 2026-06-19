@@ -39,4 +39,4 @@ jobs:
           NODE_ENV: production
           DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
           IDP_BASE_URL: http://dummy
-          NEXT_PUBLIC_IDP_BASE_URL: http://dummy
+          IDP_PUBLIC_URL: http://dummy

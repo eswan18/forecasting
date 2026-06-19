@@ -8,13 +8,11 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build-time args for NEXT_PUBLIC_ vars and Sentry source maps
-ARG NEXT_PUBLIC_IDP_BASE_URL
+# Build-time args for Sentry source maps
 ARG SENTRY_ORG
 ARG SENTRY_PROJECT
 ARG SENTRY_AUTH_TOKEN
 
-ENV NEXT_PUBLIC_IDP_BASE_URL=$NEXT_PUBLIC_IDP_BASE_URL
 ENV SENTRY_ORG=$SENTRY_ORG
 ENV SENTRY_PROJECT=$SENTRY_PROJECT
 ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
@@ -23,6 +21,7 @@ ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
 # data collection, but doesn't actually connect to anything.
 ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 ENV IDP_BASE_URL="http://dummy"
+ENV IDP_PUBLIC_URL="http://dummy"
 
 RUN npm run build
 
