@@ -29,6 +29,7 @@ steps:
           --build-arg SENTRY_ORG=${_SENTRY_ORG} \
           --build-arg SENTRY_PROJECT=${_SENTRY_PROJECT} \
           --build-arg SENTRY_AUTH_TOKEN=$$SENTRY_AUTH_TOKEN \
+          --build-arg SENTRY_RELEASE=${SHORT_SHA} \
           -t ${_IMAGE}:${SHORT_SHA} \
           -t ${_IMAGE}:latest \
           --push \
