@@ -1,8 +1,8 @@
+import Link from "next/link";
 import { getUserFromCookies } from "@/lib/get-user";
-import { Trophy, BarChart3, MessageCircleWarning } from "lucide-react";
+import { Target, MessageCircleWarning } from "lucide-react";
 import MiniLeaderboard from "@/components/landing/mini-leaderboard";
 import NewsCard from "@/components/landing/news-card";
-import IconLinkButton from "@/components/landing/icon-link-button";
 import RecentlyResolved from "@/components/landing/recently-resolved";
 import { Container } from "@/components/ui/container";
 import { SectionHeader } from "@/components/ui/section-header";
@@ -45,27 +45,18 @@ export default async function Home() {
               </p>
             </NewsCard>
 
-            <NewsCard
-              icon={BarChart3}
-              title="2025 Scores Finalized"
-              buttons={
-                <>
-                  <IconLinkButton
-                    icon={Trophy}
-                    href="/competitions/2?tab=leaderboard"
-                  >
-                    Leaderboard
-                  </IconLinkButton>
-                  <IconLinkButton
-                    icon={BarChart3}
-                    href={`/competitions/2/scores/user/${user.id}`}
-                  >
-                    Your Score Breakdown
-                  </IconLinkButton>
-                </>
-              }
-            >
-              <p>2025 is over, and you can now see the final scores!</p>
+            <NewsCard icon={Target} title="Personal Calibrations">
+              <p>
+                You can now see how well your forecasted probabilities match up
+                with real world outcomes. Check out the new{" "}
+                <Link
+                  href="/standalone/calibration"
+                  className="text-primary underline-offset-4 hover:underline"
+                >
+                  Calibrations Page
+                </Link>
+                .
+              </p>
             </NewsCard>
           </section>
 
