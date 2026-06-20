@@ -12,10 +12,12 @@ COPY . .
 ARG SENTRY_ORG
 ARG SENTRY_PROJECT
 ARG SENTRY_AUTH_TOKEN
+ARG SENTRY_RELEASE
 
 ENV SENTRY_ORG=$SENTRY_ORG
 ENV SENTRY_PROJECT=$SENTRY_PROJECT
 ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
+ENV SENTRY_RELEASE=$SENTRY_RELEASE
 
 # Dummy values for build — Next.js evaluates server-side modules during page
 # data collection, but doesn't actually connect to anything.

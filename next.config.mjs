@@ -53,6 +53,12 @@ export default withSentryConfig(nextConfig, {
   // side errors will fail.
   tunnelRoute: "/monitoring",
 
-  // Automatically tree-shake Sentry logger statements to reduce bundle size
-  disableLogger: true,
+  // Associate uploaded source maps + runtime events with the git SHA so Sentry
+  // can do release tracking (regressions, "first seen in release X"). Provided at
+  // build time via Cloud Build's SHORT_SHA (matches the deployed image tag);
+  // absent for local builds, where Sentry auto-detects. Symbolication itself runs
+  // off debug IDs and does not depend on this.
+  ...(process.env.SENTRY_RELEASE && {
+    release: { name: process.env.SENTRY_RELEASE },
+  }),
 });
