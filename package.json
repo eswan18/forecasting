@@ -81,7 +81,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitest/browser": "^4.1.9",
     "@vitest/coverage-v8": "^4.1.9",
-    "eslint": "^9.39.4",
+    "eslint": "^9.39.5",
     "eslint-config-next": "^16.2.9",
     "eslint-plugin-storybook": "^10.4.6",
     "kysely-ctl": "^0.21.0",
