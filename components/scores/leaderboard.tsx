@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import Link from "next/link";
 import { ChevronDown, CircleDashed, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Category } from "@/types/db_types";
 import type { CompetitionScore, UserCategoryScore } from "@/lib/db_actions";
 import { IncompleteIndicator } from "@/components/incomplete-indicator";
+import { rankForecasters, type RankedForecaster } from "@/lib/leaderboard";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 // Logarithmic scale: emphasizes differences at the good (low) end.
 // log(1 + score*9) maps 0→0 and 1→1, but with log compression, giving more
@@ -18,14 +21,8 @@ const getScoreBarWidth = (score: number) => {
   return Math.max(0, (1 - logScale) * 100);
 };
 
-interface UserWithRank {
-  rank: number;
-  userId: number;
-  userName: string;
-  score: number;
+interface UserWithRank extends RankedForecaster {
   categoryScores: UserCategoryScore[];
-  isCurrentUser: boolean;
-  isIncomplete: boolean;
 }
 
 interface ScoreRowProps {
@@ -169,6 +166,10 @@ interface LeaderboardProps {
   competitionId: number;
   currentUserId: number | null;
   userForecastCount?: number;
+  /** When false (the default), forecasters who haven't forecasted every prop are hidden. */
+  showIncomplete?: boolean;
+  /** Omit to render the board without the toggle control. */
+  onShowIncompleteChange?: (showIncomplete: boolean) => void;
 }
 
 export default function Leaderboard({
@@ -177,31 +178,41 @@ export default function Leaderboard({
   competitionId,
   currentUserId,
   userForecastCount,
+  showIncomplete = false,
+  onShowIncompleteChange,
 }: LeaderboardProps) {
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+  const toggleId = useId();
 
-  // Sort users by score (lower is better for Brier scores)
-  const sortedUsers = [...scores.overallScores].sort(
-    (a, b) => a.score - b.score,
-  );
+  const rankArgs = {
+    overallScores: scores.overallScores,
+    incompleteUserIds: scores.incompleteUserIds,
+    currentUserId,
+  };
 
-  const incompleteSet = new Set(scores.incompleteUserIds);
+  // Ranked over everyone, regardless of the filter. Used for the total count
+  // and for the current user's own standing, which stays on screen even when
+  // the filter hides their row.
+  const allRanked = rankForecasters({ ...rankArgs, showIncomplete: true });
 
-  // Build users with ranks and category scores
-  const usersWithRanks: UserWithRank[] = sortedUsers.map((user, index) => ({
-    rank: index + 1,
-    userId: user.userId,
-    userName: user.userName,
-    score: user.score,
+  const usersWithRanks: UserWithRank[] = rankForecasters({
+    ...rankArgs,
+    showIncomplete,
+  }).map((user) => ({
+    ...user,
     categoryScores: scores.categoryScores.filter(
       (cs) => cs.userId === user.userId,
     ),
-    isCurrentUser: user.userId === currentUserId,
-    isIncomplete: incompleteSet.has(user.userId),
   }));
 
-  // Find current user's data
+  const hiddenCount = allRanked.length - usersWithRanks.length;
+
+  // The current user keeps their "Your Performance" card even when the filter
+  // drops their row — otherwise an incomplete forecaster opens the leaderboard
+  // and finds no trace of themselves.
   const currentUserData = usersWithRanks.find((u) => u.isCurrentUser);
+  const currentUserOverall = allRanked.find((u) => u.isCurrentUser);
+  const currentUserHidden = !!currentUserOverall && !currentUserData;
 
   const toggleRow = (userId: number) => {
     setExpandedRows((prev) => {
@@ -215,7 +226,8 @@ export default function Leaderboard({
     });
   };
 
-  if (sortedUsers.length === 0) {
+  // Nobody has a score at all — the filter isn't the reason, so don't offer it.
+  if (allRanked.length === 0) {
     return (
       <div className="rounded-lg border bg-card p-8 text-center">
         <p className="text-muted-foreground">No scores available yet</p>
@@ -225,6 +237,25 @@ export default function Leaderboard({
       </div>
     );
   }
+
+  const incompleteToggle = onShowIncompleteChange && (
+    <div className="flex items-center gap-2">
+      <Switch
+        id={toggleId}
+        checked={showIncomplete}
+        onCheckedChange={onShowIncompleteChange}
+      />
+      <Label
+        htmlFor={toggleId}
+        className="cursor-pointer text-xs font-normal text-muted-foreground"
+      >
+        Show incomplete forecasters
+        {!showIncomplete && hiddenCount > 0 && (
+          <span className="ml-1 font-mono tabular-nums">({hiddenCount})</span>
+        )}
+      </Label>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -239,7 +270,7 @@ export default function Leaderboard({
       </div>
 
       {/* Your stats card */}
-      {currentUserData && (
+      {currentUserOverall && (
         <div className="rounded-lg border border-primary/30 bg-primary/[0.03] p-4">
           <div className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
             Your Performance
@@ -247,7 +278,7 @@ export default function Leaderboard({
           <div className="mt-3 grid grid-cols-3 gap-4">
             <div className="flex flex-col gap-0.5">
               <span className="font-mono text-2xl font-semibold tabular-nums text-foreground">
-                #{currentUserData.rank}
+                {currentUserData ? `#${currentUserData.rank}` : "—"}
               </span>
               <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                 Rank
@@ -255,7 +286,7 @@ export default function Leaderboard({
             </div>
             <div className="flex flex-col gap-0.5">
               <span className="font-mono text-2xl font-semibold tabular-nums text-foreground">
-                {currentUserData.score.toFixed(3)}
+                {currentUserOverall.score.toFixed(3)}
               </span>
               <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                 Brier Score
@@ -270,6 +301,19 @@ export default function Leaderboard({
               </span>
             </div>
           </div>
+          {currentUserHidden && (
+            <p className="mt-3 flex items-start gap-1.5 border-t border-primary/20 pt-3 text-xs text-muted-foreground">
+              <CircleDashed
+                className="mt-0.5 h-3.5 w-3.5 shrink-0"
+                aria-hidden="true"
+              />
+              <span>
+                You&apos;re unranked because you haven&apos;t forecasted every
+                proposition. Turn on &ldquo;Show incomplete forecasters&rdquo;
+                to see where you&apos;d place.
+              </span>
+            </p>
+          )}
         </div>
       )}
 
@@ -303,31 +347,46 @@ export default function Leaderboard({
       )}
 
       {/* Main leaderboard */}
-      <div className="overflow-hidden rounded-lg border bg-card">
-        <div className="flex items-center gap-3 border-b bg-muted/30 px-3 py-2 font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-          <span className="w-8 shrink-0 text-center">#</span>
-          <span className="flex-1">Forecaster</span>
-          <span className="hidden w-32 sm:block" />
-          <span className="w-16 text-right">Brier</span>
-          <span className="w-6 shrink-0" />
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          <span className="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            Standings
+          </span>
+          {incompleteToggle}
         </div>
 
-        <div className="divide-y">
-          {usersWithRanks.map((user) => (
-            <ScoreRow
-              key={user.userId}
-              user={user}
-              expanded={expandedRows.has(user.userId)}
-              onToggle={() => toggleRow(user.userId)}
-              categories={categories}
-              competitionId={competitionId}
-            />
-          ))}
+        <div className="overflow-hidden rounded-lg border bg-card">
+          <div className="flex items-center gap-3 border-b bg-muted/30 px-3 py-2 font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+            <span className="w-8 shrink-0 text-center">#</span>
+            <span className="flex-1">Forecaster</span>
+            <span className="hidden w-32 sm:block" />
+            <span className="w-16 text-right">Brier</span>
+            <span className="w-6 shrink-0" />
+          </div>
+
+          {usersWithRanks.length === 0 ? (
+            <p className="p-8 text-center text-sm text-muted-foreground">
+              No forecaster has forecasted every proposition yet.
+            </p>
+          ) : (
+            <div className="divide-y">
+              {usersWithRanks.map((user) => (
+                <ScoreRow
+                  key={user.userId}
+                  user={user}
+                  expanded={expandedRows.has(user.userId)}
+                  onToggle={() => toggleRow(user.userId)}
+                  categories={categories}
+                  competitionId={competitionId}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Footnote for incomplete users */}
-      {scores.incompleteUserIds.length > 0 && (
+      {/* Footnote explaining the marker, only while incomplete rows are shown */}
+      {showIncomplete && scores.incompleteUserIds.length > 0 && (
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <CircleDashed className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           Marks forecasters who haven&apos;t forecasted every proposition.

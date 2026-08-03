@@ -66,6 +66,11 @@ export function CompetitionDashboard({
       ? tabParam
       : "overview";
 
+  // Incomplete forecasters (those who haven't forecasted every prop) are hidden
+  // by default — their partial-set Brier scores aren't comparable. Opt back in
+  // with ?showIncomplete=1.
+  const showIncomplete = searchParams.get("showIncomplete") === "1";
+
   // Filter props based on tab
   const now = new Date();
 
@@ -112,6 +117,25 @@ export function CompetitionDashboard({
       const queryString = params.toString();
       router.push(
         `/competitions/${competitionId}${queryString ? `?${queryString}` : ""}`,
+      );
+    },
+    [competitionId, router, searchParams],
+  );
+
+  // `replace`, not `push`: flipping a filter shouldn't stack history entries,
+  // and `scroll: false` keeps the page from jumping to the top on each toggle.
+  const handleShowIncompleteChange = useCallback(
+    (next: boolean) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (next) {
+        params.set("showIncomplete", "1");
+      } else {
+        params.delete("showIncomplete");
+      }
+      const queryString = params.toString();
+      router.replace(
+        `/competitions/${competitionId}${queryString ? `?${queryString}` : ""}`,
+        { scroll: false },
       );
     },
     [competitionId, router, searchParams],
@@ -215,6 +239,7 @@ export function CompetitionDashboard({
                 scores={scores}
                 competitionId={competitionId}
                 currentUserId={currentUserId}
+                showIncomplete={showIncomplete}
               />
             </div>
           </div>
@@ -252,6 +277,8 @@ export function CompetitionDashboard({
                   competitionId={competitionId}
                   currentUserId={currentUserId}
                   userForecastCount={userForecastCount}
+                  showIncomplete={showIncomplete}
+                  onShowIncompleteChange={handleShowIncompleteChange}
                 />
               </div>
             )}
