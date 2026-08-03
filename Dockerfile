@@ -39,6 +39,18 @@ ENV HOSTNAME=0.0.0.0
 COPY --from=builder --chown=appuser:appuser /app/.next/standalone ./
 COPY --from=builder --chown=appuser:appuser /app/.next/static ./.next/static
 
+# The migration runner: `migrations/` compiled to a single self-contained script
+# by scripts/build-migration-runner.ts. Copied explicitly rather than taken from
+# `.next/standalone`, which does happen to contain the source tree today — but
+# that is Next's file tracing being generous, and it is free to stop. Migrations
+# breaking silently because tracing changed is not a failure mode worth having.
+# The bundle inlines kysely and pg, so it needs nothing from node_modules.
+#
+# bifrost preview environments run this as an initContainer:
+#   ["node", "/app/migrate/index.js"]
+# See the README's "Applying migrations from inside the image".
+COPY --from=builder --chown=appuser:appuser /app/dist/migrate ./migrate
+
 USER appuser
 EXPOSE 3000
 

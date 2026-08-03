@@ -258,3 +258,65 @@ not exist for `next dev`, `vitest`, `eslint` or `tsc --noEmit` — all of which 
 before anything is built. Committing it costs one guarantee, which `lib/migrations/manifest.test.ts`
 buys back: it re-renders the manifest from `migrations/` with the same generator and compares
 byte-for-byte, so a migration added without regenerating fails CI. The manifest cannot drift.
+
+#### Applying migrations from inside the image
+
+The check above refuses to start an app whose database is behind. Something has to be able to move that
+database forward, and in a bifrost preview environment that something cannot be a laptop: a preview cuts
+its own Neon branch and then runs an **initContainer** to bring the schema up to date before the app
+container starts.
+
+`npm exec kysely migrate up` cannot do that job. The Dockerfile's runner stage carries neither
+`kysely-ctl` nor `tsx`, so nothing in the image can load a `.ts` migration. So the migrations are
+**compiled into the image at build time**:
+
+- `scripts/build-migration-runner.ts` generates an entry point with one static import per file in
+  `migrations/`, and esbuild bundles it — together with `lib/migrations/runner.ts`, `kysely` and `pg` —
+  into a single self-contained `dist/migrate/index.js`. It runs as part of `npm run build`.
+- The Dockerfile copies that directory to `/app/migrate`. Nothing else is needed: the bundle resolves
+  no packages at runtime, so it does not care what Next's standalone file tracing does or does not put
+  in `node_modules`.
+
+**The initContainer command is:**
+
+```
+["node", "/app/migrate/index.js"]
+```
+
+It reads `DATABASE_URL` from the environment — the same one the app container gets — and drives kysely's
+own `Migrator`. It applies migrations and does nothing else: no schema inspection, no repair, no
+"this database looks new so…". Every decision about what to apply is kysely's.
+
+**Exit codes are the whole contract**, because an initContainer that exits 0 without migrating would let
+a broken app start:
+
+- `0` — every migration applied (or already applied) *and* the database then passes the startup check
+  above. The runner re-uses `verifyMigrations` as a post-condition, so "the runner succeeded" and "the
+  app will boot" cannot come apart.
+- `1` — `DATABASE_URL` unset, database unreachable, a migration failed, the database is ahead of the
+  build (kysely refuses a migration table holding names it doesn't know), or the compiled set is not
+  the manifest.
+
+##### Running it by hand
+
+```bash
+npm run build:migrate                                    # writes dist/migrate/index.js
+DATABASE_URL='...' node dist/migrate/index.js
+```
+
+That is exactly what the initContainer does. For everyday work against a local or staging database,
+`DATABASE_URL='...' npm exec kysely migrate up` is still the shorter path and applies the same
+migrations; the compiled runner exists for the environments that have no `npm`.
+
+##### The one trap: `00000000_bootstrap`
+
+`tests/helpers/migrator.ts` prepends a `00000000_bootstrap` migration, which recreates the
+pre-migrations baseline schema that the real production database already had. It lives in
+`tests/helpers/`, not `migrations/`, and it is **not** a migration — production's `kysely_migration`
+table has never contained it. If it were ever compiled into the image, the runner would apply it and the
+startup check would then reject the database the runner had just built.
+
+Three things stop that: the build reads only `migrations/`; both the build and the compiled runner
+itself assert that the compiled set is exactly `lib/migrations/manifest.ts`; and
+`lib/migrations/runner.test.ts` greps the built bundle for seed rows that exist only in the bootstrap
+file.

@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "npm run build:migrate && next build",
+    "build:migrate": "node scripts/build-migration-runner.ts",
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest run",
@@ -81,6 +82,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitest/browser": "^4.1.9",
     "@vitest/coverage-v8": "^4.1.9",
+    "esbuild": "^0.28.1",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.2.9",
     "eslint-plugin-storybook": "^10.4.6",

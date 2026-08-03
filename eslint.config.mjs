@@ -21,6 +21,9 @@ const eslintConfig = [
       ".next/**",
       "out/**",
       "build/**",
+      // The compiled migration runner: a generated bundle of kysely, pg and
+      // migrations/, none of which this project lints at the source either.
+      "dist/**",
       "next-env.d.ts",
       "coverage/**",
       "storybook-static/**",

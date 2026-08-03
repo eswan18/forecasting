@@ -16,6 +16,9 @@
 # production
 /build
 
+# compiled migration runner (see scripts/build-migration-runner.ts)
+/dist
+
 # misc
 .DS_Store
 *.pem
