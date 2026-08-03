@@ -41,7 +41,7 @@ function TabButton({ active, children, onClick, count }: TabButtonProps) {
 export type DashboardTab =
   | "overview"
   | "open"
-  | "closed"
+  | "unresolved"
   | "resolved"
   | "leaderboard"
   | "members";
@@ -51,7 +51,7 @@ interface CompetitionTabsProps {
   onTabChange: (tab: DashboardTab) => void;
   stats: {
     toForecast: number;
-    closed: number;
+    unresolved: number;
     resolved: number;
   };
   showMembersTab: boolean;
@@ -79,11 +79,11 @@ export function CompetitionTabs({
         Open
       </TabButton>
       <TabButton
-        active={activeTab === "closed"}
-        onClick={() => onTabChange("closed")}
-        count={stats.closed}
+        active={activeTab === "unresolved"}
+        onClick={() => onTabChange("unresolved")}
+        count={stats.unresolved}
       >
-        Closed
+        Unresolved
       </TabButton>
       <TabButton
         active={activeTab === "resolved"}

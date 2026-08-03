@@ -52,11 +52,14 @@ export function CompetitionDashboard({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Get active tab from URL query params
-  const tabParam = searchParams.get("tab");
+  // Get active tab from URL query params.
+  // "closed" is the pre-rename name for the "unresolved" tab; still honored so
+  // older bookmarks and shared links land on the right tab.
+  const rawTabParam = searchParams.get("tab");
+  const tabParam = rawTabParam === "closed" ? "unresolved" : rawTabParam;
   const activeTab: DashboardTab =
     tabParam === "open" ||
-    tabParam === "closed" ||
+    tabParam === "unresolved" ||
     tabParam === "resolved" ||
     tabParam === "leaderboard" ||
     tabParam === "members"
@@ -85,9 +88,9 @@ export function CompetitionDashboard({
     });
   }, [props, now, getCloseDate]);
 
-  const closedProps = useMemo(() => {
+  const unresolvedProps = useMemo(() => {
     return props.filter((prop) => {
-      // Closed: close date is in the past AND not resolved
+      // Unresolved: close date is in the past AND not resolved
       const closeDate = getCloseDate(prop);
       const isResolved = prop.resolution !== null;
       return closeDate !== null && new Date(closeDate) <= now && !isResolved;
@@ -172,7 +175,7 @@ export function CompetitionDashboard({
               onTabChange={handleTabChange}
               stats={{
                 toForecast: stats.toForecast,
-                closed: stats.closed,
+                unresolved: stats.unresolved,
                 resolved: stats.resolved,
               }}
               showMembersTab={showMembersTab}
@@ -191,7 +194,7 @@ export function CompetitionDashboard({
               <div className="mb-6">
                 <StatCards
                   toForecast={stats.toForecast}
-                  closed={stats.closed}
+                  unresolved={stats.unresolved}
                   resolved={stats.resolved}
                   onTabChange={handleTabChange}
                   activeTab={activeTab}
@@ -225,9 +228,9 @@ export function CompetitionDashboard({
                 competitionId={competitionId}
               />
             )}
-            {activeTab === "closed" && (
+            {activeTab === "unresolved" && (
               <PropsTable
-                props={closedProps}
+                props={unresolvedProps}
                 canCreateProps={false}
                 competitionId={competitionId}
                 showCommunityAvg={true}

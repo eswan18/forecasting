@@ -13,8 +13,8 @@ import { withRLS } from "@/lib/db-helpers";
 export interface CompetitionStats {
   /** Props the user hasn't forecasted yet (and are still open) */
   toForecast: number;
-  /** Props that are closed (past deadline) but not yet resolved */
-  closed: number;
+  /** Props that are past their deadline but not yet resolved */
+  unresolved: number;
   /** Props that have been resolved */
   resolved: number;
   /** Total props in the competition */
@@ -67,7 +67,7 @@ export async function getCompetitionStats({
       const props = await propsQuery.execute();
 
       let toForecast = 0;
-      let closed = 0;
+      let unresolved = 0;
       let resolved = 0;
 
       for (const prop of props) {
@@ -80,12 +80,12 @@ export async function getCompetitionStats({
           ? prop.prop_forecasts_due_date
           : prop.competition_forecasts_close_date;
 
-        const isClosed = closeDate !== null && closeDate < now;
+        const isPastDeadline = closeDate !== null && closeDate < now;
 
         if (isResolved) {
           resolved++;
-        } else if (isClosed) {
-          closed++;
+        } else if (isPastDeadline) {
+          unresolved++;
         } else if (!hasUserForecast) {
           // Still open and user hasn't forecasted
           toForecast++;
@@ -94,7 +94,7 @@ export async function getCompetitionStats({
 
       return {
         toForecast,
-        closed,
+        unresolved,
         resolved,
         total: props.length,
       };

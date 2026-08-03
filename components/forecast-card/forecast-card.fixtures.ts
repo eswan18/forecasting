@@ -1,7 +1,7 @@
 import type { PropWithUserForecast } from "@/types/db_types";
 
 // Shared mock data for the forecast-card stories.
-// Fixed dates so prop status (open / closed / resolved) is deterministic.
+// Fixed dates so prop status (open / unresolved / resolved) is deterministic.
 export const FUTURE = new Date("2030-06-01T00:00:00Z");
 export const PAST = new Date("2020-01-01T00:00:00Z");
 

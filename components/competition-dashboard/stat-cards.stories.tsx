@@ -19,18 +19,18 @@ const meta = {
   ],
   argTypes: {
     toForecast: { control: "number" },
-    closed: { control: "number" },
+    unresolved: { control: "number" },
     resolved: { control: "number" },
     activeTab: {
       control: "select",
-      options: ["overview", "open", "closed", "resolved"],
+      options: ["overview", "open", "unresolved", "resolved"],
       description: "Which tile is rendered in its selected state",
     },
     onTabChange: { control: false },
   },
   args: {
     toForecast: 7,
-    closed: 3,
+    unresolved: 3,
     resolved: 12,
     onTabChange: () => {},
   },
@@ -54,7 +54,7 @@ export const Static: Story = {
 
 // Larger counts — checks tabular-figure alignment across tiles.
 export const LargeNumbers: Story = {
-  args: { toForecast: 142, closed: 28, resolved: 305 },
+  args: { toForecast: 142, unresolved: 28, resolved: 305 },
 };
 
 // Clicking a tile selects it.
