@@ -194,6 +194,15 @@ For consistency, use dashes instead of underscores or spaces.
 npm exec kysely migrate make <migration-description>
 ```
 
+Then regenerate the migration manifest and commit it alongside the migration:
+
+```bash
+npx tsx scripts/generate-migration-manifest.ts
+```
+
+(See "The startup migration check" below for what the manifest is. If you forget,
+`lib/migrations/manifest.test.ts` fails in CI.)
+
 #### How do I run new migrations?
 
 Obviously it's best to do this in the staging DB and make sure all is well before going to prod.
@@ -201,3 +210,51 @@ Obviously it's best to do this in the staging DB and make sure all is well befor
 ```bash
 DATABASE_URL='...' npm exec kysely migrate up
 ```
+
+#### The startup migration check
+
+**The app refuses to start when its database's schema doesn't match the migrations it was built with.**
+The check runs once per server boot, from `register()` in `instrumentation.ts`, and lives in `lib/migrations/`.
+
+It compares the migration names recorded in the database's `kysely_migration` table against
+`lib/migrations/manifest.ts` — a generated, committed list of the migrations the build knows about.
+Any difference in either direction is fatal:
+
+- **Database behind the code** — a migration was added but never run. This is the case bifrost preview
+  environments hit constantly: a preview's Neon branch is cut from staging's schema, so a branch that
+  adds a migration produces a preview whose database is behind its code.
+- **Database ahead of the code** — an older image rolled back onto a newer schema. Just as wrong, and
+  just as worth catching.
+
+On a mismatch the process prints what the build expects, what the database has, which migrations differ,
+and how to fix it, then **exits non-zero**. It does *not* throw: Next.js swallows a throw from
+`register()` and leaves the server up answering every request (including `/api/health`) with a 500, which
+is the ambiguous half-alive state this check exists to eliminate.
+
+**The check never applies migrations.** Running them stays a separate, deliberate act
+(`DATABASE_URL='...' npm exec kysely migrate up`). Failing loudly at boot is far easier to debug than
+discovering a missing column at runtime, from whichever query happens to touch it first.
+
+##### It fails closed everywhere, including local dev
+
+This is deliberate, and matches the `identity` service. **A local database that hasn't been migrated will
+now refuse to boot** — `ENV=local npm run dev` exits instead of starting. If that happens, run the
+migrations against your local copy:
+
+```bash
+DATABASE_URL='postgresql://ethan:ethan@localhost:2345/forecasting' npm exec kysely migrate up
+```
+
+Re-copying the prod database with `local-pg-container.yaml` also works, since prod is migrated.
+
+##### Why a generated manifest instead of reading `migrations/`?
+
+The runtime shouldn't depend on the migration *files* being present or readable — it needs only their
+*names* to check, and `kysely-ctl` (which knows how to load them) is a dev dependency that the runner
+stage has no business carrying. So the names are compiled into the server bundle instead.
+
+The manifest is committed rather than produced by `npm run build`, because a build-only artifact would
+not exist for `next dev`, `vitest`, `eslint` or `tsc --noEmit` — all of which run on a fresh checkout
+before anything is built. Committing it costs one guarantee, which `lib/migrations/manifest.test.ts`
+buys back: it re-renders the manifest from `migrations/` with the same generator and compares
+byte-for-byte, so a migration added without regenerating fails CI. The manifest cannot drift.

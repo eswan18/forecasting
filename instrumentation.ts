@@ -8,6 +8,15 @@ export async function register() {
     await import("./sentry.server.config");
   }
 
+  // Refuse to start if the database schema doesn't match the migrations this
+  // build was compiled with. Must come after loadEnvironment(), which is where
+  // DATABASE_URL comes from outside K8s. Never applies migrations; see
+  // lib/migrations/check.ts.
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    const { verifyMigrationsOrExit } = await import("./lib/migrations/startup");
+    await verifyMigrationsOrExit();
+  }
+
   if (process.env.NEXT_RUNTIME === "edge") {
     await import("./sentry.edge.config");
   }
