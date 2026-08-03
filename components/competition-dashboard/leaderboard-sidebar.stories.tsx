@@ -31,6 +31,7 @@ const meta = {
   ],
   argTypes: {
     scores: { control: false },
+    showIncomplete: { control: "boolean" },
     currentUserId: { control: "number" },
   },
   args: {

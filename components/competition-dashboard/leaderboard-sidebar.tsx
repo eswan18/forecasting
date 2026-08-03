@@ -5,15 +5,9 @@ import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CompetitionScore } from "@/lib/db_actions";
 import { IncompleteIndicator } from "@/components/incomplete-indicator";
+import { rankForecasters, type RankedForecaster } from "@/lib/leaderboard";
 
-interface LeaderboardEntry {
-  rank: number;
-  userId: number;
-  userName: string;
-  score: number;
-  isCurrentUser: boolean;
-  isIncomplete: boolean;
-}
+type LeaderboardEntry = RankedForecaster;
 
 interface LeaderboardRowProps {
   entry: LeaderboardEntry;
@@ -61,6 +55,11 @@ interface LeaderboardSidebarProps {
   competitionId: number;
   currentUserId: number | null;
   maxEntries?: number;
+  /**
+   * Mirrors the full leaderboard's filter so the same competition doesn't
+   * disagree with itself between the overview sidebar and the leaderboard tab.
+   */
+  showIncomplete?: boolean;
 }
 
 export function LeaderboardSidebar({
@@ -68,25 +67,15 @@ export function LeaderboardSidebar({
   competitionId,
   currentUserId,
   maxEntries = 6,
+  showIncomplete = false,
 }: LeaderboardSidebarProps) {
-  // Sort users by score (lower is better for Brier scores)
-  const sortedUsers = [...scores.overallScores].sort(
-    (a, b) => a.score - b.score,
-  );
-
-  const incompleteSet = new Set(scores.incompleteUserIds);
-
-  // Build entries with ranks
-  const entries: LeaderboardEntry[] = sortedUsers
-    .slice(0, maxEntries)
-    .map((user, index) => ({
-      rank: index + 1,
-      userId: user.userId,
-      userName: user.userName,
-      score: user.score,
-      isCurrentUser: user.userId === currentUserId,
-      isIncomplete: incompleteSet.has(user.userId),
-    }));
+  // Rank first, then take the top slice, so the filter can't leave gaps.
+  const entries: LeaderboardEntry[] = rankForecasters({
+    overallScores: scores.overallScores,
+    incompleteUserIds: scores.incompleteUserIds,
+    currentUserId,
+    showIncomplete,
+  }).slice(0, maxEntries);
 
   if (entries.length === 0) {
     return (
@@ -95,7 +84,9 @@ export function LeaderboardSidebar({
           Standings
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
-          No scores yet. Scores appear after props are resolved.
+          {scores.overallScores.length > 0
+            ? "No forecaster has forecasted every proposition yet."
+            : "No scores yet. Scores appear after props are resolved."}
         </p>
       </div>
     );
