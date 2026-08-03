@@ -8,6 +8,11 @@
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
+    // `scripts/build-migration-runner.ts` runs under Node's own TypeScript
+    // stripping (no tsx, no build step) during `npm run build`, and Node's ESM
+    // resolver requires a full specifier. Safe here because `noEmit` is set:
+    // nothing tsc produces can carry a `.ts` import into JavaScript.
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
