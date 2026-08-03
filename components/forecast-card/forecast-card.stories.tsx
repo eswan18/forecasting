@@ -83,8 +83,8 @@ export const ForecastEqualsAverage: Story = {
   },
 };
 
-// Past the forecast deadline -> "Closed" status badge.
-export const Closed: Story = {
+// Past the forecast deadline -> "Unresolved" status badge.
+export const Unresolved: Story = {
   args: {
     prop: makeProp({ competition_forecasts_close_date: PAST }),
     showCommunityAvg: true,

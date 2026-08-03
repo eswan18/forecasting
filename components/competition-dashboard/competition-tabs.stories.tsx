@@ -23,7 +23,7 @@ const meta = {
       options: [
         "overview",
         "open",
-        "closed",
+        "unresolved",
         "resolved",
         "leaderboard",
         "members",
@@ -35,7 +35,7 @@ const meta = {
   },
   args: {
     activeTab: "overview",
-    stats: { toForecast: 7, closed: 3, resolved: 12 },
+    stats: { toForecast: 7, unresolved: 3, resolved: 12 },
     showMembersTab: false,
     onTabChange: () => {},
   },

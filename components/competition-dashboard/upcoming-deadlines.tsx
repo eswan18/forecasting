@@ -112,8 +112,8 @@ export function UpcomingDeadlines({
           Upcoming Deadlines
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
-          No upcoming deadlines. All props are either closed or fully
-          forecasted.
+          No upcoming deadlines. All props are either past their deadline or
+          fully forecasted.
         </p>
       </div>
     );

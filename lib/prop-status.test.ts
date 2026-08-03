@@ -51,16 +51,16 @@ describe("getPropStatus", () => {
     });
   });
 
-  describe("closed state", () => {
-    it("should return closed when past deadline and not resolved", () => {
+  describe("unresolved state", () => {
+    it("should return unresolved when past deadline and not resolved", () => {
       const pastDate = new Date("2024-06-14T12:00:00Z"); // 1 day ago
       expect(getPropStatus(pastDate, null, { currentDate: now })).toBe(
-        "closed",
+        "unresolved",
       );
     });
 
-    it("should return closed when exactly at deadline", () => {
-      expect(getPropStatus(now, null, { currentDate: now })).toBe("closed");
+    it("should return unresolved when exactly at deadline", () => {
+      expect(getPropStatus(now, null, { currentDate: now })).toBe("unresolved");
     });
   });
 });
@@ -87,7 +87,9 @@ describe("getPropStatusFromProp", () => {
       resolution: null,
     };
     // Public competition uses competition date (past)
-    expect(getPropStatusFromProp(prop, { currentDate: now })).toBe("closed");
+    expect(getPropStatusFromProp(prop, { currentDate: now })).toBe(
+      "unresolved",
+    );
   });
 
   it("should handle missing dates gracefully", () => {
@@ -112,7 +114,7 @@ describe("getPropStatusFromProp", () => {
 describe("getPropStatusLabel", () => {
   it.each<[PropStatus, string]>([
     ["open", "Open"],
-    ["closed", "Closed"],
+    ["unresolved", "Unresolved"],
     ["resolved-yes", "Yes"],
     ["resolved-no", "No"],
   ])("should return correct label for %s", (status, expected) => {

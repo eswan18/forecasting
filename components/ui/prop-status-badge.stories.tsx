@@ -11,7 +11,7 @@ const meta = {
   argTypes: {
     status: {
       control: "select",
-      options: ["open", "closed", "resolved-yes", "resolved-no"],
+      options: ["open", "unresolved", "resolved-yes", "resolved-no"],
       description: "The lifecycle status of the prop",
     },
     label: {
@@ -31,9 +31,9 @@ export const Open: Story = {
   },
 };
 
-export const Closed: Story = {
+export const Unresolved: Story = {
   args: {
-    status: "closed",
+    status: "unresolved",
   },
 };
 
@@ -57,7 +57,7 @@ export const AllStates: Story = {
   render: () => (
     <div className="flex flex-wrap gap-2">
       <PropStatusBadge status="open" />
-      <PropStatusBadge status="closed" />
+      <PropStatusBadge status="unresolved" />
       <PropStatusBadge status="resolved-yes" />
       <PropStatusBadge status="resolved-no" />
     </div>

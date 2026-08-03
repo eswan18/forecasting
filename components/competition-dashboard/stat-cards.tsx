@@ -44,7 +44,7 @@ export function StatCard({
 
 interface StatCardsProps {
   toForecast: number;
-  closed: number;
+  unresolved: number;
   resolved: number;
   onTabChange?: (tab: DashboardTab) => void;
   activeTab?: DashboardTab;
@@ -52,7 +52,7 @@ interface StatCardsProps {
 
 export function StatCards({
   toForecast,
-  closed,
+  unresolved,
   resolved,
   onTabChange,
   activeTab,
@@ -67,11 +67,11 @@ export function StatCards({
         active={activeTab === "open"}
       />
       <StatCard
-        label="Closed"
-        value={closed}
+        label="Unresolved"
+        value={unresolved}
         sublabel="Awaiting resolution"
-        onClick={onTabChange ? () => onTabChange("closed") : undefined}
-        active={activeTab === "closed"}
+        onClick={onTabChange ? () => onTabChange("unresolved") : undefined}
+        active={activeTab === "unresolved"}
       />
       <StatCard
         label="Resolved"

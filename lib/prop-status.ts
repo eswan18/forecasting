@@ -7,7 +7,7 @@
 
 export type PropStatus =
   | "open" // Can still forecast
-  | "closed" // Past deadline, awaiting resolution
+  | "unresolved" // Past deadline, awaiting resolution
   | "resolved-yes" // Resolved as true
   | "resolved-no"; // Resolved as false
 
@@ -28,9 +28,8 @@ export interface PropStatusOptions {
  * // Open prop with no deadline
  * getPropStatus(null, null) // "open"
  *
- * // Prop closing in 12 hours
- * const soon = new Date(Date.now() + 12 * 60 * 60 * 1000);
- * getPropStatus(soon, null) // "closing-soon"
+ * // Prop past its deadline with no resolution yet
+ * getPropStatus(pastDate, null) // "unresolved"
  *
  * // Resolved prop
  * getPropStatus(pastDate, true) // "resolved-yes"
@@ -56,7 +55,7 @@ export function getPropStatus(
 
   // Past deadline
   if (timeUntilClose <= 0) {
-    return "closed";
+    return "unresolved";
   }
 
   return "open";
@@ -91,8 +90,8 @@ export function getPropStatusLabel(status: PropStatus): string {
   switch (status) {
     case "open":
       return "Open";
-    case "closed":
-      return "Closed";
+    case "unresolved":
+      return "Unresolved";
     case "resolved-yes":
       return "Yes";
     case "resolved-no":
