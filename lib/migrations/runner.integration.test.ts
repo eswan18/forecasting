@@ -133,10 +133,16 @@ describe.skipIf(!useContainers)("the compiled migration runner, end to end", () 
     expect(await verifyMigrations(db)).toEqual({ ok: true });
   }, 300000);
 
-  it("records exactly the 37 real migrations, and no bootstrap", async () => {
+  it("records exactly the real migrations, and no bootstrap", async () => {
     // The harness's bootstrap migration is not a migration; if it had been
-    // compiled in, it would show up here as a 38th row and the startup check
+    // compiled in, it would show up here as an extra row and the startup check
     // would then reject the database the runner just built.
+    //
+    // toEqual against the manifest pins the set, the order, and the count at
+    // once, so there is deliberately no separate length assertion — a hardcoded
+    // count would have to be bumped by every migration that ever lands, and
+    // would fail in a way that reads like a real defect rather than a stale
+    // literal.
     const db = await createPreviewBranch("runner_exact_set", 0);
 
     await runArtifact(artifact.outFile, {
@@ -146,7 +152,6 @@ describe.skipIf(!useContainers)("the compiled migration runner, end to end", () 
     const applied = await readAppliedMigrations(db);
     expect(applied).toEqual([...MIGRATION_MANIFEST]);
     expect(applied).not.toContain(HARNESS_BOOTSTRAP);
-    expect(applied).toHaveLength(37);
   }, 300000);
 
   it("is a no-op, and still exits 0, when the database is already current", async () => {
