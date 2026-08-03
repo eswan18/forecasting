@@ -1,0 +1,38 @@
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  _IMAGE: 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting'
+
+steps:
+  # Manual-invocation only (bifrost runs this trigger); nothing fires on push.
+  #
+  # Same buildx pattern as cloudbuild.yaml, but read-only on the shared
+  # registry cache: --cache-from without --cache-to, so preview branches get
+  # warm layers without polluting the cache mainline builds depend on.
+  #
+  # No Sentry build args, and so no availableSecrets block: previews upload
+  # nothing to Sentry. A source-map upload and a release per preview build is
+  # noise, and previews are short-lived tailnet-only environments. This works
+  # because the build tolerates a missing token — next.config.mjs defaults
+  # org/project to "" and @sentry/nextjs skips the upload rather than failing,
+  # confirmed by running this exact arg set through a real `docker build`
+  # (image built, `next build` compiled clean). If a Sentry or Next upgrade
+  # ever makes the token mandatory, the fix is a no-upload mode here, not
+  # wiring the secret in — uploading from previews is the thing being avoided.
+  #
+  # The preview-{sha} tag deliberately fails the staging ImageUpdater
+  # allowTags regexp (^[a-f0-9]{7,}$, in k8s/argocd/image-updater.yaml), so a
+  # preview build can never auto-deploy to staging. Hence no bare-sha tag
+  # here either.
+  - name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        docker buildx create --use --driver docker-container
+        docker buildx build \
+          --cache-from type=registry,ref=${_IMAGE}:buildcache \
+          -t ${_IMAGE}:preview-${SHORT_SHA} \
+          --push \
+          .
