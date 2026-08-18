@@ -35,15 +35,11 @@ Then, you can tell your local instance to use the local database copy by updatin
 DATABASE_URL='postgresql://ethan:ethan@localhost:2345/forecasting'
 ```
 
-Last, you'll need a few other variables in your `.env.local`.
+Last, you'll need one other variable in your `.env.local`.
 
 ```bash
-# This is used to encrypt JWTs. For local dev, it can be anything.
+# Signs this app's own impersonation tokens. For local dev, it can be anything.
 JWT_SECRET='whocares'
-
-# This will need to match the prod salt if you want to be able to log in as a preexisting user.
-# But if not, you can make something up.
-ARGON2_SALT='ask-ethan'
 ```
 
 Now, you can launch a fully-functional dev instance.

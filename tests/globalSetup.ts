@@ -7,7 +7,6 @@ import { Database } from "@/types/db_types";
 // Set test environment variables before any modules that depend on them are imported
 // This ensures consistent test values across all test files
 process.env.JWT_SECRET = "test_jwt_secret";
-process.env.ARGON2_SALT = "test_salt";
 
 // Global container and database instances
 let globalContainer: any = null;
