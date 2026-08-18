@@ -4,12 +4,10 @@ import { useState } from "react";
 import {
   ColumnFiltersState,
   flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getSortedRowModel,
   SortingState,
-  useReactTable,
+  useTable,
 } from "@tanstack/react-table";
+import { usersTableFeatures } from "./table-features";
 import {
   Table,
   TableBody,
@@ -25,14 +23,12 @@ export default function UsersTable({ data }: { data: VUser[] }) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const columns = getColumns();
-  const table = useReactTable({
+  const table = useTable({
+    features: usersTableFeatures,
     data,
     columns,
-    getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
     state: { sorting, columnFilters },
   });
 
@@ -65,7 +61,6 @@ export default function UsersTable({ data }: { data: VUser[] }) {
             table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
-                data-state={row.getIsSelected() && "selected"}
                 className="border-b hover:bg-muted/20 transition-colors"
               >
                 {row.getVisibleCells().map((cell) => (
