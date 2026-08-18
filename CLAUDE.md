@@ -109,6 +109,13 @@ Environment variables are loaded at startup via `instrumentation.ts` and the app
 - **Forms**: React Hook Form with Zod validation
 - **Charts**: Recharts for score visualization
 
+### Dates & Timezones
+
+All dates render in the **browser's** timezone. `getBrowserTimezone()` (`hooks/getBrowserTimezone.ts`) reads `Intl.DateTimeFormat().resolvedOptions().timeZone`; `lib/time-utils.ts` (`formatDate` / `formatDateTime`) does the formatting and defaults to `UTC` when no timezone is passed. Prefer the `LocalDate` component (`components/local-date.tsx`) over calling the formatters directly.
+
+- **`LocalDate` needs `suppressHydrationWarning`** — the server renders UTC and the client re-renders in local time, so the markup legitimately differs on first paint. Don't "fix" the mismatch by removing it.
+- **There is deliberately no per-user timezone preference.** A DB-backed version (a `timezone` column on `users`, a settings UI, a timezone-constants file) was designed and rejected in favor of browser detection, which shipped in #109. Don't re-propose it — there is no `timezone` column, no migration, and no `useUserTimezone` hook.
+
 ### Design Language
 
 The app is being incrementally remodeled toward a **soft-minimal / Linear-like** look — flat, modern, vaguely techy (deliberately *not* like a publication). The redone forecast cards (`components/forecast-card/`, the `ForecastNeedle` gauge) are the reference for the target feel; propagate that language outward one surface at a time.
