@@ -2,11 +2,12 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { VUser } from "@/types/db_types";
+import type { UsersTableFeatures } from "./table-features";
 import { UserNameCell } from "./user-name-cell";
 import { UserStatusCell } from "./user-status-cell";
 import { UserRoleBadge } from "./user-badges";
 
-export function getColumns(): ColumnDef<VUser>[] {
+export function getColumns(): ColumnDef<UsersTableFeatures, VUser>[] {
   return [
     {
       accessorKey: "name",

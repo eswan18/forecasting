@@ -63,9 +63,9 @@ This codebase follows a structured server action pattern that returns results in
 
 ### Authentication & Authorization
 
-- JWT-based auth with cookies
-- Password hashing with Argon2
-- User sessions managed via `/lib/auth/` modules
+- Auth is delegated to the **identity** IdP (OAuth 2.0 / OIDC); this app does not store or hash passwords
+- JWTs are verified with `jose`; `JWT_SECRET` signs the app's own impersonation tokens (`/lib/auth/impersonation.ts`)
+- User sessions managed via `/lib/auth/` modules (impersonation, logout, token refresh)
 - RLS (Row Level Security) enabled on key tables
 
 ### App Structure (Next.js App Router)
@@ -88,7 +88,7 @@ This codebase follows a structured server action pattern that returns results in
 
 1. Spin up local PostgreSQL: `docker compose --env-file .env.prod -f local-pg-container.yaml up`
 2. Set `DATABASE_URL='postgresql://ethan:ethan@localhost:2345/forecasting'` in `.env.local`
-3. Add required env vars: `JWT_SECRET`, `ARGON2_SALT`
+3. Add required env var: `JWT_SECRET`
 4. Run `ENV=local npm run dev`
 
 ### Environment Management
