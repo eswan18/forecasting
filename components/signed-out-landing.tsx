@@ -1,9 +1,6 @@
 import Link from "next/link";
 import { Archivo, Roboto_Mono } from "next/font/google";
-import {
-  LandingThemeToggle,
-  type ToggleVariant,
-} from "@/components/landing-theme-toggle";
+import { LandingThemeToggle } from "@/components/landing-theme-toggle";
 
 /**
  * Haruspex — the signed-out landing page.
@@ -378,8 +375,11 @@ body:has(.hx3) nav { display: none; }
 /* on a narrow measure the line breaks after the separator, dangling it; give
    the clause its own line instead and drop the interpunct */
 @media (max-width: 34rem) {
-  .hx3 .formula .sep { display: none; }
+  .hx3 .formula .sep,
+  .hx3 .colophon .sep { display: none; }
   .hx3 .formula .clause { display: block; }
+  /* the switch takes its own line rather than leaving the separator dangling */
+  .hx3 .colophon .stock-link { display: block; margin-top: 0.375rem; }
 }
 .hx3 tr.bad .cost { color: var(--red-text); }
 .hx3 tr.flat .cost { color: var(--ink-muted); }
@@ -446,108 +446,40 @@ body:has(.hx3) nav { display: none; }
   font-size: 0.6875rem;
   letter-spacing: 0.14em;
 }
-.hx3 button.btn.swatch { cursor: pointer; }
-
-/* ---- quieter stock switches ----
-   These deliberately carry no border and no red plate: the masthead should have
-   exactly one thing that looks pressable, and that is Sign in. */
-.hx3 .stock-link,
-.hx3 .stock-chip,
-.hx3 .stock-bar {
+/* ---- the stock switch ----
+   It lives in the colophon, where a pamphlet already talks about its own
+   printing, so the masthead keeps exactly one thing that looks pressable. No
+   border and no plate: this is a line of text that happens to be a control. */
+.hx3 .stock-link {
   background: none;
   border: 0;
-  padding: 0;
+  border-bottom: 1px solid transparent;
+  padding: 0 0 2px;
   margin: 0;
   cursor: pointer;
-  font-family: var(--hx3-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
   color: var(--ink-muted);
-  display: inline-flex;
-  align-items: center;
 }
-.hx3 .stock-link:hover,
-.hx3 .stock-chip:hover { color: var(--red-text); }
-.hx3 .stock-link:focus-visible,
-.hx3 .stock-chip:focus-visible,
-.hx3 .stock-bar:focus-visible { outline: 2px solid var(--red-text); outline-offset: 4px; }
-
-.hx3 .stock-link { border-bottom: 1px solid transparent; padding-bottom: 2px; }
-.hx3 .stock-link:hover { border-bottom-color: currentColor; }
-
-.hx3 .stock-chip { gap: 0.5rem; }
-.hx3 .stock-chip .chip {
-  width: 0.75rem;
-  height: 0.75rem;
-  display: block;
-  /* --ink is always the stock you are not on */
-  background: var(--ink);
+.hx3 .stock-link:hover {
+  color: var(--red-text);
+  border-bottom-color: currentColor;
 }
-
-/* a press colour bar: both drums shown, the sheet you're on marked in red */
-.hx3 .stock-bar { gap: 3px; padding: 0.25rem 0; }
-.hx3 .stock-bar i {
-  width: 0.9375rem;
-  height: 0.9375rem;
-  display: block;
-  border: 1px solid var(--rule);
-  border-bottom-width: 3px;
-  border-bottom-color: transparent;
+.hx3 .stock-link:focus-visible {
+  outline: 2px solid var(--red-text);
+  outline-offset: 4px;
 }
-.hx3 .stock-bar .c-white { background: oklch(95.8% 0.012 62); }
-.hx3 .stock-bar .c-black { background: oklch(21% 0.022 32); }
-.hx3 .stock-bar .c-white { border-bottom-color: var(--red); }
-.dark .hx3 .stock-bar .c-white { border-bottom-color: transparent; }
-.dark .hx3 .stock-bar .c-black { border-bottom-color: var(--red); }
-
-.hx3 .sr {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-/* CSS, not state, decides which drum is named */
+/* CSS, not state, decides which instruction is shown */
 .hx3 .ink-dark { display: none; }
 .dark .hx3 .ink-light { display: none; }
 .dark .hx3 .ink-dark { display: inline; }
-/* Below the masthead's comfortable width the label is clipped rather than
-   removed, so it keeps naming the action for a screen reader. */
-@media (max-width: 34rem) {
-  /* button.btn.swatch, not .btn.swatch: the latter loses padding to
-     .hx3 button.btn.small and the chip collapses into a landscape rectangle
-     that reads as a checkbox. */
-  .hx3 button.btn.swatch {
-    padding: 0;
-    width: 2.5rem;
-    height: 2.5rem;
-    position: relative;
-  }
-  .hx3 a.btn.small { padding: 0.625rem 1.25rem; }
-  .hx3 .btn.swatch .ink-light,
-  .hx3 .btn.swatch .ink-dark {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-  /* a full-bleed chip of the stock you'd switch to — a paper sample inside the
-     ink border, rather than a small mark inside a box (which reads as a tick) */
-  /* --ink is always the stock you are NOT on, so one rule serves both
-     editions: black chip on white stock, white chip on black. */
-  .hx3 button.btn.swatch::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--ink);
-  }
-}
 
-.hx3 .masthead-tools { display: flex; align-items: center; gap: 1rem; }
+/* Sign in is the only control left in the masthead; keep its target comfortable
+   on a phone. */
+@media (max-width: 34rem) {
+  .hx3 a.btn.small { padding: 0.625rem 1.25rem; }
+}
 
 /* the colophon names the stock it is actually printed on */
 .hx3 .stock-dark { display: none; }
@@ -705,11 +637,7 @@ function Gauge({
   );
 }
 
-export function SignedOutLanding({
-  toggle = "link",
-}: {
-  toggle?: ToggleVariant;
-} = {}) {
+export function SignedOutLanding() {
   return (
     <div className={`hx3 ${archivo.variable} ${robotoMono.variable}`}>
       <style dangerouslySetInnerHTML={{ __html: css }} />
@@ -718,12 +646,9 @@ export function SignedOutLanding({
       <div className="col">
         <header className="top">
           <span className="mono">Haruspex</span>
-          <span className="masthead-tools">
-            {toggle !== "colophon" && <LandingThemeToggle variant={toggle} />}
-            <Link className="btn small" href="/login">
-              Sign in
-            </Link>
-          </span>
+          <Link className="btn small" href="/login">
+            Sign in
+          </Link>
         </header>
 
         <div className="hero">
@@ -808,12 +733,8 @@ export function SignedOutLanding({
             <span className="stock-dark">
               Warm White + Bright Red on Warm Black
             </span>
-            {toggle === "colophon" && (
-              <>
-                {" · "}
-                <LandingThemeToggle variant="colophon" />
-              </>
-            )}
+            <span className="sep"> · </span>
+            <LandingThemeToggle />
           </p>
         </div>
       </div>
