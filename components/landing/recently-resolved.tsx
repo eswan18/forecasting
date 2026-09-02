@@ -41,12 +41,14 @@ export default async function RecentlyResolved({
           kind={forecast.prop_kind}
           forecast={forecast.forecast}
           resolution={forecast.resolution}
-          // Options are empty for binary props, so this is a no-op there.
+          // Options are empty for binary props, so this is a no-op there. A
+          // null probability stays null: the user forecasted no option, which
+          // the card shows as a dash rather than as a confident 0%.
           realized={forecast.options
             .filter((option) => option.outcome)
             .map((option) => ({
               text: option.text,
-              userForecast: option.user_forecast ?? 0,
+              userForecast: option.user_forecast,
             }))}
           optionCount={forecast.options.length}
           resolutionDate={forecast.resolution_updated_at!}

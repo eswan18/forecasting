@@ -7,7 +7,8 @@ import { cn, focusRing } from "@/lib/utils";
 /** An option that resolved true, with the probability the user gave it. */
 export interface RealizedOption {
   text: string;
-  userForecast: number;
+  /** Null when the user never forecasted this option. */
+  userForecast: number | null;
 }
 
 interface ResolvedPropCardProps {
@@ -94,11 +95,12 @@ function ChoiceOutcome({ realized }: { realized: RealizedOption[] }) {
 }
 
 /**
- * What the card reminds the user they said: their probability on a binary prop,
- * the probability they gave the winner on a `one_of` prop, and — since no single
- * number stands in for a whole `any_of` ballot — how many options landed.
+ * The card's right-hand block. A binary or `one_of` prop reports what the user
+ * said — their probability, or the one they gave the winner. No single number
+ * stands in for a whole `any_of` ballot, so that block reports the outcome
+ * instead, and says so: how many of the options landed.
  */
-function youSaid({
+function summaryBlock({
   kind,
   forecast,
   realized,
@@ -106,16 +108,28 @@ function youSaid({
 }: Pick<
   ResolvedPropCardProps,
   "kind" | "forecast" | "realized" | "optionCount"
->): string {
+>): { label: string; value: string } {
   switch (kind) {
     case "binary":
-      return forecast === null ? "—" : forecast.toFixed(2);
-    case "one_of":
-      return realized.length === 0
-        ? "—"
-        : `${Math.round(realized[0].userForecast * 100)}%`;
+      return {
+        label: "You said",
+        value: forecast === null ? "—" : forecast.toFixed(2),
+      };
+    case "one_of": {
+      const winner = realized[0];
+      return {
+        label: "You said",
+        value:
+          winner === undefined || winner.userForecast === null
+            ? "—"
+            : `${Math.round(winner.userForecast * 100)}%`,
+      };
+    }
     case "any_of":
-      return `${realized.length} of ${optionCount}`;
+      return {
+        label: "Happened",
+        value: `${realized.length} of ${optionCount}`,
+      };
   }
 }
 
@@ -130,6 +144,8 @@ export default function ResolvedPropCard({
   optionCount,
   resolutionDate,
 }: ResolvedPropCardProps) {
+  const summary = summaryBlock({ kind, forecast, realized, optionCount });
+
   return (
     <Link
       href={`/props/${propId}`}
@@ -172,10 +188,10 @@ export default function ResolvedPropCard({
 
         <div className="shrink-0 text-right">
           <div className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-            You said
+            {summary.label}
           </div>
           <div className="mt-1.5 font-mono text-sm font-medium tabular-nums text-foreground">
-            {youSaid({ kind, forecast, realized, optionCount })}
+            {summary.value}
           </div>
         </div>
       </div>

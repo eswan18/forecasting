@@ -69,8 +69,20 @@ export const PickOne: Story = {
   },
 };
 
+// The same prop for a reader who never forecasted the winner: "You said" has
+// nothing to report, so it reads as a dash.
+export const PickOneUnforecasted: Story = {
+  args: {
+    propText: "Who wins the NBA championship?",
+    kind: "one_of",
+    realized: [{ text: "Oklahoma City Thunder", userForecast: null }],
+    optionCount: 4,
+  },
+};
+
 // `any_of` with several winners: only the first two labels fit, the rest
-// collapse into "+n more".
+// collapse into "+n more". No single number stands in for the ballot, so the
+// right-hand block switches to "Happened" and counts the options that landed.
 export const AnyThatApply: Story = {
   args: {
     propText: "Which of these bills pass this session?",
@@ -84,7 +96,7 @@ export const AnyThatApply: Story = {
   },
 };
 
-// `any_of` where nothing happened: a neutral "None" pill, and "0 of 5".
+// `any_of` where nothing happened: a neutral "None" pill, and "Happened 0 of 5".
 export const AnyThatApplyNone: Story = {
   args: {
     propText: "Which of these bills pass this session?",
