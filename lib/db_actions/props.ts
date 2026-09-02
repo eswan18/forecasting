@@ -18,6 +18,8 @@ import {
 import { logger } from "@/lib/logger";
 import { withRLS, withRLSAction } from "@/lib/db-helpers";
 import { attachOptions } from "@/lib/attach-options";
+import { isChoiceKind, type PropKind } from "@/lib/prop-kind";
+import { validateOptionLabels } from "@/lib/choice-forecast";
 import { publishEvent } from "@/lib/pubsub/client";
 
 export async function getPropById(
@@ -345,6 +347,16 @@ export async function updateProp({
       );
     }
 
+    // The kind is fixed at creation (a database trigger enforces this too);
+    // reject the update before it reaches the database.
+    if ("kind" in prop) {
+      logger.warn("Attempted to change the kind of a prop", { propId: id });
+      return error(
+        "The kind of a proposition cannot be changed",
+        ERROR_CODES.VALIDATION_ERROR,
+      );
+    }
+
     // Validate prop data
     if (prop.text && prop.text.trim().length < 8) {
       logger.warn("Validation error: prop text too short", {
@@ -386,8 +398,11 @@ export async function updateProp({
 
 export async function createProp({
   prop,
+  options,
 }: {
   prop: NewProp;
+  /** Required for choice props, forbidden for binary ones. */
+  options?: string[];
 }): Promise<ServerActionResult<void>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Creating prop", {
@@ -433,6 +448,18 @@ export async function createProp({
         validationErrors.resolution_due_date = validationErrors.resolution_due_date || [];
         validationErrors.resolution_due_date.push("Resolution deadline must be after forecast deadline");
       }
+    }
+
+    // Options are required for choice props and forbidden for binary ones.
+    const kind: PropKind = prop.kind ?? "binary";
+    const trimmedOptions = (options ?? []).map((o) => o.trim());
+    if (isChoiceKind(kind)) {
+      const optionErrors = validateOptionLabels(trimmedOptions);
+      if (optionErrors.length > 0) {
+        validationErrors.options = optionErrors;
+      }
+    } else if (trimmedOptions.length > 0) {
+      validationErrors.options = ["Yes/no propositions do not have options"];
     }
 
     if (Object.keys(validationErrors).length > 0) {
@@ -488,7 +515,23 @@ export async function createProp({
         }
       }
 
-      await trx.insertInto("props").values(prop).execute();
+      const { id: propId } = await trx
+        .insertInto("props")
+        .values(prop)
+        .returning("id")
+        .executeTakeFirstOrThrow();
+      if (isChoiceKind(kind)) {
+        await trx
+          .insertInto("prop_options")
+          .values(
+            trimmedOptions.map((text, position) => ({
+              prop_id: propId,
+              text,
+              position,
+            })),
+          )
+          .execute();
+      }
       return success(undefined);
     });
 
@@ -497,6 +540,8 @@ export async function createProp({
       logger.info("Prop created successfully", {
         operation: "createProp",
         table: "props",
+        kind,
+        optionCount: trimmedOptions.length,
         categoryId: prop.category_id,
         textLength: prop.text?.length,
         duration,

@@ -166,6 +166,8 @@ describe("Props Unit Tests", () => {
       const mockTrx = {
         insertInto: vi.fn().mockReturnThis(),
         values: vi.fn().mockReturnThis(),
+        returning: vi.fn().mockReturnThis(),
+        executeTakeFirstOrThrow: vi.fn().mockResolvedValue({ id: 1 }),
         execute: vi.fn().mockResolvedValue(undefined),
       };
 
@@ -191,6 +193,8 @@ describe("Props Unit Tests", () => {
       const mockTrx = {
         insertInto: vi.fn().mockReturnThis(),
         values: vi.fn().mockReturnThis(),
+        returning: vi.fn().mockReturnThis(),
+        executeTakeFirstOrThrow: vi.fn().mockResolvedValue({ id: 1 }),
         execute: vi.fn().mockResolvedValue(undefined),
       };
 
@@ -227,6 +231,8 @@ describe("Props Unit Tests", () => {
         }),
         insertInto: vi.fn().mockReturnThis(),
         values: vi.fn().mockReturnThis(),
+        returning: vi.fn().mockReturnThis(),
+        executeTakeFirstOrThrow: vi.fn().mockResolvedValue({ id: 1 }),
         execute: vi.fn().mockResolvedValue(undefined),
       };
 
@@ -373,6 +379,8 @@ describe("Props Unit Tests", () => {
           }),
           insertInto: vi.fn().mockReturnThis(),
           values: vi.fn().mockReturnThis(),
+          returning: vi.fn().mockReturnThis(),
+          executeTakeFirstOrThrow: vi.fn().mockResolvedValue({ id: 1 }),
           execute: vi.fn().mockResolvedValue(undefined),
         };
 
@@ -505,6 +513,8 @@ describe("Props Unit Tests", () => {
           }),
           insertInto: vi.fn().mockReturnThis(),
           values: vi.fn().mockReturnThis(),
+          returning: vi.fn().mockReturnThis(),
+          executeTakeFirstOrThrow: vi.fn().mockResolvedValue({ id: 1 }),
           execute: vi.fn().mockResolvedValue(undefined),
         };
 
@@ -563,6 +573,189 @@ describe("Props Unit Tests", () => {
     });
   });
 
+  describe("createProp with options", () => {
+    /**
+     * Fake transaction that records the rows handed to each insert and
+     * answers the props insert with a generated id.
+     */
+    function makeRecordingTrx() {
+      const inserts: { table: string; values: unknown }[] = [];
+      const trx = {
+        insertInto: vi.fn((table: string) => ({
+          values: vi.fn((values: unknown) => {
+            inserts.push({ table, values });
+            return {
+              execute: vi.fn().mockResolvedValue(undefined),
+              returning: vi.fn().mockReturnValue({
+                executeTakeFirstOrThrow: vi.fn().mockResolvedValue({ id: 42 }),
+              }),
+            };
+          }),
+        })),
+      };
+      return { trx, inserts };
+    }
+
+    function useTrx(trx: unknown) {
+      vi.mocked(dbHelpers.withRLSAction).mockImplementation(
+        async (userId, fn) => fn(trx as any),
+      );
+    }
+
+    it("inserts the options after the prop, in position order", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+      const { trx, inserts } = makeRecordingTrx();
+      useTrx(trx);
+
+      const result = await createProp({
+        prop: {
+          text: "Who wins the division?",
+          category_id: 1,
+          user_id: null,
+          kind: "one_of",
+        },
+        options: ["Knicks", "Spurs"],
+      });
+
+      expect(result.success).toBe(true);
+      expect(inserts.map((i) => i.table)).toEqual(["props", "prop_options"]);
+      expect(inserts[0].values).toMatchObject({ kind: "one_of" });
+      expect(inserts[1].values).toEqual([
+        { prop_id: 42, text: "Knicks", position: 0 },
+        { prop_id: 42, text: "Spurs", position: 1 },
+      ]);
+    });
+
+    it("trims option labels before inserting them", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+      const { trx, inserts } = makeRecordingTrx();
+      useTrx(trx);
+
+      const result = await createProp({
+        prop: {
+          text: "Which of these happen?",
+          category_id: 1,
+          user_id: null,
+          kind: "any_of",
+        },
+        options: ["  Rain  ", "Snow\n"],
+      });
+
+      expect(result.success).toBe(true);
+      expect(inserts[1].values).toEqual([
+        { prop_id: 42, text: "Rain", position: 0 },
+        { prop_id: 42, text: "Snow", position: 1 },
+      ]);
+    });
+
+    it("rejects a choice prop with only one option", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+      const result = await createProp({
+        prop: {
+          text: "Who wins the division?",
+          category_id: 1,
+          user_id: null,
+          kind: "one_of",
+        },
+        options: ["Knicks"],
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe("VALIDATION_ERROR");
+        const validationResult = result as {
+          validationErrors?: Record<string, string[]>;
+        };
+        expect(validationResult.validationErrors?.options).toEqual([
+          "At least 2 options are required",
+        ]);
+      }
+      expect(dbHelpers.withRLSAction).not.toHaveBeenCalled();
+    });
+
+    it("rejects a choice prop with no options at all", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+      const result = await createProp({
+        prop: {
+          text: "Who wins the division?",
+          category_id: 1,
+          user_id: null,
+          kind: "one_of",
+        },
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe("VALIDATION_ERROR");
+        const validationResult = result as {
+          validationErrors?: Record<string, string[]>;
+        };
+        expect(validationResult.validationErrors?.options).toBeDefined();
+      }
+      expect(dbHelpers.withRLSAction).not.toHaveBeenCalled();
+    });
+
+    it("rejects duplicate option labels", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+      const result = await createProp({
+        prop: {
+          text: "Who wins the division?",
+          category_id: 1,
+          user_id: null,
+          kind: "one_of",
+        },
+        options: ["Knicks", " Knicks "],
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const validationResult = result as {
+          validationErrors?: Record<string, string[]>;
+        };
+        expect(validationResult.validationErrors?.options).toContain(
+          "Options must be unique",
+        );
+      }
+    });
+
+    it("rejects options on a yes/no prop", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+      const result = await createProp({
+        prop: { text: "Will it rain tomorrow?", category_id: 1, user_id: null },
+        options: ["A", "B"],
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe("VALIDATION_ERROR");
+        const validationResult = result as {
+          validationErrors?: Record<string, string[]>;
+        };
+        expect(validationResult.validationErrors?.options).toEqual([
+          "Yes/no propositions do not have options",
+        ]);
+      }
+      expect(dbHelpers.withRLSAction).not.toHaveBeenCalled();
+    });
+
+    it("does not touch prop_options for a yes/no prop", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+      const { trx, inserts } = makeRecordingTrx();
+      useTrx(trx);
+
+      const result = await createProp({
+        prop: { text: "Will it rain tomorrow?", category_id: 1, user_id: null },
+      });
+
+      expect(result.success).toBe(true);
+      expect(inserts.map((i) => i.table)).toEqual(["props"]);
+    });
+  });
+
   describe("updateProp", () => {
     it("should require authentication", async () => {
       vi.mocked(getUser.getUserFromCookies).mockResolvedValue(null);
@@ -613,6 +806,25 @@ describe("Props Unit Tests", () => {
 
       expect(result.success).toBe(true);
       expect(mockTrx.updateTable).toHaveBeenCalledWith("props");
+    });
+  });
+
+  describe("updateProp kind guard", () => {
+    it("refuses to change a prop's kind and never reaches the database", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+      const result = await updateProp({
+        id: 1,
+        prop: { kind: "one_of" },
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe("VALIDATION_ERROR");
+        expect(result.error).toContain("cannot be changed");
+      }
+      expect(dbHelpers.withRLS).not.toHaveBeenCalled();
+      expect(dbHelpers.withRLSAction).not.toHaveBeenCalled();
     });
   });
 
