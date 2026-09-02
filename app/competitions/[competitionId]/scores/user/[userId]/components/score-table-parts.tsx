@@ -31,13 +31,54 @@ export function ScoreTableHead() {
   );
 }
 
-function ResolutionLabel({ resolution }: { resolution: boolean | null }) {
-  if (resolution === null) {
-    return <span className="text-muted-foreground">—</span>;
+/** The options of a choice prop that resolved true, in position order. */
+function realizedOptions(forecast: UserForecastScore) {
+  return forecast.options.filter((option) => option.outcome);
+}
+
+/**
+ * The user's headline probability: their forecast on a binary prop, the
+ * probability they gave the winner on a `one_of` prop, and a dash for `any_of`,
+ * where a ballot of independent probabilities has no single number.
+ */
+function forecastLabel(forecast: UserForecastScore): string {
+  switch (forecast.kind) {
+    case "binary":
+      return forecast.forecast === null
+        ? "—"
+        : `${(forecast.forecast * 100).toFixed(1)}%`;
+    case "one_of": {
+      const winner = realizedOptions(forecast)[0];
+      return winner === undefined
+        ? "—"
+        : `${(winner.userForecast * 100).toFixed(1)}%`;
+    }
+    case "any_of":
+      return "—";
   }
+}
+
+function ResolutionLabel({ forecast }: { forecast: UserForecastScore }) {
+  if (forecast.kind === "binary") {
+    if (forecast.resolution === null) {
+      return <span className="text-muted-foreground">—</span>;
+    }
+    return (
+      <span className="font-mono text-foreground">
+        {forecast.resolution ? "Yes" : "No"}
+      </span>
+    );
+  }
+  const realized = realizedOptions(forecast);
+  if (realized.length === 0) {
+    return <span className="text-muted-foreground">None</span>;
+  }
+  // A long ballot would blow the column out, so the labels truncate and the
+  // full list lives in the title.
+  const labels = realized.map((option) => option.text).join(", ");
   return (
-    <span className="font-mono text-foreground">
-      {resolution ? "Yes" : "No"}
+    <span className="block truncate text-foreground" title={labels}>
+      {labels}
     </span>
   );
 }
@@ -64,12 +105,10 @@ export function ForecastScoreRow({
         </div>
       </TableCell>
       <TableCell className="text-right font-mono tabular-nums text-foreground">
-        {forecast.forecast === null
-          ? "—"
-          : `${(forecast.forecast * 100).toFixed(1)}%`}
+        {forecastLabel(forecast)}
       </TableCell>
-      <TableCell className="text-right text-sm">
-        <ResolutionLabel resolution={forecast.resolution} />
+      <TableCell className="max-w-[12rem] text-right text-sm">
+        <ResolutionLabel forecast={forecast} />
       </TableCell>
       <TableCell className="text-right font-mono font-medium tabular-nums text-foreground">
         {forecast.score !== null ? forecast.score.toFixed(3) : "—"}

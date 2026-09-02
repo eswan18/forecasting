@@ -1,25 +1,151 @@
 import { Check, X } from "lucide-react";
 import Link from "next/link";
 import { LocalDate } from "@/components/local-date";
+import type { PropKind } from "@/lib/prop-kind";
 import { cn, focusRing } from "@/lib/utils";
+
+/** An option that resolved true, with the probability the user gave it. */
+export interface RealizedOption {
+  text: string;
+  /** Null when the user never forecasted this option. */
+  userForecast: number | null;
+}
 
 interface ResolvedPropCardProps {
   propId: number;
   propText: string;
   propNotes: string | null;
-  forecast: number;
-  resolution: boolean;
+  kind: PropKind;
+  /** The user's probability on a binary prop; null on a choice prop. */
+  forecast: number | null;
+  /** The yes/no outcome of a binary prop; null on a choice prop. */
+  resolution: boolean | null;
+  /** The options that resolved true; empty for a binary prop. */
+  realized: RealizedOption[];
+  /** How many options the prop has; 0 for a binary prop. */
+  optionCount: number;
   resolutionDate: Date;
+}
+
+const pillClass =
+  "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium";
+
+/** How many realized labels fit before the rest collapse into "+n more". */
+const MAX_REALIZED_PILLS = 2;
+
+/** The yes/no pill of a binary prop. */
+function BinaryOutcome({ resolution }: { resolution: boolean | null }) {
+  // A resolved binary prop always carries a yes/no; the dash is a defensive
+  // fallback so a half-written resolution can't blank the card.
+  if (resolution === null) {
+    return (
+      <span className={cn(pillClass, "bg-secondary text-secondary-foreground")}>
+        —
+      </span>
+    );
+  }
+  return (
+    <span
+      className={cn(
+        pillClass,
+        resolution
+          ? "bg-success-muted text-success-muted-foreground"
+          : "bg-destructive-muted text-destructive-muted-foreground",
+      )}
+    >
+      {resolution ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+      {resolution ? "Yes" : "No"}
+    </span>
+  );
+}
+
+/** The realized options of a choice prop, capped so the card stays compact. */
+function ChoiceOutcome({ realized }: { realized: RealizedOption[] }) {
+  if (realized.length === 0) {
+    return (
+      <span className={cn(pillClass, "bg-secondary text-secondary-foreground")}>
+        None
+      </span>
+    );
+  }
+  const shown = realized.slice(0, MAX_REALIZED_PILLS);
+  const hidden = realized.length - shown.length;
+  return (
+    <>
+      {shown.map((option) => (
+        <span
+          key={option.text}
+          title={option.text}
+          className={cn(
+            pillClass,
+            "max-w-[8rem] bg-success-muted text-success-muted-foreground",
+          )}
+        >
+          <Check className="h-3 w-3 shrink-0" />
+          <span className="truncate">{option.text}</span>
+        </span>
+      ))}
+      {hidden > 0 && (
+        <span className="shrink-0 text-xs text-muted-foreground">
+          +{hidden} more
+        </span>
+      )}
+    </>
+  );
+}
+
+/**
+ * The card's right-hand block. A binary or `one_of` prop reports what the user
+ * said — their probability, or the one they gave the winner. No single number
+ * stands in for a whole `any_of` ballot, so that block reports the outcome
+ * instead, and says so: how many of the options landed.
+ */
+function summaryBlock({
+  kind,
+  forecast,
+  realized,
+  optionCount,
+}: Pick<
+  ResolvedPropCardProps,
+  "kind" | "forecast" | "realized" | "optionCount"
+>): { label: string; value: string } {
+  switch (kind) {
+    case "binary":
+      return {
+        label: "You said",
+        value: forecast === null ? "—" : forecast.toFixed(2),
+      };
+    case "one_of": {
+      const winner = realized[0];
+      return {
+        label: "You said",
+        value:
+          winner === undefined || winner.userForecast === null
+            ? "—"
+            : `${Math.round(winner.userForecast * 100)}%`,
+      };
+    }
+    case "any_of":
+      return {
+        label: "Happened",
+        value: `${realized.length} of ${optionCount}`,
+      };
+  }
 }
 
 export default function ResolvedPropCard({
   propId,
   propText,
   propNotes,
+  kind,
   forecast,
   resolution,
+  realized,
+  optionCount,
   resolutionDate,
 }: ResolvedPropCardProps) {
+  const summary = summaryBlock({ kind, forecast, realized, optionCount });
+
   return (
     <Link
       href={`/props/${propId}`}
@@ -48,22 +174,12 @@ export default function ResolvedPropCard({
           <div className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
             Resolved
           </div>
-          <div className="mt-1.5 flex items-center gap-2">
-            <span
-              className={cn(
-                "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium",
-                resolution
-                  ? "bg-success-muted text-success-muted-foreground"
-                  : "bg-destructive-muted text-destructive-muted-foreground",
-              )}
-            >
-              {resolution ? (
-                <Check className="h-3 w-3" />
-              ) : (
-                <X className="h-3 w-3" />
-              )}
-              {resolution ? "Yes" : "No"}
-            </span>
+          <div className="mt-1.5 flex min-w-0 flex-wrap items-center gap-2">
+            {kind === "binary" ? (
+              <BinaryOutcome resolution={resolution} />
+            ) : (
+              <ChoiceOutcome realized={realized} />
+            )}
             <span className="truncate text-xs text-muted-foreground">
               <LocalDate date={resolutionDate} />
             </span>
@@ -72,10 +188,10 @@ export default function ResolvedPropCard({
 
         <div className="shrink-0 text-right">
           <div className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-            You said
+            {summary.label}
           </div>
           <div className="mt-1.5 font-mono text-sm font-medium tabular-nums text-foreground">
-            {forecast.toFixed(2)}
+            {summary.value}
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,9 +29,22 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Spinner } from "@/components/ui/spinner";
+import { OptionsEditor } from "@/components/forms/options-editor";
+import {
+  defaultOptionFields,
+  propKindSchema,
+  propOptionsSchema,
+  refineKindOptions,
+} from "@/components/forms/prop-form-schema";
 import { useServerAction } from "@/hooks/use-server-action";
 import { getBrowserTimezone } from "@/hooks/getBrowserTimezone";
 import { createProp } from "@/lib/db_actions";
+import {
+  isChoiceKind,
+  PROP_KIND_LABELS,
+  PROP_KINDS,
+  type PropKind,
+} from "@/lib/prop-kind";
 import { formatDate } from "@/lib/time-utils";
 import type { Category } from "@/types/db_types";
 
@@ -41,6 +54,8 @@ const formSchema = z
       .string()
       .min(8, "Proposition must be at least 8 characters")
       .max(300, "Proposition must be at most 300 characters"),
+    kind: propKindSchema,
+    options: propOptionsSchema,
     notes: z
       .string()
       .max(1000, "Notes must be at most 1000 characters")
@@ -74,7 +89,8 @@ const formSchema = z
       message: "Resolution deadline must be after forecast deadline",
       path: ["resolution_due_date"],
     },
-  );
+  )
+  .superRefine(refineKindOptions);
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -94,11 +110,15 @@ export function NewPropForm({
   const router = useRouter();
   const timezone = getBrowserTimezone();
   const [showPreview, setShowPreview] = useState(false);
+  const optionsLabelId = useId();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       text: "",
+      kind: "binary",
+      // The Type select seeds these when the kind becomes a choice kind.
+      options: [],
       notes: null,
       category_id: null,
       forecasts_due_date: undefined,
@@ -117,6 +137,7 @@ export function NewPropForm({
     await createPropAction.execute({
       prop: {
         text: values.text,
+        kind: values.kind,
         notes: values.notes,
         category_id: values.category_id,
         competition_id: competitionId,
@@ -125,12 +146,41 @@ export function NewPropForm({
         resolution_due_date: values.resolution_due_date,
         created_by_user_id: userId,
       },
+      options: isChoiceKind(values.kind)
+        ? values.options.map((option) => option.text)
+        : undefined,
     });
   }
 
+  function handleKindChange(nextKind: PropKind) {
+    if (isChoiceKind(nextKind)) {
+      if (form.getValues("options").length === 0) {
+        form.setValue("options", defaultOptionFields());
+      }
+    } else {
+      form.setValue("options", []);
+    }
+    // Whatever the old options were, any complaint about them is now stale.
+    form.clearErrors("options");
+  }
+
   const watchedText = form.watch("text");
+  const watchedKind = form.watch("kind");
+  const watchedOptions = form.watch("options");
   const watchedNotes = form.watch("notes");
   const watchedForecastsDueDate = form.watch("forecasts_due_date");
+
+  // `refineKindOptions` puts every option complaint on the `options` path, so
+  // the messages belong to the list as a whole rather than to one row.
+  const optionsError = form.formState.errors.options;
+  const optionErrors = [
+    optionsError?.message,
+    optionsError?.root?.message,
+  ].filter((message): message is string => Boolean(message));
+
+  const previewOptions = isChoiceKind(watchedKind)
+    ? watchedOptions.map((option) => option.text.trim()).filter(Boolean)
+    : [];
 
   return (
     <div className="w-full space-y-6">
@@ -163,6 +213,76 @@ export function NewPropForm({
               </FormItem>
             )}
           />
+
+          {/* Type */}
+          <FormField
+            control={form.control}
+            name="kind"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium">Type</FormLabel>
+                <Select
+                  value={field.value}
+                  onValueChange={(value) => {
+                    const nextKind = value as PropKind;
+                    field.onChange(nextKind);
+                    handleKindChange(nextKind);
+                  }}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {PROP_KINDS.map((propKind) => (
+                      <SelectItem key={propKind} value={propKind}>
+                        {PROP_KIND_LABELS[propKind]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  A yes/no question, one option of several, or any that apply.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Options */}
+          {isChoiceKind(watchedKind) && (
+            <FormField
+              control={form.control}
+              name="options"
+              render={({ field }) => (
+                <FormItem>
+                  {/* The options editor is a group of inputs rather than one
+                      labelable control, so this label names the group by id
+                      instead of pointing `htmlFor` at an element that isn't
+                      there. */}
+                  <FormLabel
+                    id={optionsLabelId}
+                    htmlFor={undefined}
+                    className="text-sm font-medium"
+                  >
+                    Options
+                  </FormLabel>
+                  <OptionsEditor
+                    value={field.value.map((option) => option.text)}
+                    onChange={(labels) =>
+                      field.onChange(labels.map((text) => ({ text })))
+                    }
+                    errors={optionErrors}
+                    ariaLabelledBy={optionsLabelId}
+                  />
+                  <FormDescription>
+                    Forecasters see these in the order listed here.
+                  </FormDescription>
+                </FormItem>
+              )}
+            />
+          )}
 
           {/* Notes */}
           <FormField
@@ -324,6 +444,13 @@ export function NewPropForm({
                       </span>
                     )}
                   </p>
+                  {previewOptions.length > 0 && (
+                    <ol className="list-inside list-decimal space-y-1 text-sm text-muted-foreground">
+                      {previewOptions.map((label, index) => (
+                        <li key={index}>{label}</li>
+                      ))}
+                    </ol>
+                  )}
                   {watchedNotes && (
                     <p className="text-xs text-muted-foreground border-l-2 pl-2">
                       {watchedNotes}
@@ -346,7 +473,7 @@ export function NewPropForm({
               Tips for good propositions
             </p>
             <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
-              <li>Frame as a clear yes/no question</li>
+              <li>Frame as a clear yes/no question, or list the options</li>
               <li>Include specific dates or metrics when possible</li>
               <li>Define resolution criteria in the notes</li>
               <li>

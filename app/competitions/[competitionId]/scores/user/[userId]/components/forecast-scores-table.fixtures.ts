@@ -98,15 +98,55 @@ const forecasts: UserForecastScore[] = [
     score: null,
     options: [],
   },
+  // A `one_of` prop: the scalar forecast/resolution are null and the row reads
+  // off the options instead — the Forecast column shows the 30% the user gave
+  // the winner, the Resolution column that one winner's label.
+  {
+    forecastId: 8,
+    propId: 203,
+    propText: "Which team wins the championship?",
+    categoryId: 2,
+    categoryName: "Sports",
+    kind: "one_of",
+    forecast: null,
+    resolution: null,
+    score: 0.343,
+    options: [
+      { text: "Boston Celtics", userForecast: 0.35, outcome: false },
+      { text: "Denver Nuggets", userForecast: 0.25, outcome: false },
+      { text: "Oklahoma City Thunder", userForecast: 0.3, outcome: true },
+      { text: "Any other team", userForecast: 0.1, outcome: false },
+    ],
+  },
+  // An `any_of` prop: two options landed, so the Forecast column is a dash and
+  // the Resolution column lists both labels.
+  {
+    forecastId: 9,
+    propId: 303,
+    propText: "Which of these firms announce layoffs this quarter?",
+    categoryId: 3,
+    categoryName: "Economics",
+    kind: "any_of",
+    forecast: null,
+    resolution: null,
+    score: 0.199,
+    options: [
+      { text: "Northwind Logistics", userForecast: 0.62, outcome: true },
+      { text: "Vantage Semiconductor", userForecast: 0.28, outcome: false },
+      { text: "Harbor Foods", userForecast: 0.44, outcome: true },
+      { text: "Copperline Energy", userForecast: 0.51, outcome: false },
+    ],
+  },
 ];
 
 export const sortedForecasts: UserForecastScore[] = [...forecasts].sort(
   (a, b) => (b.score ?? 0) - (a.score ?? 0),
 );
 
+// Category averages over the rows above, worst first.
 export const sortedCategoryScores: UserCategoryScore[] = [
-  { userId: 1, userName: "Avery Chen", categoryId: 3, score: 0.341 },
-  { userId: 1, userName: "Avery Chen", categoryId: 2, score: 0.182 },
+  { userId: 1, userName: "Avery Chen", categoryId: 3, score: 0.294 },
+  { userId: 1, userName: "Avery Chen", categoryId: 2, score: 0.235 },
   { userId: 1, userName: "Avery Chen", categoryId: 1, score: 0.05 },
 ];
 
