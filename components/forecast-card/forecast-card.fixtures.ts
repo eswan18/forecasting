@@ -1,4 +1,4 @@
-import type { PropWithUserForecast } from "@/types/db_types";
+import type { PropOptionSummary, PropWithUserForecast } from "@/types/db_types";
 
 // Shared mock data for the forecast-card stories.
 // Fixed dates so prop status (open / unresolved / resolved) is deterministic.
@@ -35,3 +35,69 @@ export function makeProp(
     ...overrides,
   };
 }
+
+// A `one_of` prop's options: exactly one team can win, and the user has only
+// filled in two of the four (60% entered, 40% still to place).
+export const NBA_CHAMPION_OPTIONS: PropOptionSummary[] = [
+  {
+    option_id: 1,
+    text: "Boston Celtics",
+    position: 0,
+    outcome: null,
+    user_forecast: 0.35,
+    community_average: 0.32,
+  },
+  {
+    option_id: 2,
+    text: "Denver Nuggets",
+    position: 1,
+    outcome: null,
+    user_forecast: 0.25,
+    community_average: 0.27,
+  },
+  {
+    option_id: 3,
+    text: "Oklahoma City Thunder",
+    position: 2,
+    outcome: null,
+    user_forecast: null,
+    community_average: 0.19,
+  },
+  {
+    option_id: 4,
+    text: "Any other team",
+    position: 3,
+    outcome: null,
+    user_forecast: null,
+    community_average: 0.22,
+  },
+];
+
+// An `any_of` prop's options: independent, so nothing has to add up. The last
+// one has no community average yet.
+export const ECONOMY_OPTIONS: PropOptionSummary[] = [
+  {
+    option_id: 11,
+    text: "The Fed cuts rates at least once",
+    position: 0,
+    outcome: null,
+    user_forecast: 0.7,
+    community_average: 0.64,
+  },
+  {
+    option_id: 12,
+    text: "Unemployment tops 5%",
+    position: 1,
+    outcome: null,
+    user_forecast: 0.2,
+    community_average: 0.31,
+  },
+  {
+    option_id: 13,
+    text: "Inflation ends the year under 2%",
+    position: 2,
+    outcome: null,
+    user_forecast: 0.45,
+    community_average: null,
+  },
+];
