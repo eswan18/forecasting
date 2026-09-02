@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { Archivo, Roboto_Mono } from "next/font/google";
-import { LandingThemeToggle } from "@/components/landing-theme-toggle";
+import {
+  LandingThemeToggle,
+  type ToggleVariant,
+} from "@/components/landing-theme-toggle";
 
 /**
  * Haruspex — the signed-out landing page.
@@ -444,6 +447,68 @@ body:has(.hx3) nav { display: none; }
   letter-spacing: 0.14em;
 }
 .hx3 button.btn.swatch { cursor: pointer; }
+
+/* ---- quieter stock switches ----
+   These deliberately carry no border and no red plate: the masthead should have
+   exactly one thing that looks pressable, and that is Sign in. */
+.hx3 .stock-link,
+.hx3 .stock-chip,
+.hx3 .stock-bar {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  font-family: var(--hx3-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  display: inline-flex;
+  align-items: center;
+}
+.hx3 .stock-link:hover,
+.hx3 .stock-chip:hover { color: var(--red-text); }
+.hx3 .stock-link:focus-visible,
+.hx3 .stock-chip:focus-visible,
+.hx3 .stock-bar:focus-visible { outline: 2px solid var(--red-text); outline-offset: 4px; }
+
+.hx3 .stock-link { border-bottom: 1px solid transparent; padding-bottom: 2px; }
+.hx3 .stock-link:hover { border-bottom-color: currentColor; }
+
+.hx3 .stock-chip { gap: 0.5rem; }
+.hx3 .stock-chip .chip {
+  width: 0.75rem;
+  height: 0.75rem;
+  display: block;
+  /* --ink is always the stock you are not on */
+  background: var(--ink);
+}
+
+/* a press colour bar: both drums shown, the sheet you're on marked in red */
+.hx3 .stock-bar { gap: 3px; padding: 0.25rem 0; }
+.hx3 .stock-bar i {
+  width: 0.9375rem;
+  height: 0.9375rem;
+  display: block;
+  border: 1px solid var(--rule);
+  border-bottom-width: 3px;
+  border-bottom-color: transparent;
+}
+.hx3 .stock-bar .c-white { background: oklch(95.8% 0.012 62); }
+.hx3 .stock-bar .c-black { background: oklch(21% 0.022 32); }
+.hx3 .stock-bar .c-white { border-bottom-color: var(--red); }
+.dark .hx3 .stock-bar .c-white { border-bottom-color: transparent; }
+.dark .hx3 .stock-bar .c-black { border-bottom-color: var(--red); }
+
+.hx3 .sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 /* CSS, not state, decides which drum is named */
 .hx3 .ink-dark { display: none; }
 .dark .hx3 .ink-light { display: none; }
@@ -640,7 +705,11 @@ function Gauge({
   );
 }
 
-export function SignedOutLanding() {
+export function SignedOutLanding({
+  toggle = "link",
+}: {
+  toggle?: ToggleVariant;
+} = {}) {
   return (
     <div className={`hx3 ${archivo.variable} ${robotoMono.variable}`}>
       <style dangerouslySetInnerHTML={{ __html: css }} />
@@ -650,7 +719,7 @@ export function SignedOutLanding() {
         <header className="top">
           <span className="mono">Haruspex</span>
           <span className="masthead-tools">
-            <LandingThemeToggle />
+            {toggle !== "colophon" && <LandingThemeToggle variant={toggle} />}
             <Link className="btn small" href="/login">
               Sign in
             </Link>
@@ -739,6 +808,12 @@ export function SignedOutLanding() {
             <span className="stock-dark">
               Warm White + Bright Red on Warm Black
             </span>
+            {toggle === "colophon" && (
+              <>
+                {" · "}
+                <LandingThemeToggle variant="colophon" />
+              </>
+            )}
           </p>
         </div>
       </div>
