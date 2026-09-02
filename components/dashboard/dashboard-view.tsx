@@ -1,31 +1,15 @@
 import Link from "next/link";
-import { Archivo, Roboto_Mono } from "next/font/google";
-
 /**
  * The signed-in dashboard, in the landing page's print language. Presentation
  * only — see riso-dashboard.tsx for the data it is fed.
  *
- * Two layouts while we choose between them:
- *   "c" — your position is the big number per competition, leaders caption it
- *   "a" — a ruled ledger: leaders on the left, your position in the right margin
+ * Your standing is the argument, so it gets the big number; the leaders are its
+ * caption. Everything else on the sheet is set quieter than that.
  *
- * NOTE: this carries its own copy of the shared print tokens (scoped to `hxd`).
- * Once a layout is chosen, that core should be factored out of here and
- * components/signed-out-landing.tsx into one module.
+ * NOTE: the print tokens are read from the global --riso-* set; the rest of this
+ * (scoped to `hxd`) still duplicates a core that signed-out-landing.tsx also
+ * carries. Those two should be factored into one module.
  */
-
-const archivo = Archivo({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--hxd-sans",
-});
-const robotoMono = Roboto_Mono({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--hxd-mono",
-});
-
-export type DashboardLayout = "a" | "c";
 
 export interface Standing {
   id: number;
@@ -52,15 +36,15 @@ export const ordinal = (n: number) =>
 
 const css = `
 .hxd {
-  --paper: oklch(95.8% 0.012 62);
-  --ink: oklch(21% 0.022 32);
-  --red: oklch(57% 0.165 22);
-  --red-text: oklch(52% 0.16 22);
+  --paper: var(--riso-paper);
+  --ink: var(--riso-ink);
+  --red: var(--riso-red);
+  --red-text: var(--riso-red-text);
   --rule: color-mix(in oklab, var(--ink) 22%, transparent);
   --ink-muted: color-mix(in oklab, var(--ink) 70%, transparent);
   --offset: 6px;
 
-  font-family: var(--hxd-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
   background: var(--paper);
   color: var(--ink);
   min-height: 100dvh;
@@ -69,13 +53,6 @@ const css = `
   line-height: 1.6;
 }
 body:has(.hxd) { background: var(--paper); }
-.dark body:has(.hxd) { background: oklch(18.5% 0.014 45); }
-.dark .hxd {
-  --paper: oklch(18.5% 0.014 45);
-  --ink: oklch(93% 0.014 68);
-  --red: oklch(57% 0.165 22);
-  --red-text: oklch(64% 0.17 24);
-}
 
 /* the stock's tooth, screened at 45 degrees */
 .hxd::before {
@@ -101,7 +78,7 @@ body:has(.hxd) { background: var(--paper); }
 }
 
 .hxd .mono {
-  font-family: var(--hxd-mono), ui-monospace, monospace;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
   font-size: 0.75rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -109,18 +86,10 @@ body:has(.hxd) { background: var(--paper); }
 .hxd .muted { color: var(--ink-muted); }
 .hxd .ink2 { color: var(--red-text); }
 
-.hxd .top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 2rem 0;
-  border-bottom: 3px solid var(--ink);
-  flex-wrap: wrap;
-}
 
+.hxd h2.kicker.first { margin-top: 3rem; }
 .hxd h2.kicker {
-  font-family: var(--hxd-mono), ui-monospace, monospace;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
   font-size: 0.75rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -187,83 +156,23 @@ body:has(.hxd) { background: var(--paper); }
   color: var(--ink-muted);
 }
 
-/* ---- layout C: rank first, leaders as its caption ---- */
-.hxd .c-rank { margin-top: 1.25rem; display: flex; align-items: baseline; gap: 1.25rem; flex-wrap: wrap; }
-.hxd .c-of { font-family: var(--hxd-mono), ui-monospace, monospace; font-size: 0.8125rem; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
-.hxd .c-leaders {
+/* ---- your standing, and the leaders that caption it ---- */
+.hxd .rank-row { margin-top: 1.25rem; display: flex; align-items: baseline; gap: 1.25rem; flex-wrap: wrap; }
+.hxd .of { font-family: var(--font-roboto-mono), ui-monospace, monospace; font-size: 0.8125rem; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+.hxd .leaders {
   margin-top: 1.25rem;
   padding-top: 1rem;
   border-top: 1px solid var(--rule);
   display: flex;
   gap: 0.5rem 2rem;
   flex-wrap: wrap;
-  font-family: var(--hxd-mono), ui-monospace, monospace;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
   font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
 }
-.hxd .c-leaders .who { color: var(--ink); }
-.hxd .c-leaders .n { color: var(--red-text); margin-right: 0.5rem; }
-.hxd .c-leaders .sc { color: var(--ink-muted); margin-left: 0.5rem; }
-
-/* ---- layout A: leaders on the left, rank in the right margin ---- */
-.hxd .a-body {
-  margin-top: 1.25rem;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 10rem;
-  gap: 2.5rem;
-  align-items: start;
-}
-@media (max-width: 44rem) { .hxd .a-body { grid-template-columns: 1fr; gap: 1.5rem; } }
-.hxd ul.board { list-style: none; margin: 0; padding: 0; }
-.hxd ul.board li {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  padding: 0.6875rem 0;
-  border-bottom: 1px solid var(--rule);
-  font-size: 1rem;
-}
-.hxd ul.board li:last-child { border-bottom: 0; }
-.hxd ul.board .n {
-  font-family: var(--hxd-mono), ui-monospace, monospace;
-  font-size: 0.8125rem;
-  color: var(--ink-muted);
-  flex: none;
-  width: 1.75rem;
-}
-.hxd ul.board .who { flex: 0 1 auto; min-width: 0; }
-.hxd ul.board .lead {
-  flex: 1;
-  height: 0;
-  border-bottom: 1px dotted var(--rule);
-  transform: translateY(-0.3em);
-  min-width: 1.5rem;
-}
-.hxd ul.board .sc {
-  flex: none;
-  font-family: var(--hxd-mono), ui-monospace, monospace;
-  font-size: 0.875rem;
-  font-variant-numeric: tabular-nums;
-}
-.hxd .a-you { text-align: right; }
-@media (max-width: 44rem) { .hxd .a-you { text-align: left; } }
-.hxd .a-you .label {
-  display: block;
-  font-family: var(--hxd-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
-  margin-top: 0.75rem;
-}
-.hxd .a-you .sc {
-  display: block;
-  font-family: var(--hxd-mono), ui-monospace, monospace;
-  font-size: 0.875rem;
-  color: var(--ink-muted);
-  font-variant-numeric: tabular-nums;
-  margin-top: 0.375rem;
-}
+.hxd .leaders .who { color: var(--ink); }
+.hxd .leaders .n { color: var(--red-text); margin-right: 0.5rem; }
+.hxd .leaders .sc { color: var(--ink-muted); margin-left: 0.5rem; }
 
 /* the row a closed season collapses to */
 .hxd .closed {
@@ -285,7 +194,7 @@ body:has(.hxd) { background: var(--paper); }
   min-width: 1.5rem;
 }
 .hxd .closed .fig {
-  font-family: var(--hxd-mono), ui-monospace, monospace;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
   font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
   flex: none;
@@ -312,7 +221,7 @@ body:has(.hxd) { background: var(--paper); }
 .hxd .item .meta {
   display: block;
   margin-top: 0.3125rem;
-  font-family: var(--hxd-mono), ui-monospace, monospace;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
   font-size: 0.6875rem;
   letter-spacing: 0.1em;
   color: var(--ink-muted);
@@ -335,28 +244,7 @@ function Rank({ n }: { n: number }) {
   );
 }
 
-function Leaders({ standing }: { standing: Standing }) {
-  return (
-    <ul className="board">
-      {standing.leaders.map((l, i) => (
-        <li key={l.userId}>
-          <span className="n">{String(i + 1).padStart(2, "0")}</span>
-          <span className="who">{l.userName}</span>
-          <i className="lead" aria-hidden="true" />
-          <span className="sc">{l.score.toFixed(3)}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function OpenSeason({
-  standing,
-  layout,
-}: {
-  standing: Standing;
-  layout: DashboardLayout;
-}) {
+function OpenSeason({ standing }: { standing: Standing }) {
   const { you, fieldSize } = standing;
   const href = `/competitions/${standing.id}`;
 
@@ -369,52 +257,29 @@ function OpenSeason({
         <span className="mono ink2">Open</span>
       </div>
 
-      {layout === "c" ? (
-        <>
-          <div className="c-rank">
-            {you ? <Rank n={you.rank} /> : <span className="rank-none">Not scored yet</span>}
-            {you && (
-              <span className="c-of">
-                of {fieldSize} · {you.score.toFixed(3)}
-              </span>
-            )}
-          </div>
-          {standing.leaders.length > 0 && (
-            <div className="c-leaders">
-              <span className="mono muted">Leading</span>
-              {standing.leaders.map((l, i) => (
-                <span key={l.userId}>
-                  <span className="n">{String(i + 1).padStart(2, "0")}</span>
-                  <span className="who">{l.userName}</span>
-                  <span className="sc">{l.score.toFixed(3)}</span>
-                </span>
-              ))}
-            </div>
-          )}
-        </>
-      ) : (
-        <div className="a-body">
-          {standing.leaders.length > 0 ? (
-            <Leaders standing={standing} />
-          ) : (
-            <p className="empty">No scores yet.</p>
-          )}
-          <div className="a-you">
-            {you ? (
-              <>
-                <Rank n={you.rank} />
-                <span className="label">Your position</span>
-                <span className="sc">
-                  {you.score.toFixed(3)} · of {fieldSize}
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="rank-none">—</span>
-                <span className="label">Not scored yet</span>
-              </>
-            )}
-          </div>
+      <div className="rank-row">
+        {you ? (
+          <Rank n={you.rank} />
+        ) : (
+          <span className="rank-none">Not scored yet</span>
+        )}
+        {you && (
+          <span className="of">
+            of {fieldSize} · {you.score.toFixed(3)}
+          </span>
+        )}
+      </div>
+
+      {standing.leaders.length > 0 && (
+        <div className="leaders">
+          <span className="mono muted">Leading</span>
+          {standing.leaders.map((l, i) => (
+            <span key={l.userId}>
+              <span className="n">{String(i + 1).padStart(2, "0")}</span>
+              <span className="who">{l.userName}</span>
+              <span className="sc">{l.score.toFixed(3)}</span>
+            </span>
+          ))}
         </div>
       )}
     </section>
@@ -443,37 +308,28 @@ function ClosedSeason({ standing }: { standing: Standing }) {
 }
 
 export function DashboardView({
-  userName,
   standings,
   resolved,
-  layout = "c",
 }: {
-  userName: string;
   standings: Standing[];
   resolved: ResolvedItem[];
-  layout?: DashboardLayout;
 }) {
   const open = standings.filter((s) => s.open);
   const closed = standings.filter((s) => !s.open);
 
   return (
-    <div className={`hxd ${archivo.variable} ${robotoMono.variable}`}>
+    <div className="hxd">
       <style dangerouslySetInnerHTML={{ __html: css }} />
 
       <div className="col">
-        <header className="top">
-          <span className="mono">Haruspex</span>
-          <span className="mono muted">{userName}</span>
-        </header>
-
-        <h2 className="kicker">Your competitions</h2>
+        <h2 className="kicker first">Your competitions</h2>
 
         {open.length === 0 && closed.length === 0 && (
           <p className="empty">You&apos;re not in a competition yet.</p>
         )}
 
         {open.map((s) => (
-          <OpenSeason key={s.id} standing={s} layout={layout} />
+          <OpenSeason key={s.id} standing={s} />
         ))}
 
         {closed.length > 0 && (

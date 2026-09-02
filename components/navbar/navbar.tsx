@@ -6,7 +6,6 @@ import {
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 
 import ThemeToggle from "./theme-toggle";
@@ -143,7 +142,7 @@ export default function NavBar() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="riso-nav">
       <div className="flex h-16 items-center justify-between px-4 w-full">
         {/* Desktop Navigation */}
         <div className="flex items-center justify-start">
@@ -154,20 +153,23 @@ export default function NavBar() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="md:hidden h-8 w-8"
+                  className="riso-icon-btn md:hidden mr-3"
                 >
                   <Menu className="h-6 w-6" />
                   <span className="sr-only">Toggle menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+              <SheetContent
+                side="left"
+                className="riso-surface w-[300px] border-r-[3px] sm:w-[400px]"
+              >
                 <SheetHeader>
                   <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                   <SheetClose asChild>
                     <Link
                       href="/"
-                      aria-label="Forecasting home"
-                      className="flex w-full items-center rounded-md px-2 py-2 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                      aria-label="Haruspex home"
+                      className="flex w-full items-center px-2 py-2"
                     >
                       <Wordmark />
                     </Link>
@@ -180,7 +182,7 @@ export default function NavBar() {
                         <Link href={link.href}>
                           <Button
                             variant="ghost"
-                            className="w-full justify-start h-12 text-base"
+                            className="riso-kicker h-12 w-full justify-start"
                           >
                             {link.label}
                           </Button>
@@ -202,14 +204,14 @@ export default function NavBar() {
 
           <Link
             href="/"
-            aria-label="Forecasting home"
-            className="inline-flex items-center rounded-md px-2 py-1.5 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+            aria-label="Haruspex home"
+            className="inline-flex items-center py-1.5 pr-2"
           >
             <Wordmark />
           </Link>
 
           {user && (
-            <div className="hidden md:flex items-center space-x-1 ml-4">
+            <div className="riso-navlinks hidden md:flex items-center space-x-1">
               <NavigationMenu>
                 <NavigationMenuList>
                   {links.map((link) =>
@@ -217,7 +219,7 @@ export default function NavBar() {
                       <NavigationMenuItem key={link.href}>
                         <NavigationMenuLink
                           href={link.href}
-                          className={navigationMenuTriggerStyle()}
+                          className="riso-kicker"
                         >
                           {link.label}
                         </NavigationMenuLink>
@@ -233,7 +235,7 @@ export default function NavBar() {
         </div>
 
         {/* Right side actions */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-3">
           <ThemeToggle />
           <UserStatus />
         </div>

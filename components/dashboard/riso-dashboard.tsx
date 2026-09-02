@@ -5,12 +5,9 @@ import { isBinaryForecast } from "@/lib/binary-forecast";
 import type { VUser } from "@/types/db_types";
 import {
   DashboardView,
-  type DashboardLayout,
   type ResolvedItem,
   type Standing,
 } from "./dashboard-view";
-
-export type { DashboardLayout };
 
 /**
  * Data for the signed-in dashboard. Presentation lives in dashboard-view.tsx,
@@ -52,13 +49,7 @@ async function loadStandings(userId: number): Promise<Standing[]> {
   return standings.filter((s): s is Standing => s !== null);
 }
 
-export async function RisoDashboard({
-  user,
-  layout = "c",
-}: {
-  user: VUser;
-  layout?: DashboardLayout;
-}) {
+export async function RisoDashboard({ user }: { user: VUser }) {
   const [standings, resolvedResult] = await Promise.all([
     loadStandings(user.id),
     getRecentlyResolvedForecasts({ userId: user.id, limit: 4 }),
@@ -76,11 +67,6 @@ export async function RisoDashboard({
     : [];
 
   return (
-    <DashboardView
-      userName={user.name}
-      standings={standings}
-      resolved={resolved}
-      layout={layout}
-    />
+    <DashboardView standings={standings} resolved={resolved} />
   );
 }

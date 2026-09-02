@@ -289,3 +289,185 @@
     @apply bg-background text-foreground font-sans antialiased;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   The print language
+   ---------------------------------------------------------------------------
+   Two inks on stock, one registration error, hard edges. Defined here rather
+   than inside a page so the navbar can print in the same colours as the sheets
+   below it, and so the sheets stop each carrying their own copy of the values.
+   `--riso-red` does not change between editions: only the stock and the other
+   plate do. Shifting it would put a third ink on the page.
+*/
+@layer base {
+  :root {
+    --riso-paper: oklch(95.8% 0.012 62);
+    --riso-ink: oklch(21% 0.022 32);
+    --riso-red: oklch(57% 0.165 22);
+    /* prints darker than the drum, which is what clears AA at small sizes */
+    --riso-red-text: oklch(52% 0.16 22);
+  }
+
+  .dark {
+    --riso-paper: oklch(18.5% 0.014 45);
+    --riso-ink: oklch(93% 0.014 68);
+    --riso-red: oklch(57% 0.165 22);
+    --riso-red-text: oklch(64% 0.17 24);
+  }
+}
+
+/* Deliberately unlayered: Tailwind's utilities live in @layer utilities and
+   would otherwise beat these, leaving rounded corners and the indigo primary on
+   the chrome. Scoped tightly so the escape hatch stays contained. */
+
+.riso-nav {
+    --muted: color-mix(in oklab, var(--riso-ink) 70%, transparent);
+
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    width: 100%;
+    background: var(--riso-paper);
+    color: var(--riso-ink);
+    border-bottom: 3px solid var(--riso-ink);
+}
+
+/* the tooth carries across the chrome, so it reads as the same sheet */
+.riso-nav::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(var(--riso-ink) 0.7px, transparent 0.9px),
+      radial-gradient(var(--riso-ink) 0.7px, transparent 0.9px);
+    background-size: 8.5px 8.5px;
+    background-position: 0 0, 4.25px 4.25px;
+    opacity: 0.05;
+    pointer-events: none;
+}
+.riso-nav > * { position: relative; z-index: 1; }
+
+.riso-kicker {
+    font-family: var(--font-roboto-mono), ui-monospace, monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--riso-ink) 62%, transparent);
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0.5rem 0.75rem;
+    line-height: 1.2;
+    transition: color 140ms ease;
+}
+.riso-kicker:hover,
+.riso-kicker[data-state="open"] {
+    color: var(--riso-red-text);
+    background: none;
+}
+.riso-kicker:focus-visible {
+    outline: 2px solid var(--riso-red-text);
+    outline-offset: 2px;
+}
+
+/* nothing on a printed sheet has a rounded corner */
+.riso-nav button,
+.riso-nav a,
+.riso-nav [role="button"] {
+    border-radius: 0;
+}
+
+.riso-icon-btn {
+    border: 2px solid var(--riso-ink);
+    background: var(--riso-paper);
+    color: var(--riso-ink);
+    height: 2.25rem;
+    width: 2.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0;
+}
+.riso-icon-btn:hover {
+    background: var(--riso-ink);
+    color: var(--riso-paper);
+}
+
+/* dropdowns and the mobile drawer print on the same stock */
+.riso-surface {
+    background: var(--riso-paper);
+    color: var(--riso-ink);
+    border-color: color-mix(in oklab, var(--riso-ink) 22%, transparent);
+    border-radius: 0;
+}
+
+/* The press button: the black plate carries the outline and the label, the red
+   plate prints the fill and slips by the registration vector. Hover brings the
+   drums into register and floods the ink. */
+.riso-btn {
+  position: relative;
+  display: inline-block;
+  background: var(--riso-paper);
+  border: 2px solid var(--riso-ink);
+  color: var(--riso-ink);
+  border-radius: 0;
+  padding: 0.5rem 1.25rem;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  line-height: 1.4;
+}
+.riso-btn::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  background: var(--riso-red);
+  transform: translate(6px, 6px);
+  transition: transform 140ms ease;
+}
+.riso-btn:hover { background: var(--riso-ink); color: var(--riso-paper); }
+.riso-btn:hover::before { transform: none; }
+.riso-btn:focus-visible { outline: 2px solid var(--riso-ink); outline-offset: 4px; }
+
+/* the masthead outranks the links beside it: full ink against their 62% */
+.riso-wordmark {
+  color: var(--riso-ink);
+  font-weight: 600;
+}
+/* the rule lives on the link cluster, not the mark, so it can't dangle when
+   the cluster is absent (signed out) or hidden (below md). */
+.riso-nav .riso-navlinks {
+  margin-left: 1rem;
+  padding-left: 1rem;
+  border-left: 1px solid color-mix(in oklab, var(--riso-ink) 22%, transparent);
+}
+
+/* menus hanging off the chrome: same stock, same 2px plate, no rounding and no
+   shadow — depth on a printed sheet comes from the rule, not a drop shadow. */
+.riso-menu {
+  background: var(--riso-paper);
+  color: var(--riso-ink);
+  border: 2px solid var(--riso-ink);
+  border-radius: 0;
+  box-shadow: none;
+}
+.riso-menu-heading {
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--riso-red-text);
+}
+.riso-menu-item {
+  border-radius: 0;
+  color: var(--riso-ink);
+  background: none;
+}
+.riso-menu-item:hover,
+.riso-menu-item:focus-visible {
+  background: var(--riso-ink);
+  color: var(--riso-paper);
+}

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Archivo, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { NavBar } from "@/components/navbar";
 import { ThemeProvider } from "next-themes";
@@ -16,9 +16,22 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
 });
 
+// The print faces. Loaded once here rather than per page, so the navbar can use
+// them and the sheets stop instantiating their own copies.
+const archivo = Archivo({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-archivo",
+});
+const robotoMono = Roboto_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-roboto-mono",
+});
+
 export const metadata: Metadata = {
-  title: "Forecasting Tournament",
-  description: "So you think you can forecast?",
+  title: "Haruspex",
+  description: "Put a number on it.",
 };
 
 export default function RootLayout({
@@ -30,7 +43,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable}`}
+      className={`${geistSans.variable} ${geistMono.variable} ${archivo.variable} ${robotoMono.variable}`}
     >
       <body className="font-sans antialiased">
         <ThemeProvider attribute="class">
@@ -39,7 +52,6 @@ export default function RootLayout({
           <div className="w-full">{children}</div>
           <Toaster />
         </ThemeProvider>
-
       </body>
     </html>
   );

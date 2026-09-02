@@ -13,7 +13,6 @@ const PUBLIC_ROUTES = [
   "/oauth", // OAuth login and callback routes
   "/api/health",
   "/api/me", // Returns null if not logged in, used by client components
-  "/dashboard-preview", // TEMPORARY: fixture-only dashboard comparison; delete with the route
 ];
 
 const REFRESH_BUFFER_SEC = 60;

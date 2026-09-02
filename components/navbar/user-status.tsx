@@ -27,7 +27,7 @@ export function UserStatus() {
           alt={user.name}
           width={36}
           height={36}
-          className="h-9 w-9 rounded-full object-cover border border-border"
+          className="h-full w-full object-cover"
         />
       );
     }
@@ -46,13 +46,13 @@ export function UserStatus() {
             <Button
               variant={user.picture_url ? "ghost" : "outline"}
               size="icon"
-              className="h-9 w-9 overflow-hidden rounded-full p-0"
+              className="riso-icon-btn overflow-hidden p-0"
             >
               {renderUserIcon()}
               <span className="sr-only">User menu</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent align="end" className="riso-surface w-56">
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">{user.name}</p>
@@ -78,14 +78,16 @@ export function UserStatus() {
         // a shape/size shift once the user resolves.
         <div
           role="status"
-          className="h-9 w-9 animate-pulse rounded-full bg-muted"
+          className="h-9 w-9 animate-pulse bg-muted"
         >
           <span className="sr-only">Loading…</span>
         </div>
       ) : (
-        <Link href="/login">
-          <Button size="sm">Log in</Button>
-        </Link>
+        // Straight to the provider: /login is only a launcher. Plain <a>, since
+        // /oauth/login mints PKCE cookies and Link would prefetch that.
+        <a className="riso-btn" href="/oauth/login">
+          Sign in
+        </a>
       )}
     </div>
   );

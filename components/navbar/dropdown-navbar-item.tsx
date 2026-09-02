@@ -19,7 +19,7 @@ function LinkItem({ href, label, icon }: NavLink) {
       <NavigationMenuLink asChild>
         <Link
           href={href}
-          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+          className="riso-menu-item block select-none space-y-1 p-3 leading-none no-underline outline-none transition-colors"
         >
           <div className="flex items-center space-x-2">
             {icon}
@@ -36,15 +36,15 @@ export function DropdownNavbarItem({
 }: DropdownNavbarItemProps) {
   return (
     <NavigationMenuItem>
-      <NavigationMenuTrigger className="h-9 px-3 py-1">
+      <NavigationMenuTrigger className="riso-kicker h-9 px-3 py-1">
         {label}
       </NavigationMenuTrigger>
-      <NavigationMenuContent>
+      <NavigationMenuContent className="riso-menu">
         {sections ? (
           <div className="flex w-max max-w-[600px] gap-4 p-4">
             {sections.map((section) => (
               <div key={section.heading} className="flex-1">
-                <h4 className="mb-2 px-3 text-sm font-semibold text-muted-foreground">
+                <h4 className="riso-menu-heading mb-2 px-3">
                   {section.heading}
                 </h4>
                 <ul className="grid gap-1">
