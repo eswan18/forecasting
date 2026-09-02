@@ -19,7 +19,11 @@ import { logger } from "@/lib/logger";
 import { withRLS, withRLSAction } from "@/lib/db-helpers";
 import { attachOptions } from "@/lib/attach-options";
 import { isChoiceKind, type PropKind } from "@/lib/prop-kind";
-import { validateOptionLabels } from "@/lib/choice-forecast";
+import {
+  validateChoiceOutcomes,
+  validateOptionLabels,
+  type OptionOutcome,
+} from "@/lib/choice-forecast";
 import { publishEvent } from "@/lib/pubsub/client";
 
 export async function getPropById(
@@ -190,15 +194,28 @@ export async function getProps({
   }
 }
 
+/**
+ * Records a prop's outcome.
+ *
+ * Yes/no props resolve with a single `resolution` and no `outcomes`; choice
+ * props are the reverse, and their header row carries a null `resolution`
+ * (an `enforce_resolution_kind` trigger insists on that) with one
+ * `resolution_options` row per option. Header and children are written in the
+ * same transaction, so a rejected resolution leaves nothing behind.
+ */
 export async function resolveProp({
   propId,
   resolution,
+  outcomes,
   notes,
   userId,
   overwrite = false,
 }: {
   propId: number;
-  resolution: boolean;
+  /** Required for yes/no props, forbidden for choice ones. */
+  resolution?: boolean;
+  /** Required for choice props, forbidden for yes/no ones. */
+  outcomes?: OptionOutcome[];
   notes?: string;
   userId: number | null;
   overwrite?: boolean;
@@ -207,19 +224,71 @@ export async function resolveProp({
   logger.debug("Resolving prop", {
     propId,
     resolution,
+    outcomeCount: outcomes?.length,
     propUserId: userId,
     overwrite,
     currentUserId: currentUser?.id,
   });
 
   const startTime = Date.now();
+  // Captured inside the transaction so the success log can name the kind; the
+  // `resolution` field is undefined for choice props.
+  let resolvedKind: PropKind | undefined;
   try {
     const result = await withRLSAction(currentUser?.id, async (trx) => {
-      // first check that this prop doesn't already have a resolution
+      const prop = await trx
+        .selectFrom("v_props")
+        .select("prop_kind")
+        .where("prop_id", "=", propId)
+        .executeTakeFirst();
+      if (!prop) {
+        return error("Proposition not found", ERROR_CODES.NOT_FOUND);
+      }
+
+      const kind = prop.prop_kind;
+      resolvedKind = kind;
+      const choice = isChoiceKind(kind);
+      if (!choice && (resolution === undefined || outcomes !== undefined)) {
+        return error(
+          "Yes/no propositions resolve with a single true/false",
+          ERROR_CODES.VALIDATION_ERROR,
+        );
+      }
+      if (choice && (outcomes === undefined || resolution !== undefined)) {
+        return error(
+          "Choice propositions resolve with an outcome per option",
+          ERROR_CODES.VALIDATION_ERROR,
+        );
+      }
+
+      if (choice) {
+        const options = await trx
+          .selectFrom("prop_options")
+          .select("id")
+          .where("prop_id", "=", propId)
+          .execute();
+        const validationErrors = validateChoiceOutcomes(
+          kind,
+          options.map((o) => o.id),
+          outcomes!,
+        );
+        if (validationErrors.length > 0) {
+          logger.warn("Validation error resolving a choice prop", {
+            propId,
+            validationErrors,
+          });
+          return error(
+            validationErrors.join("; "),
+            ERROR_CODES.VALIDATION_ERROR,
+          );
+        }
+      }
+
+      // Then check that this prop doesn't already have a resolution.
       const existingResolution = await trx
         .selectFrom("resolutions")
         .where("prop_id", "=", propId)
-        .select("resolution")
+        .select(["id", "resolution"])
         .executeTakeFirst();
       if (!!existingResolution && !overwrite) {
         logger.warn("Attempted to resolve prop that already has resolution", {
@@ -233,24 +302,53 @@ export async function resolveProp({
         );
       }
 
+      // Choice props hold their outcome in the child rows, not the header.
+      const headerValue = choice ? null : resolution!;
+      let resolutionId: number;
       if (existingResolution) {
         // Update the existing record.
-        await trx
+        const updated = await trx
           .updateTable("resolutions")
-          .set({ resolution, notes })
+          .set({ resolution: headerValue, notes })
           .where("prop_id", "=", propId)
-          .execute();
-        logger.debug("Updated existing resolution", { propId, resolution });
+          .returning("id")
+          .executeTakeFirstOrThrow();
+        resolutionId = updated.id;
+        logger.debug("Updated existing resolution", { propId, kind });
       } else {
         // Insert a new record.
         const record: NewResolution = {
           prop_id: propId,
-          resolution,
+          resolution: headerValue,
           user_id: userId,
           notes,
         };
-        await trx.insertInto("resolutions").values(record).execute();
-        logger.debug("Created new resolution", { propId, resolution });
+        const inserted = await trx
+          .insertInto("resolutions")
+          .values(record)
+          .returning("id")
+          .executeTakeFirstOrThrow();
+        resolutionId = inserted.id;
+        logger.debug("Created new resolution", { propId, kind });
+      }
+
+      if (choice) {
+        // Overwriting replaces the whole set, so clear it before reinserting.
+        await trx
+          .deleteFrom("resolution_options")
+          .where("resolution_id", "=", resolutionId)
+          .execute();
+        await trx
+          .insertInto("resolution_options")
+          .values(
+            outcomes!.map((o) => ({
+              resolution_id: resolutionId,
+              prop_id: propId,
+              option_id: o.optionId,
+              outcome: o.outcome,
+            })),
+          )
+          .execute();
       }
 
       return success(undefined);
@@ -262,7 +360,9 @@ export async function resolveProp({
         operation: "resolveProp",
         table: "resolutions",
         propId,
+        kind: resolvedKind,
         resolution,
+        outcomeCount: outcomes?.length,
         duration,
       });
       revalidatePath("/props");

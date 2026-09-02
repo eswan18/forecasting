@@ -8,6 +8,8 @@ import {
 } from "../../tests/helpers/testUtils";
 
 let createProp: typeof import("./props").createProp;
+let resolveProp: typeof import("./props").resolveProp;
+let unresolveProp: typeof import("./props").unresolveProp;
 
 // `props.ts` transitively imports the server-only `attachOptions` helper.
 vi.mock("server-only", () => ({}));
@@ -141,6 +143,239 @@ describe("createProp against the database", () => {
         expect(result.code).toBe("VALIDATION_ERROR");
       }
       expect(await propsWithText(text)).toEqual([]);
+    },
+  );
+});
+
+/**
+ * `resolveProp` against a real PostgreSQL: the header/children split for
+ * choice props, the delete-and-reinsert on an overwrite, and the fact that a
+ * rejected resolution writes nothing at all.
+ */
+describe("resolveProp against the database", () => {
+  let testDb: any;
+  let factory: TestDataFactory;
+
+  beforeEach(async () => {
+    if (shouldRunContainerTests()) {
+      testDb = await getTestDb();
+      factory = new TestDataFactory(testDb);
+      vi.clearAllMocks();
+
+      const propsModule = await import("./props");
+      resolveProp = propsModule.resolveProp;
+      unresolveProp = propsModule.unresolveProp;
+    } else {
+      vi.clearAllMocks();
+    }
+  });
+
+  /** The prop's resolution header, tracked for cleanup if it exists. */
+  async function storedHeader(propId: number) {
+    const row = await testDb
+      .selectFrom("resolutions")
+      .select(["id", "resolution", "notes", "user_id"])
+      .where("prop_id", "=", propId)
+      .executeTakeFirst();
+    // Resolutions written by the action are not tracked by the factory.
+    if (row) getTestTracker().trackId("resolutions", row.id);
+    return row;
+  }
+
+  /** Every outcome row for the prop, whatever resolution they hang off. */
+  async function storedOutcomes(propId: number) {
+    return testDb
+      .selectFrom("resolution_options")
+      .select(["resolution_id", "option_id", "outcome"])
+      .where("prop_id", "=", propId)
+      .orderBy("option_id")
+      .execute();
+  }
+
+  ifRunningContainerTestsIt(
+    "writes a null header and one outcome row per option for a one_of prop",
+    async () => {
+      const admin = await factory.createAdminUser();
+      vi.mocked(getUserFromCookies).mockResolvedValue(admin);
+      const { prop, options } = await factory.createChoiceProp("one_of", [
+        "Knicks",
+        "Spurs",
+        "Nets",
+      ]);
+
+      const result = await resolveProp({
+        propId: prop.id,
+        outcomes: [
+          { optionId: options[0].id, outcome: false },
+          { optionId: options[1].id, outcome: true },
+          { optionId: options[2].id, outcome: false },
+        ],
+        notes: "Spurs took it",
+        userId: admin.id,
+      });
+
+      expect(result.success).toBe(true);
+
+      // The header carries no resolution of its own — the
+      // enforce_resolution_kind trigger insists on that for choice props.
+      const header = await storedHeader(prop.id);
+      expect(header.resolution).toBeNull();
+      expect(header.notes).toBe("Spurs took it");
+      expect(header.user_id).toBe(admin.id);
+
+      expect(await storedOutcomes(prop.id)).toEqual([
+        {
+          resolution_id: header.id,
+          option_id: options[0].id,
+          outcome: false,
+        },
+        { resolution_id: header.id, option_id: options[1].id, outcome: true },
+        {
+          resolution_id: header.id,
+          option_id: options[2].id,
+          outcome: false,
+        },
+      ]);
+    },
+  );
+
+  ifRunningContainerTestsIt(
+    "replaces the outcome rows when overwriting with a different winner",
+    async () => {
+      const admin = await factory.createAdminUser();
+      vi.mocked(getUserFromCookies).mockResolvedValue(admin);
+      const { prop, options } = await factory.createChoiceProp("one_of", [
+        "Knicks",
+        "Spurs",
+      ]);
+      await factory.createChoiceResolution(prop.id, [
+        { optionId: options[0].id, outcome: true },
+        { optionId: options[1].id, outcome: false },
+      ]);
+
+      const result = await resolveProp({
+        propId: prop.id,
+        outcomes: [
+          { optionId: options[0].id, outcome: false },
+          { optionId: options[1].id, outcome: true },
+        ],
+        notes: "Corrected",
+        userId: admin.id,
+        overwrite: true,
+      });
+
+      expect(result.success).toBe(true);
+
+      // One header, one row per option: the old children were deleted rather
+      // than left alongside the new ones.
+      const headers = await testDb
+        .selectFrom("resolutions")
+        .select("id")
+        .where("prop_id", "=", prop.id)
+        .execute();
+      expect(headers).toHaveLength(1);
+
+      const header = await storedHeader(prop.id);
+      expect(header.resolution).toBeNull();
+      expect(header.notes).toBe("Corrected");
+      expect(await storedOutcomes(prop.id)).toEqual([
+        {
+          resolution_id: header.id,
+          option_id: options[0].id,
+          outcome: false,
+        },
+        { resolution_id: header.id, option_id: options[1].id, outcome: true },
+      ]);
+    },
+  );
+
+  ifRunningContainerTestsIt(
+    "accepts an any_of prop resolved with every option false",
+    async () => {
+      const admin = await factory.createAdminUser();
+      vi.mocked(getUserFromCookies).mockResolvedValue(admin);
+      const { prop, options } = await factory.createChoiceProp("any_of", [
+        "Rain",
+        "Snow",
+      ]);
+
+      const result = await resolveProp({
+        propId: prop.id,
+        outcomes: [
+          { optionId: options[0].id, outcome: false },
+          { optionId: options[1].id, outcome: false },
+        ],
+        userId: admin.id,
+      });
+
+      expect(result.success).toBe(true);
+      const header = await storedHeader(prop.id);
+      expect(header.resolution).toBeNull();
+      expect(await storedOutcomes(prop.id)).toEqual([
+        {
+          resolution_id: header.id,
+          option_id: options[0].id,
+          outcome: false,
+        },
+        {
+          resolution_id: header.id,
+          option_id: options[1].id,
+          outcome: false,
+        },
+      ]);
+    },
+  );
+
+  ifRunningContainerTestsIt(
+    "rejects a one_of prop with two winners and writes nothing",
+    async () => {
+      const admin = await factory.createAdminUser();
+      vi.mocked(getUserFromCookies).mockResolvedValue(admin);
+      const { prop, options } = await factory.createChoiceProp("one_of", [
+        "Knicks",
+        "Spurs",
+      ]);
+
+      const result = await resolveProp({
+        propId: prop.id,
+        outcomes: [
+          { optionId: options[0].id, outcome: true },
+          { optionId: options[1].id, outcome: true },
+        ],
+        userId: admin.id,
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe("VALIDATION_ERROR");
+        expect(result.error).toContain("exactly one");
+      }
+      expect(await storedHeader(prop.id)).toBeUndefined();
+      expect(await storedOutcomes(prop.id)).toEqual([]);
+    },
+  );
+
+  ifRunningContainerTestsIt(
+    "unresolveProp removes a choice resolution and its outcome rows",
+    async () => {
+      const admin = await factory.createAdminUser();
+      vi.mocked(getUserFromCookies).mockResolvedValue(admin);
+      const { prop, options } = await factory.createChoiceProp("any_of", [
+        "Rain",
+        "Snow",
+      ]);
+      await factory.createChoiceResolution(prop.id, [
+        { optionId: options[0].id, outcome: true },
+        { optionId: options[1].id, outcome: false },
+      ]);
+      expect(await storedOutcomes(prop.id)).toHaveLength(2);
+
+      const result = await unresolveProp({ propId: prop.id });
+
+      expect(result.success).toBe(true);
+      expect(await storedHeader(prop.id)).toBeUndefined();
+      // The composite foreign key cascades the children away with the header.
+      expect(await storedOutcomes(prop.id)).toEqual([]);
     },
   );
 });
