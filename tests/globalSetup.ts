@@ -1,6 +1,6 @@
 import { PostgreSqlContainer } from "@testcontainers/postgresql";
 import { Pool } from "pg";
-import { Kysely, PostgresDialect } from "kysely";
+import { Kysely, PostgresDialect, sql } from "kysely";
 import { createMigrator } from "./helpers/migrator";
 import { Database } from "@/types/db_types";
 
@@ -67,8 +67,33 @@ export async function setup() {
       }
     }
 
+    // Create a second, non-owner login role for row-level-security tests.
+    //
+    // Every other test connects as `test_user`, which owns every table and so
+    // bypasses RLS entirely (a table owner is exempt unless the table uses
+    // FORCE ROW LEVEL SECURITY). `app_user` owns nothing and only holds the
+    // GRANTs below, so policies actually apply to it — this is what lets
+    // tests/integration/choice-props-rls.integration.test.ts assert behaviour
+    // rather than mere policy presence. The GRANTs run after migrations so
+    // that "ALL TABLES"/"ALL SEQUENCES" covers the tables they created.
+    // The RLS helper functions (current_user_id, is_competition_member, ...)
+    // are SECURITY DEFINER and owned by test_user, and EXECUTE is granted to
+    // PUBLIC by default, so app_user can call them.
+    console.log("Creating non-owner RLS test role...");
+    await sql`CREATE ROLE app_user LOGIN PASSWORD 'app_password'`.execute(
+      globalDb,
+    );
+    await sql`GRANT USAGE ON SCHEMA public TO app_user`.execute(globalDb);
+    await sql`GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_user`.execute(
+      globalDb,
+    );
+    await sql`GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO app_user`.execute(
+      globalDb,
+    );
+
     // Store connection info in environment variables that tests can access
     process.env.TEST_DATABASE_URL = connectionString;
+    process.env.TEST_RLS_DATABASE_URL = `postgresql://app_user:app_password@${globalContainer.getHost()}:${globalContainer.getPort()}/${globalContainer.getDatabase()}`;
 
     console.log("Global test database setup complete");
   } catch (error: any) {

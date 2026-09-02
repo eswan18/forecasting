@@ -94,7 +94,7 @@ export default async function Page({
     }
 
     const userForecastCount = propsWithForecastsResult.data.filter(
-      (p) => p.user_forecast !== null
+      (p) => p.user_forecast_id !== null
     ).length;
 
     return (
@@ -168,7 +168,7 @@ export default async function Page({
   }
 
   const userForecastCount = propsWithForecastsResult.data.filter(
-    (p) => p.user_forecast !== null
+    (p) => p.user_forecast_id !== null
   ).length;
 
   return (

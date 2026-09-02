@@ -117,7 +117,34 @@ describe("getPropStatusLabel", () => {
     ["unresolved", "Unresolved"],
     ["resolved-yes", "Yes"],
     ["resolved-no", "No"],
+    ["resolved", "Resolved"],
   ])("should return correct label for %s", (status, expected) => {
     expect(getPropStatusLabel(status)).toBe(expected);
+  });
+});
+
+describe("choice props", () => {
+  it("returns resolved when isResolved is set and there is no boolean resolution", () => {
+    expect(getPropStatus(null, null, { isResolved: true })).toBe("resolved");
+    expect(getPropStatus(new Date(0), null, { isResolved: true })).toBe(
+      "resolved",
+    );
+  });
+
+  it("a boolean resolution still wins", () => {
+    expect(getPropStatus(null, true, { isResolved: true })).toBe("resolved-yes");
+  });
+
+  it("getPropStatusFromProp reads resolution_id", () => {
+    expect(getPropStatusFromProp({ resolution: null, resolution_id: 7 })).toBe(
+      "resolved",
+    );
+    expect(
+      getPropStatusFromProp({ resolution: null, resolution_id: null }),
+    ).toBe("open");
+  });
+
+  it("labels resolved as Resolved", () => {
+    expect(getPropStatusLabel("resolved")).toBe("Resolved");
   });
 });

@@ -12,63 +12,40 @@ import { createForecast, updateForecast } from "@/lib/db_actions";
 import { useServerAction } from "@/hooks/use-server-action";
 import { PropEditDialog } from "@/components/dialogs/prop-edit-dialog";
 import { Spinner } from "@/components/ui/spinner";
+import { isChoiceKind } from "@/lib/prop-kind";
 import { cn, focusRing } from "@/lib/utils";
+import { EditableChoiceForecastCard } from "./editable-choice-forecast-card";
+import { PercentInput } from "./percent-input";
 
 interface EditableForecastCardProps {
   prop: PropWithUserForecast;
   onForecastUpdate?: () => void;
 }
 
-// Raw number entry for the forecast percentage (0–100). Commits on Enter/blur,
-// Escape reverts; while unfocused it mirrors the current value.
-function PercentInput({
-  value,
-  onChange,
-}: {
-  value: number | null;
-  onChange: (v: number) => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState("");
-  const formatted = value == null ? "" : String(Math.round(value * 100));
-  const display = editing ? draft : formatted;
-
-  const commit = () => {
-    setEditing(false);
-    const n = Number(draft);
-    if (draft.trim() === "" || Number.isNaN(n)) return;
-    onChange(Math.max(0, Math.min(100, Math.round(n))) / 100);
-  };
-
-  return (
-    <label className="inline-flex items-center rounded-md border border-input bg-background px-2 py-1 focus-within:ring-2 focus-within:ring-ring/40">
-      <input
-        value={display}
-        inputMode="numeric"
-        placeholder="––"
-        aria-label="Forecast percentage"
-        onFocus={() => {
-          setDraft(formatted);
-          setEditing(true);
-        }}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={commit}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            e.currentTarget.blur();
-          } else if (e.key === "Escape") {
-            setEditing(false);
-            e.currentTarget.blur();
-          }
-        }}
-        className="w-10 bg-transparent text-right text-lg font-bold leading-none text-foreground outline-none"
+/**
+ * A forecastable prop card. Binary props get the needle and a single % box;
+ * choice props get a row-per-option editor. The two kinds keep their state in
+ * different shapes, so they are separate components rather than one body full
+ * of branches — this dispatcher holds no state of its own.
+ */
+export function EditableForecastCard({
+  prop,
+  onForecastUpdate,
+}: EditableForecastCardProps) {
+  if (isChoiceKind(prop.prop_kind)) {
+    return (
+      <EditableChoiceForecastCard
+        prop={prop}
+        onForecastUpdate={onForecastUpdate}
       />
-      <span className="text-lg font-bold leading-none text-foreground">%</span>
-    </label>
+    );
+  }
+  return (
+    <EditableBinaryForecastCard prop={prop} onForecastUpdate={onForecastUpdate} />
   );
 }
 
-export function EditableForecastCard({
+function EditableBinaryForecastCard({
   prop,
   onForecastUpdate,
 }: EditableForecastCardProps) {
@@ -216,10 +193,12 @@ export function EditableForecastCard({
         </div>
       </div>
 
-      {user?.is_admin && (
+      {/* Mounted only while open, so the dialog's `useState` initialisers
+          re-seed from the prop each time it is opened. */}
+      {user?.is_admin && isEditDialogOpen && (
         <PropEditDialog
           prop={prop}
-          isOpen={isEditDialogOpen}
+          isOpen
           onClose={() => {
             setIsEditDialogOpen(false);
             onForecastUpdate?.();

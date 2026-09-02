@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { useServerAction } from "@/hooks/use-server-action";
@@ -18,9 +18,22 @@ import { useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Category, Competition, VProp } from "@/types/db_types";
 import { getUserFromCookies } from "@/lib/get-user";
+import { isChoiceKind } from "@/lib/prop-kind";
 import { PropFormFields } from "./prop-form-fields";
+import {
+  propKindSchema,
+  propOptionsSchema,
+  refineKindOptions,
+} from "./prop-form-schema";
 
-export const propFormSchema = z
+/**
+ * Everything except the kind/options coupling. That coupling is a create-time
+ * concern only: an edit sends neither field (the kind is fixed at creation and
+ * option labels are edited elsewhere), and this form is never handed an
+ * existing choice prop's labels — requiring them here would make every choice
+ * prop uneditable.
+ */
+const propFormBaseSchema = z
   .object({
     text: z.string().min(8).max(1000),
     notes: z
@@ -31,6 +44,8 @@ export const propFormSchema = z
     category_id: z.number().nullable(),
     competition_id: z.number().nullable(),
     user_id: z.number().nullable(),
+    kind: propKindSchema,
+    options: propOptionsSchema,
   })
   .refine((data) => data.competition_id === null || data.user_id === null, {
     message: "Props associated with a competition must be public.",
@@ -48,6 +63,8 @@ export const propFormSchema = z
       path: ["category_id"],
     },
   );
+
+export const propFormSchema = propFormBaseSchema.superRefine(refineKindOptions);
 
 export type PropFormValues = z.infer<typeof propFormSchema>;
 
@@ -71,6 +88,7 @@ export function CreateEditPropForm({
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [canEditPublicProps, setCanEditPublicProps] = useState(false);
   const initialUserId = initialProp?.prop_user_id || defaultUserId;
+  const isEditing = initialProp !== undefined;
 
   const createPropAction = useServerAction(createProp, {
     successMessage: "Prop Created!",
@@ -86,8 +104,15 @@ export function CreateEditPropForm({
     },
   });
 
+  // See the comment on `propFormBaseSchema`.
+  const resolver = useMemo(
+    () =>
+      isEditing ? zodResolver(propFormBaseSchema) : zodResolver(propFormSchema),
+    [isEditing],
+  );
+
   const form = useForm<PropFormValues>({
-    resolver: zodResolver(propFormSchema),
+    resolver,
     defaultValues: {
       text: initialProp?.prop_text ?? "",
       notes: initialProp?.prop_notes || null,
@@ -95,6 +120,9 @@ export function CreateEditPropForm({
       competition_id:
         defaultCompetitionId ?? initialProp?.competition_id ?? null,
       user_id: initialUserId ?? null,
+      kind: initialProp?.prop_kind ?? "binary",
+      // The Type select seeds these when the kind becomes a choice kind.
+      options: [],
     },
   });
 
@@ -117,13 +145,21 @@ export function CreateEditPropForm({
   }, []);
 
   async function handleSubmit(values: PropFormValues) {
+    const { kind, options, ...propFields } = values;
     if (initialProp) {
+      // `updateProp` rejects any update carrying a kind, and a prop update has
+      // no options field: an edit sends neither.
       await updatePropAction.execute({
         id: initialProp.prop_id,
-        prop: { ...values },
+        prop: propFields,
       });
     } else {
-      await createPropAction.execute({ prop: values });
+      await createPropAction.execute({
+        prop: { ...propFields, kind },
+        options: isChoiceKind(kind)
+          ? options.map((option) => option.text)
+          : undefined,
+      });
     }
   }
 
@@ -144,6 +180,7 @@ export function CreateEditPropForm({
           competitions={competitions}
           initialUserId={initialUserId}
           canEditPublicProps={canEditPublicProps}
+          isEditing={isEditing}
         />
 
         <Button

@@ -1,10 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { EditableForecastCard } from "./editable-forecast-card";
-import { makeProp } from "./forecast-card.fixtures";
+import {
+  ECONOMY_OPTIONS,
+  NBA_CHAMPION_OPTIONS,
+  makeProp,
+} from "./forecast-card.fixtures";
 
 // Note: in Storybook there's no logged-in user (the /api/me fetch returns
-// null), so the admin "edit prop" pencil is hidden. The Save / Cancel buttons
-// only appear once you change the forecast (type a new value in the % box).
+// null), so the admin "edit prop" pencil is hidden. On a binary prop the Save
+// / Cancel buttons only appear once you change the forecast (type a new value
+// in the % box); on a choice prop they are always there, with Save enabled
+// once the entry is complete and changed.
 // Saving is mocked — see .storybook/mocks/db_actions.ts.
 const meta = {
   title: "Forecast/EditableForecastCard",
@@ -85,6 +91,38 @@ export const LongNotes: Story = {
       user_forecast_id: 10,
       prop_notes:
         "Resolution uses the seasonally adjusted figures published by each country's primary national statistics office; preliminary estimates count, and later revisions will not change a resolution once it has been finalized by the competition admins.",
+    }),
+  },
+};
+
+// A `one_of` prop: one row per team, and Save stays disabled until the entered
+// percentages total exactly 100.
+export const PickOneChoice: Story = {
+  args: {
+    prop: makeProp({
+      prop_text: "Which team wins the NBA championship?",
+      prop_notes: "Resolves when the finals end.",
+      prop_kind: "one_of",
+      options: NBA_CHAMPION_OPTIONS,
+      user_forecast: null,
+      community_average: null,
+      user_forecast_id: null,
+    }),
+  },
+};
+
+// An `any_of` prop: the options are independent, so there is no running total
+// and Save only needs every row filled in.
+export const AnyThatApplyChoice: Story = {
+  args: {
+    prop: makeProp({
+      prop_text: "Which of these happen to the economy this year?",
+      prop_notes: "Each option resolves on its own.",
+      prop_kind: "any_of",
+      options: ECONOMY_OPTIONS,
+      user_forecast: null,
+      community_average: null,
+      user_forecast_id: 10,
     }),
   },
 };

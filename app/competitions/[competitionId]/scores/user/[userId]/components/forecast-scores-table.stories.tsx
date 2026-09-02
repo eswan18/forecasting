@@ -39,6 +39,8 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // Grouped by category (the default). Each category band shows its aggregate
-// penalty; rows are sorted worst-penalty-first. Flip the switch to see the
-// flat, penalty-ranked view.
+// penalty; rows are sorted worst-penalty-first. Sports and Economics each carry
+// a choice prop — a `one_of` row (Forecast = the probability on the winner) and
+// an `any_of` row (Forecast = "—", Resolution = the realized labels). Flip the
+// switch to see the flat, penalty-ranked view.
 export const Default: Story = {};

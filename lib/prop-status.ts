@@ -9,11 +9,18 @@ export type PropStatus =
   | "open" // Can still forecast
   | "unresolved" // Past deadline, awaiting resolution
   | "resolved-yes" // Resolved as true
-  | "resolved-no"; // Resolved as false
+  | "resolved-no" // Resolved as false
+  | "resolved"; // Resolved, but without a yes/no answer (choice props)
 
 export interface PropStatusOptions {
   /** Current date for testing (default: new Date()) */
   currentDate?: Date;
+  /**
+   * Whether the prop has been resolved without a boolean resolution.
+   * Choice props record their outcome via resolution_id, leaving
+   * `resolution` null, so callers pass this to get "resolved".
+   */
+  isResolved?: boolean;
 }
 
 /**
@@ -46,6 +53,11 @@ export function getPropStatus(
     return resolution ? "resolved-yes" : "resolved-no";
   }
 
+  // Choice props resolve without a boolean, so they get a plain "resolved"
+  if (options?.isResolved) {
+    return "resolved";
+  }
+
   // No deadline means always open
   if (closeDate === null) {
     return "open";
@@ -71,6 +83,7 @@ export function getPropStatusFromProp(
     competition_forecasts_close_date?: Date | null;
     competition_is_private?: boolean | null;
     resolution: boolean | null;
+    resolution_id?: number | null;
   },
   options?: PropStatusOptions,
 ): PropStatus {
@@ -80,7 +93,10 @@ export function getPropStatusFromProp(
     ? (prop.prop_forecasts_due_date ?? null)
     : (prop.competition_forecasts_close_date ?? null);
 
-  return getPropStatus(closeDate, prop.resolution, options);
+  return getPropStatus(closeDate, prop.resolution, {
+    ...options,
+    isResolved: prop.resolution_id != null,
+  });
 }
 
 /**
@@ -96,5 +112,7 @@ export function getPropStatusLabel(status: PropStatus): string {
       return "Yes";
     case "resolved-no":
       return "No";
+    case "resolved":
+      return "Resolved";
   }
 }

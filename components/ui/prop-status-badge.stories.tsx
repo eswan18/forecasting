@@ -11,7 +11,13 @@ const meta = {
   argTypes: {
     status: {
       control: "select",
-      options: ["open", "unresolved", "resolved-yes", "resolved-no"],
+      options: [
+        "open",
+        "unresolved",
+        "resolved-yes",
+        "resolved-no",
+        "resolved",
+      ],
       description: "The lifecycle status of the prop",
     },
     label: {
@@ -49,6 +55,13 @@ export const ResolvedNo: Story = {
   },
 };
 
+// Choice props resolve without a yes/no answer
+export const Resolved: Story = {
+  args: {
+    status: "resolved",
+  },
+};
+
 // All states comparison
 export const AllStates: Story = {
   args: {
@@ -60,6 +73,7 @@ export const AllStates: Story = {
       <PropStatusBadge status="unresolved" />
       <PropStatusBadge status="resolved-yes" />
       <PropStatusBadge status="resolved-no" />
+      <PropStatusBadge status="resolved" />
     </div>
   ),
 };

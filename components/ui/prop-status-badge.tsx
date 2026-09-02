@@ -14,6 +14,7 @@ const propStatusBadgeVariants = cva(
           "border-transparent bg-primary text-primary-foreground shadow-sm",
         "resolved-no":
           "border-transparent bg-destructive text-destructive-foreground shadow-sm",
+        resolved: "border-transparent bg-primary text-primary-foreground",
       },
     },
     defaultVariants: {

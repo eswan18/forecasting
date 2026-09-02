@@ -42,13 +42,15 @@ export function ForecastablePropsTable({
       const matchesCategory =
         selectedCategory === "all" || prop.category_name === selectedCategory;
 
-      // Forecast status filter
+      // Forecast status filter. `user_forecast_id` rather than
+      // `user_forecast`: the latter is null for a choice prop even once the
+      // user has forecasted every option.
       const matchesForecastStatus =
         selectedForecastStatus === "all" ||
         (selectedForecastStatus === "forecasted" &&
-          prop.user_forecast !== null) ||
+          prop.user_forecast_id !== null) ||
         (selectedForecastStatus === "unforecasted" &&
-          prop.user_forecast === null);
+          prop.user_forecast_id === null);
 
       return matchesSearch && matchesCategory && matchesForecastStatus;
     });
@@ -56,7 +58,7 @@ export function ForecastablePropsTable({
 
   // Calculate progress for forecasts
   const completedForecasts = props.filter(
-    (prop) => prop.user_forecast !== null,
+    (prop) => prop.user_forecast_id !== null,
   ).length;
   const totalProps = props.length;
   const remainingForecasts = totalProps - completedForecasts;

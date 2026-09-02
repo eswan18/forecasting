@@ -2,10 +2,12 @@ import { getForecasts, getPropById } from "@/lib/db_actions";
 import { isBinaryForecast } from "@/lib/binary-forecast";
 import { getCurrentUserRole } from "@/lib/db_actions/competition-members";
 import { getUserFromCookies } from "@/lib/get-user";
+import { isChoiceKind } from "@/lib/prop-kind";
 import { Suspense } from "react";
 import ErrorPage from "@/components/pages/error-page";
 import { Spinner } from "@/components/ui/spinner";
 import PropPageHeader from "./prop-page-header";
+import PropOptionsTable from "./prop-options-table";
 import PropStatsRow from "./prop-stats-row";
 import ForecastDistributionChart from "./forecast-distribution-chart";
 import ForecastsList from "./forecasts-list";
@@ -94,26 +96,45 @@ async function PropPageContent({
           canEdit={canEdit}
         />
 
-        {/* Stats Row */}
-        <PropStatsRow
-          userForecast={userForecast?.forecast ?? null}
-          average={average}
-          forecasterCount={forecasts.length}
-          min={min}
-          max={max}
-        />
+        {isChoiceKind(prop.prop_kind) ? (
+          <>
+            {/* The stats row, distribution chart and forecaster list are all
+                shapes of a single probability, so a choice prop gets its
+                per-option table instead; see the spec §4.4. */}
+            <PropOptionsTable
+              kind={prop.prop_kind}
+              options={prop.options}
+              resolved={prop.resolution_id !== null}
+            />
+            <p className="mt-3 text-sm text-muted-foreground">
+              {forecasts.length}{" "}
+              {forecasts.length === 1 ? "forecaster" : "forecasters"}
+            </p>
+          </>
+        ) : (
+          <>
+            {/* Stats Row */}
+            <PropStatsRow
+              userForecast={userForecast?.forecast ?? null}
+              average={average}
+              forecasterCount={forecasts.length}
+              min={min}
+              max={max}
+            />
 
-        {/* Distribution Chart */}
-        <div className="mb-6">
-          <ForecastDistributionChart
-            forecasts={binaryForecasts}
-            userForecast={userForecast?.forecast ?? null}
-            average={average}
-          />
-        </div>
+            {/* Distribution Chart */}
+            <div className="mb-6">
+              <ForecastDistributionChart
+                forecasts={binaryForecasts}
+                userForecast={userForecast?.forecast ?? null}
+                average={average}
+              />
+            </div>
 
-        {/* Forecasts List */}
-        <ForecastsList forecasts={binaryForecasts} currentUserId={user.id} />
+            {/* Forecasts List */}
+            <ForecastsList forecasts={binaryForecasts} currentUserId={user.id} />
+          </>
+        )}
       </div>
     </main>
   );
