@@ -371,7 +371,10 @@ numerics, uppercase mono kickers, semantic tokens). Story every new leaf.
   `{ kind; options: PropOptionSummary[]; showCommunityAvg: boolean }`. A
   hairline-separated list: label, the user's % (mono, bold), community average
   (muted), and when resolved a success check on realized options / muted
-  cross on the rest. "No forecast yet" when the user has none. Story.
+  cross on the rest. "No forecast yet" when the user has none — but a resolved
+  prop still lists its options under that line (labels, outcome marks and
+  community averages, without the user's % or bars), since the outcomes are
+  the point of a resolved card. Story.
 - `ForecastCard`: choice renders the summary full-width below the text instead
   of the needle column.
 - `lib/prop-status.ts`: add status `"resolved"`. `getPropStatus(closeDate,
@@ -437,7 +440,17 @@ analytics view exists.
    migration is applied, and the old image will not boot once it is; apply and
    deploy together. Previews handle it automatically via the initContainer.
 2. **PR 2 — stage two** (branch `choice-props-ui`, based on `choice-props`):
-   the frontend. Retarget to `main` once PR 1 merges.
+   the frontend, plus migration
+   `1788307200000_fail-closed-private-competition-rls` — the fail-closed
+   rewrite of the eight private-competition visibility policies. That
+   migration is policy-only (it rewrites `USING` / `WITH CHECK` expressions and
+   touches no table, column or row), so it needs no §2.6-style pre-flight; but
+   it is still a schema-version bump, so it must be applied and deployed
+   together exactly like step 1 — the startup check fails in both directions,
+   the new image refusing to boot until the migration is applied and the old
+   one refusing to boot once it is. Retarget to `main` once PR 1 merges.
+   If the RLS fix should land first, cherry-pick that one migration commit
+   into PR 1 and drop it from here; nothing in the frontend depends on it.
 
 ## 7. Known adjacent issue (not in scope)
 
