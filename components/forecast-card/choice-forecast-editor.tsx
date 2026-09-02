@@ -72,6 +72,7 @@ export function ChoiceForecastEditor({
               <PercentInput
                 value={value}
                 onChange={(v) => onChange(option.option_id, v)}
+                ariaLabel={`${option.text} percentage`}
               />
             )}
           </div>

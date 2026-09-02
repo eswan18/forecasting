@@ -4,12 +4,18 @@ import { useState } from "react";
 
 // Raw number entry for the forecast percentage (0–100). Commits on Enter/blur,
 // Escape reverts; while unfocused it mirrors the current value.
+//
+// `ariaLabel` exists because a choice prop puts one of these on every option
+// row, and "Forecast percentage" four times over tells a screen reader nothing
+// about which option it is editing.
 export function PercentInput({
   value,
   onChange,
+  ariaLabel = "Forecast percentage",
 }: {
   value: number | null;
   onChange: (v: number) => void;
+  ariaLabel?: string;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
@@ -29,7 +35,7 @@ export function PercentInput({
         value={display}
         inputMode="numeric"
         placeholder="––"
-        aria-label="Forecast percentage"
+        aria-label={ariaLabel}
         onFocus={() => {
           setDraft(formatted);
           setEditing(true);

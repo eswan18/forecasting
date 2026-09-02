@@ -17,6 +17,9 @@ import { Spinner } from "@/components/ui/spinner";
 import { PropEditDialog } from "@/components/dialogs/prop-edit-dialog";
 import { formatDateTime } from "@/lib/time-utils";
 import { getProbabilityColors } from "@/lib/forecast-colors";
+import { isChoiceKind } from "@/lib/prop-kind";
+import { ChoiceForecastEditor } from "@/components/forecast-card/choice-forecast-editor";
+import { useChoiceForecastEntry } from "@/components/forecast-card/use-choice-forecast-entry";
 
 interface CompetitionPropViewProps {
   prop: PropWithUserForecast;
@@ -83,7 +86,15 @@ export function CompetitionPropView({
   const [percentInputValue, setPercentInputValue] = useState("");
   const percentInputRef = useRef<HTMLInputElement>(null);
 
+  // Choice props enter one probability per option instead of driving the
+  // slider; the hook is inert (nothing to save) for a binary prop.
+  const isChoice = isChoiceKind(prop.prop_kind);
+  const choiceEntry = useChoiceForecastEntry(prop, {
+    onSaved: () => router.refresh(),
+  });
+
   const hasChanges = localForecast !== prop.user_forecast;
+  const cardHasChanges = isChoice ? choiceEntry.hasChanges : hasChanges;
   const colors = getProbabilityColors(localForecast);
   const percent =
     localForecast !== null ? Math.round(localForecast * 100) : null;
@@ -251,7 +262,7 @@ export function CompetitionPropView({
         {/* Forecasting card */}
         <Card
           className={`mb-6 transition-all ${
-            hasChanges && isForecastingOpen
+            cardHasChanges && isForecastingOpen
               ? "border-primary/50 ring-2 ring-primary/15"
               : ""
           }`}
@@ -267,103 +278,29 @@ export function CompetitionPropView({
               )}
             </div>
 
-            <div className="flex items-center gap-6 mb-6">
-              {/* Probability display */}
-              <div
-                className={`${colors.bg} ${colors.text} rounded-xl w-28 h-24 flex flex-col items-center justify-center shrink-0 transition-colors ${
-                  isForecastingOpen ? "cursor-pointer" : ""
-                }`}
-                onClick={!isEditingPercent ? handlePercentClick : undefined}
-                title={isForecastingOpen ? "Click to type a value" : undefined}
-              >
-                {isEditingPercent ? (
-                  <>
-                    <div className="flex items-center">
-                      <input
-                        ref={percentInputRef}
-                        type="text"
-                        inputMode="numeric"
-                        value={percentInputValue}
-                        onChange={(e) => setPercentInputValue(e.target.value)}
-                        onBlur={commitPercentInput}
-                        onKeyDown={handlePercentKeyDown}
-                        className="w-16 text-4xl font-bold text-center bg-transparent outline-none border-b-2 border-current"
-                        aria-label="Forecast percentage"
-                      />
-                      <span className="text-4xl font-bold">%</span>
-                    </div>
-                    <div className="text-xs opacity-70">Your forecast</div>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-4xl font-bold tabular-nums">
-                      {percent !== null ? `${percent}%` : "—"}
-                    </div>
-                    <div className="text-xs opacity-70">
-                      {percent !== null ? "Your forecast" : "Not set"}
-                    </div>
-                  </>
-                )}
+            {isChoice && (
+              <div className="mb-6">
+                <ChoiceForecastEditor
+                  kind={choiceEntry.kind}
+                  options={prop.options}
+                  values={choiceEntry.values}
+                  onChange={choiceEntry.setValue}
+                  disabled={!isForecastingOpen}
+                />
               </div>
+            )}
 
-              {/* Slider */}
-              <div className="flex-1">
-                <div className="relative">
-                  <div
-                    className={`h-4 bg-muted rounded-full relative select-none ${
-                      isForecastingOpen ? "cursor-pointer" : "cursor-not-allowed opacity-60"
-                    }`}
-                    onMouseDown={handleMouseDown}
-                  >
-                    {/* Filled portion */}
-                    {percent !== null && (
-                      <div
-                        className={`absolute h-4 rounded-full ${colors.bar} opacity-60 transition-all`}
-                        style={{ width: `${percent}%` }}
-                      />
-                    )}
-
-                    {/* Draggable handle */}
-                    {percent !== null && (
-                      <div
-                        className={`absolute top-1/2 w-6 h-6 bg-background border-2 ${colors.border} rounded-full shadow-md transition-transform ${
-                          isDragging ? "scale-110" : isForecastingOpen ? "hover:scale-110" : ""
-                        }`}
-                        style={{
-                          left: `${percent}%`,
-                          transform: "translate(-50%, -50%)",
-                        }}
-                      />
-                    )}
-
-                    {/* Click hint for empty state */}
-                    {percent === null && isForecastingOpen && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-sm text-muted-foreground">
-                          Click or drag to set your forecast
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Scale labels */}
-                  <div className="flex justify-between text-xs text-muted-foreground/50 mt-2 px-1">
-                    <span>0% - Very unlikely</span>
-                    <span>50%</span>
-                    <span>100% - Very likely</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Action buttons */}
-            {isForecastingOpen && hasChanges && (
+            {isChoice && isForecastingOpen && (
               <div className="flex items-center gap-3 pt-2 border-t">
                 <Button
-                  onClick={handleSave}
-                  disabled={isSubmitting || localForecast === null}
+                  onClick={choiceEntry.save}
+                  disabled={
+                    !choiceEntry.hasChanges ||
+                    !choiceEntry.canSave ||
+                    choiceEntry.isSaving
+                  }
                 >
-                  {isSubmitting ? (
+                  {choiceEntry.isSaving ? (
                     <>
                       <Spinner className="h-4 w-4 mr-2" />
                       Saving...
@@ -373,22 +310,141 @@ export function CompetitionPropView({
                   )}
                 </Button>
                 <Button
-                  onClick={handleCancel}
+                  onClick={choiceEntry.cancel}
                   variant="ghost"
-                  disabled={isSubmitting}
+                  disabled={!choiceEntry.hasChanges || choiceEntry.isSaving}
                 >
                   Cancel
                 </Button>
               </div>
             )}
 
-            {!isForecastingOpen && prop.user_forecast !== null && (
+            {!isChoice && (
+              <>
+              <div className="flex items-center gap-6 mb-6">
+                {/* Probability display */}
+                <div
+                  className={`${colors.bg} ${colors.text} rounded-xl w-28 h-24 flex flex-col items-center justify-center shrink-0 transition-colors ${
+                    isForecastingOpen ? "cursor-pointer" : ""
+                  }`}
+                  onClick={!isEditingPercent ? handlePercentClick : undefined}
+                  title={isForecastingOpen ? "Click to type a value" : undefined}
+                >
+                  {isEditingPercent ? (
+                    <>
+                      <div className="flex items-center">
+                        <input
+                          ref={percentInputRef}
+                          type="text"
+                          inputMode="numeric"
+                          value={percentInputValue}
+                          onChange={(e) => setPercentInputValue(e.target.value)}
+                          onBlur={commitPercentInput}
+                          onKeyDown={handlePercentKeyDown}
+                          className="w-16 text-4xl font-bold text-center bg-transparent outline-none border-b-2 border-current"
+                          aria-label="Forecast percentage"
+                        />
+                        <span className="text-4xl font-bold">%</span>
+                      </div>
+                      <div className="text-xs opacity-70">Your forecast</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-4xl font-bold tabular-nums">
+                        {percent !== null ? `${percent}%` : "—"}
+                      </div>
+                      <div className="text-xs opacity-70">
+                        {percent !== null ? "Your forecast" : "Not set"}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Slider */}
+                <div className="flex-1">
+                  <div className="relative">
+                    <div
+                      className={`h-4 bg-muted rounded-full relative select-none ${
+                        isForecastingOpen ? "cursor-pointer" : "cursor-not-allowed opacity-60"
+                      }`}
+                      onMouseDown={handleMouseDown}
+                    >
+                      {/* Filled portion */}
+                      {percent !== null && (
+                        <div
+                          className={`absolute h-4 rounded-full ${colors.bar} opacity-60 transition-all`}
+                          style={{ width: `${percent}%` }}
+                        />
+                      )}
+
+                      {/* Draggable handle */}
+                      {percent !== null && (
+                        <div
+                          className={`absolute top-1/2 w-6 h-6 bg-background border-2 ${colors.border} rounded-full shadow-md transition-transform ${
+                            isDragging ? "scale-110" : isForecastingOpen ? "hover:scale-110" : ""
+                          }`}
+                          style={{
+                            left: `${percent}%`,
+                            transform: "translate(-50%, -50%)",
+                          }}
+                        />
+                      )}
+
+                      {/* Click hint for empty state */}
+                      {percent === null && isForecastingOpen && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-sm text-muted-foreground">
+                            Click or drag to set your forecast
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Scale labels */}
+                    <div className="flex justify-between text-xs text-muted-foreground/50 mt-2 px-1">
+                      <span>0% - Very unlikely</span>
+                      <span>50%</span>
+                      <span>100% - Very likely</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              {isForecastingOpen && hasChanges && (
+                <div className="flex items-center gap-3 pt-2 border-t">
+                  <Button
+                    onClick={handleSave}
+                    disabled={isSubmitting || localForecast === null}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Spinner className="h-4 w-4 mr-2" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save Forecast"
+                    )}
+                  </Button>
+                  <Button
+                    onClick={handleCancel}
+                    variant="ghost"
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
+              </>
+            )}
+
+            {!isForecastingOpen && prop.user_forecast_id !== null && (
               <p className="text-sm text-muted-foreground pt-2 border-t">
                 You submitted your forecast before the deadline.
               </p>
             )}
 
-            {!isForecastingOpen && prop.user_forecast === null && (
+            {!isForecastingOpen && prop.user_forecast_id === null && (
               <p className="text-sm text-destructive pt-2 border-t">
                 You did not submit a forecast before the deadline.
               </p>

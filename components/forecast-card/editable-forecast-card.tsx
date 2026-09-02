@@ -12,7 +12,9 @@ import { createForecast, updateForecast } from "@/lib/db_actions";
 import { useServerAction } from "@/hooks/use-server-action";
 import { PropEditDialog } from "@/components/dialogs/prop-edit-dialog";
 import { Spinner } from "@/components/ui/spinner";
+import { isChoiceKind } from "@/lib/prop-kind";
 import { cn, focusRing } from "@/lib/utils";
+import { EditableChoiceForecastCard } from "./editable-choice-forecast-card";
 import { PercentInput } from "./percent-input";
 
 interface EditableForecastCardProps {
@@ -20,7 +22,30 @@ interface EditableForecastCardProps {
   onForecastUpdate?: () => void;
 }
 
+/**
+ * A forecastable prop card. Binary props get the needle and a single % box;
+ * choice props get a row-per-option editor. The two kinds keep their state in
+ * different shapes, so they are separate components rather than one body full
+ * of branches — this dispatcher holds no state of its own.
+ */
 export function EditableForecastCard({
+  prop,
+  onForecastUpdate,
+}: EditableForecastCardProps) {
+  if (isChoiceKind(prop.prop_kind)) {
+    return (
+      <EditableChoiceForecastCard
+        prop={prop}
+        onForecastUpdate={onForecastUpdate}
+      />
+    );
+  }
+  return (
+    <EditableBinaryForecastCard prop={prop} onForecastUpdate={onForecastUpdate} />
+  );
+}
+
+function EditableBinaryForecastCard({
   prop,
   onForecastUpdate,
 }: EditableForecastCardProps) {
