@@ -35,7 +35,8 @@ export interface UserForecastScore {
   propText: string;
   categoryId: number | null;
   categoryName: string | null;
-  forecast: number;
+  /** Set for binary props, null for choice props (per-option values instead). */
+  forecast: number | null;
   resolution: boolean | null;
   score: number | null;
 }
@@ -310,7 +311,7 @@ export async function getUserScoreBreakdown({
         propText: row.prop_text,
         categoryId: row.category_id,
         categoryName: row.category_name,
-        forecast: Number(row.forecast),
+        forecast: row.forecast !== null ? Number(row.forecast) : null,
         resolution: row.resolution,
         score: row.score !== null ? Number(row.score) : null,
       }),

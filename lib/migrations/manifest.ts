@@ -47,4 +47,5 @@ export const MIGRATION_MANIFEST: readonly string[] = [
   "1769364811701_private_competitions_rls_views",
   "1773516227456_add-picture-url-to-competition-members-view",
   "1773712944723_relax-prop-category-constraint",
+  "1788220800000_add-choice-props",
 ];

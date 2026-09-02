@@ -4,12 +4,12 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn, focusRing } from "@/lib/utils";
 import { getProbabilityColors } from "@/lib/forecast-colors";
-import type { VForecast } from "@/types/db_types";
+import type { BinaryForecast } from "@/lib/binary-forecast";
 
 type SortOrder = "asc" | "desc";
 
 interface ForecastRowProps {
-  forecast: VForecast;
+  forecast: BinaryForecast;
   rank: number;
   isCurrentUser: boolean;
 }
@@ -71,7 +71,7 @@ function ForecastRow({ forecast, rank, isCurrentUser }: ForecastRowProps) {
 }
 
 interface ForecastsListProps {
-  forecasts: VForecast[];
+  forecasts: BinaryForecast[];
   currentUserId: number;
 }
 

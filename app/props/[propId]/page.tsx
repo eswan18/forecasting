@@ -1,4 +1,5 @@
 import { getForecasts, getPropById } from "@/lib/db_actions";
+import { isBinaryForecast } from "@/lib/binary-forecast";
 import { getCurrentUserRole } from "@/lib/db_actions/competition-members";
 import { getUserFromCookies } from "@/lib/get-user";
 import { Suspense } from "react";
@@ -57,6 +58,8 @@ async function PropPageContent({
     return <ErrorPage title={forecastsResult.error} />;
   }
   const forecasts = forecastsResult.data;
+  // The stats, chart and list are binary-only for now; see docs/superpowers/specs/2026-09-01-choice-props-design.md §4.4
+  const binaryForecasts = forecasts.filter(isBinaryForecast);
 
   // Find user's forecast
   const userForecast = forecasts.find((f) => f.user_id === user.id);
@@ -73,7 +76,7 @@ async function PropPageContent({
     user.is_admin || isCompetitionAdmin || prop.prop_user_id === user.id;
 
   // Calculate stats
-  const forecastValues = forecasts.map((f) => f.forecast);
+  const forecastValues = binaryForecasts.map((f) => f.forecast);
   const average =
     forecastValues.length > 0
       ? forecastValues.reduce((a, b) => a + b, 0) / forecastValues.length
@@ -103,14 +106,14 @@ async function PropPageContent({
         {/* Distribution Chart */}
         <div className="mb-6">
           <ForecastDistributionChart
-            forecasts={forecasts}
+            forecasts={binaryForecasts}
             userForecast={userForecast?.forecast ?? null}
             average={average}
           />
         </div>
 
         {/* Forecasts List */}
-        <ForecastsList forecasts={forecasts} currentUserId={user.id} />
+        <ForecastsList forecasts={binaryForecasts} currentUserId={user.id} />
       </div>
     </main>
   );

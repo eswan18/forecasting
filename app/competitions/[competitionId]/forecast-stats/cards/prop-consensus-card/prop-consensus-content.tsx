@@ -7,7 +7,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Category, VForecast } from "@/types/db_types";
+import { Category } from "@/types/db_types";
+import type { BinaryForecast } from "@/lib/binary-forecast";
 import { FC, useState } from "react";
 import { PropStatistics, propStatisticsForForecasts } from "./stats";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
@@ -27,7 +28,7 @@ export default function PropConsensusContent({
   forecasts,
 }: {
   categories: Category[];
-  forecasts: VForecast[];
+  forecasts: BinaryForecast[];
 }) {
   const [selectedCategory, setSelectedCategory] = useState(categories[0]);
   const forecastsInScope = forecasts.filter(

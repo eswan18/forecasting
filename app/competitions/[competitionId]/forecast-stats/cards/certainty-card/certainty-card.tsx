@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card";
 import { getForecasts } from "@/lib/db_actions";
 import CertaintyContent, { AvgCertaintyForUser } from "./certainty-content";
-import { VForecast } from "@/types/db_types";
+import { type BinaryForecast, isBinaryForecast } from "@/lib/binary-forecast";
 
 export default async function CertaintyCard({
   competitionId,
@@ -18,7 +18,8 @@ export default async function CertaintyCard({
   if (!forecastsResult.success) {
     throw new Error(forecastsResult.error);
   }
-  const forecasts = forecastsResult.data;
+  // Choice props are binary-only here for now; see docs/superpowers/specs/2026-09-01-choice-props-design.md §4.4
+  const forecasts = forecastsResult.data.filter(isBinaryForecast);
   return (
     <Card className="w-80 h-96">
       <CardHeader className="pb-1">
@@ -32,7 +33,9 @@ export default async function CertaintyCard({
   );
 }
 
-function getAvgCertaintyByUser(forecasts: VForecast[]): AvgCertaintyForUser[] {
+function getAvgCertaintyByUser(
+  forecasts: BinaryForecast[],
+): AvgCertaintyForUser[] {
   // "Certainty" is defined as the average distance from 0.5 for each prediction.
   const certainties: Map<number, { user_name: string; forecasts: number[] }> =
     new Map();
