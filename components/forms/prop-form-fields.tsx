@@ -1,7 +1,15 @@
 "use client";
 
 import { UseFormReturn } from "react-hook-form";
-import { FileText, Hash, Tag, Trophy, Users } from "lucide-react";
+import {
+  FileText,
+  Hash,
+  List,
+  ListChecks,
+  Tag,
+  Trophy,
+  Users,
+} from "lucide-react";
 import {
   FormControl,
   FormField,
@@ -17,8 +25,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  isChoiceKind,
+  PROP_KIND_LABELS,
+  PROP_KINDS,
+  type PropKind,
+} from "@/lib/prop-kind";
 import { Category, Competition } from "@/types/db_types";
 import { PropFormValues } from "./create-edit-prop-form";
+import { OptionsEditor } from "./options-editor";
+import { DEFAULT_OPTION_FIELDS } from "./prop-form-schema";
 
 interface PropFormFieldsProps {
   form: UseFormReturn<PropFormValues>;
@@ -26,6 +42,8 @@ interface PropFormFieldsProps {
   competitions: Competition[];
   initialUserId?: number;
   canEditPublicProps: boolean;
+  /** The kind is fixed at creation, so editing shows it read-only. */
+  isEditing: boolean;
 }
 
 export function PropFormFields({
@@ -34,7 +52,30 @@ export function PropFormFields({
   competitions,
   initialUserId,
   canEditPublicProps,
+  isEditing,
 }: PropFormFieldsProps) {
+  const kind = form.watch("kind");
+
+  // `refineKindOptions` puts every option complaint on the `options` path, so
+  // the messages belong to the list as a whole rather than to one row.
+  const optionsError = form.formState.errors.options;
+  const optionErrors = [
+    optionsError?.message,
+    optionsError?.root?.message,
+  ].filter((message): message is string => Boolean(message));
+
+  function handleKindChange(nextKind: PropKind) {
+    if (isChoiceKind(nextKind)) {
+      if (form.getValues("options").length === 0) {
+        form.setValue("options", [...DEFAULT_OPTION_FIELDS]);
+      }
+    } else {
+      form.setValue("options", []);
+    }
+    // Whatever the old options were, any complaint about them is now stale.
+    form.clearErrors("options");
+  }
+
   return (
     <>
       <FormField
@@ -60,6 +101,67 @@ export function PropFormFields({
           </FormItem>
         )}
       />
+
+      <FormField
+        control={form.control}
+        name="kind"
+        render={({ field }) => (
+          <FormItem className="space-y-2">
+            <FormLabel className="text-sm font-medium flex items-center gap-2">
+              <ListChecks className="h-4 w-4" />
+              Type
+            </FormLabel>
+            <Select
+              value={field.value}
+              onValueChange={(value) => {
+                const nextKind = value as PropKind;
+                field.onChange(nextKind);
+                handleKindChange(nextKind);
+              }}
+              disabled={isEditing}
+            >
+              <FormControl>
+                <SelectTrigger className="h-11">
+                  <SelectValue placeholder="Select a type" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {PROP_KINDS.map((propKind) => (
+                  <SelectItem key={propKind} value={propKind}>
+                    {PROP_KIND_LABELS[propKind]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      {!isEditing && isChoiceKind(kind) && (
+        <FormField
+          control={form.control}
+          name="options"
+          render={({ field }) => (
+            <FormItem className="space-y-2">
+              <FormLabel className="text-sm font-medium flex items-center gap-2">
+                <List className="h-4 w-4" />
+                Options
+                <span className="text-xs text-muted-foreground font-normal">
+                  (in the order forecasters see them)
+                </span>
+              </FormLabel>
+              <OptionsEditor
+                value={field.value.map((option) => option.text)}
+                onChange={(labels) =>
+                  field.onChange(labels.map((text) => ({ text })))
+                }
+                errors={optionErrors}
+              />
+            </FormItem>
+          )}
+        />
+      )}
 
       <FormField
         control={form.control}
