@@ -4,3 +4,4 @@ import { success } from "@/lib/server-action-result";
 
 export const createForecast = async () => success(undefined);
 export const updateForecast = async () => success(undefined);
+export const updatePropOptions = async () => success(undefined);
