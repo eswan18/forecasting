@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Archivo, Roboto_Mono } from "next/font/google";
+import { LandingThemeToggle } from "@/components/landing-theme-toggle";
 
 /**
  * Haruspex — the signed-out landing page.
@@ -40,14 +41,39 @@ const PENALTIES = [
 ];
 
 const css = `
-.hx3 {
+/* The stock and the two drums live on the body so the page background can read
+   them too, and so a single block re-runs the whole print in another colourway. */
+body:has(.hx3) {
   --paper: oklch(95.8% 0.012 62);
   --ink: oklch(21% 0.022 32);
   --red: oklch(57% 0.165 22);
   /* prints darker than it looks in the drum — and clears AA at small sizes */
   --red-text: oklch(52% 0.16 22);
-  --rule: oklch(21% 0.022 32 / 0.22);
-  --ink-muted: oklch(21% 0.022 32 / 0.66);
+  --block-opacity: 0.4;
+  --tint: color-mix(in oklab, var(--red) 14%, transparent);
+  background: var(--paper);
+}
+
+/* The night edition. Riso does stock a white drum, so this is the same press
+   with the plates swapped: warm white and red on near-black stock. The ghost
+   has to screen rather than multiply — multiplying red into a dark sheet just
+   makes it disappear. */
+.dark body:has(.hx3) {
+  --paper: oklch(18.5% 0.014 45);
+  --ink: oklch(93% 0.014 68);
+  /* The drum is unchanged — only the stock and the other plate are. Shifting
+     --red between editions put a third ink on the sheet, which is the loudest
+     "generic dark theme" tell there is. --red-text still lifts, but only as far
+     as the light edition's text sits from its own drum. */
+  --red: oklch(57% 0.165 22);
+  --red-text: oklch(64% 0.17 24);
+  --block-opacity: 0.55;
+  --tint: color-mix(in oklab, var(--red) 24%, transparent);
+}
+
+.hx3 {
+  --rule: color-mix(in oklab, var(--ink) 22%, transparent);
+  --ink-muted: color-mix(in oklab, var(--ink) 70%, transparent);
   --offset: 6px;
 
   font-family: var(--hx3-sans), ui-sans-serif, system-ui, sans-serif;
@@ -58,7 +84,6 @@ const css = `
   overflow-x: hidden;
   line-height: 1.6;
 }
-body:has(.hx3) { background: oklch(95.8% 0.012 62); }
 /* The sheet is the whole page — the app's navbar is for signed-in users, so it
    stands down wherever this renders. Done in CSS rather than in the navbar so
    the server-rendered markup is already correct and nothing flashes. */
@@ -96,7 +121,8 @@ body:has(.hx3) nav { display: none; }
   width: 48rem;
   aspect-ratio: 1000 / 700;
 }
-.hx3 .gauge svg {
+.hx3 .gauge svg,
+.hx3 .gauge-inline svg {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -105,7 +131,8 @@ body:has(.hx3) nav { display: none; }
 }
 /* the needle carries the halftone; the mask is in CSS pixels so the screen
    stays circular no matter how the artwork is scaled */
-.hx3 .gauge .ink {
+.hx3 .gauge .ink,
+.hx3 .gauge-inline .ink {
   -webkit-mask-image: radial-gradient(#000 1.15px, transparent 1.45px);
   mask-image: radial-gradient(#000 1.15px, transparent 1.45px);
   -webkit-mask-size: 7px 7px;
@@ -132,13 +159,23 @@ body:has(.hx3) nav { display: none; }
   .hx3 .needle { animation: none; }
 }
 
-/* Below the width where the column stops leaving a free right margin, the
-   gauge has nowhere to sit but behind the copy — so it steps back, then goes. */
+/* Narrow screens get the instrument in the flow rather than in the margin. */
+.hx3 .gauge-inline { display: none; }
+
+/* Below ~64rem the margin gauge's hub falls off the right edge, leaving an arc
+   with nothing to pivot on. So that copy goes and the in-flow copy takes over,
+   sitting between the hero and the table where it divides the two. */
 @media (max-width: 64rem) {
-  .hx3 .gauge { opacity: 0.45; }
-}
-@media (max-width: 48rem) {
   .hx3 .gauge { display: none; }
+  .hx3 .gauge-inline {
+    display: block;
+    position: relative;
+    z-index: 0;
+    pointer-events: none;
+    width: min(26rem, 100%);
+    margin: 4.5rem auto 0;
+    aspect-ratio: 1000 / 700;
+  }
 }
 
 .hx3 .col {
@@ -201,7 +238,7 @@ body:has(.hx3) nav { display: none; }
   background-image: radial-gradient(var(--red) 1.1px, transparent 1.4px);
   background-size: 7px 7px;
   transform: translate(calc(var(--offset) * -2.2), calc(var(--offset) * 1.8));
-  opacity: 0.4;
+  opacity: var(--block-opacity);
   pointer-events: none;
   z-index: -1;
 }
@@ -249,8 +286,8 @@ body:has(.hx3) nav { display: none; }
   padding: 0.2em 0.25rem;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
-  background-color: oklch(57% 0.165 22 / 0.13);
-  background-image: radial-gradient(oklch(57% 0.165 22 / 0.55) 0.9px, transparent 1.1px);
+  background-color: var(--tint);
+  background-image: radial-gradient(color-mix(in oklab, var(--red) 55%, transparent) 0.9px, transparent 1.1px);
   background-size: 5px 5px;
 }
 
@@ -338,7 +375,8 @@ body:has(.hx3) nav { display: none; }
 }
 /* Built the way the press works: the black plate carries the outline and the
    label, the red plate prints the fill and slips by the registration vector. */
-.hx3 a.btn {
+.hx3 a.btn,
+.hx3 button.btn {
   position: relative;
   display: inline-block;
   border-radius: 0;
@@ -354,7 +392,8 @@ body:has(.hx3) nav { display: none; }
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
-.hx3 a.btn::before {
+.hx3 a.btn::before,
+.hx3 button.btn::before {
   content: "";
   position: absolute;
   inset: -2px;
@@ -364,15 +403,59 @@ body:has(.hx3) nav { display: none; }
   transition: transform 140ms ease;
 }
 /* hover completes the print: plates register and the black floods */
-.hx3 a.btn:hover { background: var(--ink); color: var(--paper); }
-.hx3 a.btn:hover::before { transform: none; }
-.hx3 a.btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+.hx3 a.btn:hover,
+.hx3 button.btn:hover { background: var(--ink); color: var(--paper); }
+.hx3 a.btn:hover::before,
+.hx3 button.btn:hover::before { transform: none; }
+.hx3 a.btn:focus-visible,
+.hx3 button.btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
 /* masthead size: same press, smaller sheet */
-.hx3 a.btn.small {
+.hx3 a.btn.small,
+.hx3 button.btn.small {
   padding: 0.5rem 1.25rem;
   font-size: 0.6875rem;
   letter-spacing: 0.14em;
 }
+.hx3 button.btn.swatch { cursor: pointer; }
+/* CSS, not state, decides which drum is named */
+.hx3 .ink-dark { display: none; }
+.dark .hx3 .ink-light { display: none; }
+.dark .hx3 .ink-dark { display: inline; }
+/* Below the masthead's comfortable width the label is clipped rather than
+   removed, so it keeps naming the action for a screen reader. */
+@media (max-width: 34rem) {
+  .hx3 .btn.swatch {
+    padding: 0.5rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    position: relative;
+  }
+  .hx3 .btn.swatch .ink-light,
+  .hx3 .btn.swatch .ink-dark {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  /* a swatch of the stock you'd switch to, in place of the words */
+  .hx3 .btn.swatch::after {
+    content: "";
+    position: absolute;
+    inset: 0.5rem;
+    background: var(--ink);
+    border: 1px solid var(--ink);
+  }
+  .dark .hx3 .btn.swatch::after { background: var(--paper); }
+}
+
+.hx3 .masthead-tools { display: flex; align-items: center; gap: 0.75rem; }
+
+/* the colophon names the stock it is actually printed on */
+.hx3 .stock-dark { display: none; }
+.dark .hx3 .stock-light { display: none; }
+.dark .hx3 .stock-dark { display: inline; }
 
 
 .hx3 .colophon {
@@ -451,13 +534,13 @@ function needlePath() {
  * on. The needle itself is the screened plate, and it wavers, because the whole
  * product is about a reading that will not sit still.
  */
-function Gauge() {
+function Gauge({ className }: { className: string }) {
   const start = dialPoint(0, R);
   const end = dialPoint(1, R);
   const resting = 0.56;
 
   return (
-    <div className="gauge" aria-hidden="true">
+    <div className={className} aria-hidden="true">
       {/* the dial: solid, thin */}
       <svg viewBox="0 0 1000 700">
         {/* the dial: duller and heavier than the needle, so it reads as the
@@ -506,14 +589,17 @@ export function SignedOutLanding() {
   return (
     <div className={`hx3 ${archivo.variable} ${robotoMono.variable}`}>
       <style dangerouslySetInnerHTML={{ __html: css }} />
-      <Gauge />
+      <Gauge className="gauge" />
 
       <div className="col">
         <header className="top">
           <span className="mono">Haruspex</span>
-          <Link className="btn small" href="/login">
-            Sign in
-          </Link>
+          <span className="masthead-tools">
+            <LandingThemeToggle />
+            <Link className="btn small" href="/login">
+              Sign in
+            </Link>
+          </span>
         </header>
 
         <div className="hero">
@@ -535,6 +621,8 @@ export function SignedOutLanding() {
             your personal life.
           </p>
         </div>
+
+        <Gauge className="gauge-inline" />
 
         <section className="rise">
           <h2>How scoring works</h2>
@@ -577,7 +665,13 @@ export function SignedOutLanding() {
 
         <div className="colophon">
           <p className="mono">
-            Printed in two colours · Bright Red on Warm White
+            Printed in two colours ·{" "}
+            <span className="stock-light">
+              Black + Bright Red on Warm White
+            </span>
+            <span className="stock-dark">
+              White + Bright Red on Warm Black
+            </span>
           </p>
         </div>
       </div>
