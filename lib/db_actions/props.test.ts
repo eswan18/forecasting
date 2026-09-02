@@ -77,7 +77,8 @@ describe("Props Unit Tests", () => {
 
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data).toEqual(mockProp);
+        // Binary (non-choice) props carry an empty option list.
+        expect(result.data).toEqual({ ...mockProp, options: [] });
       }
     });
 

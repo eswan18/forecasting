@@ -31,6 +31,7 @@ export function makeProp(
     user_forecast: 0.72,
     user_forecast_id: 10,
     community_average: 0.58,
+    options: [],
     ...overrides,
   };
 }

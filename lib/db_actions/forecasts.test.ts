@@ -7,6 +7,7 @@ import {
 } from "../../tests/helpers/testUtils";
 
 let getRecentlyResolvedForecasts: typeof import("./forecasts").getRecentlyResolvedForecasts;
+let getPropsWithUserForecasts: typeof import("./forecasts").getPropsWithUserForecasts;
 
 // Mock getUserFromCookies
 vi.mock("@/lib/get-user", () => ({
@@ -106,6 +107,81 @@ describe("getRecentlyResolvedForecasts", () => {
       if (result.success) {
         expect(result.data).toHaveLength(2);
       }
+    },
+  );
+});
+
+describe("getPropsWithUserForecasts", () => {
+  let testDb: any;
+  let factory: TestDataFactory;
+
+  beforeEach(async () => {
+    if (shouldRunContainerTests()) {
+      testDb = await getTestDb();
+      factory = new TestDataFactory(testDb);
+      vi.clearAllMocks();
+
+      const forecastsModule = await import("./forecasts");
+      getPropsWithUserForecasts = forecastsModule.getPropsWithUserForecasts;
+    } else {
+      vi.clearAllMocks();
+    }
+  });
+
+  ifRunningContainerTestsIt(
+    "returns no options for a binary prop and option summaries for a choice prop",
+    async () => {
+      const user = await factory.createUser();
+      vi.mocked(getUserFromCookies).mockResolvedValue(user);
+
+      const competition = await factory.createCompetition();
+      const binaryProp = await factory.createCompetitionProp(competition.id, {
+        text: "Binary prop",
+      });
+      await factory.createForecast(user.id, binaryProp.id, { forecast: 0.7 });
+
+      const { prop: choiceProp, options } = await factory.createChoiceProp(
+        "one_of",
+        ["Red", "Green", "Blue"],
+        { competition_id: competition.id, text: "Choice prop" },
+      );
+      await factory.createChoiceForecast(user.id, choiceProp.id, [
+        { optionId: options[0].id, probability: 0.6 },
+        { optionId: options[1].id, probability: 0.3 },
+        { optionId: options[2].id, probability: 0.1 },
+      ]);
+
+      const result = await getPropsWithUserForecasts({
+        userId: user.id,
+        competitionId: competition.id,
+      });
+
+      expect(result.success).toBe(true);
+      if (!result.success) return;
+
+      const binary = result.data.find((p) => p.prop_id === binaryProp.id)!;
+      expect(binary.prop_kind).toBe("binary");
+      expect(binary.options).toEqual([]);
+      // `forecasts.forecast` is a numeric column, which pg returns as a string.
+      expect(Number(binary.user_forecast)).toBe(0.7);
+      expect(binary.user_forecast_id).not.toBeNull();
+
+      const choice = result.data.find((p) => p.prop_id === choiceProp.id)!;
+      expect(choice.prop_kind).toBe("one_of");
+      expect(choice.user_forecast).toBeNull();
+      expect(choice.user_forecast_id).not.toBeNull();
+      expect(choice.options.map((o) => o.text)).toEqual([
+        "Red",
+        "Green",
+        "Blue",
+      ]);
+      expect(choice.options.map((o) => o.user_forecast)).toEqual([
+        0.6, 0.3, 0.1,
+      ]);
+      expect(choice.options.map((o) => Number(o.community_average))).toEqual([
+        0.6, 0.3, 0.1,
+      ]);
+      expect(choice.options.every((o) => o.outcome === null)).toBe(true);
     },
   );
 });

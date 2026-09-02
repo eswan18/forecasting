@@ -1,6 +1,13 @@
 "use server";
 
-import { Database, ForecastUpdate, NewForecast, VForecast, VProp } from "@/types/db_types";
+import {
+  Database,
+  ForecastUpdate,
+  NewForecast,
+  PropWithUserForecast,
+  VForecast,
+  VProp,
+} from "@/types/db_types";
 import { getUserFromCookies } from "@/lib/get-user";
 import { revalidatePath } from "next/cache";
 import { OrderByExpression, OrderByModifiers, sql } from "kysely";
@@ -12,6 +19,7 @@ import {
   ERROR_CODES,
 } from "@/lib/server-action-result";
 import { withRLS, withRLSAction } from "@/lib/db-helpers";
+import { attachOptions } from "@/lib/db_actions/prop-options";
 
 export type VForecastsOrderByExpression = OrderByExpression<
   Database,
@@ -329,15 +337,7 @@ export async function getPropsWithUserForecasts({
 }: {
   userId: number;
   competitionId: number | null;
-}): Promise<
-  ServerActionResult<
-    (VProp & {
-      user_forecast: number | null;
-      user_forecast_id: number | null;
-      community_average: number | null;
-    })[]
-  >
-> {
+}): Promise<ServerActionResult<PropWithUserForecast[]>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Getting props with user forecasts", {
     userId,
@@ -380,7 +380,12 @@ export async function getPropsWithUserForecasts({
         query = query.where("v_props.competition_id", "=", competitionId);
       }
 
-      return await query.execute();
+      const rows = await query.execute();
+      const optionsByProp = await attachOptions(trx, rows, userId);
+      return rows.map((row) => ({
+        ...row,
+        options: optionsByProp.get(row.prop_id) ?? [],
+      }));
     });
 
     const duration = Date.now() - startTime;

@@ -1,7 +1,13 @@
 "use server";
 import { getUserFromCookies } from "../get-user";
 import { revalidatePath } from "next/cache";
-import { VProp, PropUpdate, NewProp, NewResolution } from "@/types/db_types";
+import {
+  VProp,
+  PropUpdate,
+  NewProp,
+  NewResolution,
+  PropOptionSummary,
+} from "@/types/db_types";
 import {
   ServerActionResult,
   ERROR_CODES,
@@ -11,11 +17,14 @@ import {
 } from "@/lib/server-action-result";
 import { logger } from "@/lib/logger";
 import { withRLS, withRLSAction } from "@/lib/db-helpers";
+import { attachOptions } from "@/lib/db_actions/prop-options";
 import { publishEvent } from "@/lib/pubsub/client";
 
 export async function getPropById(
   propId: number,
-): Promise<ServerActionResult<VProp | null>> {
+): Promise<
+  ServerActionResult<(VProp & { options: PropOptionSummary[] }) | null>
+> {
   const currentUser = await getUserFromCookies();
 
   logger.debug("Getting prop by ID", {
@@ -26,11 +35,18 @@ export async function getPropById(
   const startTime = Date.now();
   try {
     const result = await withRLS(currentUser?.id, async (trx) => {
-      return await trx
+      const prop = await trx
         .selectFrom("v_props")
         .selectAll()
         .where("prop_id", "=", propId)
         .executeTakeFirst();
+      if (!prop) return null;
+      const optionsByProp = await attachOptions(
+        trx,
+        [prop],
+        currentUser?.id ?? null,
+      );
+      return { ...prop, options: optionsByProp.get(prop.prop_id) ?? [] };
     });
 
     const duration = Date.now() - startTime;
@@ -42,7 +58,7 @@ export async function getPropById(
       found: !!result,
     });
 
-    return success(result || null);
+    return success(result);
   } catch (err) {
     const duration = Date.now() - startTime;
     logger.error("Error getting prop by ID", err as Error, {

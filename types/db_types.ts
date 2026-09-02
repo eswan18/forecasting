@@ -206,9 +206,14 @@ export interface VPropsView {
 export type VProp = Selectable<VPropsView>;
 
 export type PropWithUserForecast = VProp & {
+  /** Binary props only; null for choice props. */
   user_forecast: number | null;
+  /** Set for both kinds; the "has this user forecasted" test. */
   user_forecast_id: number | null;
+  /** Binary props only; null for choice props. */
   community_average: number | null;
+  /** Empty for binary props. */
+  options: PropOptionSummary[];
 };
 
 export interface VPropOptionsView {
