@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Archivo, Roboto_Mono } from "next/font/google";
 import { LandingThemeToggle } from "@/components/landing-theme-toggle";
 
@@ -405,8 +404,7 @@ body:has(.hx3) nav { display: none; }
 }
 /* Built the way the press works: the black plate carries the outline and the
    label, the red plate prints the fill and slips by the registration vector. */
-.hx3 a.btn,
-.hx3 button.btn {
+.hx3 a.btn {
   position: relative;
   display: inline-block;
   border-radius: 0;
@@ -422,8 +420,7 @@ body:has(.hx3) nav { display: none; }
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
-.hx3 a.btn::before,
-.hx3 button.btn::before {
+.hx3 a.btn::before {
   content: "";
   position: absolute;
   inset: -2px;
@@ -433,15 +430,11 @@ body:has(.hx3) nav { display: none; }
   transition: transform 140ms ease;
 }
 /* hover completes the print: plates register and the black floods */
-.hx3 a.btn:hover,
-.hx3 button.btn:hover { background: var(--ink); color: var(--paper); }
-.hx3 a.btn:hover::before,
-.hx3 button.btn:hover::before { transform: none; }
-.hx3 a.btn:focus-visible,
-.hx3 button.btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+.hx3 a.btn:hover { background: var(--ink); color: var(--paper); }
+.hx3 a.btn:hover::before { transform: none; }
+.hx3 a.btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
 /* masthead size: same press, smaller sheet */
-.hx3 a.btn.small,
-.hx3 button.btn.small {
+.hx3 a.btn.small {
   padding: 0.5rem 1.25rem;
   font-size: 0.6875rem;
   letter-spacing: 0.14em;
@@ -646,9 +639,9 @@ export function SignedOutLanding() {
       <div className="col">
         <header className="top">
           <span className="mono">Haruspex</span>
-          <Link className="btn small" href="/login">
+          <a className="btn small" href="/oauth/login">
             Sign in
-          </Link>
+          </a>
         </header>
 
         <div className="hero">
@@ -716,9 +709,9 @@ export function SignedOutLanding() {
           <p className="line">
             Not unless you recorded it on Haruspex.
           </p>
-          <Link className="btn" href="/login">
+          <a className="btn" href="/oauth/login">
             Sign in to forecast
-          </Link>
+          </a>
         </section>
 
         <div className="colophon">
