@@ -826,6 +826,29 @@ describe("Props Unit Tests", () => {
       expect(dbHelpers.withRLS).not.toHaveBeenCalled();
       expect(dbHelpers.withRLSAction).not.toHaveBeenCalled();
     });
+
+    it("allows an update that merely carries an undefined kind", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+      const mockTrx = {
+        updateTable: vi.fn().mockReturnThis(),
+        set: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        execute: vi.fn().mockResolvedValue(undefined),
+      };
+
+      vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
+        return fn(mockTrx as any);
+      });
+
+      const result = await updateProp({
+        id: 1,
+        prop: { kind: undefined, text: "This is valid updated text" },
+      });
+
+      expect(result.success).toBe(true);
+      expect(mockTrx.updateTable).toHaveBeenCalledWith("props");
+    });
   });
 
   describe("resolveProp", () => {

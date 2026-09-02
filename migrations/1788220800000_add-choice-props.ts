@@ -20,6 +20,12 @@ export async function up(db: Kysely<any>): Promise<void> {
   );
 
   // ---- prop_options -----------------------------------------------------
+  // The (prop_id, text) uniqueness is DEFERRABLE INITIALLY DEFERRED because
+  // label edits are legal permutations: swapping two options' labels rewrites
+  // them one row at a time, and a non-deferrable unique is checked per row
+  // even within a single statement, so the first UPDATE would collide with a
+  // label that has not been rewritten yet. Deferring moves the check to
+  // commit, by which point the set of labels is unique again.
   await sql`
     CREATE TABLE prop_options (
       id serial PRIMARY KEY,
@@ -29,7 +35,7 @@ export async function up(db: Kysely<any>): Promise<void> {
       created_at timestamptz NOT NULL DEFAULT now(),
       updated_at timestamptz NOT NULL DEFAULT now(),
       CONSTRAINT prop_options_prop_position_unique UNIQUE (prop_id, position),
-      CONSTRAINT prop_options_prop_text_unique UNIQUE (prop_id, text),
+      CONSTRAINT prop_options_prop_text_unique UNIQUE (prop_id, text) DEFERRABLE INITIALLY DEFERRED,
       CONSTRAINT prop_options_id_prop_unique UNIQUE (id, prop_id)
     )`.execute(db);
   await sql`CREATE TRIGGER set_updated_at BEFORE INSERT OR UPDATE ON prop_options FOR EACH ROW EXECUTE FUNCTION set_updated_at()`.execute(

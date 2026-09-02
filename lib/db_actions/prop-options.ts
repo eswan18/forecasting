@@ -81,12 +81,21 @@ export async function updatePropOptions({
       }
 
       for (const option of options) {
-        await trx
+        const updated = await trx
           .updateTable("prop_options")
           .set({ text: option.text.trim() })
           .where("id", "=", option.id)
           .where("prop_id", "=", propId)
-          .execute();
+          .executeTakeFirst();
+        // The select above proves the caller can *see* these options;
+        // `manage_prop_options` can still hide them from UPDATE. Without this
+        // check a zero-row update would report a silent success.
+        if (Number(updated?.numUpdatedRows ?? 0) === 0) {
+          return error(
+            "Proposition not found or you cannot edit it",
+            ERROR_CODES.NOT_FOUND,
+          );
+        }
       }
 
       return success(undefined);

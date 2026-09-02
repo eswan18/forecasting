@@ -349,7 +349,7 @@ export async function updateProp({
 
     // The kind is fixed at creation (a database trigger enforces this too);
     // reject the update before it reaches the database.
-    if ("kind" in prop) {
+    if (prop.kind !== undefined) {
       logger.warn("Attempted to change the kind of a prop", { propId: id });
       return error(
         "The kind of a proposition cannot be changed",

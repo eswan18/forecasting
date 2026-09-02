@@ -77,6 +77,67 @@ describe("updatePropOptions", () => {
   );
 
   ifRunningContainerTestsIt(
+    "swaps two labels in one call",
+    async () => {
+      const owner = await factory.createUser();
+      vi.mocked(getUserFromCookies).mockResolvedValue(owner);
+
+      const { prop, options } = await factory.createChoiceProp(
+        "one_of",
+        ["Knicks", "Spurs"],
+        { user_id: owner.id, competition_id: null },
+      );
+
+      // A permutation: each UPDATE lands on a label the other row still
+      // holds, so this only commits because the (prop_id, text) uniqueness
+      // is deferred to the end of the transaction.
+      const result = await updatePropOptions({
+        propId: prop.id,
+        options: [
+          { id: options[0].id, text: "Spurs" },
+          { id: options[1].id, text: "Knicks" },
+        ],
+      });
+
+      expect(result.success).toBe(true);
+      expect(await storedOptions(prop.id)).toEqual([
+        { id: options[0].id, text: "Spurs", position: 0 },
+        { id: options[1].id, text: "Knicks", position: 1 },
+      ]);
+    },
+  );
+
+  ifRunningContainerTestsIt(
+    "rotates three labels in one call",
+    async () => {
+      const owner = await factory.createUser();
+      vi.mocked(getUserFromCookies).mockResolvedValue(owner);
+
+      const { prop, options } = await factory.createChoiceProp(
+        "any_of",
+        ["Rain", "Snow", "Sleet"],
+        { user_id: owner.id, competition_id: null },
+      );
+
+      const result = await updatePropOptions({
+        propId: prop.id,
+        options: [
+          { id: options[0].id, text: "Snow" },
+          { id: options[1].id, text: "Sleet" },
+          { id: options[2].id, text: "Rain" },
+        ],
+      });
+
+      expect(result.success).toBe(true);
+      expect((await storedOptions(prop.id)).map((o: any) => o.text)).toEqual([
+        "Snow",
+        "Sleet",
+        "Rain",
+      ]);
+    },
+  );
+
+  ifRunningContainerTestsIt(
     "refuses to remove an option and leaves the labels untouched",
     async () => {
       const owner = await factory.createUser();
@@ -281,4 +342,36 @@ describe("updatePropOptions", () => {
       expect(result.code).toBe("UNAUTHORIZED");
     }
   });
+
+  // Pins the schema property the two permutation tests above rely on: a
+  // non-deferrable UNIQUE (prop_id, text) would reject the first UPDATE.
+  ifRunningContainerTestsIt(
+    "defers (prop_id, text) uniqueness to commit",
+    async () => {
+      const owner = await factory.createUser();
+      const { prop, options } = await factory.createChoiceProp(
+        "one_of",
+        ["Red", "Blue"],
+        { user_id: owner.id, competition_id: null },
+      );
+
+      await testDb.transaction().execute(async (trx: any) => {
+        await trx
+          .updateTable("prop_options")
+          .set({ text: "Blue" })
+          .where("id", "=", options[0].id)
+          .execute();
+        await trx
+          .updateTable("prop_options")
+          .set({ text: "Red" })
+          .where("id", "=", options[1].id)
+          .execute();
+      });
+
+      expect((await storedOptions(prop.id)).map((o: any) => o.text)).toEqual([
+        "Blue",
+        "Red",
+      ]);
+    },
+  );
 });
