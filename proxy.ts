@@ -13,6 +13,7 @@ const PUBLIC_ROUTES = [
   "/oauth", // OAuth login and callback routes
   "/api/health",
   "/api/me", // Returns null if not logged in, used by client components
+  "/landing", // Landing-page concepts — the front door for logged-out visitors
 ];
 
 const REFRESH_BUFFER_SEC = 60;
@@ -32,6 +33,17 @@ function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTES.some(
     (route) => pathname === route || pathname.startsWith(route + "/"),
   );
+}
+
+/**
+ * Routes that render something for signed-out visitors but must NOT be listed
+ * as public: a public route skips the refresh below, so a signed-in user whose
+ * access token had just expired would be shown the signed-out page instead of
+ * being refreshed into their own. These fall through to the landing page only
+ * once there is genuinely no session to restore.
+ */
+function servesAnonymous(pathname: string): boolean {
+  return pathname === "/";
 }
 
 function redirectToLogin(request: NextRequest, pathname: string) {
@@ -56,8 +68,9 @@ export async function proxy(request: NextRequest) {
   const token = request.cookies.get("token")?.value;
   const refreshToken = request.cookies.get("refresh_token")?.value;
 
-  // No access token → redirect to login.
+  // No access token → landing page if the route serves visitors, else login.
   if (!token) {
+    if (servesAnonymous(pathname)) return NextResponse.next();
     return redirectToLogin(request, pathname);
   }
 
@@ -66,8 +79,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Access token expired, no refresh token → redirect to login.
+  // Access token expired, no refresh token → nothing left to restore.
   if (!refreshToken) {
+    if (servesAnonymous(pathname)) return NextResponse.next();
     return redirectToLogin(request, pathname);
   }
 
@@ -99,11 +113,13 @@ export async function proxy(request: NextRequest) {
     // distinguish normal expirations from IDP outages, clear both auth
     // cookies (leaving the stale refresh token would cause every subsequent
     // navigation to re-trigger the same failing refresh), and redirect.
-    logger.warn("Token refresh failed, redirecting to login", {
+    logger.warn("Token refresh failed, clearing session", {
       operation: "proxy.refreshAccessToken",
       error: err instanceof Error ? err.message : String(err),
     });
-    const response = redirectToLogin(request, pathname);
+    const response = servesAnonymous(pathname)
+      ? NextResponse.next()
+      : redirectToLogin(request, pathname);
     response.cookies.set("token", "", { ...sharedCookieOpts, maxAge: 0 });
     response.cookies.set("refresh_token", "", {
       ...sharedCookieOpts,

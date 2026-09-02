@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getUserFromCookies } from "@/lib/get-user";
+import { SignedOutLanding } from "@/components/signed-out-landing";
 import { Target, MessageCircleWarning } from "lucide-react";
 import MiniLeaderboard from "@/components/landing/mini-leaderboard";
 import NewsCard from "@/components/landing/news-card";
@@ -21,7 +22,12 @@ function PanelSkeleton({ lines = 3 }: { lines?: number }) {
 }
 
 export default async function Home() {
-  const user = (await getUserFromCookies())!;
+  const user = await getUserFromCookies();
+  // "/" is the front door: visitors without a session get the landing page,
+  // everyone signed in gets their dashboard.
+  if (!user) {
+    return <SignedOutLanding />;
+  }
   return (
     <main className="py-10 lg:py-14">
       <Container>
