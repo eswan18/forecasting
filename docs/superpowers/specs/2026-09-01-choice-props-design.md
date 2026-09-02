@@ -68,7 +68,7 @@ the migration is purely additive.
 | Table | Change |
 |---|---|
 | `props` | New `kind text NOT NULL DEFAULT 'binary' CHECK (kind IN ('binary','one_of','any_of'))`. A text column with a CHECK (not a PG enum) so a future `ordinal` value is a one-line change. |
-| `prop_options` (new) | `id serial PK`, `prop_id int NOT NULL REFERENCES props(id) ON DELETE CASCADE`, `text text NOT NULL`, `position int NOT NULL` (0-based display order), `created_at`/`updated_at timestamptz NOT NULL DEFAULT now()` + the existing `set_updated_at` trigger. `UNIQUE (prop_id, position)`, `UNIQUE (prop_id, text)`, `UNIQUE (id, prop_id)` (target of the composite FKs below). |
+| `prop_options` (new) | `id serial PK`, `prop_id int NOT NULL REFERENCES props(id) ON DELETE CASCADE`, `text text NOT NULL`, `position int NOT NULL` (0-based display order), `created_at`/`updated_at timestamptz NOT NULL DEFAULT now()` + the existing `set_updated_at` trigger. `UNIQUE (prop_id, position)`, `UNIQUE (prop_id, text) DEFERRABLE INITIALLY DEFERRED` (deferred so a label permutation within one transaction — swapping two options' labels, rewritten one row at a time — commits instead of colliding mid-statement), `UNIQUE (id, prop_id)` (target of the composite FKs below). |
 | `forecasts` | `forecast` becomes **nullable** (filled for binary, `NULL` for choice props). Add `UNIQUE (id, prop_id)`. The existing `prop_user_unique (prop_id, user_id)` stays. |
 | `forecast_options` (new) | `forecast_id int NOT NULL`, `prop_id int NOT NULL`, `option_id int NOT NULL`, `probability double precision NOT NULL CHECK (probability >= 0 AND probability <= 1)`, `created_at`/`updated_at` + trigger. `PRIMARY KEY (forecast_id, option_id)`. `FOREIGN KEY (forecast_id, prop_id) REFERENCES forecasts(id, prop_id) ON DELETE CASCADE`. `FOREIGN KEY (option_id, prop_id) REFERENCES prop_options(id, prop_id)`. |
 | `resolutions` | `resolution` becomes **nullable** (`NULL` for choice props). Add `UNIQUE (prop_id)` (the app already assumes one resolution per prop; the schema never enforced it) and `UNIQUE (id, prop_id)`. Also `DROP COLUMN IF EXISTS resolved_at` — production no longer has this column (it is absent from `docs/schema.png` and from `types/db_types.ts`) but the test bootstrap still creates it `NOT NULL`, which makes any app-path resolution insert fail in the container tests. Dropping it in this migration is a no-op in prod and aligns the test schema. |
@@ -137,7 +137,7 @@ CASE props.kind
   WHEN 'binary' THEN power(resolutions.resolution::integer::double precision - forecasts.forecast, 2::double precision)
   ELSE (
     SELECT SUM(power(ro.outcome::integer::double precision - fo.probability, 2::double precision))
-           * CASE props.kind WHEN 'one_of' THEN 0.5 ELSE 1.0 / COUNT(*) END
+           * CASE props.kind WHEN 'one_of' THEN 0.5 ELSE 1.0 / NULLIF(COUNT(*), 0) END
     FROM forecast_options fo
     JOIN resolution_options ro
       ON ro.option_id = fo.option_id AND ro.resolution_id = resolutions.id
@@ -145,6 +145,11 @@ CASE props.kind
   )
 END AS score
 ```
+
+The `NULLIF` guards the `any_of` divisor: the subquery matches no rows while
+the prop is unresolved, and `1.0 / 0` is a hard error in postgres (not `NULL`),
+so without it every read of the view would raise a division-by-zero as soon as
+an unresolved `any_of` prop had a forecast.
 
 It is `NULL` while unresolved, exactly as today. `v_props` is otherwise
 unchanged: the new `UNIQUE (prop_id)` on resolutions guarantees its LEFT JOIN
@@ -170,8 +175,8 @@ added now; it is the natural home when the graphics are revisited.
 (it is `NULL` for resolved choice props). Every such check moves to
 `resolution_id IS NOT NULL` (views) / `resolution_id !== null` (TS), or to
 `score IS NOT NULL` where a score is what is wanted. The `resolved-yes` /
-`resolved-no` statuses stay binary-only and a plain `resolved` status is added
-for choice props.
+`resolved-no` statuses stay binary-only; a plain `resolved` status is added for
+choice props in stage two (§4.3).
 
 ### 2.6 Pre-flight before applying the migration
 
@@ -251,8 +256,10 @@ export type PropWithUserForecast = VProp & {
 
 ### 3.3 Read path
 
-A shared helper `attachOptions(trx, props, userId)` in
-`lib/db_actions/prop-options.ts` takes rows carrying `prop_id` and
+A shared helper `attachOptions(trx, props, userId)` in `lib/attach-options.ts`
+— a `server-only` module, deliberately **not** a `"use server"` file, because
+every export of a `"use server"` file becomes a client-callable server action
+and this helper takes a Kysely `Transaction` — takes rows carrying `prop_id` and
 `prop_kind`, queries `v_prop_options` for the choice props among them, joins
 the user's `forecast_options` (via the user's `forecasts` header) and
 `AVG(probability)` across all forecasts, and returns `Map<propId,
@@ -263,6 +270,8 @@ PropOptionSummary[]>` ordered by `position`. It is used by:
 - `getUserScoreBreakdown` → each `UserForecastScore` gains `kind: PropKind` and `options: { text: string; userForecast: number; outcome: boolean }[]` (empty for binary).
 - `getRecentlyResolvedForecasts` → returns `(VForecast & { options: PropOptionSummary[] })[]`.
 
+`lib/db_actions/prop-options.ts` holds only the `updatePropOptions` action.
+
 `getCompetitionStats` and `getUpcomingDeadlines` already work off header rows,
 so their counts are correct; `UpcomingDeadline` gains `kind: PropKind` and
 `hasUserForecast: boolean`.
@@ -272,7 +281,7 @@ so their counts are correct; `UpcomingDeadline` gains `kind: PropKind` and
 | Action | Behaviour |
 |---|---|
 | `createProp({ prop, options? })` | `options: string[]` required iff `prop.kind` is a choice kind, forbidden otherwise. Validated with `validateOptionLabels`; inserted into `prop_options` (position = index) in the same transaction after the prop. |
-| `updateProp` | Rejects any `kind` key in the update (same whitelist pattern as `updateForecast`). |
+| `updateProp` | Rejects a `kind` in the update — the guard is `prop.kind !== undefined`, so an update object that merely carries an undefined `kind` passes (same whitelist pattern as `updateForecast`). |
 | `updatePropOptions({ propId, options: { id, text }[] })` (new) | Label edits only; the set of ids must equal the prop's existing option ids. Validated with `validateOptionLabels`. |
 | `saveChoiceForecast({ propId, probabilities })` (new) | Requires login; forecasts as the current user. Rejects binary props and past-close-date props (same check as `createForecast`). Validates with `validateChoiceForecast` against the prop's options. Upserts the header row (`forecast: null`), deletes existing `forecast_options` for it, inserts the new ones, touches the header's `updated_at`. Returns the forecast id. |
 | `createForecast` / `updateForecast` | Unchanged, plus a `VALIDATION_ERROR` when the prop is a choice prop. |

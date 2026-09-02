@@ -18,7 +18,7 @@ import {
 import { logger } from "@/lib/logger";
 import { withRLS, withRLSAction } from "@/lib/db-helpers";
 import { attachOptions } from "@/lib/attach-options";
-import { isChoiceKind, type PropKind } from "@/lib/prop-kind";
+import { isChoiceKind, isPropKind, type PropKind } from "@/lib/prop-kind";
 import {
   validateChoiceOutcomes,
   validateOptionLabels,
@@ -553,7 +553,12 @@ export async function createProp({
     // Options are required for choice props and forbidden for binary ones.
     const kind: PropKind = prop.kind ?? "binary";
     const trimmedOptions = (options ?? []).map((o) => o.trim());
-    if (isChoiceKind(kind)) {
+    if (prop.kind !== undefined && !isPropKind(prop.kind)) {
+      // A kind the app does not know about: the CHECK constraint would reject
+      // it anyway, and the option rules below have no meaning for it, so stop
+      // here rather than validating options against a guessed kind.
+      validationErrors.kind = ["Unknown proposition type"];
+    } else if (isChoiceKind(kind)) {
       const optionErrors = validateOptionLabels(trimmedOptions);
       if (optionErrors.length > 0) {
         validationErrors.options = optionErrors;

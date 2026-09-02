@@ -742,6 +742,35 @@ describe("Props Unit Tests", () => {
       expect(dbHelpers.withRLSAction).not.toHaveBeenCalled();
     });
 
+    it("rejects a kind the app does not know about", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+      const result = await createProp({
+        prop: {
+          text: "Where does this finish?",
+          category_id: 1,
+          user_id: null,
+          kind: "ordinal" as any,
+        },
+        options: ["First", "Second"],
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe("VALIDATION_ERROR");
+        const validationResult = result as {
+          validationErrors?: Record<string, string[]>;
+        };
+        expect(validationResult.validationErrors?.kind).toEqual([
+          "Unknown proposition type",
+        ]);
+        // The option rules are skipped: they have no meaning for a kind the
+        // app cannot classify.
+        expect(validationResult.validationErrors?.options).toBeUndefined();
+      }
+      expect(dbHelpers.withRLSAction).not.toHaveBeenCalled();
+    });
+
     it("does not touch prop_options for a yes/no prop", async () => {
       vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
       const { trx, inserts } = makeRecordingTrx();

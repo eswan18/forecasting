@@ -192,6 +192,76 @@ describe("resolveProp against the database", () => {
       .execute();
   }
 
+  /** Every resolution header for the prop, to prove there is only ever one. */
+  async function storedHeaderCount(propId: number) {
+    const rows = await testDb
+      .selectFrom("resolutions")
+      .select("id")
+      .where("prop_id", "=", propId)
+      .execute();
+    return rows.length;
+  }
+
+  ifRunningContainerTestsIt(
+    "writes a resolution header and no outcome rows for a binary prop",
+    async () => {
+      const admin = await factory.createAdminUser();
+      vi.mocked(getUserFromCookies).mockResolvedValue(admin);
+      const prop = await factory.createProp();
+
+      const result = await resolveProp({
+        propId: prop.id,
+        resolution: true,
+        notes: "x",
+        userId: null,
+      });
+
+      expect(result.success).toBe(true);
+      expect(await storedHeaderCount(prop.id)).toBe(1);
+
+      const header = await storedHeader(prop.id);
+      expect(header.resolution).toBe(true);
+      expect(header.notes).toBe("x");
+      expect(header.user_id).toBeNull();
+      // A binary resolution lives entirely in the header row.
+      expect(await storedOutcomes(prop.id)).toEqual([]);
+    },
+  );
+
+  ifRunningContainerTestsIt(
+    "overwrites a binary resolution in place rather than adding a second one",
+    async () => {
+      const admin = await factory.createAdminUser();
+      vi.mocked(getUserFromCookies).mockResolvedValue(admin);
+      const prop = await factory.createProp();
+
+      const first = await resolveProp({
+        propId: prop.id,
+        resolution: true,
+        notes: "x",
+        userId: null,
+      });
+      expect(first.success).toBe(true);
+      const before = await storedHeader(prop.id);
+
+      const result = await resolveProp({
+        propId: prop.id,
+        resolution: false,
+        overwrite: true,
+        userId: null,
+      });
+
+      expect(result.success).toBe(true);
+      expect(await storedHeaderCount(prop.id)).toBe(1);
+
+      const after = await storedHeader(prop.id);
+      // The same row, updated: an overwrite must not orphan the old header.
+      expect(after.id).toBe(before.id);
+      expect(after.resolution).toBe(false);
+      expect(await storedOutcomes(prop.id)).toEqual([]);
+    },
+  );
+
   ifRunningContainerTestsIt(
     "writes a null header and one outcome row per option for a one_of prop",
     async () => {

@@ -124,6 +124,12 @@ export async function updatePropOptions({
       propId,
       duration,
     });
+    // The deferred unique fires at commit, i.e. from this catch rather than
+    // from the UPDATE inside the transaction, so map it to the validation
+    // error the caller can actually show against the option fields.
+    if ((err as Error).message?.includes("prop_options_prop_text_unique")) {
+      return error("Options must be unique", ERROR_CODES.VALIDATION_ERROR);
+    }
     return error("Failed to update options", ERROR_CODES.DATABASE_ERROR);
   }
 }

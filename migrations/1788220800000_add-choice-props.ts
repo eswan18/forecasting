@@ -62,6 +62,12 @@ export async function up(db: Kysely<any>): Promise<void> {
       CONSTRAINT forecast_options_forecast_fk FOREIGN KEY (forecast_id, prop_id) REFERENCES forecasts(id, prop_id) ON DELETE CASCADE,
       CONSTRAINT forecast_options_option_fk FOREIGN KEY (option_id, prop_id) REFERENCES prop_options(id, prop_id)
     )`.execute(db);
+  // The primary key leads with forecast_id, so nothing indexes prop_id on its
+  // own; deleting a prop cascades through prop_options, whose FK target is
+  // (option_id, prop_id), and per-prop reads filter on prop_id directly.
+  await sql`CREATE INDEX forecast_options_prop_id_idx ON forecast_options (prop_id)`.execute(
+    db,
+  );
   await sql`CREATE TRIGGER set_updated_at BEFORE INSERT OR UPDATE ON forecast_options FOR EACH ROW EXECUTE FUNCTION set_updated_at()`.execute(
     db,
   );
@@ -392,6 +398,8 @@ export async function up(db: Kysely<any>): Promise<void> {
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
+  // Pre-launch only: the SET NOT NULL restores below fail once any choice
+  // forecast or resolution exists, because those rows hold a null header value.
   await db.schema.dropView("v_prop_options").execute();
   await db.schema.dropView("v_forecasts").execute();
   await db.schema.dropView("v_props").execute();
@@ -454,6 +462,7 @@ export async function down(db: Kysely<any>): Promise<void> {
   await sql`DROP FUNCTION prop_kind_of(integer)`.execute(db);
 
   await sql`DROP TABLE resolution_options`.execute(db);
+  await sql`DROP INDEX forecast_options_prop_id_idx`.execute(db);
   await sql`DROP TABLE forecast_options`.execute(db);
   await sql`DROP TABLE prop_options`.execute(db);
 
