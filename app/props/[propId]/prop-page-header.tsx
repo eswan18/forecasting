@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { VProp } from "@/types/db_types";
+import type { PropOptionSummary, VProp } from "@/types/db_types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, CheckCircle2, Pencil } from "lucide-react";
@@ -14,7 +14,9 @@ import { getPropStatusFromProp } from "@/lib/prop-status";
 import { cn, focusRing } from "@/lib/utils";
 
 interface PropPageHeaderProps {
-  prop: VProp;
+  // Carries `options` for choice props so the resolution and edit dialogs can
+  // work per option.
+  prop: VProp & { options?: PropOptionSummary[] };
   canResolve: boolean;
   canEdit: boolean;
 }
