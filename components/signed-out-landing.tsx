@@ -730,11 +730,14 @@ export function SignedOutLanding() {
         <div className="colophon">
           <p className="mono">
             Printed in two colours ·{" "}
+            {/* The same physical ink keeps the same name in both editions:
+                the light stock and the dark drum are near-identical creams, as
+                are the light drum and the dark stock. */}
             <span className="stock-light">
-              Black + Bright Red on Warm White
+              Warm Black + Bright Red on Warm White
             </span>
             <span className="stock-dark">
-              White + Bright Red on Warm Black
+              Warm White + Bright Red on Warm Black
             </span>
           </p>
         </div>
