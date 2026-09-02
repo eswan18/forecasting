@@ -65,11 +65,14 @@ export function useChoiceForecastEntry(
   const saved = useMemo(() => valuesFromOptions(prop.options), [prop.options]);
 
   const [values, setValues] = useState<ChoiceEntryValues>(saved);
-  const [seededFrom, setSeededFrom] = useState(saved);
-  if (seededFrom !== saved) {
+  // Keyed on `prop.options` itself, not on the memoised `saved`: `useMemo` is
+  // a performance hint React may drop, and a dropped cache must not look like
+  // fresh options and discard an in-progress entry.
+  const [seededFrom, setSeededFrom] = useState(prop.options);
+  if (seededFrom !== prop.options) {
     // New options from the server: drop local edits and show what it holds.
-    setSeededFrom(saved);
-    setValues(saved);
+    setSeededFrom(prop.options);
+    setValues(valuesFromOptions(prop.options));
   }
 
   const saveAction = useServerAction(saveChoiceForecast, {
