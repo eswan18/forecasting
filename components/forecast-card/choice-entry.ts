@@ -59,7 +59,7 @@ export function isEntryComplete(
   return kind === "one_of" ? entryTotalPercent(entry) === 100 : true;
 }
 
-/** Have any of the given options changed? Extra keys are ignored. */
+/** Do the two entries agree on every given option? Extra keys are ignored. */
 export function entriesEqual(
   a: ChoiceEntryValues,
   b: ChoiceEntryValues,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,7 +31,7 @@ import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Spinner } from "@/components/ui/spinner";
 import { OptionsEditor } from "@/components/forms/options-editor";
 import {
-  DEFAULT_OPTION_FIELDS,
+  defaultOptionFields,
   propKindSchema,
   propOptionsSchema,
   refineKindOptions,
@@ -110,6 +110,7 @@ export function NewPropForm({
   const router = useRouter();
   const timezone = getBrowserTimezone();
   const [showPreview, setShowPreview] = useState(false);
+  const optionsLabelId = useId();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -154,7 +155,7 @@ export function NewPropForm({
   function handleKindChange(nextKind: PropKind) {
     if (isChoiceKind(nextKind)) {
       if (form.getValues("options").length === 0) {
-        form.setValue("options", [...DEFAULT_OPTION_FIELDS]);
+        form.setValue("options", defaultOptionFields());
       }
     } else {
       form.setValue("options", []);
@@ -256,13 +257,24 @@ export function NewPropForm({
               name="options"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-medium">Options</FormLabel>
+                  {/* The options editor is a group of inputs rather than one
+                      labelable control, so this label names the group by id
+                      instead of pointing `htmlFor` at an element that isn't
+                      there. */}
+                  <FormLabel
+                    id={optionsLabelId}
+                    htmlFor={undefined}
+                    className="text-sm font-medium"
+                  >
+                    Options
+                  </FormLabel>
                   <OptionsEditor
                     value={field.value.map((option) => option.text)}
                     onChange={(labels) =>
                       field.onChange(labels.map((text) => ({ text })))
                     }
                     errors={optionErrors}
+                    ariaLabelledBy={optionsLabelId}
                   />
                   <FormDescription>
                     Forecasters see these in the order listed here.

@@ -20,7 +20,12 @@ export const propOptionsSchema = z.array(z.object({ text: z.string() }));
 
 export type PropOptionField = z.infer<typeof propOptionsSchema>[number];
 
-export const DEFAULT_OPTION_FIELDS: PropOptionField[] = [
+/**
+ * A fresh pair of blank option rows for a form switching to a choice kind.
+ * A factory rather than a constant: each caller writes these straight into
+ * form state, so they must not share one array of objects.
+ */
+export const defaultOptionFields = (): PropOptionField[] => [
   { text: "" },
   { text: "" },
 ];

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import {
-  DEFAULT_OPTION_FIELDS,
+  defaultOptionFields,
   propKindSchema,
   propOptionsSchema,
   refineKindOptions,
@@ -66,6 +66,13 @@ describe("prop form schema", () => {
   });
 
   it("defaults to two blank option fields", () => {
-    expect(DEFAULT_OPTION_FIELDS).toEqual([{ text: "" }, { text: "" }]);
+    expect(defaultOptionFields()).toEqual([{ text: "" }, { text: "" }]);
+  });
+
+  it("hands each caller its own option objects", () => {
+    const first = defaultOptionFields();
+    const second = defaultOptionFields();
+    first[0].text = "edited";
+    expect(second[0].text).toBe("");
   });
 });

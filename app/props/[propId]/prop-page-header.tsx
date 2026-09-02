@@ -98,20 +98,27 @@ export default function PropPageHeader({
         )}
       </div>
 
-      <ResolutionDialog
-        prop={prop}
-        isOpen={isResolutionDialogOpen}
-        onClose={() => setIsResolutionDialogOpen(false)}
-      />
+      {/* Mounted only while open, so the dialogs' `useState` initialisers
+          re-seed from the prop each time rather than keeping the values they
+          were first opened with. */}
+      {isResolutionDialogOpen && (
+        <ResolutionDialog
+          prop={prop}
+          isOpen
+          onClose={() => setIsResolutionDialogOpen(false)}
+        />
+      )}
 
-      <PropEditDialog
-        prop={prop}
-        isOpen={isEditDialogOpen}
-        onClose={() => {
-          setIsEditDialogOpen(false);
-          router.refresh();
-        }}
-      />
+      {isEditDialogOpen && (
+        <PropEditDialog
+          prop={prop}
+          isOpen
+          onClose={() => {
+            setIsEditDialogOpen(false);
+            router.refresh();
+          }}
+        />
+      )}
     </>
   );
 }

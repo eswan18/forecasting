@@ -79,6 +79,19 @@ export const AnyThatApply: Story = {
   },
 };
 
+// `any_of` with a row still blank: no running total to explain the disabled
+// Save button, so the editor spells the reason out.
+export const AnyThatApplyIncomplete: Story = {
+  args: {
+    kind: "any_of",
+    options: ECONOMY_OPTIONS,
+    values: {
+      ...valuesFromOptions(ECONOMY_OPTIONS),
+      [ECONOMY_OPTIONS[1].option_id]: null,
+    },
+  },
+};
+
 // Read-only (forecasts closed): values render in mono instead of inputs.
 export const Disabled: Story = {
   args: {

@@ -249,6 +249,10 @@ export function CompetitionDashboard({
                 props={openProps}
                 canCreateProps={isAdmin}
                 competitionId={competitionId}
+                // The cards seed their entry state from the props this page
+                // was rendered with, so a save has to re-fetch them or the
+                // card keeps showing the pre-save baseline as "changed".
+                onForecastUpdate={() => router.refresh()}
               />
             )}
             {activeTab === "unresolved" && (

@@ -12,6 +12,12 @@ interface OptionsEditorProps {
   disabled?: boolean;
   /** Validation messages for the option list as a whole. */
   errors?: string[];
+  /**
+   * Id of the element naming this group. There is no single labelable control
+   * here — a form label has nothing to point `htmlFor` at, so the group names
+   * itself instead.
+   */
+  ariaLabelledBy?: string;
 }
 
 /**
@@ -23,6 +29,7 @@ export function OptionsEditor({
   onChange,
   disabled = false,
   errors = [],
+  ariaLabelledBy,
 }: OptionsEditorProps) {
   const canRemove = !disabled && value.length > MIN_OPTIONS;
   const canAdd = !disabled && value.length < MAX_OPTIONS;
@@ -36,7 +43,7 @@ export function OptionsEditor({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" role="group" aria-labelledby={ariaLabelledBy}>
       <div className="space-y-2">
         {value.map((option, index) => (
           <div key={index} className="flex items-center gap-2">

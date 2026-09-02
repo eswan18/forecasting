@@ -463,10 +463,12 @@ export function CompetitionPropView({
         </div>
       </div>
 
-      {isAdmin && (
+      {/* Mounted only while open, so the dialog's `useState` initialisers
+          re-seed from the prop each time it is opened. */}
+      {isAdmin && isEditDialogOpen && (
         <PropEditDialog
           prop={prop}
-          isOpen={isEditDialogOpen}
+          isOpen
           onClose={() => {
             setIsEditDialogOpen(false);
             router.refresh();

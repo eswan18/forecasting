@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { UseFormReturn } from "react-hook-form";
 import {
   FileText,
@@ -34,7 +35,7 @@ import {
 import { Category, Competition } from "@/types/db_types";
 import { PropFormValues } from "./create-edit-prop-form";
 import { OptionsEditor } from "./options-editor";
-import { DEFAULT_OPTION_FIELDS } from "./prop-form-schema";
+import { defaultOptionFields } from "./prop-form-schema";
 
 interface PropFormFieldsProps {
   form: UseFormReturn<PropFormValues>;
@@ -55,6 +56,7 @@ export function PropFormFields({
   isEditing,
 }: PropFormFieldsProps) {
   const kind = form.watch("kind");
+  const optionsLabelId = useId();
 
   // `refineKindOptions` puts every option complaint on the `options` path, so
   // the messages belong to the list as a whole rather than to one row.
@@ -67,7 +69,7 @@ export function PropFormFields({
   function handleKindChange(nextKind: PropKind) {
     if (isChoiceKind(nextKind)) {
       if (form.getValues("options").length === 0) {
-        form.setValue("options", [...DEFAULT_OPTION_FIELDS]);
+        form.setValue("options", defaultOptionFields());
       }
     } else {
       form.setValue("options", []);
@@ -144,7 +146,15 @@ export function PropFormFields({
           name="options"
           render={({ field }) => (
             <FormItem className="space-y-2">
-              <FormLabel className="text-sm font-medium flex items-center gap-2">
+              {/* The options editor is a group of inputs rather than one
+                  labelable control, so this label names the group by id
+                  instead of pointing `htmlFor` at an element that isn't
+                  there. */}
+              <FormLabel
+                id={optionsLabelId}
+                htmlFor={undefined}
+                className="text-sm font-medium flex items-center gap-2"
+              >
                 <List className="h-4 w-4" />
                 Options
                 <span className="text-xs text-muted-foreground font-normal">
@@ -157,6 +167,7 @@ export function PropFormFields({
                   field.onChange(labels.map((text) => ({ text })))
                 }
                 errors={optionErrors}
+                ariaLabelledBy={optionsLabelId}
               />
             </FormItem>
           )}

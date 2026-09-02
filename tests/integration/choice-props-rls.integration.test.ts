@@ -63,6 +63,56 @@ describe("choice props row-level security", () => {
     getTestTracker().trackId("competition_members", row.id);
   }
 
+  /**
+   * How much of one choice prop a caller can see: the prop row, its `v_props`
+   * row, its options, and the per-option children of one forecast and one
+   * resolution on it. The two visibility tests below assert the same shape
+   * from opposite sides — nothing for a private competition's outsiders,
+   * everything for a public competition's.
+   */
+  function countsFor(
+    userId: number | null,
+    ids: { propId: number; forecastId: number; resolutionId: number },
+  ) {
+    return asUser(rls, userId, async (trx) => ({
+      props: (
+        await trx
+          .selectFrom("props")
+          .selectAll()
+          .where("id", "=", ids.propId)
+          .execute()
+      ).length,
+      vProps: (
+        await trx
+          .selectFrom("v_props")
+          .selectAll()
+          .where("prop_id", "=", ids.propId)
+          .execute()
+      ).length,
+      propOptions: (
+        await trx
+          .selectFrom("prop_options")
+          .selectAll()
+          .where("prop_id", "=", ids.propId)
+          .execute()
+      ).length,
+      forecastOptions: (
+        await trx
+          .selectFrom("forecast_options")
+          .selectAll()
+          .where("forecast_id", "=", ids.forecastId)
+          .execute()
+      ).length,
+      resolutionOptions: (
+        await trx
+          .selectFrom("resolution_options")
+          .selectAll()
+          .where("resolution_id", "=", ids.resolutionId)
+          .execute()
+      ).length,
+    }));
+  }
+
   ifRunningContainerTestsIt(
     "acts as a non-owner role, so the policies are actually enforced",
     async () => {
@@ -512,7 +562,6 @@ describe("choice props row-level security", () => {
     },
   );
 
-
   // ---- fail-closed private-competition visibility ------------------------
 
   /**
@@ -573,44 +622,11 @@ describe("choice props row-level security", () => {
       });
       expect(mechanism).toEqual({ competitions_visible: 0, props_visible: 0 });
 
-      const countsFor = (userId: number | null) =>
-        asUser(rls, userId, async (trx) => ({
-          props: (
-            await trx
-              .selectFrom("props")
-              .selectAll()
-              .where("id", "=", prop.id)
-              .execute()
-          ).length,
-          vProps: (
-            await trx
-              .selectFrom("v_props")
-              .selectAll()
-              .where("prop_id", "=", prop.id)
-              .execute()
-          ).length,
-          propOptions: (
-            await trx
-              .selectFrom("prop_options")
-              .selectAll()
-              .where("prop_id", "=", prop.id)
-              .execute()
-          ).length,
-          forecastOptions: (
-            await trx
-              .selectFrom("forecast_options")
-              .selectAll()
-              .where("forecast_id", "=", forecast.id)
-              .execute()
-          ).length,
-          resolutionOptions: (
-            await trx
-              .selectFrom("resolution_options")
-              .selectAll()
-              .where("resolution_id", "=", resolution.id)
-              .execute()
-          ).length,
-        }));
+      const ids = {
+        propId: prop.id,
+        forecastId: forecast.id,
+        resolutionId: resolution.id,
+      };
 
       const nothing = {
         props: 0,
@@ -619,12 +635,12 @@ describe("choice props row-level security", () => {
         forecastOptions: 0,
         resolutionOptions: 0,
       };
-      expect(await countsFor(stranger.id)).toEqual(nothing);
-      expect(await countsFor(null)).toEqual(nothing);
+      expect(await countsFor(stranger.id, ids)).toEqual(nothing);
+      expect(await countsFor(null, ids)).toEqual(nothing);
 
       // Members are unaffected — they reach these rows through
       // is_competition_member(), which is SECURITY DEFINER and never filtered.
-      expect(await countsFor(forecaster.id)).toEqual({
+      expect(await countsFor(forecaster.id, ids)).toEqual({
         props: 1,
         vProps: 1,
         propOptions: 3,
@@ -748,6 +764,99 @@ describe("choice props row-level security", () => {
           .selectFrom("forecasts")
           .selectAll()
           .where("id", "=", memberForecastId)
+          .execute(),
+      ).toHaveLength(1);
+    },
+  );
+
+  /**
+   * The other side of the same rewrite. Fail-closed is only correct if the
+   * positive `EXISTS (… c.is_private = FALSE)` branch still admits genuinely
+   * public props: `view_competitions` shows a public competition to everyone,
+   * anonymous callers included, so the sub-select finds its row and the prop,
+   * its options and its children stay readable. Without this test the eight
+   * policies could be closed to *everyone* and the suite above would still
+   * pass.
+   */
+  ifRunningContainerTestsIt(
+    "still shows a public competition's rows to strangers and anonymous callers",
+    async () => {
+      const forecaster = await factory.createUser();
+      const stranger = await factory.createUser();
+      // Public competitions carry their own dates (the
+      // public_competitions_require_dates constraint); the factory defaults
+      // already satisfy it. They have no members — the
+      // enforce_private_competition_members trigger rejects those.
+      const competition = await factory.createCompetition();
+      expect(competition.is_private).toBe(false);
+      // category_id defaults to 1: public competition props carry a category
+      // at the app level, though only competition_id matters to the policies.
+      const { prop, options } = await factory.createChoiceProp(
+        "one_of",
+        ["A", "B", "C"],
+        { competition_id: competition.id },
+      );
+      const forecast = await factory.createChoiceForecast(
+        forecaster.id,
+        prop.id,
+        [
+          { optionId: options[0].id, probability: 0.4 },
+          { optionId: options[1].id, probability: 0.6 },
+        ],
+      );
+      const resolution = await factory.createChoiceResolution(prop.id, [
+        { optionId: options[0].id, outcome: true },
+        { optionId: options[1].id, outcome: false },
+      ]);
+      const ids = {
+        propId: prop.id,
+        forecastId: forecast.id,
+        resolutionId: resolution.id,
+      };
+
+      // The mechanism, mirrored: the competition row is visible to a
+      // non-member, so the public branch of each policy matches.
+      const mechanism = await asUser(rls, stranger.id, async (trx) => {
+        const row = await sql<{
+          competitions_visible: number;
+          props_visible: number;
+        }>`
+          SELECT (SELECT count(*)::int FROM competitions c WHERE c.id = ${competition.id}) AS competitions_visible,
+                 (SELECT count(*)::int FROM props p WHERE p.id = ${prop.id}) AS props_visible
+        `.execute(trx);
+        return row.rows[0];
+      });
+      expect(mechanism).toEqual({ competitions_visible: 1, props_visible: 1 });
+
+      const everything = {
+        props: 1,
+        vProps: 1,
+        propOptions: 3,
+        forecastOptions: 2,
+        resolutionOptions: 2,
+      };
+      expect(await countsFor(stranger.id, ids)).toEqual(everything);
+      expect(await countsFor(null, ids)).toEqual(everything);
+
+      // And the write side stays open where it should: create_forecasts' public
+      // branch still admits a stranger's own forecast header on a public
+      // competition's prop. (Choice props carry a null header forecast; the
+      // per-option rows hang off it.)
+      const strangerForecastId = await asUser(rls, stranger.id, async (trx) => {
+        const header = await trx
+          .insertInto("forecasts")
+          .values({ user_id: stranger.id, prop_id: prop.id, forecast: null })
+          .returning("id")
+          .executeTakeFirstOrThrow();
+        return header.id;
+      });
+      // Written as app_user, so the global cleanup needs to know about it.
+      getTestTracker().trackId("forecasts", strangerForecastId);
+      expect(
+        await db
+          .selectFrom("forecasts")
+          .selectAll()
+          .where("id", "=", strangerForecastId)
           .execute(),
       ).toHaveLength(1);
     },

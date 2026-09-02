@@ -47,8 +47,13 @@ export function ChoiceForecastEditor({
   onChange,
   disabled = false,
 }: ChoiceForecastEditorProps) {
-  const total = entryTotalPercent(shownValues(options, values));
+  const shown = shownValues(options, values);
+  const total = entryTotalPercent(shown);
   const addsUp = total === 100;
+  // `one_of` says why Save is disabled through its running total; `any_of` has
+  // no footer at all, so a blank row would otherwise leave the disabled button
+  // unexplained.
+  const hasBlankRow = Object.values(shown).some((value) => value === null);
 
   return (
     <div className="divide-y divide-border">
@@ -78,6 +83,12 @@ export function ChoiceForecastEditor({
           </div>
         );
       })}
+
+      {kind === "any_of" && !disabled && hasBlankRow && (
+        <div className="py-2 text-xs text-muted-foreground">
+          Fill in every option to save
+        </div>
+      )}
 
       {kind === "one_of" && (
         <div className="flex items-center justify-between gap-3 py-2">

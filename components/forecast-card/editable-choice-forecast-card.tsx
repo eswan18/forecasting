@@ -107,10 +107,12 @@ export function EditableChoiceForecastCard({
         </Button>
       </div>
 
-      {user?.is_admin && (
+      {/* Mounted only while open, so the dialog's `useState` initialisers
+          re-seed from the prop each time it is opened. */}
+      {user?.is_admin && isEditDialogOpen && (
         <PropEditDialog
           prop={prop}
-          isOpen={isEditDialogOpen}
+          isOpen
           onClose={() => {
             setIsEditDialogOpen(false);
             onForecastUpdate?.();

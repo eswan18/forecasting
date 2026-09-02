@@ -53,11 +53,25 @@ export const AnyThatApplyResolved: Story = {
   },
 };
 
-// Nobody forecasted any option -> the whole list collapses to a placeholder.
+// Nobody forecasted any option and the prop is still open -> the whole list
+// collapses to a placeholder.
 export const NoForecast: Story = {
   args: {
     kind: "one_of",
     options: NBA_CHAMPION_OPTIONS.map((option) => ({
+      ...option,
+      user_forecast: null,
+    })),
+  },
+};
+
+// Resolved, but the user never forecast: the outcomes are the point of the
+// card, so the rows stay — labels, marks and community averages, with no
+// percentage column and no bars — under the "No forecast yet" line.
+export const ResolvedNoForecast: Story = {
+  args: {
+    kind: "any_of",
+    options: RESOLVED_ECONOMY_OPTIONS.map((option) => ({
       ...option,
       user_forecast: null,
     })),
