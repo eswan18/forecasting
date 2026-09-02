@@ -110,10 +110,36 @@ schema.
 
 ### 2.3 Row-level security
 
-Enable RLS on all three new tables and mirror the parent tables' policies
-**verbatim in inlined form** (the codebase inlines the prop-visibility
-conditions inside `EXISTS (SELECT 1 FROM props p …)` rather than relying on
-nested RLS; follow that pattern exactly).
+Enable RLS on all three new tables and mirror the parent tables' policies in
+inlined form: the codebase inlines the prop-visibility conditions inside
+`EXISTS (SELECT 1 FROM props p …)` rather than relying on nested RLS.
+
+The private-competition test inside those inlined predicates **must use the
+fail-closed positive form**:
+
+```sql
+p.competition_id IS NULL
+OR EXISTS (SELECT 1 FROM competitions c
+            WHERE c.id = p.competition_id AND c.is_private = FALSE)
+```
+
+not the negation the parents originally shipped (`NOT EXISTS (… c.is_private =
+TRUE)`). Postgres RLS-filters the relations referenced inside a policy
+expression as the querying role, and `view_competitions` hides private
+competitions from non-members — so under the negation that sub-select found
+nothing, `NOT EXISTS` was TRUE, and every private competition's rows fell
+through the "public" branch to any caller, anonymous ones included. The
+positive form fails closed under the same filtering while still admitting
+genuinely public props, because public competitions are visible to everyone;
+membership and system-admin branches are unaffected either way, since
+`is_competition_member()` / `is_current_user_admin()` are SECURITY DEFINER.
+Migration `1788307200000_fail-closed-private-competition-rls` applies this form
+to the three policies below **and** to their parents (`view_props`,
+`create_props`, `view_resolutions`, `view_forecasts`, `create_forecasts`)
+together — closing only the children would leave the prop text and the binary
+forecasts exposed. Behaviour is covered by
+`tests/integration/choice-props-rls.integration.test.ts`, which runs through a
+non-owner database role; policies are unenforced against a table owner.
 
 - `prop_options`
   - `view_prop_options` FOR SELECT: `EXISTS (SELECT 1 FROM props p WHERE p.id = prop_options.prop_id AND (<the four `view_props` branches applied to p>))`.

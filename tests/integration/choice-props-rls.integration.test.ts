@@ -11,7 +11,10 @@ import {
 
 /**
  * Behavioural tests for the six RLS policies added by
- * migrations/1788220800000_add-choice-props.ts (design spec §2.3).
+ * migrations/1788220800000_add-choice-props.ts (design spec §2.3), and for the
+ * fail-closed private-competition visibility that
+ * migrations/1788307200000_fail-closed-private-competition-rls.ts gives them
+ * and their parent policies.
  *
  * Seeding goes through `db` — the container superuser, which owns every table
  * and so bypasses RLS entirely. Every assertion goes through `rls`, the
@@ -67,17 +70,20 @@ describe("choice props row-level security", () => {
         role_name: string;
         bypasses_rls: boolean;
         owns_tables: number;
+        inherits_owner: boolean;
       }>`
         SELECT current_user::text AS role_name,
                (SELECT rolbypassrls FROM pg_roles WHERE rolname = current_user) AS bypasses_rls,
                (SELECT count(*)::int FROM pg_class c
                   JOIN pg_roles r ON r.oid = c.relowner
-                 WHERE r.rolname = current_user AND c.relkind = 'r') AS owns_tables
+                 WHERE r.rolname = current_user AND c.relkind = 'r') AS owns_tables,
+               pg_has_role(current_user, 'test_user', 'USAGE') AS inherits_owner
       `.execute(rls);
       expect(identity.rows[0]).toEqual({
         role_name: "app_user",
         bypasses_rls: false,
         owns_tables: 0,
+        inherits_owner: false,
       });
 
       const secured = await sql<{ relname: string; relrowsecurity: boolean }>`
@@ -376,6 +382,7 @@ describe("choice props row-level security", () => {
     async () => {
       const compAdmin = await factory.createUser();
       const member = await factory.createUser();
+      const sysAdmin = await factory.createAdminUser();
       const competition = await createPrivateCompetition();
       await addMember(competition.id, compAdmin.id, "admin");
       await addMember(competition.id, member.id, "forecaster");
@@ -454,16 +461,18 @@ describe("choice props row-level security", () => {
         { option_id: options[1].id, outcome: false },
       ]);
 
-      // Members read the outcome...
-      expect(
-        await asUser(rls, member.id, (trx) =>
-          trx
-            .selectFrom("resolution_options")
-            .selectAll()
-            .where("resolution_id", "=", resolutionId)
-            .execute(),
-        ),
-      ).toHaveLength(2);
+      // Members and system admins read the outcome...
+      for (const reader of [member, sysAdmin]) {
+        expect(
+          await asUser(rls, reader.id, (trx) =>
+            trx
+              .selectFrom("resolution_options")
+              .selectAll()
+              .where("resolution_id", "=", resolutionId)
+              .execute(),
+          ),
+        ).toHaveLength(2);
+      }
 
       // ...but cannot append an outcome to the admin's resolution...
       await expect(
@@ -503,38 +512,25 @@ describe("choice props row-level security", () => {
     },
   );
 
-  // ---- known gap ---------------------------------------------------------
+
+  // ---- fail-closed private-competition visibility ------------------------
 
   /**
-   * KNOWN GAP, pinned deliberately. Non-members can READ a private
-   * competition's rows — the prop itself, and therefore its prop_options,
-   * forecast_options and resolution_options.
+   * Regression guard for
+   * migrations/1788307200000_fail-closed-private-competition-rls.ts.
    *
-   * Why: every one of these SELECT policies decides "is this competition
-   * private?" with an inline `NOT EXISTS (SELECT 1 FROM competitions c WHERE
-   * c.id = … AND c.is_private)`. Sub-selects inside a policy expression are
-   * themselves subject to the referenced table's RLS, and `view_competitions`
-   * hides private competitions from non-members — so for a non-member that
-   * subquery finds nothing, `NOT EXISTS` is TRUE, and the row falls through the
-   * "public prop" branch. Membership checks are immune because
-   * `is_competition_member()` is SECURITY DEFINER; the raw sub-select is not.
-   *
-   * This is inherited, not introduced here: the leak lives in `view_props` /
-   * `view_forecasts` / `view_resolutions` from
-   * migrations/1769364811701_private_competitions_rls_views.ts, and spec §2.3
-   * directs the new policies to mirror those verbatim. The write-side policies
-   * above are unaffected. There is no production exposure today — the app and
-   * the migration runner share DATABASE_URL, so the app connects as the table
-   * owner and bypasses RLS entirely; these policies are defense-in-depth for
-   * the day that changes.
-   *
-   * The fix is to replace those inline sub-selects with a SECURITY DEFINER
-   * `is_private_competition(comp_id)` helper across the parent and child
-   * policies together. When that lands, this test flips to expecting 0 rows —
-   * it is written to fail loudly rather than silently start over-asserting.
+   * These policies used to ask "is this competition private?" with
+   * `NOT EXISTS (SELECT 1 FROM competitions c WHERE … AND c.is_private = TRUE)`.
+   * A policy's sub-selects are themselves RLS-filtered as the querying role, and
+   * `view_competitions` hides private competitions from non-members — so the
+   * sub-select found nothing, `NOT EXISTS` was TRUE, and every private
+   * competition's prop (and therefore its options, forecasts and resolutions)
+   * fell through the "public prop" branch. The positive
+   * `EXISTS (… c.is_private = FALSE)` form fails closed instead: a row naming a
+   * competition the caller cannot see no longer passes.
    */
   ifRunningContainerTestsIt(
-    "leaks a private competition's rows to non-members (inherited parent-policy gap)",
+    "hides a private competition's rows from non-members and anonymous callers",
     async () => {
       const compAdmin = await factory.createUser();
       const forecaster = await factory.createUser();
@@ -542,9 +538,9 @@ describe("choice props row-level security", () => {
       const competition = await createPrivateCompetition();
       await addMember(competition.id, compAdmin.id, "admin");
       await addMember(competition.id, forecaster.id, "forecaster");
-      // Three options, only two of them forecast and resolved, so the write
-      // attempts below land on a free (resolution_id, option_id) slot and fail
-      // on the policy rather than on the primary key.
+      // Three options, only two of them forecast and resolved, so the denied
+      // writes below land on a free (resolution_id, option_id) slot and fail on
+      // the policy rather than on the primary key.
       const { prop, options } = await factory.createChoiceProp(
         "one_of",
         ["A", "B", "C"],
@@ -563,8 +559,8 @@ describe("choice props row-level security", () => {
         { optionId: options[1].id, outcome: false },
       ]);
 
-      // The mechanism: the competition row is correctly hidden, and that is
-      // precisely why the prop's `NOT EXISTS (… is_private …)` check passes.
+      // The mechanism: the competition row is hidden from a non-member, and the
+      // prop is now hidden with it instead of falling through the public branch.
       const mechanism = await asUser(rls, stranger.id, async (trx) => {
         const row = await sql<{
           competitions_visible: number;
@@ -575,10 +571,24 @@ describe("choice props row-level security", () => {
         `.execute(trx);
         return row.rows[0];
       });
-      expect(mechanism).toEqual({ competitions_visible: 0, props_visible: 1 });
+      expect(mechanism).toEqual({ competitions_visible: 0, props_visible: 0 });
 
       const countsFor = (userId: number | null) =>
         asUser(rls, userId, async (trx) => ({
+          props: (
+            await trx
+              .selectFrom("props")
+              .selectAll()
+              .where("id", "=", prop.id)
+              .execute()
+          ).length,
+          vProps: (
+            await trx
+              .selectFrom("v_props")
+              .selectAll()
+              .where("prop_id", "=", prop.id)
+              .execute()
+          ).length,
           propOptions: (
             await trx
               .selectFrom("prop_options")
@@ -602,19 +612,27 @@ describe("choice props row-level security", () => {
           ).length,
         }));
 
-      // Should all be 0 once the gap above is closed.
-      expect(await countsFor(stranger.id)).toEqual({
-        propOptions: 3,
-        forecastOptions: 2,
-        resolutionOptions: 2,
-      });
-      expect(await countsFor(null)).toEqual({
+      const nothing = {
+        props: 0,
+        vProps: 0,
+        propOptions: 0,
+        forecastOptions: 0,
+        resolutionOptions: 0,
+      };
+      expect(await countsFor(stranger.id)).toEqual(nothing);
+      expect(await countsFor(null)).toEqual(nothing);
+
+      // Members are unaffected — they reach these rows through
+      // is_competition_member(), which is SECURITY DEFINER and never filtered.
+      expect(await countsFor(forecaster.id)).toEqual({
+        props: 1,
+        vProps: 1,
         propOptions: 3,
         forecastOptions: 2,
         resolutionOptions: 2,
       });
 
-      // Read-only, though: the write-side policies hold for non-members.
+      // The write side is closed too, for the children...
       await expect(
         asUser(rls, stranger.id, (trx) =>
           trx
@@ -649,6 +667,89 @@ describe("choice props row-level security", () => {
             .execute(),
         ),
       ).rejects.toThrow(/row-level security policy/);
+
+      // ...including UPDATE and DELETE, which match no rows rather than erroring.
+      const updatedOutcomes = await asUser(rls, stranger.id, (trx) =>
+        trx
+          .updateTable("resolution_options")
+          .set({ outcome: false })
+          .where("resolution_id", "=", resolution.id)
+          .executeTakeFirst(),
+      );
+      expect(Number(updatedOutcomes.numUpdatedRows)).toBe(0);
+      const deletedOutcomes = await asUser(rls, stranger.id, (trx) =>
+        trx
+          .deleteFrom("resolution_options")
+          .where("resolution_id", "=", resolution.id)
+          .executeTakeFirst(),
+      );
+      expect(Number(deletedOutcomes.numDeletedRows)).toBe(0);
+      const storedOutcomes = await db
+        .selectFrom("resolution_options")
+        .select(["option_id", "outcome"])
+        .where("resolution_id", "=", resolution.id)
+        .orderBy("option_id")
+        .execute();
+      expect(storedOutcomes).toEqual([
+        { option_id: options[0].id, outcome: true },
+        { option_id: options[1].id, outcome: false },
+      ]);
+
+      // ...and for the parents: a non-member can neither add a prop to the
+      // competition (create_props) nor forecast on its props (create_forecasts,
+      // which the fail-open form used to allow outright).
+      await expect(
+        asUser(rls, stranger.id, (trx) =>
+          trx
+            .insertInto("props")
+            .values({
+              text: "smuggled prop",
+              competition_id: competition.id,
+              user_id: null,
+              category_id: null,
+              notes: null,
+            })
+            .execute(),
+        ),
+      ).rejects.toThrow(/row-level security policy/);
+      await expect(
+        asUser(rls, stranger.id, (trx) =>
+          trx
+            .insertInto("forecasts")
+            .values({
+              user_id: stranger.id,
+              prop_id: prop.id,
+              forecast: null,
+            })
+            .execute(),
+        ),
+      ).rejects.toThrow(/row-level security policy/);
+      expect(
+        await db
+          .selectFrom("props")
+          .selectAll()
+          .where("competition_id", "=", competition.id)
+          .execute(),
+      ).toHaveLength(1);
+
+      // A member still can: create_forecasts admits them through the
+      // membership branch.
+      const memberForecastId = await asUser(rls, compAdmin.id, async (trx) => {
+        const header = await trx
+          .insertInto("forecasts")
+          .values({ user_id: compAdmin.id, prop_id: prop.id, forecast: null })
+          .returning("id")
+          .executeTakeFirstOrThrow();
+        return header.id;
+      });
+      getTestTracker().trackId("forecasts", memberForecastId);
+      expect(
+        await db
+          .selectFrom("forecasts")
+          .selectAll()
+          .where("id", "=", memberForecastId)
+          .execute(),
+      ).toHaveLength(1);
     },
   );
 });
