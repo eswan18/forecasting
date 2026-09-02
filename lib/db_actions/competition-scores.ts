@@ -9,6 +9,8 @@ import {
   ERROR_CODES,
 } from "@/lib/server-action-result";
 import { withRLS } from "@/lib/db-helpers";
+import { attachOptions } from "@/lib/attach-options";
+import type { PropKind } from "@/lib/prop-kind";
 
 export interface UserScore {
   userId: number;
@@ -35,10 +37,14 @@ export interface UserForecastScore {
   propText: string;
   categoryId: number | null;
   categoryName: string | null;
+  kind: PropKind;
   /** Set for binary props, null for choice props (per-option values instead). */
   forecast: number | null;
+  /** Set for binary props, null for choice props (per-option outcomes instead). */
   resolution: boolean | null;
   score: number | null;
+  /** Empty for binary props; one entry per option, by position, for choice props. */
+  options: { text: string; userForecast: number; outcome: boolean }[];
 }
 
 export interface UserScoreBreakdown {
@@ -80,7 +86,7 @@ export async function getCompetitionScores({
           .selectFrom("v_forecasts")
           .select(["user_id", "user_name", sql`AVG(score)`.as("average_score")])
           .where("competition_id", "=", competitionId)
-          .where("resolution", "is not", null)
+          .where("score", "is not", null)
           .groupBy(["user_id", "user_name"])
           .execute(),
 
@@ -94,7 +100,7 @@ export async function getCompetitionScores({
             sql`AVG(score)`.as("average_score"),
           ])
           .where("competition_id", "=", competitionId)
-          .where("resolution", "is not", null)
+          .where("score", "is not", null)
           .where("category_id", "is not", null)
           .groupBy(["user_id", "user_name", "category_id"])
           .execute(),
@@ -226,7 +232,7 @@ export async function getUserScoreBreakdown({
         .select(["user_id", "user_name", sql`AVG(score)`.as("average_score")])
         .where("competition_id", "=", competitionId)
         .where("user_id", "=", userId)
-        .where("resolution", "is not", null)
+        .where("score", "is not", null)
         .groupBy(["user_id", "user_name"])
         .execute();
 
@@ -245,7 +251,7 @@ export async function getUserScoreBreakdown({
         ])
         .where("competition_id", "=", competitionId)
         .where("user_id", "=", userId)
-        .where("resolution", "is not", null)
+        .where("score", "is not", null)
         .where("category_id", "is not", null)
         .groupBy(["user_id", "user_name", "category_id"])
         .execute();
@@ -257,6 +263,7 @@ export async function getUserScoreBreakdown({
           "forecast_id",
           "prop_id",
           "prop_text",
+          "prop_kind",
           "category_id",
           "category_name",
           "forecast",
@@ -265,15 +272,19 @@ export async function getUserScoreBreakdown({
         ])
         .where("competition_id", "=", competitionId)
         .where("user_id", "=", userId)
-        .where("resolution", "is not", null)
+        .where("score", "is not", null)
         .orderBy("category_id", "asc")
         .orderBy("prop_id", "asc")
         .execute();
+
+      // Option summaries for the choice props among them, for this user.
+      const optionsByProp = await attachOptions(trx, forecastResults, userId);
 
       return {
         userInfo,
         categoryResults,
         forecastResults,
+        optionsByProp,
       };
     });
 
@@ -311,9 +322,17 @@ export async function getUserScoreBreakdown({
         propText: row.prop_text,
         categoryId: row.category_id,
         categoryName: row.category_name,
+        kind: row.prop_kind,
         forecast: row.forecast !== null ? Number(row.forecast) : null,
         resolution: row.resolution,
         score: row.score !== null ? Number(row.score) : null,
+        // Scored rows are resolved and forecasted, so every option of a choice
+        // prop has both a probability and an outcome.
+        options: (results.optionsByProp.get(row.prop_id) ?? []).map((o) => ({
+          text: o.text,
+          userForecast: o.user_forecast ?? 0,
+          outcome: o.outcome ?? false,
+        })),
       }),
     );
 

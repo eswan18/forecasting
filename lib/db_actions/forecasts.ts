@@ -4,6 +4,7 @@ import {
   Database,
   ForecastUpdate,
   NewForecast,
+  PropOptionSummary,
   PropWithUserForecast,
   VForecast,
   VProp,
@@ -593,7 +594,9 @@ export async function getRecentlyResolvedForecasts({
 }: {
   userId: number;
   limit?: number;
-}): Promise<ServerActionResult<VForecast[]>> {
+}): Promise<
+  ServerActionResult<(VForecast & { options: PropOptionSummary[] })[]>
+> {
   const currentUser = await getUserFromCookies();
   logger.debug("Getting recently resolved forecasts", {
     userId,
@@ -604,14 +607,21 @@ export async function getRecentlyResolvedForecasts({
   const startTime = Date.now();
   try {
     const results = await withRLS(currentUser?.id, async (trx) => {
-      return await trx
+      // A resolved choice prop has a null `resolution`; only `resolution_id`
+      // says whether a prop of any kind is resolved.
+      const rows = await trx
         .selectFrom("v_forecasts")
         .selectAll()
         .where("user_id", "=", userId)
-        .where("resolution", "is not", null)
+        .where("resolution_id", "is not", null)
         .orderBy("resolution_updated_at", "desc")
         .limit(limit)
         .execute();
+      const optionsByProp = await attachOptions(trx, rows, userId);
+      return rows.map((row) => ({
+        ...row,
+        options: optionsByProp.get(row.prop_id) ?? [],
+      }));
     });
 
     const duration = Date.now() - startTime;

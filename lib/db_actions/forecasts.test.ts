@@ -88,6 +88,84 @@ describe("getRecentlyResolvedForecasts", () => {
   );
 
   ifRunningContainerTestsIt(
+    "should return resolved choice props with their options, newest first",
+    async () => {
+      const user = await factory.createUser({ name: "Choice User" });
+      vi.mocked(getUserFromCookies).mockResolvedValue(user);
+
+      const competition = await factory.createCompetition();
+
+      const binaryProp = await factory.createCompetitionProp(competition.id, {
+        text: "Binary prop",
+      });
+      await factory.createForecast(user.id, binaryProp.id, { forecast: 0.6 });
+      await factory.createResolution(binaryProp.id, {
+        resolution: false,
+        user_id: user.id,
+      });
+
+      const { prop: choiceProp, options } = await factory.createChoiceProp(
+        "one_of",
+        ["North", "South", "East", "West"],
+        { competition_id: competition.id, text: "Choice prop" },
+      );
+      await factory.createChoiceForecast(
+        user.id,
+        choiceProp.id,
+        options.map((o) => ({ optionId: o.id, probability: 0.25 })),
+      );
+      const choiceResolution = await factory.createChoiceResolution(
+        choiceProp.id,
+        options.map((o, i) => ({ optionId: o.id, outcome: i === 0 })),
+        { user_id: user.id },
+      );
+      // Touch the choice resolution so its updated_at is strictly the latest
+      // (the set_updated_at trigger stamps now() on update).
+      await testDb
+        .updateTable("resolutions")
+        .set({ notes: "resolved" })
+        .where("id", "=", choiceResolution.id)
+        .execute();
+
+      const result = await getRecentlyResolvedForecasts({ userId: user.id });
+
+      expect(result.success).toBe(true);
+      if (!result.success) return;
+
+      expect(result.data).toHaveLength(2);
+      // Ordered by resolution time, newest first.
+      const [choice, binary] = result.data;
+
+      expect(choice.prop_id).toBe(choiceProp.id);
+      expect(choice.prop_kind).toBe("one_of");
+      // A resolved choice prop has no resolution boolean; only resolution_id.
+      expect(choice.resolution).toBeNull();
+      expect(choice.resolution_id).not.toBeNull();
+      expect(Number(choice.score)).toBeCloseTo(0.375, 6);
+      expect(choice.options.map((o) => o.text)).toEqual([
+        "North",
+        "South",
+        "East",
+        "West",
+      ]);
+      expect(choice.options.map((o) => o.outcome)).toEqual([
+        true,
+        false,
+        false,
+        false,
+      ]);
+      expect(choice.options.map((o) => o.user_forecast)).toEqual([
+        0.25, 0.25, 0.25, 0.25,
+      ]);
+
+      expect(binary.prop_id).toBe(binaryProp.id);
+      expect(binary.prop_kind).toBe("binary");
+      expect(binary.resolution).toBe(false);
+      expect(binary.options).toEqual([]);
+    },
+  );
+
+  ifRunningContainerTestsIt(
     "should respect the limit parameter",
     async () => {
       const user = await factory.createUser({ name: "Test User" });

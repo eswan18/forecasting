@@ -37,7 +37,8 @@ export default async function Page() {
   const resolvedPropCountsByCompetitionId = props.reduce(
     (acc, prop) => {
       const competitionId = prop.competition_id;
-      if (competitionId === null || prop.resolution === null) {
+      // `resolution_id`: a resolved choice prop has no resolution boolean.
+      if (competitionId === null || prop.resolution_id === null) {
         return acc;
       }
       if (!acc[competitionId]) {

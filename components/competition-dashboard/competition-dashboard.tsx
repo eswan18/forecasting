@@ -97,13 +97,15 @@ export function CompetitionDashboard({
     return props.filter((prop) => {
       // Unresolved: close date is in the past AND not resolved
       const closeDate = getCloseDate(prop);
-      const isResolved = prop.resolution !== null;
+      // A resolved choice prop has a null `resolution`; `resolution_id` is
+      // the "is resolved" flag for every kind.
+      const isResolved = prop.resolution_id !== null;
       return closeDate !== null && new Date(closeDate) <= now && !isResolved;
     });
   }, [props, now, getCloseDate]);
 
   const resolvedProps = useMemo(() => {
-    return props.filter((prop) => prop.resolution !== null);
+    return props.filter((prop) => prop.resolution_id !== null);
   }, [props]);
 
   const handleTabChange = useCallback(

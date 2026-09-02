@@ -39,10 +39,12 @@ export function PropTableWithFilterBar({
         selectedCategory === "all" || prop.category_name === selectedCategory;
 
       // Resolution filter
+      // `resolution_id`, not `resolution`: a resolved choice prop has no
+      // resolution boolean.
       const matchesResolution =
         selectedResolution === "all" ||
-        (selectedResolution === "resolved" && prop.resolution !== null) ||
-        (selectedResolution === "unresolved" && prop.resolution === null);
+        (selectedResolution === "resolved" && prop.resolution_id !== null) ||
+        (selectedResolution === "unresolved" && prop.resolution_id === null);
 
       return matchesSearch && matchesCategory && matchesResolution;
     });
