@@ -4,7 +4,7 @@ metadata:
   name: forecasting-staging-env-config
 data:
   ENV: "staging"
-  APP_BASE_URL: "https://forecasting-staging.tailc06f30.ts.net"
+  APP_BASE_URL: "https://staging.haruspex.fyi"
   IDP_BASE_URL: "http://identity.identity-staging.svc.cluster.local"
   IDP_PUBLIC_URL: "https://identity-staging.tailc06f30.ts.net"
   PUBSUB_TOPIC: "forecasting-events-staging"
