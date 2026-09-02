@@ -160,21 +160,37 @@ body:has(.hx3) nav { display: none; }
 }
 
 /* Narrow screens get the instrument in the flow rather than in the margin. */
-.hx3 .gauge-inline { display: none; }
+.hx3 .gauge-figure { display: none; }
 
 /* Below ~64rem the margin gauge's hub falls off the right edge, leaving an arc
-   with nothing to pivot on. So that copy goes and the in-flow copy takes over,
-   sitting between the hero and the table where it divides the two. */
+   with nothing to pivot on. So that copy goes and an in-flow copy takes over as
+   a numbered figure between the hero and the table.
+   It keeps the desktop's grammar rather than inventing a new one: instrument to
+   the right, hub inside the measure, dial cropped by the trim. Centring it whole
+   was the one uncropped, non-left-aligned object on the sheet, and it read as
+   clip art. */
 @media (max-width: 64rem) {
+  /* the sheet is only as wide as what it holds once the instrument leaves the margin */
+  .hx3 .col { max-width: 44rem; }
   .hx3 .gauge { display: none; }
+  .hx3 .gauge-figure { display: block; margin: 4rem 0 0; }
   .hx3 .gauge-inline {
     display: block;
     position: relative;
     z-index: 0;
     pointer-events: none;
-    width: min(26rem, 100%);
-    margin: 4.5rem auto 0;
-    aspect-ratio: 1000 / 700;
+    width: min(34rem, 130%);
+    margin: 0.75rem calc(50% - 50vw - 5rem) 0 auto;
+    aspect-ratio: 1000 / 570;
+  }
+  /* A 7px screen across a 434px gauge is three dot columns at the needle's base
+     — a dotted line, not a plate seen through a screen. Match the 5px pitch the
+     numeral's pinholes use so the dot count per needle survives the shrink. */
+  .hx3 .gauge-inline .ink {
+    -webkit-mask-image: radial-gradient(#000 0.85px, transparent 1.05px);
+    mask-image: radial-gradient(#000 0.85px, transparent 1.05px);
+    -webkit-mask-size: 5px 5px;
+    mask-size: 5px 5px;
   }
 }
 
@@ -273,6 +289,7 @@ body:has(.hx3) nav { display: none; }
   font-weight: 600;
   max-width: 22ch;
   letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 .hx3 .herobody {
   margin: 1.25rem 0 0;
@@ -324,6 +341,9 @@ body:has(.hx3) nav { display: none; }
   border-bottom: 1px solid var(--rule);
 }
 .hx3 th:last-child, .hx3 td:last-child { text-align: right; }
+.hx3 th:not(:last-child), .hx3 td:not(:last-child) { padding-right: 1.25rem; }
+/* the working is one expression; it may not break */
+.hx3 .math { white-space: nowrap; }
 .hx3 td {
   padding: 1.125rem 0;
   border-bottom: 1px solid var(--rule);
@@ -352,6 +372,12 @@ body:has(.hx3) nav { display: none; }
   margin-top: 1.5rem;
   color: var(--ink-muted);
 }
+/* on a narrow measure the line breaks after the separator, dangling it; give
+   the clause its own line instead and drop the interpunct */
+@media (max-width: 34rem) {
+  .hx3 .formula .sep { display: none; }
+  .hx3 .formula .clause { display: block; }
+}
 .hx3 tr.bad .cost { color: var(--red-text); }
 .hx3 tr.flat .cost { color: var(--ink-muted); }
 
@@ -372,6 +398,7 @@ body:has(.hx3) nav { display: none; }
   line-height: 1.25;
   max-width: 34ch;
   margin: 0 0 2rem;
+  text-wrap: balance;
 }
 /* Built the way the press works: the black plate carries the outline and the
    label, the red plate prints the fill and slips by the registration vector. */
@@ -424,12 +451,16 @@ body:has(.hx3) nav { display: none; }
 /* Below the masthead's comfortable width the label is clipped rather than
    removed, so it keeps naming the action for a screen reader. */
 @media (max-width: 34rem) {
-  .hx3 .btn.swatch {
-    padding: 0.5rem;
-    width: 2.25rem;
-    height: 2.25rem;
+  /* button.btn.swatch, not .btn.swatch: the latter loses padding to
+     .hx3 button.btn.small and the chip collapses into a landscape rectangle
+     that reads as a checkbox. */
+  .hx3 button.btn.swatch {
+    padding: 0;
+    width: 2.5rem;
+    height: 2.5rem;
     position: relative;
   }
+  .hx3 a.btn.small { padding: 0.625rem 1.25rem; }
   .hx3 .btn.swatch .ink-light,
   .hx3 .btn.swatch .ink-dark {
     position: absolute;
@@ -439,18 +470,19 @@ body:has(.hx3) nav { display: none; }
     clip-path: inset(50%);
     white-space: nowrap;
   }
-  /* a swatch of the stock you'd switch to, in place of the words */
-  .hx3 .btn.swatch::after {
+  /* a full-bleed chip of the stock you'd switch to — a paper sample inside the
+     ink border, rather than a small mark inside a box (which reads as a tick) */
+  /* --ink is always the stock you are NOT on, so one rule serves both
+     editions: black chip on white stock, white chip on black. */
+  .hx3 button.btn.swatch::after {
     content: "";
     position: absolute;
-    inset: 0.5rem;
+    inset: 0;
     background: var(--ink);
-    border: 1px solid var(--ink);
   }
-  .dark .hx3 .btn.swatch::after { background: var(--paper); }
 }
 
-.hx3 .masthead-tools { display: flex; align-items: center; gap: 0.75rem; }
+.hx3 .masthead-tools { display: flex; align-items: center; gap: 1rem; }
 
 /* the colophon names the stock it is actually printed on */
 .hx3 .stock-dark { display: none; }
@@ -489,6 +521,23 @@ body:has(.hx3) nav { display: none; }
     opacity: 1;
     transform: translate(var(--offset), var(--offset));
   }
+}
+/* ---- narrow screens ----
+   Last in the sheet on purpose: these are plain overrides of base rules at the
+   same specificity, so source order is what decides them. */
+@media (max-width: 40rem) {
+  /* 7rem between blocks is a wide-sheet value; on a 334px measure it reads as
+     web section padding rather than typographic space. */
+  .hx3 .top { padding: 1.5rem 0; }
+  .hx3 .hero { padding-top: 3.5rem; }
+  .hx3 section { margin-top: 4.5rem; }
+  .hx3 .gauge-figure { margin-top: 3rem; }
+  .hx3 .cta { margin-top: 4.5rem; padding-bottom: 3rem; }
+  .hx3 .colophon { padding-bottom: 2.5rem; }
+}
+@media (max-width: 34rem) {
+  .hx3 td { font-size: 1rem; }
+  .hx3 th:not(:last-child), .hx3 td:not(:last-child) { padding-right: 0.75rem; }
 }
 `;
 
@@ -534,7 +583,13 @@ function needlePath() {
  * on. The needle itself is the screened plate, and it wavers, because the whole
  * product is about a reading that will not sit still.
  */
-function Gauge({ className }: { className: string }) {
+function Gauge({
+  className,
+  viewBox = "0 0 1000 700",
+}: {
+  className: string;
+  viewBox?: string;
+}) {
   const start = dialPoint(0, R);
   const end = dialPoint(1, R);
   const resting = 0.56;
@@ -542,7 +597,7 @@ function Gauge({ className }: { className: string }) {
   return (
     <div className={className} aria-hidden="true">
       {/* the dial: solid, thin */}
-      <svg viewBox="0 0 1000 700">
+      <svg viewBox={viewBox}>
         {/* the dial: duller and heavier than the needle, so it reads as the
             base the needle rests on rather than competing with it */}
         <g
@@ -574,7 +629,7 @@ function Gauge({ className }: { className: string }) {
       </svg>
 
       {/* the needle: screened, and never quite still */}
-      <svg viewBox="0 0 1000 700" className="ink">
+      <svg viewBox={viewBox} className="ink">
         <g transform={`rotate(${valueToRotation(resting)} ${CX} ${CY})`}>
           <g className="needle">
             <path d={needlePath()} fill="var(--red)" />
@@ -622,7 +677,14 @@ export function SignedOutLanding() {
           </p>
         </div>
 
-        <Gauge className="gauge-inline" />
+        <figure className="gauge-figure">
+          <figcaption className="mono fig">
+            Fig. 2 — 56%, give or take
+          </figcaption>
+          {/* the artwork sits between y=144 and y=678, so the full box carries a
+              fifth of its height as dead paper; crop it for the in-flow copy */}
+          <Gauge className="gauge-inline" viewBox="0 130 1000 570" />
+        </figure>
 
         <section className="rise">
           <h2>How scoring works</h2>
@@ -648,7 +710,9 @@ export function SignedOutLanding() {
             </tbody>
           </table>
           <p className="mono formula">
-            Penalty = (forecast − outcome)² · yes = 1, no = 0
+            <span>Penalty = (forecast − outcome)²</span>
+            <span className="sep"> · </span>
+            <span className="clause">yes = 1, no = 0</span>
           </p>
         </section>
 
