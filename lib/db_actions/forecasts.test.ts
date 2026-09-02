@@ -1,6 +1,7 @@
 import { vi, describe, expect, beforeEach } from "vitest";
 import { getTestDb } from "../../tests/helpers/testDatabase";
 import { TestDataFactory } from "../../tests/helpers/testFactories";
+import { getTestTracker } from "../../tests/helpers/testIdTracker";
 import {
   shouldRunContainerTests,
   ifRunningContainerTestsIt,
@@ -8,6 +9,8 @@ import {
 
 let getRecentlyResolvedForecasts: typeof import("./forecasts").getRecentlyResolvedForecasts;
 let getPropsWithUserForecasts: typeof import("./forecasts").getPropsWithUserForecasts;
+let saveChoiceForecast: typeof import("./forecasts").saveChoiceForecast;
+let createForecast: typeof import("./forecasts").createForecast;
 
 // `forecasts.ts` transitively imports the server-only `attachOptions` helper.
 vi.mock("server-only", () => ({}));
@@ -15,6 +18,10 @@ vi.mock("server-only", () => ({}));
 // Mock getUserFromCookies
 vi.mock("@/lib/get-user", () => ({
   getUserFromCookies: vi.fn(),
+}));
+
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
 }));
 
 import { getUserFromCookies } from "@/lib/get-user";
@@ -185,6 +192,260 @@ describe("getPropsWithUserForecasts", () => {
         0.6, 0.3, 0.1,
       ]);
       expect(choice.options.every((o) => o.outcome === null)).toBe(true);
+    },
+  );
+});
+
+describe("saveChoiceForecast and the binary guards", () => {
+  let testDb: any;
+  let factory: TestDataFactory;
+
+  beforeEach(async () => {
+    if (shouldRunContainerTests()) {
+      testDb = await getTestDb();
+      factory = new TestDataFactory(testDb);
+      vi.clearAllMocks();
+
+      const forecastsModule = await import("./forecasts");
+      saveChoiceForecast = forecastsModule.saveChoiceForecast;
+      createForecast = forecastsModule.createForecast;
+    } else {
+      vi.clearAllMocks();
+    }
+  });
+
+  /** The child rows of a forecast, ordered by option id. */
+  async function storedOptions(forecastId: number) {
+    return testDb
+      .selectFrom("forecast_options")
+      .select(["option_id", "probability"])
+      .where("forecast_id", "=", forecastId)
+      .orderBy("option_id")
+      .execute();
+  }
+
+  async function storedHeader(forecastId: number) {
+    return testDb
+      .selectFrom("forecasts")
+      .selectAll()
+      .where("id", "=", forecastId)
+      .executeTakeFirstOrThrow();
+  }
+
+  /** Every forecast header row on a prop, however many there are. */
+  async function headersFor(propId: number) {
+    return testDb
+      .selectFrom("forecasts")
+      .selectAll()
+      .where("prop_id", "=", propId)
+      .execute();
+  }
+
+  /** A competition open until tomorrow. */
+  async function openCompetition() {
+    return factory.createCompetition({
+      forecasts_close_date: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    });
+  }
+
+  ifRunningContainerTestsIt(
+    "writes one row per option, then replaces them on a re-save",
+    async () => {
+      const user = await factory.createUser();
+      vi.mocked(getUserFromCookies).mockResolvedValue(user);
+      const competition = await openCompetition();
+      const { prop, options } = await factory.createChoiceProp(
+        "one_of",
+        ["Red", "Green", "Blue"],
+        { competition_id: competition.id },
+      );
+
+      const first = await saveChoiceForecast({
+        propId: prop.id,
+        probabilities: [
+          { optionId: options[0].id, probability: 0.6 },
+          { optionId: options[1].id, probability: 0.3 },
+          { optionId: options[2].id, probability: 0.1 },
+        ],
+      });
+
+      expect(first.success).toBe(true);
+      if (!first.success) return;
+      const forecastId = first.data;
+      getTestTracker().trackId("forecasts", forecastId);
+
+      // The header belongs to the caller and carries no probability of its own
+      // — the enforce_forecast_kind trigger insists on that for choice props.
+      const header = await storedHeader(forecastId);
+      expect(header.user_id).toBe(user.id);
+      expect(header.forecast).toBeNull();
+      expect(await storedOptions(forecastId)).toEqual([
+        { option_id: options[0].id, probability: 0.6 },
+        { option_id: options[1].id, probability: 0.3 },
+        { option_id: options[2].id, probability: 0.1 },
+      ]);
+
+      // `now()` is the transaction clock, so leave it room to advance before
+      // the re-save; otherwise the updated_at assertion proves nothing.
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      const second = await saveChoiceForecast({
+        propId: prop.id,
+        probabilities: [
+          { optionId: options[0].id, probability: 0.2 },
+          { optionId: options[1].id, probability: 0.5 },
+          { optionId: options[2].id, probability: 0.3 },
+        ],
+      });
+
+      // Same header row, same number of children, new probabilities.
+      expect(second).toEqual({ success: true, data: forecastId });
+      expect(await storedOptions(forecastId)).toEqual([
+        { option_id: options[0].id, probability: 0.2 },
+        { option_id: options[1].id, probability: 0.5 },
+        { option_id: options[2].id, probability: 0.3 },
+      ]);
+      expect(await headersFor(prop.id)).toHaveLength(1);
+      const rewritten = await storedHeader(forecastId);
+      expect(rewritten.forecast).toBeNull();
+      expect(rewritten.updated_at.getTime()).toBeGreaterThan(
+        header.updated_at.getTime(),
+      );
+    },
+  );
+
+  ifRunningContainerTestsIt(
+    "does not hold any_of probabilities to a sum of 1",
+    async () => {
+      const user = await factory.createUser();
+      vi.mocked(getUserFromCookies).mockResolvedValue(user);
+      const competition = await openCompetition();
+      const { prop, options } = await factory.createChoiceProp(
+        "any_of",
+        ["Rain", "Snow"],
+        { competition_id: competition.id },
+      );
+
+      const result = await saveChoiceForecast({
+        propId: prop.id,
+        probabilities: [
+          { optionId: options[0].id, probability: 0.9 },
+          { optionId: options[1].id, probability: 0.8 },
+        ],
+      });
+
+      expect(result.success).toBe(true);
+      if (!result.success) return;
+      getTestTracker().trackId("forecasts", result.data);
+      expect(await storedOptions(result.data)).toEqual([
+        { option_id: options[0].id, probability: 0.9 },
+        { option_id: options[1].id, probability: 0.8 },
+      ]);
+    },
+  );
+
+  ifRunningContainerTestsIt(
+    "rejects a forecast that misses one of the prop's options, writing nothing",
+    async () => {
+      const user = await factory.createUser();
+      vi.mocked(getUserFromCookies).mockResolvedValue(user);
+      const competition = await openCompetition();
+      const { prop, options } = await factory.createChoiceProp(
+        "one_of",
+        ["Red", "Green", "Blue"],
+        { competition_id: competition.id },
+      );
+
+      const result = await saveChoiceForecast({
+        propId: prop.id,
+        probabilities: [
+          { optionId: options[0].id, probability: 0.5 },
+          { optionId: options[1].id, probability: 0.5 },
+        ],
+      });
+
+      expect(result.success).toBe(false);
+      if (result.success) return;
+      expect(result.error).toContain(
+        `Missing probability for option ${options[2].id}`,
+      );
+      expect(result.code).toBe("VALIDATION_ERROR");
+      expect(await headersFor(prop.id)).toEqual([]);
+    },
+  );
+
+  ifRunningContainerTestsIt(
+    "rejects a save once the competition's close date has passed",
+    async () => {
+      const user = await factory.createUser();
+      vi.mocked(getUserFromCookies).mockResolvedValue(user);
+      const competition = await factory.createCompetition({
+        forecasts_close_date: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      });
+      const { prop, options } = await factory.createChoiceProp(
+        "one_of",
+        ["Red", "Green"],
+        { competition_id: competition.id },
+      );
+
+      const result = await saveChoiceForecast({
+        propId: prop.id,
+        probabilities: [
+          { optionId: options[0].id, probability: 0.5 },
+          { optionId: options[1].id, probability: 0.5 },
+        ],
+      });
+
+      expect(result.success).toBe(false);
+      if (result.success) return;
+      expect(result.error).toBe("Cannot save forecasts past the due date");
+      expect(result.code).toBe("VALIDATION_ERROR");
+      expect(await headersFor(prop.id)).toEqual([]);
+    },
+  );
+
+  ifRunningContainerTestsIt(
+    "createForecast refuses a choice prop before the trigger sees it",
+    async () => {
+      const user = await factory.createUser();
+      vi.mocked(getUserFromCookies).mockResolvedValue(user);
+      const competition = await openCompetition();
+      const { prop } = await factory.createChoiceProp(
+        "one_of",
+        ["Red", "Green"],
+        { competition_id: competition.id },
+      );
+
+      const result = await createForecast({
+        forecast: { prop_id: prop.id, user_id: user.id, forecast: 0.5 },
+      });
+
+      expect(result.success).toBe(false);
+      if (result.success) return;
+      expect(result.error).toBe("Use the per-option form for this proposition");
+      expect(result.code).toBe("VALIDATION_ERROR");
+      expect(await headersFor(prop.id)).toEqual([]);
+    },
+  );
+
+  ifRunningContainerTestsIt(
+    "createForecast still accepts a binary prop",
+    async () => {
+      const user = await factory.createUser();
+      vi.mocked(getUserFromCookies).mockResolvedValue(user);
+      const competition = await openCompetition();
+      const prop = await factory.createCompetitionProp(competition.id);
+
+      const result = await createForecast({
+        forecast: { prop_id: prop.id, user_id: user.id, forecast: 0.75 },
+      });
+
+      expect(result.success).toBe(true);
+      if (!result.success) return;
+      getTestTracker().trackId("forecasts", result.data);
+      const header = await storedHeader(result.data);
+      // `forecasts.forecast` is numeric, which pg returns as a string.
+      expect(Number(header.forecast)).toBe(0.75);
     },
   );
 });
