@@ -8,5 +8,6 @@ resources:
   - configmap-env.yaml
   - secret-provider-class.yaml
   - tailscale-ingress.yaml
+  - haruspex-ingress.yaml
 patches:
   - path: deployment-patch.yaml
