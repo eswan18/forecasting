@@ -417,7 +417,72 @@ Props become `{ propId; propText; propNotes; kind: PropKind; forecast: number | 
 
 ---
 
-### Task 10: Final verification and PR
+### Task 10: RLS behaviour tests through a non-owner role
+
+Stage one's final review found that every container test runs as the container's superuser, which owns the tables, so the six new row-level-security policies on `prop_options`, `forecast_options` and `resolution_options` are bypassed in tests and only their *presence* is asserted. This task must land before this PR merges, because stage two is what lets choice data exist.
+
+**Files:**
+- Modify: `tests/globalSetup.ts` (after `migrateToLatest()` succeeds), `tests/helpers/testDatabase.ts`
+- Create: `tests/integration/choice-props-rls.integration.test.ts`
+
+**Interfaces:**
+- Produces: `getRlsTestDb(): Promise<Kysely<Database>>` in `tests/helpers/testDatabase.ts` — a second singleton connected as the non-owner role `app_user`; and `asUser<T>(db, userId: number | null, fn: (trx) => Promise<T>)` in the same file, which opens a transaction and runs `SELECT set_config('app.current_user_id', <id or ''>, true)` exactly like `withRLS` in `lib/db-helpers.ts` before calling `fn`.
+
+- [ ] **Step 1: Create the role in global setup**
+
+After migrations succeed in `tests/globalSetup.ts`, run (via `sql\`…\`.execute(globalDb)`):
+
+```sql
+CREATE ROLE app_user LOGIN PASSWORD 'app_password';
+GRANT USAGE ON SCHEMA public TO app_user;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_user;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO app_user;
+```
+
+Export `TEST_RLS_DATABASE_URL` alongside `TEST_DATABASE_URL`, built from the container's host/port/database with user `app_user` and password `app_password`. (The tables stay owned by `test_user`, so `app_user` is subject to RLS; the helper functions are `SECURITY DEFINER` and executable by PUBLIC by default.)
+
+- [ ] **Step 2: `getRlsTestDb` and `asUser`** in `tests/helpers/testDatabase.ts`, mirroring `getTestDb`'s singleton pattern with `TEST_RLS_DATABASE_URL`.
+
+- [ ] **Step 3: Write the tests** — `tests/integration/choice-props-rls.integration.test.ts`, using the superuser `factory` to seed and `getRlsTestDb()` + `asUser` to read/write:
+
+```ts
+ifRunningContainerTestsIt("a private-competition non-member sees no options", async () => {
+  const admin = await factory.createUser();
+  const member = await factory.createUser();
+  const stranger = await factory.createUser();
+  const competition = await factory.createCompetition({ is_private: true, forecasts_open_date: null, forecasts_close_date: null, end_date: null });
+  // add admin (role admin) and member (role forecaster) via competition_members inserts, tracked
+  const { prop } = await factory.createChoiceProp("one_of", ["A", "B"], { competition_id: competition.id, category_id: null });
+  const rls = await getRlsTestDb();
+  const seenByStranger = await asUser(rls, stranger.id, (trx) => trx.selectFrom("prop_options").selectAll().where("prop_id", "=", prop.id).execute());
+  expect(seenByStranger).toHaveLength(0);
+  const seenByMember = await asUser(rls, member.id, (trx) => trx.selectFrom("prop_options").selectAll().where("prop_id", "=", prop.id).execute());
+  expect(seenByMember).toHaveLength(2);
+});
+
+ifRunningContainerTestsIt("a user cannot write forecast_options onto another user's forecast", async () => {
+  // seed: public choice prop, user A's choice forecast via factory
+  // as user B: INSERT INTO forecast_options (forecast_id = A's, prop_id, option_id, probability) → rejects with an RLS violation
+  // as user B: UPDATE forecast_options SET probability = 1 WHERE forecast_id = A's → 0 rows updated, A's values unchanged
+});
+
+ifRunningContainerTestsIt("members of a private competition can read each other's forecast_options; strangers cannot", async () => { /* mirrors view_forecasts */ });
+
+ifRunningContainerTestsIt("a non-admin member cannot write resolution_options; a competition admin can", async () => {
+  // as member: INSERT INTO resolutions (prop_id, resolution NULL) → RLS violation
+  // as competition admin: insert resolutions header + resolution_options → succeeds; read back
+});
+```
+
+Fill each body fully (no placeholders left): seed with the superuser factory, act through `asUser`, assert both the RLS outcome and that the superuser-visible state is unchanged where relevant. Check `migrations/1769364781813_private_competitions_schema.ts` for the private-competition check constraints (private competitions must have null dates) and the `enforce_private_competition_members` trigger before writing the seeding code.
+
+- [ ] **Step 4: Run** `TEST_USE_CONTAINERS=true npx vitest run tests/integration/choice-props-rls.integration.test.ts` — PASS; `npx vitest run` — skips; `npx tsc --noEmit && npm run lint && npm run test`.
+
+- [ ] **Step 5: Commit** — `git commit -m "test(db): exercise choice-prop RLS policies through a non-owner role"`
+
+---
+
+### Task 11: Final verification and PR
 
 - [ ] **Step 1:** `npx tsc --noEmit && npm run lint && npm run test && npm run build-storybook && npm run build` (build needs the dummy env from `.github/workflows/pr-checks.yml`: `DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy IDP_BASE_URL=http://dummy IDP_PUBLIC_URL=http://dummy NODE_ENV=production npm run build`).
 - [ ] **Step 2:** `grep -rn "resolution !== null\|resolution === null" app components` — every remaining hit must be a genuine Yes/No render.
