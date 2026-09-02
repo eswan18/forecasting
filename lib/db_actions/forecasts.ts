@@ -19,7 +19,7 @@ import {
   ERROR_CODES,
 } from "@/lib/server-action-result";
 import { withRLS, withRLSAction } from "@/lib/db-helpers";
-import { attachOptions } from "@/lib/db_actions/prop-options";
+import { attachOptions } from "@/lib/attach-options";
 
 export type VForecastsOrderByExpression = OrderByExpression<
   Database,

@@ -9,6 +9,9 @@ import {
 let getRecentlyResolvedForecasts: typeof import("./forecasts").getRecentlyResolvedForecasts;
 let getPropsWithUserForecasts: typeof import("./forecasts").getPropsWithUserForecasts;
 
+// `forecasts.ts` transitively imports the server-only `attachOptions` helper.
+vi.mock("server-only", () => ({}));
+
 // Mock getUserFromCookies
 vi.mock("@/lib/get-user", () => ({
   getUserFromCookies: vi.fn(),

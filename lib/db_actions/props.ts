@@ -17,7 +17,7 @@ import {
 } from "@/lib/server-action-result";
 import { logger } from "@/lib/logger";
 import { withRLS, withRLSAction } from "@/lib/db-helpers";
-import { attachOptions } from "@/lib/db_actions/prop-options";
+import { attachOptions } from "@/lib/attach-options";
 import { publishEvent } from "@/lib/pubsub/client";
 
 export async function getPropById(

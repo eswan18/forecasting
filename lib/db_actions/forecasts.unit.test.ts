@@ -3,6 +3,9 @@ import * as getUser from "@/lib/get-user";
 import * as dbHelpers from "@/lib/db-helpers";
 
 // Mock dependencies
+// `forecasts.ts` transitively imports the server-only `attachOptions` helper.
+vi.mock("server-only", () => ({}));
+
 vi.mock("@/lib/get-user", () => ({
   getUserFromCookies: vi.fn(),
 }));

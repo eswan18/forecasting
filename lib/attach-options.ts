@@ -1,4 +1,4 @@
-"use server";
+import "server-only";
 
 import { sql, type Transaction } from "kysely";
 import type { Database, PropOptionSummary } from "@/types/db_types";
