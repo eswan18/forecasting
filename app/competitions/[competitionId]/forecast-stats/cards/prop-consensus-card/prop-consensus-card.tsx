@@ -6,6 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getCategories, getForecasts } from "@/lib/db_actions";
+import { isBinaryForecast } from "@/lib/binary-forecast";
 import PropConsensusContent from "./prop-consensus-content";
 
 export default async function PropConsensusCard({
@@ -17,7 +18,8 @@ export default async function PropConsensusCard({
   if (!forecastsResult.success) {
     throw new Error(forecastsResult.error);
   }
-  const forecasts = forecastsResult.data;
+  // Choice props are binary-only here for now; see docs/superpowers/specs/2026-09-01-choice-props-design.md §4.4
+  const forecasts = forecastsResult.data.filter(isBinaryForecast);
 
   const categoriesResult = await getCategories();
   if (!categoriesResult.success) {

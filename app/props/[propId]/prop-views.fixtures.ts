@@ -1,10 +1,12 @@
-import type { VForecast } from "@/types/db_types";
+import type { BinaryForecast } from "@/lib/binary-forecast";
 
 // Shared mock data for the prop-view stories (forecasts list + distribution
 // chart). Fixed dates keep everything deterministic.
 const NOW = new Date("2026-06-01T00:00:00Z");
 
-export function makeForecast(overrides: Partial<VForecast> = {}): VForecast {
+export function makeForecast(
+  overrides: Partial<BinaryForecast> = {},
+): BinaryForecast {
   return {
     category_id: 1,
     category_name: "Economics",
@@ -20,6 +22,7 @@ export function makeForecast(overrides: Partial<VForecast> = {}): VForecast {
     prop_id: 1,
     prop_text: "Will the proposition resolve yes?",
     prop_notes: null,
+    prop_kind: "binary",
     prop_user_id: null,
     prop_forecasts_due_date: NOW,
     prop_resolution_due_date: NOW,
@@ -49,13 +52,13 @@ const SAMPLE = [
   { user_id: 7, user_name: "Harper", forecast: 0.91 },
 ];
 
-export const sampleForecasts: VForecast[] = SAMPLE.map((s, i) =>
+export const sampleForecasts: BinaryForecast[] = SAMPLE.map((s, i) =>
   makeForecast({ ...s, forecast_id: i + 1 }),
 );
 
 export const CURRENT_USER_ID = 3;
 
-export function average(forecasts: VForecast[]): number | null {
+export function average(forecasts: BinaryForecast[]): number | null {
   if (forecasts.length === 0) return null;
   return forecasts.reduce((a, f) => a + f.forecast, 0) / forecasts.length;
 }

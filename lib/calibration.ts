@@ -1,4 +1,4 @@
-import type { VForecast } from "@/types/db_types";
+import type { BinaryForecast } from "@/lib/binary-forecast";
 
 /**
  * Calibration math for the standalone calibration page.
@@ -48,8 +48,14 @@ export interface CalibrationResult {
   brierScore: number | null;
 }
 
-/** Keep only resolved forecasts and reduce them to the calibration shape. */
-export function toResolvedForecasts(forecasts: VForecast[]): ResolvedForecast[] {
+/**
+ * Keep only resolved forecasts and reduce them to the calibration shape.
+ *
+ * Choice props are binary-only here for now; see docs/superpowers/specs/2026-09-01-choice-props-design.md §4.4
+ */
+export function toResolvedForecasts(
+  forecasts: BinaryForecast[],
+): ResolvedForecast[] {
   return forecasts
     .filter((f) => f.resolution !== null)
     .map((f) => ({ forecast: f.forecast, resolvedYes: f.resolution === true }));

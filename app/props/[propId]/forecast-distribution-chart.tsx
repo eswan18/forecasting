@@ -2,20 +2,20 @@
 
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import type { VForecast } from "@/types/db_types";
+import type { BinaryForecast } from "@/lib/binary-forecast";
 import {
   computeKDE,
   calculateBandwidth,
 } from "@/lib/kernel-density-estimation";
 
 interface ForecastDistributionChartProps {
-  forecasts: VForecast[];
+  forecasts: BinaryForecast[];
   userForecast: number | null;
   average: number | null;
 }
 
 // Generate histogram data (10 buckets: 0-10%, 10-20%, etc.)
-const generateHistogram = (forecasts: VForecast[]) => {
+const generateHistogram = (forecasts: BinaryForecast[]) => {
   const buckets = Array(10).fill(0);
   forecasts.forEach((f) => {
     const bucketIndex = Math.min(Math.floor(f.forecast * 10), 9);

@@ -12,6 +12,7 @@ export function makeProp(
     prop_id: 1,
     prop_text: "Will the temperature exceed 30°C tomorrow?",
     prop_notes: "Based on the local weather station's midday reading.",
+    prop_kind: "binary",
     prop_user_id: null,
     prop_forecasts_due_date: FUTURE,
     prop_resolution_due_date: FUTURE,
@@ -30,6 +31,7 @@ export function makeProp(
     user_forecast: 0.72,
     user_forecast_id: 10,
     community_average: 0.58,
+    options: [],
     ...overrides,
   };
 }

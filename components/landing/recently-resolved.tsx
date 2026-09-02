@@ -1,4 +1,5 @@
 import { getRecentlyResolvedForecasts } from "@/lib/db_actions";
+import { isBinaryForecast } from "@/lib/binary-forecast";
 import ResolvedPropCard from "./resolved-prop-card";
 
 interface RecentlyResolvedProps {
@@ -24,7 +25,9 @@ export default async function RecentlyResolved({
     return <Panel>Unable to load recently resolved props.</Panel>;
   }
 
-  const forecasts = result.data;
+  // Choice props are binary-only here for now; see docs/superpowers/specs/2026-09-01-choice-props-design.md §4.4
+  // TODO(choice-props stage two): render choice props here
+  const forecasts = result.data.filter(isBinaryForecast);
 
   if (forecasts.length === 0) {
     return <Panel>No resolved props yet.</Panel>;

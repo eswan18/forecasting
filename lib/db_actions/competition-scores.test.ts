@@ -7,6 +7,10 @@ import {
 } from "../../tests/helpers/testUtils";
 
 let getCompetitionScores: typeof import("./competition-scores").getCompetitionScores;
+let getUserScoreBreakdown: typeof import("./competition-scores").getUserScoreBreakdown;
+
+// `competition-scores.ts` transitively imports the server-only `attachOptions` helper.
+vi.mock("server-only", () => ({}));
 
 // Mock getUserFromCookies
 vi.mock("@/lib/get-user", () => ({
@@ -28,6 +32,7 @@ describe("getCompetitionScores", () => {
       // Import the actual function for testing
       const competitionScoresModule = await import("./competition-scores");
       getCompetitionScores = competitionScoresModule.getCompetitionScores;
+      getUserScoreBreakdown = competitionScoresModule.getUserScoreBreakdown;
     } else {
       vi.clearAllMocks();
     }
@@ -360,6 +365,102 @@ describe("getCompetitionScores", () => {
           expect(result.data.categoryScores).toEqual([]);
           expect(result.data.incompleteUserIds).toEqual([]);
         }
+      },
+    );
+  });
+
+  describe("choice props", () => {
+    ifRunningContainerTestsIt(
+      "scores a choice prop once per prop and reports its options in the breakdown",
+      async () => {
+        const user = await factory.createUser({ name: "Choice User" });
+        vi.mocked(getUserFromCookies).mockResolvedValue(user);
+
+        const competition = await factory.createCompetition();
+
+        // Binary prop: forecast 0.6, resolves false -> (0 - 0.6)^2 = 0.36
+        const binaryProp = await factory.createCompetitionProp(competition.id, {
+          text: "Binary prop",
+        });
+        await factory.createForecast(user.id, binaryProp.id, {
+          forecast: 0.6,
+        });
+        await factory.createResolution(binaryProp.id, {
+          resolution: false,
+          user_id: user.id,
+        });
+
+        // one_of prop: uniform 0.25 over four options, first one resolves true
+        // -> 0.5 * ((1 - .25)^2 + 3 * (0 - .25)^2) = 0.5 * 0.75 = 0.375
+        const { prop: choiceProp, options } = await factory.createChoiceProp(
+          "one_of",
+          ["North", "South", "East", "West"],
+          { competition_id: competition.id, text: "Choice prop" },
+        );
+        await factory.createChoiceForecast(
+          user.id,
+          choiceProp.id,
+          options.map((o) => ({ optionId: o.id, probability: 0.25 })),
+        );
+        await factory.createChoiceResolution(
+          choiceProp.id,
+          options.map((o, i) => ({ optionId: o.id, outcome: i === 0 })),
+          { user_id: user.id },
+        );
+
+        const scores = await getCompetitionScores({
+          competitionId: competition.id,
+        });
+        expect(scores.success).toBe(true);
+        if (!scores.success) return;
+        // Each prop contributes exactly one number: (0.36 + 0.375) / 2
+        expect(scores.data.overallScores).toHaveLength(1);
+        expect(scores.data.overallScores[0].userId).toBe(user.id);
+        expect(scores.data.overallScores[0].score).toBeCloseTo(0.3675, 6);
+        expect(scores.data.incompleteUserIds).toEqual([]);
+
+        const breakdown = await getUserScoreBreakdown({
+          competitionId: competition.id,
+          userId: user.id,
+        });
+        expect(breakdown.success).toBe(true);
+        if (!breakdown.success) return;
+
+        expect(breakdown.data.overallScore).toBeCloseTo(0.3675, 6);
+        expect(breakdown.data.forecastScores).toHaveLength(2);
+
+        const binaryScore = breakdown.data.forecastScores.find(
+          (f) => f.propId === binaryProp.id,
+        )!;
+        expect(binaryScore.kind).toBe("binary");
+        expect(binaryScore.forecast).toBeCloseTo(0.6, 6);
+        expect(binaryScore.resolution).toBe(false);
+        expect(binaryScore.score).toBeCloseTo(0.36, 6);
+        expect(binaryScore.options).toEqual([]);
+
+        const choiceScore = breakdown.data.forecastScores.find(
+          (f) => f.propId === choiceProp.id,
+        )!;
+        expect(choiceScore.kind).toBe("one_of");
+        expect(choiceScore.forecast).toBeNull();
+        expect(choiceScore.resolution).toBeNull();
+        expect(choiceScore.score).toBeCloseTo(0.375, 6);
+        expect(choiceScore.options).toHaveLength(4);
+        expect(choiceScore.options.map((o) => o.text)).toEqual([
+          "North",
+          "South",
+          "East",
+          "West",
+        ]);
+        expect(choiceScore.options.map((o) => o.userForecast)).toEqual([
+          0.25, 0.25, 0.25, 0.25,
+        ]);
+        expect(choiceScore.options.map((o) => o.outcome)).toEqual([
+          true,
+          false,
+          false,
+          false,
+        ]);
       },
     );
   });

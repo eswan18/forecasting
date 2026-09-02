@@ -9,30 +9,38 @@ const deadlines: UpcomingDeadline[] = [
   {
     propId: 1,
     propText: "Will the Fed cut rates at its next meeting?",
+    kind: "binary",
     deadline: new Date(now - DAY),
     userForecast: null,
     userForecastId: null,
+    hasUserForecast: false,
   },
   {
     propId: 2,
     propText: "Will the next Starship flight reach orbit?",
+    kind: "binary",
     deadline: new Date(now + DAY),
     userForecast: 0.72,
     userForecastId: 11,
+    hasUserForecast: true,
   },
   {
     propId: 3,
     propText: "Will the home team make the playoffs this season?",
+    kind: "binary",
     deadline: new Date(now + 3 * DAY),
     userForecast: 0.18,
     userForecastId: 12,
+    hasUserForecast: true,
   },
   {
     propId: 4,
     propText: "Will annual inflation come in under 3%?",
+    kind: "binary",
     deadline: new Date(now + 20 * DAY),
     userForecast: 0.55,
     userForecastId: 13,
+    hasUserForecast: true,
   },
 ];
 
@@ -74,6 +82,7 @@ export const AllForecasted: Story = {
       ...d,
       userForecast: [0.4, 0.72, 0.18, 0.55][i],
       userForecastId: 20 + i,
+      hasUserForecast: true,
     })),
   },
 };

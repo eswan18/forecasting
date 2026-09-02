@@ -1,7 +1,13 @@
 "use server";
 import { getUserFromCookies } from "../get-user";
 import { revalidatePath } from "next/cache";
-import { VProp, PropUpdate, NewProp, NewResolution } from "@/types/db_types";
+import {
+  VProp,
+  PropUpdate,
+  NewProp,
+  NewResolution,
+  PropOptionSummary,
+} from "@/types/db_types";
 import {
   ServerActionResult,
   ERROR_CODES,
@@ -11,11 +17,20 @@ import {
 } from "@/lib/server-action-result";
 import { logger } from "@/lib/logger";
 import { withRLS, withRLSAction } from "@/lib/db-helpers";
+import { attachOptions } from "@/lib/attach-options";
+import { isChoiceKind, isPropKind, type PropKind } from "@/lib/prop-kind";
+import {
+  validateChoiceOutcomes,
+  validateOptionLabels,
+  type OptionOutcome,
+} from "@/lib/choice-forecast";
 import { publishEvent } from "@/lib/pubsub/client";
 
 export async function getPropById(
   propId: number,
-): Promise<ServerActionResult<VProp | null>> {
+): Promise<
+  ServerActionResult<(VProp & { options: PropOptionSummary[] }) | null>
+> {
   const currentUser = await getUserFromCookies();
 
   logger.debug("Getting prop by ID", {
@@ -26,11 +41,18 @@ export async function getPropById(
   const startTime = Date.now();
   try {
     const result = await withRLS(currentUser?.id, async (trx) => {
-      return await trx
+      const prop = await trx
         .selectFrom("v_props")
         .selectAll()
         .where("prop_id", "=", propId)
         .executeTakeFirst();
+      if (!prop) return null;
+      const optionsByProp = await attachOptions(
+        trx,
+        [prop],
+        currentUser?.id ?? null,
+      );
+      return { ...prop, options: optionsByProp.get(prop.prop_id) ?? [] };
     });
 
     const duration = Date.now() - startTime;
@@ -42,7 +64,7 @@ export async function getPropById(
       found: !!result,
     });
 
-    return success(result || null);
+    return success(result);
   } catch (err) {
     const duration = Date.now() - startTime;
     logger.error("Error getting prop by ID", err as Error, {
@@ -172,15 +194,28 @@ export async function getProps({
   }
 }
 
+/**
+ * Records a prop's outcome.
+ *
+ * Yes/no props resolve with a single `resolution` and no `outcomes`; choice
+ * props are the reverse, and their header row carries a null `resolution`
+ * (an `enforce_resolution_kind` trigger insists on that) with one
+ * `resolution_options` row per option. Header and children are written in the
+ * same transaction, so a rejected resolution leaves nothing behind.
+ */
 export async function resolveProp({
   propId,
   resolution,
+  outcomes,
   notes,
   userId,
   overwrite = false,
 }: {
   propId: number;
-  resolution: boolean;
+  /** Required for yes/no props, forbidden for choice ones. */
+  resolution?: boolean;
+  /** Required for choice props, forbidden for yes/no ones. */
+  outcomes?: OptionOutcome[];
   notes?: string;
   userId: number | null;
   overwrite?: boolean;
@@ -189,19 +224,71 @@ export async function resolveProp({
   logger.debug("Resolving prop", {
     propId,
     resolution,
+    outcomeCount: outcomes?.length,
     propUserId: userId,
     overwrite,
     currentUserId: currentUser?.id,
   });
 
   const startTime = Date.now();
+  // Captured inside the transaction so the success log can name the kind; the
+  // `resolution` field is undefined for choice props.
+  let resolvedKind: PropKind | undefined;
   try {
     const result = await withRLSAction(currentUser?.id, async (trx) => {
-      // first check that this prop doesn't already have a resolution
+      const prop = await trx
+        .selectFrom("v_props")
+        .select("prop_kind")
+        .where("prop_id", "=", propId)
+        .executeTakeFirst();
+      if (!prop) {
+        return error("Proposition not found", ERROR_CODES.NOT_FOUND);
+      }
+
+      const kind = prop.prop_kind;
+      resolvedKind = kind;
+      const choice = isChoiceKind(kind);
+      if (!choice && (resolution === undefined || outcomes !== undefined)) {
+        return error(
+          "Yes/no propositions resolve with a single true/false",
+          ERROR_CODES.VALIDATION_ERROR,
+        );
+      }
+      if (choice && (outcomes === undefined || resolution !== undefined)) {
+        return error(
+          "Choice propositions resolve with an outcome per option",
+          ERROR_CODES.VALIDATION_ERROR,
+        );
+      }
+
+      if (choice) {
+        const options = await trx
+          .selectFrom("prop_options")
+          .select("id")
+          .where("prop_id", "=", propId)
+          .execute();
+        const validationErrors = validateChoiceOutcomes(
+          kind,
+          options.map((o) => o.id),
+          outcomes!,
+        );
+        if (validationErrors.length > 0) {
+          logger.warn("Validation error resolving a choice prop", {
+            propId,
+            validationErrors,
+          });
+          return error(
+            validationErrors.join("; "),
+            ERROR_CODES.VALIDATION_ERROR,
+          );
+        }
+      }
+
+      // Then check that this prop doesn't already have a resolution.
       const existingResolution = await trx
         .selectFrom("resolutions")
         .where("prop_id", "=", propId)
-        .select("resolution")
+        .select(["id", "resolution"])
         .executeTakeFirst();
       if (!!existingResolution && !overwrite) {
         logger.warn("Attempted to resolve prop that already has resolution", {
@@ -215,24 +302,53 @@ export async function resolveProp({
         );
       }
 
+      // Choice props hold their outcome in the child rows, not the header.
+      const headerValue = choice ? null : resolution!;
+      let resolutionId: number;
       if (existingResolution) {
         // Update the existing record.
-        await trx
+        const updated = await trx
           .updateTable("resolutions")
-          .set({ resolution, notes })
+          .set({ resolution: headerValue, notes })
           .where("prop_id", "=", propId)
-          .execute();
-        logger.debug("Updated existing resolution", { propId, resolution });
+          .returning("id")
+          .executeTakeFirstOrThrow();
+        resolutionId = updated.id;
+        logger.debug("Updated existing resolution", { propId, kind });
       } else {
         // Insert a new record.
         const record: NewResolution = {
           prop_id: propId,
-          resolution,
+          resolution: headerValue,
           user_id: userId,
           notes,
         };
-        await trx.insertInto("resolutions").values(record).execute();
-        logger.debug("Created new resolution", { propId, resolution });
+        const inserted = await trx
+          .insertInto("resolutions")
+          .values(record)
+          .returning("id")
+          .executeTakeFirstOrThrow();
+        resolutionId = inserted.id;
+        logger.debug("Created new resolution", { propId, kind });
+      }
+
+      if (choice) {
+        // Overwriting replaces the whole set, so clear it before reinserting.
+        await trx
+          .deleteFrom("resolution_options")
+          .where("resolution_id", "=", resolutionId)
+          .execute();
+        await trx
+          .insertInto("resolution_options")
+          .values(
+            outcomes!.map((o) => ({
+              resolution_id: resolutionId,
+              prop_id: propId,
+              option_id: o.optionId,
+              outcome: o.outcome,
+            })),
+          )
+          .execute();
       }
 
       return success(undefined);
@@ -244,7 +360,9 @@ export async function resolveProp({
         operation: "resolveProp",
         table: "resolutions",
         propId,
+        kind: resolvedKind,
         resolution,
+        outcomeCount: outcomes?.length,
         duration,
       });
       revalidatePath("/props");
@@ -329,6 +447,16 @@ export async function updateProp({
       );
     }
 
+    // The kind is fixed at creation (a database trigger enforces this too);
+    // reject the update before it reaches the database.
+    if (prop.kind !== undefined) {
+      logger.warn("Attempted to change the kind of a prop", { propId: id });
+      return error(
+        "The kind of a proposition cannot be changed",
+        ERROR_CODES.VALIDATION_ERROR,
+      );
+    }
+
     // Validate prop data
     if (prop.text && prop.text.trim().length < 8) {
       logger.warn("Validation error: prop text too short", {
@@ -370,8 +498,11 @@ export async function updateProp({
 
 export async function createProp({
   prop,
+  options,
 }: {
   prop: NewProp;
+  /** Required for choice props, forbidden for binary ones. */
+  options?: string[];
 }): Promise<ServerActionResult<void>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Creating prop", {
@@ -417,6 +548,23 @@ export async function createProp({
         validationErrors.resolution_due_date = validationErrors.resolution_due_date || [];
         validationErrors.resolution_due_date.push("Resolution deadline must be after forecast deadline");
       }
+    }
+
+    // Options are required for choice props and forbidden for binary ones.
+    const kind: PropKind = prop.kind ?? "binary";
+    const trimmedOptions = (options ?? []).map((o) => o.trim());
+    if (prop.kind !== undefined && !isPropKind(prop.kind)) {
+      // A kind the app does not know about: the CHECK constraint would reject
+      // it anyway, and the option rules below have no meaning for it, so stop
+      // here rather than validating options against a guessed kind.
+      validationErrors.kind = ["Unknown proposition type"];
+    } else if (isChoiceKind(kind)) {
+      const optionErrors = validateOptionLabels(trimmedOptions);
+      if (optionErrors.length > 0) {
+        validationErrors.options = optionErrors;
+      }
+    } else if (trimmedOptions.length > 0) {
+      validationErrors.options = ["Yes/no propositions do not have options"];
     }
 
     if (Object.keys(validationErrors).length > 0) {
@@ -472,7 +620,23 @@ export async function createProp({
         }
       }
 
-      await trx.insertInto("props").values(prop).execute();
+      const { id: propId } = await trx
+        .insertInto("props")
+        .values(prop)
+        .returning("id")
+        .executeTakeFirstOrThrow();
+      if (isChoiceKind(kind)) {
+        await trx
+          .insertInto("prop_options")
+          .values(
+            trimmedOptions.map((text, position) => ({
+              prop_id: propId,
+              text,
+              position,
+            })),
+          )
+          .execute();
+      }
       return success(undefined);
     });
 
@@ -481,6 +645,8 @@ export async function createProp({
       logger.info("Prop created successfully", {
         operation: "createProp",
         table: "props",
+        kind,
+        optionCount: trimmedOptions.length,
         categoryId: prop.category_id,
         textLength: prop.text?.length,
         duration,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { UserPlus } from "lucide-react";
 import { CompetitionHeader } from "./competition-header";
@@ -85,26 +85,24 @@ export function CompetitionDashboard({
     [isPrivate],
   );
 
-  const openProps = useMemo(() => {
-    return props.filter((prop) => {
-      // Open: close date is in the future (or null for no deadline)
-      const closeDate = getCloseDate(prop);
-      return closeDate === null || new Date(closeDate) > now;
-    });
-  }, [props, now, getCloseDate]);
+  // These filters are cheap and `now` is fresh on every render, so memoising
+  // them bought nothing (the memo recomputed each render anyway).
+  const openProps = props.filter((prop) => {
+    // Open: close date is in the future (or null for no deadline)
+    const closeDate = getCloseDate(prop);
+    return closeDate === null || new Date(closeDate) > now;
+  });
 
-  const unresolvedProps = useMemo(() => {
-    return props.filter((prop) => {
-      // Unresolved: close date is in the past AND not resolved
-      const closeDate = getCloseDate(prop);
-      const isResolved = prop.resolution !== null;
-      return closeDate !== null && new Date(closeDate) <= now && !isResolved;
-    });
-  }, [props, now, getCloseDate]);
+  const unresolvedProps = props.filter((prop) => {
+    // Unresolved: close date is in the past AND not resolved
+    const closeDate = getCloseDate(prop);
+    // A resolved choice prop has a null `resolution`; `resolution_id` is
+    // the "is resolved" flag for every kind.
+    const isResolved = prop.resolution_id !== null;
+    return closeDate !== null && new Date(closeDate) <= now && !isResolved;
+  });
 
-  const resolvedProps = useMemo(() => {
-    return props.filter((prop) => prop.resolution !== null);
-  }, [props]);
+  const resolvedProps = props.filter((prop) => prop.resolution_id !== null);
 
   const handleTabChange = useCallback(
     (tab: DashboardTab) => {

@@ -5,6 +5,7 @@ export * from "./competition-scores";
 export * from "./competition-stats";
 export * from "./forecasts";
 export * from "./feature_flags";
+export * from "./prop-options";
 export * from "./props";
 export * from "./suggested-props";
 export * from "./users";
