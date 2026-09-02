@@ -4,6 +4,7 @@ import {
   Database,
   User,
   Prop,
+  PropOption,
   Competition,
   Forecast,
   Category,
@@ -225,7 +226,6 @@ export class TestDataFactory {
       resolution: true,
       notes: null,
       user_id: null,
-      resolved_at: new Date(), // Required NOT NULL column in database schema
     };
 
     const resolutionData = {
@@ -248,5 +248,88 @@ export class TestDataFactory {
     this.getTracker().trackId("resolutions", result.id);
 
     return result;
+  }
+
+  /**
+   * A choice prop with its options. Returns the prop plus its option rows
+   * ordered by position.
+   */
+  async createChoiceProp(
+    kind: "one_of" | "any_of",
+    labels: string[],
+    overrides: Partial<TestProp> = {},
+  ): Promise<{ prop: TestProp; options: PropOption[] }> {
+    const prop = await this.createProp({ ...overrides, kind });
+    const options: PropOption[] = [];
+    for (const [position, text] of labels.entries()) {
+      const option = await this.db
+        .insertInto("prop_options")
+        .values({ prop_id: prop.id, text, position })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+      // Not tracked: cascades from the prop delete.
+      options.push(option);
+    }
+    return { prop, options };
+  }
+
+  /** A choice forecast: header row with a null forecast plus one child per option. */
+  async createChoiceForecast(
+    userId: number,
+    propId: number,
+    probabilities: { optionId: number; probability: number }[],
+  ): Promise<TestForecast> {
+    const header = await this.db
+      .insertInto("forecasts")
+      .values({ user_id: userId, prop_id: propId, forecast: null })
+      .returningAll()
+      .executeTakeFirstOrThrow();
+    this.getTracker().trackId("forecasts", header.id);
+    await this.db
+      .insertInto("forecast_options")
+      .values(
+        probabilities.map((p) => ({
+          forecast_id: header.id,
+          prop_id: propId,
+          option_id: p.optionId,
+          probability: p.probability,
+        })),
+      )
+      .execute();
+    return header;
+  }
+
+  /** A choice resolution: header row with a null resolution plus one child per option. */
+  async createChoiceResolution(
+    propId: number,
+    outcomes: { optionId: number; outcome: boolean }[],
+    overrides: Partial<
+      Omit<TestResolution, "id" | "prop_id" | "resolution">
+    > = {},
+  ): Promise<TestResolution> {
+    const header = await this.db
+      .insertInto("resolutions")
+      .values({
+        prop_id: propId,
+        resolution: null,
+        notes: null,
+        user_id: null,
+        ...overrides,
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow();
+    this.getTracker().trackId("resolutions", header.id);
+    await this.db
+      .insertInto("resolution_options")
+      .values(
+        outcomes.map((o) => ({
+          resolution_id: header.id,
+          prop_id: propId,
+          option_id: o.optionId,
+          outcome: o.outcome,
+        })),
+      )
+      .execute();
+    return header;
   }
 }

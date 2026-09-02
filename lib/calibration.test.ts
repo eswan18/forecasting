@@ -4,7 +4,7 @@ import {
   toResolvedForecasts,
   type ResolvedForecast,
 } from "./calibration";
-import type { VForecast } from "@/types/db_types";
+import type { BinaryForecast } from "./binary-forecast";
 
 describe("toResolvedForecasts", () => {
   it("drops unresolved forecasts and reduces to the calibration shape", () => {
@@ -12,7 +12,7 @@ describe("toResolvedForecasts", () => {
       { forecast: 0.8, resolution: true },
       { forecast: 0.3, resolution: false },
       { forecast: 0.5, resolution: null },
-    ] as VForecast[];
+    ] as BinaryForecast[];
 
     expect(toResolvedForecasts(forecasts)).toEqual([
       { forecast: 0.8, resolvedYes: true },

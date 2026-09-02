@@ -1,4 +1,4 @@
-import { VForecast } from "@/types/db_types";
+import type { BinaryForecast } from "@/lib/binary-forecast";
 
 export function mean(values: number[]): number {
   return values.reduce((sum, value) => sum + value, 0) / values.length;
@@ -26,9 +26,9 @@ export interface PropStatistics {
 }
 
 export function propStatisticsForForecasts(
-  forecasts: VForecast[],
+  forecasts: BinaryForecast[],
 ): Map<number, PropStatistics> {
-  const forecastsByProp = new Map<number, VForecast[]>();
+  const forecastsByProp = new Map<number, BinaryForecast[]>();
   for (const forecast of forecasts) {
     const forecastsForProp = forecastsByProp.get(forecast.prop_id) || [];
     forecastsForProp.push(forecast);

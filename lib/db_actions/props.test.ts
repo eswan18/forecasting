@@ -77,7 +77,8 @@ describe("Props Unit Tests", () => {
 
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data).toEqual(mockProp);
+        // Binary (non-choice) props carry an empty option list.
+        expect(result.data).toEqual({ ...mockProp, options: [] });
       }
     });
 
@@ -165,6 +166,8 @@ describe("Props Unit Tests", () => {
       const mockTrx = {
         insertInto: vi.fn().mockReturnThis(),
         values: vi.fn().mockReturnThis(),
+        returning: vi.fn().mockReturnThis(),
+        executeTakeFirstOrThrow: vi.fn().mockResolvedValue({ id: 1 }),
         execute: vi.fn().mockResolvedValue(undefined),
       };
 
@@ -190,6 +193,8 @@ describe("Props Unit Tests", () => {
       const mockTrx = {
         insertInto: vi.fn().mockReturnThis(),
         values: vi.fn().mockReturnThis(),
+        returning: vi.fn().mockReturnThis(),
+        executeTakeFirstOrThrow: vi.fn().mockResolvedValue({ id: 1 }),
         execute: vi.fn().mockResolvedValue(undefined),
       };
 
@@ -226,6 +231,8 @@ describe("Props Unit Tests", () => {
         }),
         insertInto: vi.fn().mockReturnThis(),
         values: vi.fn().mockReturnThis(),
+        returning: vi.fn().mockReturnThis(),
+        executeTakeFirstOrThrow: vi.fn().mockResolvedValue({ id: 1 }),
         execute: vi.fn().mockResolvedValue(undefined),
       };
 
@@ -372,6 +379,8 @@ describe("Props Unit Tests", () => {
           }),
           insertInto: vi.fn().mockReturnThis(),
           values: vi.fn().mockReturnThis(),
+          returning: vi.fn().mockReturnThis(),
+          executeTakeFirstOrThrow: vi.fn().mockResolvedValue({ id: 1 }),
           execute: vi.fn().mockResolvedValue(undefined),
         };
 
@@ -504,6 +513,8 @@ describe("Props Unit Tests", () => {
           }),
           insertInto: vi.fn().mockReturnThis(),
           values: vi.fn().mockReturnThis(),
+          returning: vi.fn().mockReturnThis(),
+          executeTakeFirstOrThrow: vi.fn().mockResolvedValue({ id: 1 }),
           execute: vi.fn().mockResolvedValue(undefined),
         };
 
@@ -562,6 +573,218 @@ describe("Props Unit Tests", () => {
     });
   });
 
+  describe("createProp with options", () => {
+    /**
+     * Fake transaction that records the rows handed to each insert and
+     * answers the props insert with a generated id.
+     */
+    function makeRecordingTrx() {
+      const inserts: { table: string; values: unknown }[] = [];
+      const trx = {
+        insertInto: vi.fn((table: string) => ({
+          values: vi.fn((values: unknown) => {
+            inserts.push({ table, values });
+            return {
+              execute: vi.fn().mockResolvedValue(undefined),
+              returning: vi.fn().mockReturnValue({
+                executeTakeFirstOrThrow: vi.fn().mockResolvedValue({ id: 42 }),
+              }),
+            };
+          }),
+        })),
+      };
+      return { trx, inserts };
+    }
+
+    function useTrx(trx: unknown) {
+      vi.mocked(dbHelpers.withRLSAction).mockImplementation(
+        async (userId, fn) => fn(trx as any),
+      );
+    }
+
+    it("inserts the options after the prop, in position order", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+      const { trx, inserts } = makeRecordingTrx();
+      useTrx(trx);
+
+      const result = await createProp({
+        prop: {
+          text: "Who wins the division?",
+          category_id: 1,
+          user_id: null,
+          kind: "one_of",
+        },
+        options: ["Knicks", "Spurs"],
+      });
+
+      expect(result.success).toBe(true);
+      expect(inserts.map((i) => i.table)).toEqual(["props", "prop_options"]);
+      expect(inserts[0].values).toMatchObject({ kind: "one_of" });
+      expect(inserts[1].values).toEqual([
+        { prop_id: 42, text: "Knicks", position: 0 },
+        { prop_id: 42, text: "Spurs", position: 1 },
+      ]);
+    });
+
+    it("trims option labels before inserting them", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+      const { trx, inserts } = makeRecordingTrx();
+      useTrx(trx);
+
+      const result = await createProp({
+        prop: {
+          text: "Which of these happen?",
+          category_id: 1,
+          user_id: null,
+          kind: "any_of",
+        },
+        options: ["  Rain  ", "Snow\n"],
+      });
+
+      expect(result.success).toBe(true);
+      expect(inserts[1].values).toEqual([
+        { prop_id: 42, text: "Rain", position: 0 },
+        { prop_id: 42, text: "Snow", position: 1 },
+      ]);
+    });
+
+    it("rejects a choice prop with only one option", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+      const result = await createProp({
+        prop: {
+          text: "Who wins the division?",
+          category_id: 1,
+          user_id: null,
+          kind: "one_of",
+        },
+        options: ["Knicks"],
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe("VALIDATION_ERROR");
+        const validationResult = result as {
+          validationErrors?: Record<string, string[]>;
+        };
+        expect(validationResult.validationErrors?.options).toEqual([
+          "At least 2 options are required",
+        ]);
+      }
+      expect(dbHelpers.withRLSAction).not.toHaveBeenCalled();
+    });
+
+    it("rejects a choice prop with no options at all", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+      const result = await createProp({
+        prop: {
+          text: "Who wins the division?",
+          category_id: 1,
+          user_id: null,
+          kind: "one_of",
+        },
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe("VALIDATION_ERROR");
+        const validationResult = result as {
+          validationErrors?: Record<string, string[]>;
+        };
+        expect(validationResult.validationErrors?.options).toBeDefined();
+      }
+      expect(dbHelpers.withRLSAction).not.toHaveBeenCalled();
+    });
+
+    it("rejects duplicate option labels", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+      const result = await createProp({
+        prop: {
+          text: "Who wins the division?",
+          category_id: 1,
+          user_id: null,
+          kind: "one_of",
+        },
+        options: ["Knicks", " Knicks "],
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const validationResult = result as {
+          validationErrors?: Record<string, string[]>;
+        };
+        expect(validationResult.validationErrors?.options).toContain(
+          "Options must be unique",
+        );
+      }
+    });
+
+    it("rejects options on a yes/no prop", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+      const result = await createProp({
+        prop: { text: "Will it rain tomorrow?", category_id: 1, user_id: null },
+        options: ["A", "B"],
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe("VALIDATION_ERROR");
+        const validationResult = result as {
+          validationErrors?: Record<string, string[]>;
+        };
+        expect(validationResult.validationErrors?.options).toEqual([
+          "Yes/no propositions do not have options",
+        ]);
+      }
+      expect(dbHelpers.withRLSAction).not.toHaveBeenCalled();
+    });
+
+    it("rejects a kind the app does not know about", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+      const result = await createProp({
+        prop: {
+          text: "Where does this finish?",
+          category_id: 1,
+          user_id: null,
+          kind: "ordinal" as any,
+        },
+        options: ["First", "Second"],
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe("VALIDATION_ERROR");
+        const validationResult = result as {
+          validationErrors?: Record<string, string[]>;
+        };
+        expect(validationResult.validationErrors?.kind).toEqual([
+          "Unknown proposition type",
+        ]);
+        // The option rules are skipped: they have no meaning for a kind the
+        // app cannot classify.
+        expect(validationResult.validationErrors?.options).toBeUndefined();
+      }
+      expect(dbHelpers.withRLSAction).not.toHaveBeenCalled();
+    });
+
+    it("does not touch prop_options for a yes/no prop", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+      const { trx, inserts } = makeRecordingTrx();
+      useTrx(trx);
+
+      const result = await createProp({
+        prop: { text: "Will it rain tomorrow?", category_id: 1, user_id: null },
+      });
+
+      expect(result.success).toBe(true);
+      expect(inserts.map((i) => i.table)).toEqual(["props"]);
+    });
+  });
+
   describe("updateProp", () => {
     it("should require authentication", async () => {
       vi.mocked(getUser.getUserFromCookies).mockResolvedValue(null);
@@ -615,25 +838,161 @@ describe("Props Unit Tests", () => {
     });
   });
 
-  describe("resolveProp", () => {
-    it("should resolve prop when no existing resolution", async () => {
-      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(
-        mockAdminUser as any,
-      );
+  describe("updateProp kind guard", () => {
+    it("refuses to change a prop's kind and never reaches the database", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
+
+      const result = await updateProp({
+        id: 1,
+        prop: { kind: "one_of" },
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe("VALIDATION_ERROR");
+        expect(result.error).toContain("cannot be changed");
+      }
+      expect(dbHelpers.withRLS).not.toHaveBeenCalled();
+      expect(dbHelpers.withRLSAction).not.toHaveBeenCalled();
+    });
+
+    it("allows an update that merely carries an undefined kind", async () => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(mockUser as any);
 
       const mockTrx = {
-        selectFrom: vi.fn().mockReturnThis(),
+        updateTable: vi.fn().mockReturnThis(),
+        set: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
-        select: vi.fn().mockReturnThis(),
-        executeTakeFirst: vi.fn().mockResolvedValue(null),
-        insertInto: vi.fn().mockReturnThis(),
-        values: vi.fn().mockReturnThis(),
         execute: vi.fn().mockResolvedValue(undefined),
       };
 
-      vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
+      vi.mocked(dbHelpers.withRLS).mockImplementation(async (userId, fn) => {
         return fn(mockTrx as any);
       });
+
+      const result = await updateProp({
+        id: 1,
+        prop: { kind: undefined, text: "This is valid updated text" },
+      });
+
+      expect(result.success).toBe(true);
+      expect(mockTrx.updateTable).toHaveBeenCalledWith("props");
+    });
+  });
+
+  describe("resolveProp", () => {
+    /**
+     * A fake transaction covering the chains `resolveProp` uses: the `v_props`
+     * kind read, the `prop_options` read, the existing-resolution lookup, the
+     * header insert or update, and the `resolution_options` delete + insert.
+     * Writes are recorded so the tests can assert on what would reach the
+     * database, and `order` pins the delete-before-reinsert sequence.
+     */
+    function makeResolveTrx({
+      prop,
+      optionIds = [],
+      existingResolution,
+      resolutionId = 7,
+    }: {
+      prop?: { prop_kind: string };
+      optionIds?: number[];
+      existingResolution?: { id: number; resolution: boolean | null };
+      resolutionId?: number;
+    }) {
+      const recorded = {
+        insertedHeader: undefined as any,
+        updatedHeader: undefined as any,
+        insertedOptions: undefined as any[] | undefined,
+        deletedResolutionId: undefined as number | undefined,
+        order: [] as string[],
+      };
+
+      const selectFrom = vi.fn((table: string) => {
+        const builder: any = {
+          select: () => builder,
+          where: () => builder,
+          executeTakeFirst: async () => {
+            if (table === "v_props") return prop;
+            if (table === "resolutions") return existingResolution;
+            return undefined;
+          },
+          execute: async () =>
+            table === "prop_options" ? optionIds.map((id) => ({ id })) : [],
+        };
+        return builder;
+      });
+
+      const insertInto = vi.fn((table: string) => {
+        const builder: any = {
+          values: (values: any) => {
+            if (table === "resolutions") {
+              recorded.insertedHeader = values;
+            } else {
+              recorded.insertedOptions = values;
+            }
+            recorded.order.push(`insert:${table}`);
+            return builder;
+          },
+          returning: () => builder,
+          executeTakeFirstOrThrow: async () => ({ id: resolutionId }),
+          execute: async () => undefined,
+        };
+        return builder;
+      });
+
+      const updateTable = vi.fn((table: string) => {
+        const builder: any = {
+          set: (values: any) => {
+            recorded.updatedHeader = values;
+            recorded.order.push(`update:${table}`);
+            return builder;
+          },
+          where: () => builder,
+          returning: () => builder,
+          executeTakeFirstOrThrow: async () => ({ id: resolutionId }),
+          execute: async () => undefined,
+        };
+        return builder;
+      });
+
+      const deleteFrom = vi.fn((table: string) => {
+        const builder: any = {
+          where: (_column: string, _op: string, value: number) => {
+            recorded.deletedResolutionId = value;
+            return builder;
+          },
+          execute: async () => {
+            recorded.order.push(`delete:${table}`);
+          },
+        };
+        return builder;
+      });
+
+      return {
+        trx: { selectFrom, insertInto, updateTable, deleteFrom },
+        recorded,
+      };
+    }
+
+    function runWith(trx: unknown) {
+      vi.mocked(dbHelpers.withRLSAction).mockImplementation(
+        async (userId, fn) => fn(trx as any),
+      );
+    }
+
+    const binaryProp = { prop_kind: "binary" };
+    const oneOfProp = { prop_kind: "one_of" };
+    const anyOfProp = { prop_kind: "any_of" };
+
+    beforeEach(() => {
+      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(
+        mockAdminUser as any,
+      );
+    });
+
+    it("should resolve prop when no existing resolution", async () => {
+      const { trx, recorded } = makeResolveTrx({ prop: binaryProp });
+      runWith(trx);
 
       const result = await resolveProp({
         propId: 1,
@@ -642,24 +1001,22 @@ describe("Props Unit Tests", () => {
       });
 
       expect(result.success).toBe(true);
-      expect(mockTrx.insertInto).toHaveBeenCalledWith("resolutions");
+      expect(trx.insertInto).toHaveBeenCalledWith("resolutions");
+      expect(recorded.insertedHeader).toEqual({
+        prop_id: 1,
+        resolution: true,
+        user_id: 2,
+        notes: undefined,
+      });
+      expect(recorded.insertedOptions).toBeUndefined();
     });
 
     it("should reject resolution when already resolved without overwrite", async () => {
-      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(
-        mockAdminUser as any,
-      );
-
-      const mockTrx = {
-        selectFrom: vi.fn().mockReturnThis(),
-        where: vi.fn().mockReturnThis(),
-        select: vi.fn().mockReturnThis(),
-        executeTakeFirst: vi.fn().mockResolvedValue({ resolution: true }),
-      };
-
-      vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
-        return fn(mockTrx as any);
+      const { trx, recorded } = makeResolveTrx({
+        prop: binaryProp,
+        existingResolution: { id: 7, resolution: true },
       });
+      runWith(trx);
 
       const result = await resolveProp({
         propId: 1,
@@ -673,26 +1030,16 @@ describe("Props Unit Tests", () => {
         expect(result.error).toContain("already has a resolution");
         expect(result.code).toBe("VALIDATION_ERROR");
       }
+      expect(recorded.insertedHeader).toBeUndefined();
+      expect(recorded.updatedHeader).toBeUndefined();
     });
 
     it("should update resolution when overwrite is true", async () => {
-      vi.mocked(getUser.getUserFromCookies).mockResolvedValue(
-        mockAdminUser as any,
-      );
-
-      const mockTrx = {
-        selectFrom: vi.fn().mockReturnThis(),
-        where: vi.fn().mockReturnThis(),
-        select: vi.fn().mockReturnThis(),
-        executeTakeFirst: vi.fn().mockResolvedValue({ resolution: true }),
-        updateTable: vi.fn().mockReturnThis(),
-        set: vi.fn().mockReturnThis(),
-        execute: vi.fn().mockResolvedValue(undefined),
-      };
-
-      vi.mocked(dbHelpers.withRLSAction).mockImplementation(async (userId, fn) => {
-        return fn(mockTrx as any);
+      const { trx, recorded } = makeResolveTrx({
+        prop: binaryProp,
+        existingResolution: { id: 7, resolution: true },
       });
+      runWith(trx);
 
       const result = await resolveProp({
         propId: 1,
@@ -702,7 +1049,199 @@ describe("Props Unit Tests", () => {
       });
 
       expect(result.success).toBe(true);
-      expect(mockTrx.updateTable).toHaveBeenCalledWith("resolutions");
+      expect(trx.updateTable).toHaveBeenCalledWith("resolutions");
+      expect(recorded.updatedHeader).toEqual({
+        resolution: false,
+        notes: undefined,
+      });
+      expect(recorded.insertedOptions).toBeUndefined();
+    });
+
+    it("should reject a prop that does not exist", async () => {
+      const { trx, recorded } = makeResolveTrx({ prop: undefined });
+      runWith(trx);
+
+      const result = await resolveProp({
+        propId: 999,
+        resolution: true,
+        userId: 2,
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe("NOT_FOUND");
+      }
+      expect(recorded.insertedHeader).toBeUndefined();
+    });
+
+    it("should reject outcomes on a yes/no prop", async () => {
+      const { trx, recorded } = makeResolveTrx({ prop: binaryProp });
+      runWith(trx);
+
+      const result = await resolveProp({
+        propId: 1,
+        resolution: true,
+        outcomes: [{ optionId: 10, outcome: true }],
+        userId: 2,
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe("VALIDATION_ERROR");
+      }
+      expect(recorded.insertedHeader).toBeUndefined();
+      expect(recorded.insertedOptions).toBeUndefined();
+    });
+
+    it("should reject a yes/no prop with neither a resolution nor outcomes", async () => {
+      const { trx, recorded } = makeResolveTrx({ prop: binaryProp });
+      runWith(trx);
+
+      const result = await resolveProp({ propId: 1, userId: 2 });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe("VALIDATION_ERROR");
+      }
+      expect(recorded.insertedHeader).toBeUndefined();
+    });
+
+    it("should reject a single resolution on a choice prop", async () => {
+      const { trx, recorded } = makeResolveTrx({
+        prop: oneOfProp,
+        optionIds: [10, 11],
+      });
+      runWith(trx);
+
+      const result = await resolveProp({
+        propId: 1,
+        resolution: true,
+        userId: 2,
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe("VALIDATION_ERROR");
+      }
+      expect(recorded.insertedHeader).toBeUndefined();
+      expect(recorded.insertedOptions).toBeUndefined();
+    });
+
+    it("should reject a pick-one prop resolved with two true outcomes", async () => {
+      const { trx, recorded } = makeResolveTrx({
+        prop: oneOfProp,
+        optionIds: [10, 11],
+      });
+      runWith(trx);
+
+      const result = await resolveProp({
+        propId: 1,
+        outcomes: [
+          { optionId: 10, outcome: true },
+          { optionId: 11, outcome: true },
+        ],
+        userId: 2,
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe("VALIDATION_ERROR");
+        // The validator's message is surfaced verbatim.
+        expect(result.error).toContain("exactly one");
+      }
+      expect(recorded.insertedHeader).toBeUndefined();
+      expect(recorded.insertedOptions).toBeUndefined();
+    });
+
+    it("should reject outcomes that miss one of the prop's options", async () => {
+      const { trx, recorded } = makeResolveTrx({
+        prop: anyOfProp,
+        optionIds: [10, 11],
+      });
+      runWith(trx);
+
+      const result = await resolveProp({
+        propId: 1,
+        outcomes: [{ optionId: 10, outcome: true }],
+        userId: 2,
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe("VALIDATION_ERROR");
+        expect(result.error).toContain("Missing outcome for option 11");
+      }
+      expect(recorded.insertedHeader).toBeUndefined();
+    });
+
+    it("should accept an any_of prop resolved with every option false", async () => {
+      const { trx, recorded } = makeResolveTrx({
+        prop: anyOfProp,
+        optionIds: [10, 11],
+        resolutionId: 7,
+      });
+      runWith(trx);
+
+      const result = await resolveProp({
+        propId: 1,
+        outcomes: [
+          { optionId: 10, outcome: false },
+          { optionId: 11, outcome: false },
+        ],
+        notes: "Neither happened",
+        userId: 2,
+      });
+
+      expect(result.success).toBe(true);
+      // The header carries no resolution of its own; the children hold it.
+      expect(recorded.insertedHeader).toEqual({
+        prop_id: 1,
+        resolution: null,
+        user_id: 2,
+        notes: "Neither happened",
+      });
+      expect(recorded.insertedOptions).toEqual([
+        { resolution_id: 7, prop_id: 1, option_id: 10, outcome: false },
+        { resolution_id: 7, prop_id: 1, option_id: 11, outcome: false },
+      ]);
+    });
+
+    it("should replace the option rows when overwriting a choice resolution", async () => {
+      const { trx, recorded } = makeResolveTrx({
+        prop: oneOfProp,
+        optionIds: [10, 11],
+        existingResolution: { id: 7, resolution: null },
+      });
+      runWith(trx);
+
+      const result = await resolveProp({
+        propId: 1,
+        outcomes: [
+          { optionId: 10, outcome: false },
+          { optionId: 11, outcome: true },
+        ],
+        notes: "Corrected",
+        userId: 2,
+        overwrite: true,
+      });
+
+      expect(result.success).toBe(true);
+      expect(recorded.updatedHeader).toEqual({
+        resolution: null,
+        notes: "Corrected",
+      });
+      expect(recorded.deletedResolutionId).toBe(7);
+      expect(recorded.insertedOptions).toEqual([
+        { resolution_id: 7, prop_id: 1, option_id: 10, outcome: false },
+        { resolution_id: 7, prop_id: 1, option_id: 11, outcome: true },
+      ]);
+      // The children are cleared before the new ones go in.
+      expect(recorded.order).toEqual([
+        "update:resolutions",
+        "delete:resolution_options",
+        "insert:resolution_options",
+      ]);
+      expect(recorded.insertedHeader).toBeUndefined();
     });
   });
 

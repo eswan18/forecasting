@@ -9,6 +9,7 @@ import {
   ERROR_CODES,
 } from "@/lib/server-action-result";
 import { withRLS } from "@/lib/db-helpers";
+import type { PropKind } from "@/lib/prop-kind";
 
 export interface CompetitionStats {
   /** Props the user hasn't forecasted yet (and are still open) */
@@ -125,9 +126,13 @@ export async function getCompetitionStats({
 export interface UpcomingDeadline {
   propId: number;
   propText: string;
+  kind: PropKind;
   deadline: Date;
+  /** Set for binary props, null for choice props (per-option values instead). */
   userForecast: number | null;
   userForecastId: number | null;
+  /** True once the user has a forecast of any kind on the prop. */
+  hasUserForecast: boolean;
 }
 
 /**
@@ -168,6 +173,7 @@ export async function getUpcomingDeadlines({
         .select([
           "v_props.prop_id",
           "v_props.prop_text",
+          "v_props.prop_kind",
           "v_props.prop_forecasts_due_date",
           "v_props.competition_forecasts_close_date",
           "v_props.competition_is_private",
@@ -192,9 +198,11 @@ export async function getUpcomingDeadlines({
           return {
             propId: row.prop_id,
             propText: row.prop_text,
+            kind: row.prop_kind,
             deadline,
             userForecast: row.user_forecast,
             userForecastId: row.user_forecast_id,
+            hasUserForecast: row.user_forecast_id !== null,
           };
         })
         .filter((item): item is UpcomingDeadline => item !== null)

@@ -1,16 +1,22 @@
 import { Generated, Insertable, Selectable, Updateable } from "kysely";
 
+import type { PropKind } from "@/lib/prop-kind";
+
 export interface Database {
   categories: CategoriesTable;
   competitions: CompetitionsTable;
   competition_members: CompetitionMembersTable;
   feature_flags: FeatureFlagsTable;
+  forecast_options: ForecastOptionsTable;
   forecasts: ForecastsTable;
+  prop_options: PropOptionsTable;
   props: PropsTable;
+  resolution_options: ResolutionOptionsTable;
   resolutions: ResolutionsTable;
   suggested_props: SuggestedPropsTable;
   users: UsersTable;
   v_props: VPropsView;
+  v_prop_options: VPropOptionsView;
   v_forecasts: VForecastsView;
   v_users: VUsersView;
   v_suggested_props: VSuggestedPropsView;
@@ -49,6 +55,8 @@ export type CategoryUpdate = Updateable<CategoriesTable>;
 export interface PropsTable {
   id: Generated<number>;
   text: string;
+  /** Fixed at creation; a database trigger rejects any change. */
+  kind: Generated<PropKind>;
   category_id: number | null;
   notes: string | null;
   user_id: number | null;
@@ -67,7 +75,8 @@ export interface ForecastsTable {
   id: Generated<number>;
   prop_id: number;
   user_id: number;
-  forecast: number;
+  /** Set for binary props, null for choice props (per-option rows instead). */
+  forecast: number | null;
   updated_at: Generated<Date>;
   created_at: Generated<Date>;
 }
@@ -78,7 +87,8 @@ export type ForecastUpdate = Updateable<ForecastsTable>;
 export interface ResolutionsTable {
   id: Generated<number>;
   prop_id: number;
-  resolution: boolean;
+  /** Set for binary props, null for choice props (per-option rows instead). */
+  resolution: boolean | null;
   notes: string | null;
   user_id: number | null;
   updated_at: Generated<Date>;
@@ -138,12 +148,45 @@ export type CompetitionMember = Selectable<CompetitionMembersTable>;
 export type NewCompetitionMember = Insertable<CompetitionMembersTable>;
 export type CompetitionMemberUpdate = Updateable<CompetitionMembersTable>;
 
+export interface PropOptionsTable {
+  id: Generated<number>;
+  prop_id: number;
+  text: string;
+  /** 0-based display order; unique within a prop. */
+  position: number;
+  updated_at: Generated<Date>;
+  created_at: Generated<Date>;
+}
+export type PropOption = Selectable<PropOptionsTable>;
+export type NewPropOption = Insertable<PropOptionsTable>;
+
+export interface ForecastOptionsTable {
+  forecast_id: number;
+  prop_id: number;
+  option_id: number;
+  probability: number;
+  updated_at: Generated<Date>;
+  created_at: Generated<Date>;
+}
+export type NewForecastOption = Insertable<ForecastOptionsTable>;
+
+export interface ResolutionOptionsTable {
+  resolution_id: number;
+  prop_id: number;
+  option_id: number;
+  outcome: boolean;
+  updated_at: Generated<Date>;
+  created_at: Generated<Date>;
+}
+export type NewResolutionOption = Insertable<ResolutionOptionsTable>;
+
 // Views
 
 export interface VPropsView {
   prop_id: number;
   prop_text: string;
   prop_notes: string | null;
+  prop_kind: PropKind;
   prop_user_id: number | null;
   prop_forecasts_due_date: Date | null;
   prop_resolution_due_date: Date | null;
@@ -163,10 +206,36 @@ export interface VPropsView {
 export type VProp = Selectable<VPropsView>;
 
 export type PropWithUserForecast = VProp & {
+  /** Binary props only; null for choice props. */
   user_forecast: number | null;
+  /** Set for both kinds; the "has this user forecasted" test. */
   user_forecast_id: number | null;
+  /** Binary props only; null for choice props. */
   community_average: number | null;
+  /** Empty for binary props. */
+  options: PropOptionSummary[];
 };
+
+export interface VPropOptionsView {
+  option_id: number;
+  prop_id: number;
+  option_text: string;
+  position: number;
+  outcome: boolean | null;
+}
+export type VPropOption = Selectable<VPropOptionsView>;
+
+/** One option of a choice prop as every UI surface sees it. */
+export interface PropOptionSummary {
+  option_id: number;
+  text: string;
+  position: number;
+  /** Resolved outcome; null while the prop is open. */
+  outcome: boolean | null;
+  /** The requesting user's probability, null if they have not forecasted. */
+  user_forecast: number | null;
+  community_average: number | null;
+}
 
 export interface VForecastsView {
   category_id: number | null;
@@ -177,12 +246,14 @@ export interface VForecastsView {
   competition_forecasts_close_date: Date | null;
   competition_forecasts_open_date: Date | null;
   forecast_id: number;
-  forecast: number;
+  /** Set for binary props, null for choice props. */
+  forecast: number | null;
   forecast_created_at: Date;
   forecast_updated_at: Date;
   prop_id: number;
   prop_text: string;
   prop_notes: string | null;
+  prop_kind: PropKind;
   prop_user_id: number | null;
   prop_forecasts_due_date: Date | null;
   prop_resolution_due_date: Date | null;

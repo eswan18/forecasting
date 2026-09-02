@@ -1,6 +1,14 @@
 "use server";
 
-import { Database, ForecastUpdate, NewForecast, VForecast, VProp } from "@/types/db_types";
+import {
+  Database,
+  ForecastUpdate,
+  NewForecast,
+  PropOptionSummary,
+  PropWithUserForecast,
+  VForecast,
+  VProp,
+} from "@/types/db_types";
 import { getUserFromCookies } from "@/lib/get-user";
 import { revalidatePath } from "next/cache";
 import { OrderByExpression, OrderByModifiers, sql } from "kysely";
@@ -12,6 +20,12 @@ import {
   ERROR_CODES,
 } from "@/lib/server-action-result";
 import { withRLS, withRLSAction } from "@/lib/db-helpers";
+import { attachOptions } from "@/lib/attach-options";
+import { isChoiceKind } from "@/lib/prop-kind";
+import {
+  validateChoiceForecast,
+  type OptionProbability,
+} from "@/lib/choice-forecast";
 
 export type VForecastsOrderByExpression = OrderByExpression<
   Database,
@@ -124,7 +138,7 @@ export async function createForecast({
       const prop = await trx
         .selectFrom("v_props")
         .where("prop_id", "=", forecast.prop_id)
-        .select("competition_forecasts_close_date")
+        .select(["prop_kind", "competition_forecasts_close_date"])
         .executeTakeFirst();
       const closeDate = prop?.competition_forecasts_close_date;
       if (closeDate && closeDate <= new Date()) {
@@ -134,6 +148,22 @@ export async function createForecast({
         });
         return error(
           "Cannot create forecasts past the due date",
+          ERROR_CODES.VALIDATION_ERROR,
+        );
+      }
+
+      // A choice prop stores one probability per option, not a single number;
+      // the enforce_forecast_kind trigger would reject this insert anyway.
+      if (prop && isChoiceKind(prop.prop_kind)) {
+        logger.warn(
+          "Attempted a single-probability forecast on a choice prop",
+          {
+            propId: forecast.prop_id,
+            propKind: prop.prop_kind,
+          },
+        );
+        return error(
+          "Use the per-option form for this proposition",
           ERROR_CODES.VALIDATION_ERROR,
         );
       }
@@ -207,7 +237,7 @@ export async function updateForecast({
       const forecastRecord = await trx
         .selectFrom("v_forecasts")
         .where("forecast_id", "=", id)
-        .select("competition_forecasts_close_date")
+        .select(["prop_kind", "competition_forecasts_close_date"])
         .executeTakeFirst();
 
       if (!forecastRecord) {
@@ -222,6 +252,19 @@ export async function updateForecast({
         });
         return error(
           "Cannot update forecasts past the due date",
+          ERROR_CODES.VALIDATION_ERROR,
+        );
+      }
+
+      // A choice prop's header row keeps a null forecast; per-option changes go
+      // through saveChoiceForecast.
+      if (isChoiceKind(forecastRecord.prop_kind)) {
+        logger.warn("Attempted a single-probability update on a choice prop", {
+          forecastId: id,
+          propKind: forecastRecord.prop_kind,
+        });
+        return error(
+          "Use the per-option form for this proposition",
           ERROR_CODES.VALIDATION_ERROR,
         );
       }
@@ -259,6 +302,145 @@ export async function updateForecast({
       duration,
     });
     return error("Failed to update forecast", ERROR_CODES.DATABASE_ERROR);
+  }
+}
+
+/**
+ * Saves the current user's forecast for a choice prop: one probability per
+ * option.
+ *
+ * The header row in `forecasts` carries a null forecast (the
+ * enforce_forecast_kind trigger insists on it for choice props) and exists
+ * only to hang the `forecast_options` rows off; the upsert, the delete and the
+ * insert all share one transaction, so a failed save leaves the previous
+ * forecast intact. Always forecasts as the logged-in user — the caller cannot
+ * name someone else.
+ *
+ * @returns the forecast header id.
+ */
+export async function saveChoiceForecast({
+  propId,
+  probabilities,
+}: {
+  propId: number;
+  probabilities: OptionProbability[];
+}): Promise<ServerActionResult<number>> {
+  const currentUser = await getUserFromCookies();
+  if (!currentUser) {
+    logger.warn("Unauthorized attempt to save a choice forecast", { propId });
+    return error("You must be logged in to forecast", ERROR_CODES.UNAUTHORIZED);
+  }
+
+  logger.debug("Saving choice forecast", {
+    propId,
+    optionCount: probabilities.length,
+    currentUserId: currentUser.id,
+  });
+
+  const startTime = Date.now();
+  try {
+    const result = await withRLSAction(currentUser.id, async (trx) => {
+      const prop = await trx
+        .selectFrom("v_props")
+        .select(["prop_kind", "competition_forecasts_close_date"])
+        .where("prop_id", "=", propId)
+        .executeTakeFirst();
+      if (!prop) {
+        return error("Proposition not found", ERROR_CODES.NOT_FOUND);
+      }
+
+      const kind = prop.prop_kind;
+      if (!isChoiceKind(kind)) {
+        return error(
+          "This is a yes/no proposition; submit a single probability instead",
+          ERROR_CODES.VALIDATION_ERROR,
+        );
+      }
+
+      const closeDate = prop.competition_forecasts_close_date;
+      if (closeDate && closeDate <= new Date()) {
+        logger.warn("Attempted to save a choice forecast past due date", {
+          propId,
+          dueDate: closeDate.toISOString(),
+        });
+        return error(
+          "Cannot save forecasts past the due date",
+          ERROR_CODES.VALIDATION_ERROR,
+        );
+      }
+
+      const options = await trx
+        .selectFrom("prop_options")
+        .select("id")
+        .where("prop_id", "=", propId)
+        .execute();
+      const validationErrors = validateChoiceForecast(
+        kind,
+        options.map((o) => o.id),
+        probabilities,
+      );
+      if (validationErrors.length > 0) {
+        logger.warn("Validation error saving a choice forecast", {
+          propId,
+          validationErrors,
+        });
+        return error(validationErrors.join("; "), ERROR_CODES.VALIDATION_ERROR);
+      }
+
+      // The no-op `forecast: null` update on conflict is what makes the
+      // set_updated_at trigger bump the header's timestamp on a re-save.
+      const { id } = await trx
+        .insertInto("forecasts")
+        .values({ prop_id: propId, user_id: currentUser.id, forecast: null })
+        .onConflict((oc) =>
+          oc.columns(["prop_id", "user_id"]).doUpdateSet({ forecast: null }),
+        )
+        .returning("id")
+        .executeTakeFirstOrThrow();
+      await trx
+        .deleteFrom("forecast_options")
+        .where("forecast_id", "=", id)
+        .execute();
+      await trx
+        .insertInto("forecast_options")
+        .values(
+          probabilities.map((p) => ({
+            forecast_id: id,
+            prop_id: propId,
+            option_id: p.optionId,
+            probability: p.probability,
+          })),
+        )
+        .execute();
+
+      return success(id);
+    });
+
+    if (result.success) {
+      const duration = Date.now() - startTime;
+      logger.info("Choice forecast saved successfully", {
+        operation: "saveChoiceForecast",
+        table: "forecast_options",
+        forecastId: result.data,
+        propId,
+        optionCount: probabilities.length,
+        duration,
+      });
+
+      revalidatePath("/competitions");
+      revalidatePath("/standalone/forecasts");
+    }
+
+    return result;
+  } catch (err) {
+    const duration = Date.now() - startTime;
+    logger.error("Failed to save choice forecast", err as Error, {
+      operation: "saveChoiceForecast",
+      table: "forecast_options",
+      propId,
+      duration,
+    });
+    return error("Failed to save forecast", ERROR_CODES.DATABASE_ERROR);
   }
 }
 
@@ -329,15 +511,7 @@ export async function getPropsWithUserForecasts({
 }: {
   userId: number;
   competitionId: number | null;
-}): Promise<
-  ServerActionResult<
-    (VProp & {
-      user_forecast: number | null;
-      user_forecast_id: number | null;
-      community_average: number | null;
-    })[]
-  >
-> {
+}): Promise<ServerActionResult<PropWithUserForecast[]>> {
   const currentUser = await getUserFromCookies();
   logger.debug("Getting props with user forecasts", {
     userId,
@@ -380,7 +554,12 @@ export async function getPropsWithUserForecasts({
         query = query.where("v_props.competition_id", "=", competitionId);
       }
 
-      return await query.execute();
+      const rows = await query.execute();
+      const optionsByProp = await attachOptions(trx, rows, userId);
+      return rows.map((row) => ({
+        ...row,
+        options: optionsByProp.get(row.prop_id) ?? [],
+      }));
     });
 
     const duration = Date.now() - startTime;
@@ -415,7 +594,9 @@ export async function getRecentlyResolvedForecasts({
 }: {
   userId: number;
   limit?: number;
-}): Promise<ServerActionResult<VForecast[]>> {
+}): Promise<
+  ServerActionResult<(VForecast & { options: PropOptionSummary[] })[]>
+> {
   const currentUser = await getUserFromCookies();
   logger.debug("Getting recently resolved forecasts", {
     userId,
@@ -426,14 +607,21 @@ export async function getRecentlyResolvedForecasts({
   const startTime = Date.now();
   try {
     const results = await withRLS(currentUser?.id, async (trx) => {
-      return await trx
+      // A resolved choice prop has a null `resolution`; only `resolution_id`
+      // says whether a prop of any kind is resolved.
+      const rows = await trx
         .selectFrom("v_forecasts")
         .selectAll()
         .where("user_id", "=", userId)
-        .where("resolution", "is not", null)
+        .where("resolution_id", "is not", null)
         .orderBy("resolution_updated_at", "desc")
         .limit(limit)
         .execute();
+      const optionsByProp = await attachOptions(trx, rows, userId);
+      return rows.map((row) => ({
+        ...row,
+        options: optionsByProp.get(row.prop_id) ?? [],
+      }));
     });
 
     const duration = Date.now() - startTime;

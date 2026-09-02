@@ -64,7 +64,9 @@ export function ForecastScoreRow({
         </div>
       </TableCell>
       <TableCell className="text-right font-mono tabular-nums text-foreground">
-        {(forecast.forecast * 100).toFixed(1)}%
+        {forecast.forecast === null
+          ? "—"
+          : `${(forecast.forecast * 100).toFixed(1)}%`}
       </TableCell>
       <TableCell className="text-right text-sm">
         <ResolutionLabel resolution={forecast.resolution} />

@@ -1,5 +1,6 @@
 import { getUserFromCookies } from "@/lib/get-user";
 import { getForecasts } from "@/lib/db_actions";
+import { isBinaryForecast } from "@/lib/binary-forecast";
 import { InaccessiblePage } from "@/components/inaccessible-page";
 import { Container } from "@/components/ui/container";
 import PageHeading from "@/components/page-heading";
@@ -19,6 +20,8 @@ export default async function CalibrationPage() {
   const result = await getForecasts({ userId: user.id });
   const forecasts: CalibrationForecast[] = result.success
     ? result.data
+        // Choice props are binary-only here for now; see docs/superpowers/specs/2026-09-01-choice-props-design.md §4.4
+        .filter(isBinaryForecast)
         .filter((f) => f.resolution !== null)
         .map((f) => ({
           forecast: f.forecast,

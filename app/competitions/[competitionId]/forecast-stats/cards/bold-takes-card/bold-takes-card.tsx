@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getForecasts } from "@/lib/db_actions";
-import { VForecast } from "@/types/db_types";
+import { type BinaryForecast, isBinaryForecast } from "@/lib/binary-forecast";
 import BoldTakesContent, { BoldTake } from "./bold-takes-content";
 
 export default async function BoldTakesCard({
@@ -18,7 +18,8 @@ export default async function BoldTakesCard({
   if (!forecastsResult.success) {
     throw new Error(forecastsResult.error);
   }
-  const forecasts = forecastsResult.data;
+  // Choice props are binary-only here for now; see docs/superpowers/specs/2026-09-01-choice-props-design.md §4.4
+  const forecasts = forecastsResult.data.filter(isBinaryForecast);
   const takes: BoldTake[] = getForecastsFurthestFromMean(forecasts).map(
     ({ forecast, meanForecast, differenceFromMean }) => ({
       forecastId: forecast.forecast_id,
@@ -46,7 +47,9 @@ function mean(values: number[]): number {
   return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
-function getAvgForecastByPropId(forecasts: VForecast[]): Map<number, number> {
+function getAvgForecastByPropId(
+  forecasts: BinaryForecast[],
+): Map<number, number> {
   const forecastsByPropId: Map<number, number[]> = new Map();
   forecasts.forEach((forecast) => {
     const { prop_id, forecast: value } = forecast;
@@ -64,13 +67,13 @@ function getAvgForecastByPropId(forecasts: VForecast[]): Map<number, number> {
 }
 
 interface ForecastWithMeanForecastForProp {
-  forecast: VForecast;
+  forecast: BinaryForecast;
   meanForecast: number;
   differenceFromMean: number;
 }
 
 function getForecastsFurthestFromMean(
-  forecasts: VForecast[],
+  forecasts: BinaryForecast[],
 ): ForecastWithMeanForecastForProp[] {
   const avgForecastsByPropId = getAvgForecastByPropId(forecasts);
   const forecastsWithMeanForecast: ForecastWithMeanForecastForProp[] =
