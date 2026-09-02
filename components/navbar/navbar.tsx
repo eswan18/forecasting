@@ -12,7 +12,6 @@ import {
 import ThemeToggle from "./theme-toggle";
 import { UserStatus } from "./user-status";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   BarChartHorizontal,
@@ -41,17 +40,12 @@ import { MobileDropdownItem } from "./mobile-dropdown-item";
 import { Wordmark } from "./wordmark";
 
 export default function NavBar() {
-  const pathname = usePathname();
   const { user, isLoading } = useCurrentUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [competitions, setCompetitions] = useState<Competition[]>([]);
 
-  const onLanding = pathname?.startsWith("/landing") ?? false;
-
   useEffect(() => {
-    // The landing concepts render no navbar, so don't pay for its data.
-    if (onLanding) return;
     if (!isLoading) {
       getCompetitions().then((result) => {
         if (!result.success) {
@@ -70,7 +64,7 @@ export default function NavBar() {
         setCompetitions(filteredCompetitions);
       });
     }
-  }, [isLoading, user?.is_admin, onLanding]);
+  }, [isLoading, user?.is_admin]);
 
   const toggleGroup = (groupLabel: string) => {
     const newExpanded = new Set(expandedGroups);
@@ -146,11 +140,6 @@ export default function NavBar() {
 
   function isLink(link: NavLink | NavLinkGroup): link is NavLink {
     return (link as NavLink).href !== undefined;
-  }
-
-  // Landing-page concepts bring their own chrome and their own type system.
-  if (onLanding) {
-    return null;
   }
 
   return (
