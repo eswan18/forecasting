@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Check } from "lucide-react";
 import { cn, focusRing } from "@/lib/utils";
 import type { UpcomingDeadline } from "@/lib/db_actions/competition-stats";
 import { getBrowserTimezone } from "@/hooks/getBrowserTimezone";
@@ -38,11 +39,45 @@ interface UpcomingPropRowProps {
   timezone: string;
 }
 
+const chipClass =
+  "flex h-10 w-12 shrink-0 items-center justify-center rounded font-mono text-sm font-semibold tabular-nums";
+
+/** The forecast-status chip: a heatmap cell for a binary prop, a check for a
+ * choice prop, whose ballot of probabilities has no single number to show. */
+function ForecastChip({ prop }: { prop: UpcomingDeadline }) {
+  if (prop.kind !== "binary") {
+    // Unforecasted choice props share the binary "no forecast" colours.
+    const colors = getProbabilityColors(null);
+    return (
+      <div
+        className={cn(
+          chipClass,
+          prop.hasUserForecast
+            ? "bg-success-muted text-success-muted-foreground"
+            : [colors.bg, colors.text],
+        )}
+      >
+        {prop.hasUserForecast ? (
+          <Check role="img" aria-label="Forecasted" className="h-4 w-4" />
+        ) : (
+          "—"
+        )}
+      </div>
+    );
+  }
+
+  const colors = getProbabilityColors(prop.userForecast);
+  return (
+    <div className={cn(chipClass, colors.bg, colors.text)}>
+      {prop.userForecast !== null
+        ? `${Math.round(prop.userForecast * 100)}%`
+        : "—"}
+    </div>
+  );
+}
+
 function UpcomingPropRow({ prop, competitionId, timezone }: UpcomingPropRowProps) {
   const deadline = formatDeadline(prop.deadline, timezone);
-  const colors = getProbabilityColors(prop.userForecast);
-  const percent =
-    prop.userForecast !== null ? Math.round(prop.userForecast * 100) : null;
 
   return (
     <Link
@@ -50,15 +85,7 @@ function UpcomingPropRow({ prop, competitionId, timezone }: UpcomingPropRowProps
       className="flex items-center gap-3 p-3 hover:bg-muted/50 rounded-lg transition-colors"
     >
       {/* Forecast status indicator */}
-      <div
-        className={cn(
-          "flex h-10 w-12 shrink-0 items-center justify-center rounded font-mono text-sm font-semibold tabular-nums",
-          colors.bg,
-          colors.text,
-        )}
-      >
-        {percent !== null ? `${percent}%` : "—"}
-      </div>
+      <ForecastChip prop={prop} />
 
       {/* Title */}
       <div className="flex-1 min-w-0">
@@ -82,7 +109,7 @@ function UpcomingPropRow({ prop, competitionId, timezone }: UpcomingPropRowProps
 
       {/* Action hint */}
       <div className="shrink-0">
-        {percent === null ? (
+        {!prop.hasUserForecast ? (
           <span className="text-xs text-primary font-medium">Forecast →</span>
         ) : (
           <span className="text-xs text-muted-foreground">Edit →</span>
