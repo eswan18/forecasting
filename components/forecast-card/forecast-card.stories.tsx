@@ -1,6 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ForecastCard } from "./forecast-card";
-import { makeProp, PAST } from "./forecast-card.fixtures";
+import {
+  makeProp,
+  NBA_CHAMPION_OPTIONS,
+  PAST,
+  RESOLVED_ECONOMY_OPTIONS,
+} from "./forecast-card.fixtures";
 
 const meta = {
   title: "Forecast/ForecastCard",
@@ -109,6 +114,46 @@ export const ResolvedYes: Story = {
 export const WithoutNotes: Story = {
   args: {
     prop: makeProp({ prop_notes: null }),
+    showCommunityAvg: true,
+  },
+};
+
+// A `one_of` prop: the needle column gives way to a full-width row-per-option
+// summary. Two options are still blank, so those rows read "—".
+export const ChoicePickOne: Story = {
+  args: {
+    prop: makeProp({
+      prop_text: "Which team wins the NBA championship?",
+      prop_notes: "Resolves when the finals end.",
+      prop_kind: "one_of",
+      category_name: "Sports",
+      options: NBA_CHAMPION_OPTIONS,
+      user_forecast: null,
+      user_forecast_id: null,
+      community_average: null,
+    }),
+    showCommunityAvg: true,
+  },
+};
+
+// A resolved `any_of` prop: the badge reads "Resolved" (choice props record
+// their outcome per option, so `resolution` stays null) and each row carries a
+// check or a muted cross.
+export const ChoiceResolved: Story = {
+  args: {
+    prop: makeProp({
+      prop_text: "Which of these happen to the economy this year?",
+      prop_notes: "Each option resolves on its own.",
+      prop_kind: "any_of",
+      category_name: "Economics",
+      competition_forecasts_close_date: PAST,
+      options: RESOLVED_ECONOMY_OPTIONS,
+      resolution_id: 7,
+      resolution: null,
+      user_forecast: null,
+      user_forecast_id: null,
+      community_average: null,
+    }),
     showCommunityAvg: true,
   },
 };

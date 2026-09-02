@@ -101,3 +101,9 @@ export const ECONOMY_OPTIONS: PropOptionSummary[] = [
     community_average: null,
   },
 ];
+
+// The same `any_of` options once the prop has resolved: the rate cut happened,
+// the other two did not. Pair with `resolution_id` set and `resolution: null`
+// on the prop — choice props resolve per option, not with a single yes/no.
+export const RESOLVED_ECONOMY_OPTIONS: PropOptionSummary[] =
+  ECONOMY_OPTIONS.map((option, index) => ({ ...option, outcome: index === 0 }));
