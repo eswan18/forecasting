@@ -1,65 +1,62 @@
-import { Container } from "@/components/ui/container";
-import {
-  BarChartHorizontal,
-  Flag,
-  Medal,
-  MessageCircle,
-  Users,
-} from "lucide-react";
-import { AdminNavCard, type AdminNavCardProps } from "./admin-nav-card";
+import { sheetCss } from "@/components/prop-list/sheet";
 
-const ADMIN_SECTIONS: AdminNavCardProps[] = [
+import {
+  AdminSectionList,
+  sectionsCss,
+  type AdminSection,
+} from "./admin-section-list";
+
+const ADMIN_SECTIONS: AdminSection[] = [
   {
     href: "/admin/users",
     title: "Users",
     description: "Browse accounts, manage access, and impersonate users.",
-    icon: <Users size={18} />,
   },
   {
     href: "/admin/competitions",
     title: "Competitions",
     description: "Create competitions and review their props and resolutions.",
-    icon: <Medal size={18} />,
   },
   {
     href: "/admin/feature-flags",
     title: "Feature Flags",
     description: "Toggle features globally or for individual users.",
-    icon: <Flag size={18} />,
   },
   {
     href: "/admin/suggested-props",
     title: "Suggested Props",
     description: "Review propositions submitted by forecasters.",
-    icon: <MessageCircle size={18} />,
   },
   {
     href: "/admin/forecast-progress/6",
     title: "Forecast Progress",
     description: "See how far along each forecaster is in a competition.",
-    icon: <BarChartHorizontal size={18} />,
   },
 ];
 
+/**
+ * The way in to everything an admin can do. It is an index and nothing else:
+ * the description on each line is the only prose the page needs, so the lede
+ * that used to repeat all five in one sentence is gone.
+ */
 export default function AdminIndexPage() {
   return (
-    <main className="py-10 lg:py-14">
-      <Container>
-        <header className="mb-8">
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            Admin
-          </h1>
-          <p className="mt-1.5 text-sm text-muted-foreground">
-            Manage users, competitions, and platform configuration.
-          </p>
+    <div className="hxp">
+      <style dangerouslySetInnerHTML={{ __html: sheetCss + sectionsCss }} />
+      <div className="col">
+        <header className="masthead">
+          <h1>Admin</h1>
         </header>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {ADMIN_SECTIONS.map((section) => (
-            <AdminNavCard key={section.href} {...section} />
-          ))}
-        </div>
-      </Container>
-    </main>
+        <h2 className="kicker">
+          <span>
+            Sections
+            <span className="aside num"> · {ADMIN_SECTIONS.length}</span>
+          </span>
+        </h2>
+
+        <AdminSectionList sections={ADMIN_SECTIONS} />
+      </div>
+    </div>
   );
 }

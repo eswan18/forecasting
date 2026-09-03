@@ -75,7 +75,11 @@ export const States: Story = {
       </div>
       <div className="grid gap-1.5">
         <Label>Disabled</Label>
-        <Textarea placeholder="Disabled textarea" disabled className="resize-none" />
+        <Textarea
+          placeholder="Disabled textarea"
+          disabled
+          className="resize-none"
+        />
       </div>
     </div>
   ),

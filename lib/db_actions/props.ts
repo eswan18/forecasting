@@ -365,7 +365,6 @@ export async function resolveProp({
         outcomeCount: outcomes?.length,
         duration,
       });
-      revalidatePath("/props");
     }
 
     return result;
@@ -409,7 +408,6 @@ export async function unresolveProp({
       duration,
     });
 
-    revalidatePath("/props");
     return success(undefined);
   } catch (err) {
     const duration = Date.now() - startTime;
@@ -482,7 +480,6 @@ export async function updateProp({
       duration,
     });
 
-    revalidatePath("/props");
     return success(undefined);
   } catch (err) {
     const duration = Date.now() - startTime;
@@ -531,7 +528,11 @@ export async function createProp({
     }
 
     // Category is required for non-personal, non-competition props
-    if (prop.category_id == null && prop.user_id === null && prop.competition_id === null) {
+    if (
+      prop.category_id == null &&
+      prop.user_id === null &&
+      prop.competition_id === null
+    ) {
       validationErrors.category_id = ["Category is required"];
     }
 
@@ -539,14 +540,21 @@ export async function createProp({
     if (prop.forecasts_due_date && prop.resolution_due_date) {
       const now = new Date();
       if (prop.forecasts_due_date <= now) {
-        validationErrors.forecasts_due_date = ["Forecast deadline must be in the future"];
+        validationErrors.forecasts_due_date = [
+          "Forecast deadline must be in the future",
+        ];
       }
       if (prop.resolution_due_date <= now) {
-        validationErrors.resolution_due_date = ["Resolution deadline must be in the future"];
+        validationErrors.resolution_due_date = [
+          "Resolution deadline must be in the future",
+        ];
       }
       if (prop.resolution_due_date <= prop.forecasts_due_date) {
-        validationErrors.resolution_due_date = validationErrors.resolution_due_date || [];
-        validationErrors.resolution_due_date.push("Resolution deadline must be after forecast deadline");
+        validationErrors.resolution_due_date =
+          validationErrors.resolution_due_date || [];
+        validationErrors.resolution_due_date.push(
+          "Resolution deadline must be after forecast deadline",
+        );
       }
     }
 
@@ -597,7 +605,11 @@ export async function createProp({
         if (!competition.is_private && prop.category_id == null) {
           return validationError(
             "Please fix the validation errors",
-            { category_id: ["Category is required for public competition props"] },
+            {
+              category_id: [
+                "Category is required for public competition props",
+              ],
+            },
             ERROR_CODES.VALIDATION_ERROR,
           );
         }
@@ -652,7 +664,6 @@ export async function createProp({
         duration,
       });
 
-      revalidatePath("/props");
       if (prop.competition_id) {
         revalidatePath(`/competitions/${prop.competition_id}`);
 
@@ -715,8 +726,6 @@ export async function deleteResolution({
       duration,
     });
 
-    revalidatePath("/props");
-    revalidatePath("/standalone");
     return success(undefined);
   } catch (err) {
     const duration = Date.now() - startTime;
@@ -755,8 +764,6 @@ export async function deleteProp({
       duration,
     });
 
-    revalidatePath("/props");
-    revalidatePath("/standalone");
     return success(undefined);
   } catch (err) {
     const duration = Date.now() - startTime;

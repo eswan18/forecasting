@@ -111,7 +111,6 @@ export async function updatePropOptions({
         duration,
       });
 
-      revalidatePath("/props");
       revalidatePath("/competitions");
     }
 

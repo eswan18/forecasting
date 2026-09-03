@@ -11,10 +11,30 @@ import Link from "next/link";
  * carries. Those two should be factored into one module.
  */
 
+/**
+ * What the dashboard does with a competition's five-way status.
+ *
+ *   live    — forecasts still open, so you can change your answer
+ *   scoring — forecasting has shut but props are still resolving, so your
+ *             standing is still moving. Closed is not over.
+ *   final   — past the end date; every prop is settled and the result is history
+ *
+ * Only `final` is archive. live and scoring both carry a live standing and are
+ * featured identically.
+ */
+export type SeasonPhase = "live" | "scoring" | "final";
+
+const PHASE_LABEL: Record<SeasonPhase, string> = {
+  live: "Open",
+  scoring: "Scoring",
+  final: "Final",
+};
+
 export interface Standing {
   id: number;
   name: string;
-  open: boolean;
+  phase: SeasonPhase;
+  isPrivate: boolean;
   leaders: { userId: number; userName: string; score: number }[];
   you: { rank: number; score: number } | null;
   fieldSize: number;
@@ -52,7 +72,9 @@ const css = `
   overflow-x: hidden;
   line-height: 1.6;
 }
-body:has(.hxd) { background: var(--paper); }
+/* --riso-paper, not --paper: the sheet's tokens are scoped to .hxd and do
+   not resolve out here on the body. */
+body:has(.hxd) { background: var(--riso-paper); }
 
 /* the stock's tooth, screened at 45 degrees */
 .hxd::before {
@@ -77,17 +99,20 @@ body:has(.hxd) { background: var(--paper); }
   padding: 0 1.75rem 5rem;
 }
 
+/* One notch below a kicker on purpose: 0.75rem/0.16em red mono caps are
+   reserved for section heads, so a status tag can never impersonate one. */
 .hxd .mono {
   font-family: var(--font-roboto-mono), ui-monospace, monospace;
-  font-size: 0.75rem;
-  letter-spacing: 0.16em;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 .hxd .muted { color: var(--ink-muted); }
 .hxd .ink2 { color: var(--red-text); }
 
 
-.hxd h2.kicker.first { margin-top: 3rem; }
+.hxd h2.kicker.first { margin-top: 2rem; }
+
 .hxd h2.kicker {
   font-family: var(--font-roboto-mono), ui-monospace, monospace;
   font-size: 0.75rem;
@@ -95,14 +120,14 @@ body:has(.hxd) { background: var(--paper); }
   text-transform: uppercase;
   font-weight: 400;
   color: var(--red-text);
-  margin: 3.5rem 0 1.5rem;
+  margin: 4rem 0 0;
   padding-bottom: 0.875rem;
-  border-bottom: 1px solid var(--rule);
+  border-bottom: 2px solid var(--ink);
 }
 
 /* ---- a competition still taking forecasts ---- */
-.hxd .season { padding: 2.25rem 0 0; }
-.hxd .season + .season { border-top: 1px solid var(--rule); margin-top: 2.5rem; }
+.hxd .season { padding: 1.5rem 0 0; }
+.hxd .season + .season { border-top: 1px solid var(--rule); margin-top: 2rem; }
 .hxd .season .head {
   display: flex;
   align-items: baseline;
@@ -150,19 +175,12 @@ body:has(.hxd) { background: var(--paper); }
   -webkit-text-fill-color: transparent;
   color: transparent;
 }
-.hxd .rank-none {
-  font-size: 1.44rem;
-  font-weight: 700;
-  color: var(--ink-muted);
-}
 
 /* ---- your standing, and the leaders that caption it ---- */
 .hxd .rank-row { margin-top: 1.25rem; display: flex; align-items: baseline; gap: 1.25rem; flex-wrap: wrap; }
 .hxd .of { font-family: var(--font-roboto-mono), ui-monospace, monospace; font-size: 0.8125rem; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
 .hxd .leaders {
-  margin-top: 1.25rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--rule);
+  margin-top: 1.5rem;
   display: flex;
   gap: 0.5rem 2rem;
   flex-wrap: wrap;
@@ -174,42 +192,57 @@ body:has(.hxd) { background: var(--paper); }
 .hxd .leaders .n { color: var(--red-text); margin-right: 0.5rem; }
 .hxd .leaders .sc { color: var(--ink-muted); margin-left: 0.5rem; }
 
-/* the row a closed season collapses to */
-.hxd .closed {
+/* the row a season collapses to when it has no live standing to feature. The first one after a block needs air,
+   or it reads as the tail of that block rather than its own competition. */
+.hxd .season + .compact { margin-top: 2rem; }
+.hxd .compact {
   display: flex;
   align-items: baseline;
   gap: 0.875rem;
   padding: 0.875rem 0;
-  border-bottom: 1px solid var(--rule);
+  border-top: 1px solid var(--rule);
   flex-wrap: wrap;
 }
-.hxd .closed .name { font-size: 1rem; font-weight: 600; }
-.hxd .closed .name a { color: inherit; text-decoration: none; }
-.hxd .closed .name a:hover { color: var(--red-text); }
-.hxd .closed .lead {
+/* directly under a head the rule is already there, and the head owns the gap */
+.hxd h2.kicker + .compact { border-top: 0; padding-top: 1.5rem; }
+.hxd .compact .name { font-size: 1rem; font-weight: 600; }
+.hxd .compact .name a { color: inherit; text-decoration: none; }
+.hxd .compact .name a:hover { color: var(--red-text); }
+.hxd .compact .lead {
   flex: 1;
   height: 0;
   border-bottom: 1px dotted var(--rule);
   transform: translateY(-0.3em);
   min-width: 1.5rem;
 }
-.hxd .closed .fig {
+.hxd .compact .fig {
   font-family: var(--font-roboto-mono), ui-monospace, monospace;
   font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
   flex: none;
 }
-.hxd .closed .fig b { font-weight: 700; }
-.hxd .closed .fig span { color: var(--ink-muted); }
+.hxd .compact .fig b { font-weight: 700; }
+.hxd .compact .fig span { color: var(--ink-muted); }
+/* status is a per-competition tag, not a grouping, so a row carries the same
+   marker in the same place the blocks carry theirs. */
+.hxd .compact .tag {
+  flex: none;
+  width: 4.5rem;
+  text-align: right;
+}
 
 /* ---- the two quiet columns at the foot ---- */
 .hxd .foot {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
   gap: 2.5rem 3rem;
-  margin-top: 1rem;
+  margin-top: 4.5rem;
 }
-.hxd .foot h2.kicker { margin-top: 0; }
+.hxd .foot h2.kicker {
+  margin: 0 0 1.5rem;
+  border-bottom-width: 1px;
+  border-bottom-color: var(--rule);
+}
 .hxd .item {
   padding: 0.875rem 0;
   border-bottom: 1px solid var(--rule);
@@ -230,6 +263,42 @@ body:has(.hxd) { background: var(--paper); }
 .hxd .item .hit { color: var(--ink); }
 .hxd .item .miss { color: var(--red-text); }
 .hxd .empty { color: var(--ink-muted); font-size: 0.9375rem; padding: 0.875rem 0; }
+
+/* ---- narrow screens ---- */
+
+/* Inline, the three leaders wrap mid-name and nothing lines up. Drop the label
+   and set them on a shared grid instead, one per line, so ranks, names and
+   scores align down the column. display:contents lets each leader's wrapper
+   hand its three spans straight to that grid. */
+@media (max-width: 40rem) {
+  /* Every ranked season now carries a block, so the leaders would be one list
+     per competition down a phone. The rank line above already says where you
+     stand; the full field is a tap away on the competition page. */
+  .hxd .leaders { display: none; }
+
+  /* 9vw never reaches the clamp's 3.5rem floor on a phone, so the ordinal sits
+     at full size on the narrowest screen and several blocks of it fill the
+     view. 3rem still leads the block, and matches what the competition sheet
+     prints at this width. */
+  .hxd .rank { font-size: 3rem; }
+
+  /* A long name pushed the status tag onto its own line, where wrapping left it
+     floating under the middle of the row. Place it deliberately instead: name
+     left, figure right, tag beneath the figure and aligned to it. The dotted
+     leader has nothing left to lead across, so it goes. */
+  .hxd .compact {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 0.75rem;
+    row-gap: 0.125rem;
+    align-items: baseline;
+  }
+  .hxd .compact .lead { display: none; }
+  .hxd .compact .name { grid-area: 1 / 1; }
+  .hxd .compact .fig { grid-area: 1 / 2; text-align: right; }
+  .hxd .compact .tag { grid-area: 2 / 2; width: auto; text-align: right; }
+}
+
 `;
 
 function Rank({ n }: { n: number }) {
@@ -244,8 +313,16 @@ function Rank({ n }: { n: number }) {
   );
 }
 
-function OpenSeason({ standing }: { standing: Standing }) {
-  const { you, fieldSize } = standing;
+/** A season still in play that you are ranked in. Half() only sends it those,
+ *  so `you` is non-null here and the rank always prints. */
+function FeaturedSeason({
+  standing,
+  you,
+}: {
+  standing: Standing;
+  you: NonNullable<Standing["you"]>;
+}) {
+  const { fieldSize } = standing;
   const href = `/competitions/${standing.id}`;
 
   return (
@@ -254,20 +331,14 @@ function OpenSeason({ standing }: { standing: Standing }) {
         <h3 className="name">
           <Link href={href}>{standing.name}</Link>
         </h3>
-        <span className="mono ink2">Open</span>
+        <span className="mono ink2">{PHASE_LABEL[standing.phase]}</span>
       </div>
 
       <div className="rank-row">
-        {you ? (
-          <Rank n={you.rank} />
-        ) : (
-          <span className="rank-none">Not scored yet</span>
-        )}
-        {you && (
-          <span className="of">
-            of {fieldSize} · {you.score.toFixed(3)}
-          </span>
-        )}
+        <Rank n={you.rank} />
+        <span className="of">
+          of {fieldSize} · {you.score.toFixed(3)}
+        </span>
       </div>
 
       {standing.leaders.length > 0 && (
@@ -286,10 +357,14 @@ function OpenSeason({ standing }: { standing: Standing }) {
   );
 }
 
-function ClosedSeason({ standing }: { standing: Standing }) {
+/**
+ * A season compressed to one ruled row: one you hold no rank in, so there is no
+ * number to feature.
+ */
+function CompactSeason({ standing }: { standing: Standing }) {
   const { you } = standing;
   return (
-    <div className="closed">
+    <div className="compact">
       <span className="name">
         <Link href={`/competitions/${standing.id}`}>{standing.name}</Link>
       </span>
@@ -303,7 +378,57 @@ function ClosedSeason({ standing }: { standing: Standing }) {
           <span>not scored</span>
         )}
       </span>
+      <span
+        className={
+          standing.phase === "final" ? "mono muted tag" : "mono ink2 tag"
+        }
+      >
+        {PHASE_LABEL[standing.phase]}
+      </span>
     </div>
+  );
+}
+
+/**
+ * One of the two competition sections.
+ *
+ * Having a rank is what earns the big number — a finished season's result is
+ * just as much a result as a live one, so it gets the same treatment. Only a
+ * season you hold no rank in compresses to a row, because it has no number to
+ * print. Within each group, seasons still in play come before finished ones.
+ *
+ * Deliberately not keyed to open/closed: that split lands on the public/private
+ * boundary whenever a member's competitions happen to sort that way, and then
+ * the sections look like a ranking of each other.
+ */
+function Half({
+  label,
+  standings,
+  first,
+}: {
+  label: string;
+  standings: Standing[];
+  first: boolean;
+}) {
+  type Ranked = Standing & { you: NonNullable<Standing["you"]> };
+  const inPlayFirst = (a: Standing, b: Standing) =>
+    Number(a.phase === "final") - Number(b.phase === "final");
+
+  const featured = standings
+    .filter((s): s is Ranked => s.you !== null)
+    .sort(inPlayFirst);
+  const unranked = standings.filter((s) => s.you === null).sort(inPlayFirst);
+
+  return (
+    <>
+      <h2 className={first ? "kicker first" : "kicker"}>{label}</h2>
+      {featured.map((s) => (
+        <FeaturedSeason key={s.id} standing={s} you={s.you} />
+      ))}
+      {unranked.map((s) => (
+        <CompactSeason key={s.id} standing={s} />
+      ))}
+    </>
   );
 }
 
@@ -314,31 +439,28 @@ export function DashboardView({
   standings: Standing[];
   resolved: ResolvedItem[];
 }) {
-  const open = standings.filter((s) => s.open);
-  const closed = standings.filter((s) => !s.open);
+  const publicComps = standings.filter((s) => !s.isPrivate);
+  const privateComps = standings.filter((s) => s.isPrivate);
 
   return (
     <div className="hxd">
       <style dangerouslySetInnerHTML={{ __html: css }} />
 
       <div className="col">
-        <h2 className="kicker first">Your competitions</h2>
-
-        {open.length === 0 && closed.length === 0 && (
+        {standings.length === 0 && (
           <p className="empty">You&apos;re not in a competition yet.</p>
         )}
 
-        {open.map((s) => (
-          <OpenSeason key={s.id} standing={s} />
-        ))}
+        {publicComps.length > 0 && (
+          <Half label="Public competitions" standings={publicComps} first />
+        )}
 
-        {closed.length > 0 && (
-          <>
-            <h2 className="kicker">Closed</h2>
-            {closed.map((s) => (
-              <ClosedSeason key={s.id} standing={s} />
-            ))}
-          </>
+        {privateComps.length > 0 && (
+          <Half
+            label="Private competitions"
+            standings={privateComps}
+            first={publicComps.length === 0}
+          />
         )}
 
         <div className="foot">

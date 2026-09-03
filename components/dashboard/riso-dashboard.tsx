@@ -1,13 +1,33 @@
 import { getCompetitions, getCompetitionScores } from "@/lib/db_actions";
 import { getRecentlyResolvedForecasts } from "@/lib/db_actions";
-import { getCompetitionStatusFromObject } from "@/lib/competition-status";
+import {
+  getCompetitionStatusFromObject,
+  type CompetitionStatus,
+} from "@/lib/competition-status";
 import { isBinaryForecast } from "@/lib/binary-forecast";
 import type { VUser } from "@/types/db_types";
 import {
   DashboardView,
   type ResolvedItem,
+  type SeasonPhase,
   type Standing,
 } from "./dashboard-view";
+
+/**
+ * Five statuses collapse to the three the dashboard distinguishes. Note that
+ * `forecasts-closed` is NOT archive: forecasting has shut but props are still
+ * resolving, so the standing is still moving and the season stays featured.
+ * `private` competitions carry no competition-level dates and run off per-prop
+ * ones, so they count as live.
+ */
+const PHASE_OF: Record<CompetitionStatus, SeasonPhase> = {
+  "forecasts-open": "live",
+  private: "live",
+  "forecasts-closed": "scoring",
+  ended: "final",
+  // never reaches here -- upcoming competitions are filtered out below
+  upcoming: "final",
+};
 
 /**
  * Data for the signed-in dashboard. Presentation lives in dashboard-view.tsx,
@@ -38,7 +58,8 @@ async function loadStandings(userId: number): Promise<Standing[]> {
       return {
         id: competition.id,
         name: competition.name,
-        open: status === "forecasts-open" || status === "private",
+        phase: PHASE_OF[status],
+        isPrivate: competition.is_private,
         leaders: ranked.slice(0, 3),
         you: mine === -1 ? null : { rank: mine + 1, score: ranked[mine].score },
         fieldSize: ranked.length,
@@ -66,7 +87,5 @@ export async function RisoDashboard({ user }: { user: VUser }) {
       }))
     : [];
 
-  return (
-    <DashboardView standings={standings} resolved={resolved} />
-  );
+  return <DashboardView standings={standings} resolved={resolved} />;
 }

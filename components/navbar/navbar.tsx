@@ -18,6 +18,7 @@ import {
   Medal,
   MessageCircle,
   Target,
+  User2,
   Users,
   Menu,
 } from "lucide-react";
@@ -30,6 +31,7 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { getCompetitions } from "@/lib/db_actions/competitions";
 import { Competition } from "@/types/db_types";
 import { getCompetitionStatusFromObject } from "@/lib/competition-status";
@@ -40,6 +42,7 @@ import { Wordmark } from "./wordmark";
 
 export default function NavBar() {
   const { user, isLoading } = useCurrentUser();
+  const { enabled: personalProps } = useFeatureFlag("personal-props");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [competitions, setCompetitions] = useState<Competition[]>([]);
@@ -98,6 +101,16 @@ export default function NavBar() {
     links.push({
       label: "Competitions",
       sections,
+    });
+  }
+
+  // Personal props are behind a flag, so the way in only exists for the
+  // readers who have it.
+  if (user && personalProps) {
+    links.push({
+      href: "/props",
+      label: "Your props",
+      icon: <User2 size={16} />,
     });
   }
 
@@ -236,8 +249,8 @@ export default function NavBar() {
 
         {/* Right side actions */}
         <div className="flex items-center gap-3">
-          <ThemeToggle />
           <UserStatus />
+          <ThemeToggle />
         </div>
       </div>
     </nav>

@@ -46,7 +46,7 @@ export function UserStatus() {
             <Button
               variant={user.picture_url ? "ghost" : "outline"}
               size="icon"
-              className="riso-icon-btn overflow-hidden p-0"
+              className={`riso-icon-btn p-0 ${user.picture_url ? "is-avatar" : ""}`}
             >
               {renderUserIcon()}
               <span className="sr-only">User menu</span>

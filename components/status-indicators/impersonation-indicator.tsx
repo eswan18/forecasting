@@ -3,8 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { stopImpersonation } from "@/lib/auth/impersonation";
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { StatusIndicator } from "./status-indicator";
 
@@ -42,22 +40,14 @@ export function ImpersonationIndicator({
         <span>
           Viewing as <strong>{impersonatedName}</strong>
         </span>
-        <Button
-          size="sm"
-          variant="secondary"
+        <button
+          type="button"
+          className="riso-banner-act"
           onClick={handleStopImpersonation}
           disabled={isLoading}
-          className="h-6 px-2 text-xs"
         >
-          {isLoading ? (
-            "Stopping..."
-          ) : (
-            <>
-              <X className="h-3 w-3 mr-1" />
-              Stop Impersonating
-            </>
-          )}
-        </Button>
+          {isLoading ? "Stopping…" : "Stop impersonating"}
+        </button>
       </div>
     </StatusIndicator>
   );

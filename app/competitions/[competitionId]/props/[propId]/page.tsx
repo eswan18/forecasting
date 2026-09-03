@@ -1,107 +1,66 @@
-import { Suspense } from "react";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
+
 import ErrorPage from "@/components/pages/error-page";
-import { InaccessiblePage } from "@/components/inaccessible-page";
-import { Spinner } from "@/components/ui/spinner";
-import { getCompetitionById } from "@/lib/db_actions";
+import {
+  buildField,
+  toPropWithUserForecast,
+} from "@/components/prop-sheet/build";
+import { PropSheet } from "@/components/prop-sheet/prop-sheet";
+import { getForecasts, getPropById } from "@/lib/db_actions";
 import { getCurrentUserRole } from "@/lib/db_actions/competition-members";
-import { getUserFromCookies } from "@/lib/get-user";
-import { getPropsWithUserForecasts } from "@/lib/db_actions/forecasts";
-import { CompetitionPropView } from "./competition-prop-view";
+import { getPropStatusFromProp } from "@/lib/prop-status";
+import { competitionAccess } from "../../access";
+import { AccessDenied } from "../../access-denied";
 
-export default function CompetitionPropPage({
+export default async function Page({
   params,
 }: {
   params: Promise<{ competitionId: string; propId: string }>;
 }) {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex justify-center items-center h-64">
-          <Spinner className="w-24 h-24 text-muted-foreground" />
-        </div>
-      }
-    >
-      <CompetitionPropPageContent params={params} />
-    </Suspense>
-  );
-}
-
-async function CompetitionPropPageContent({
-  params,
-}: {
-  params: Promise<{ competitionId: string; propId: string }>;
-}) {
-  const { competitionId: competitionIdString, propId: propIdString } =
-    await params;
-  const competitionId = parseInt(competitionIdString, 10);
+  const { competitionId: idString, propId: propIdString } = await params;
   const propId = parseInt(propIdString, 10);
-
-  if (isNaN(competitionId)) {
-    return (
-      <ErrorPage title={`Invalid competition ID '${competitionIdString}'`} />
-    );
-  }
   if (isNaN(propId)) {
     return <ErrorPage title={`Invalid prop ID '${propIdString}'`} />;
   }
 
-  const user = await getUserFromCookies();
-  if (!user) {
-    redirect("/login");
+  const access = await competitionAccess(idString);
+  if (!access.ok) return <AccessDenied access={access} />;
+  const { competition, user } = access;
+
+  const propResult = await getPropById(propId);
+  if (!propResult.success) return <ErrorPage title={propResult.error} />;
+  const propRow = propResult.data;
+  // A prop reached through the wrong competition is not this competition's
+  // prop, whatever the reader's access to either.
+  if (!propRow || propRow.competition_id !== competition.id) notFound();
+
+  const [forecastsResult, roleResult] = await Promise.all([
+    getForecasts({ propId }),
+    // `access.isAdmin` only consults the membership role for private
+    // competitions; editing a prop is a competition-admin power in both.
+    getCurrentUserRole(competition.id),
+  ]);
+  if (!forecastsResult.success) {
+    return <ErrorPage title={forecastsResult.error} />;
   }
+  const forecasts = forecastsResult.data;
+  const isAdmin =
+    user.is_admin || (roleResult.success && roleResult.data === "admin");
 
-  // Get competition details
-  const competitionResult = await getCompetitionById(competitionId);
-  if (!competitionResult.success) {
-    return <ErrorPage title={competitionResult.error} />;
-  }
-  const competition = competitionResult.data;
-
-  const roleResult = await getCurrentUserRole(competitionId);
-  if (!roleResult.success) {
-    return <ErrorPage title={roleResult.error} />;
-  }
-  const userRole = roleResult.data;
-
-  // For private competitions, verify membership
-  if (competition.is_private && userRole === null) {
-    return (
-      <InaccessiblePage
-        title="Private Competition"
-        message="You are not a member of this competition."
-      />
-    );
-  }
-
-  // Get the prop with user's forecast
-  const propsResult = await getPropsWithUserForecasts({
-    userId: user.id,
-    competitionId,
-  });
-  if (!propsResult.success) {
-    return <ErrorPage title={propsResult.error} />;
-  }
-
-  const prop = propsResult.data.find((p) => p.prop_id === propId);
-  if (!prop) {
-    notFound();
-  }
-
-  // Check if forecasting is still open
-  const now = new Date();
-  const forecastsDueDate = prop.prop_forecasts_due_date
-    ? new Date(prop.prop_forecasts_due_date)
-    : null;
-  const isForecastingOpen = forecastsDueDate === null || forecastsDueDate > now;
-
+  const prop = toPropWithUserForecast(propRow, forecasts, user.id);
   return (
-    <CompetitionPropView
+    <PropSheet
       prop={prop}
-      competitionId={competitionId}
-      competitionName={competition.name}
-      isForecastingOpen={isForecastingOpen}
-      isAdmin={user.is_admin || userRole === "admin"}
+      field={buildField(forecasts, user.id)}
+      forecasterCount={new Set(forecasts.map((f) => f.user_id)).size}
+      currentUserId={user.id}
+      canForecast={getPropStatusFromProp(prop) === "open"}
+      canEdit={isAdmin || prop.prop_user_id === user.id}
+      canResolve={isAdmin || prop.prop_user_id === user.id}
+      back={{
+        href: `/competitions/${competition.id}`,
+        label: competition.name,
+      }}
     />
   );
 }

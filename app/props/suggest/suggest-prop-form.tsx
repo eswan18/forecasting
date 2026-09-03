@@ -1,184 +1,126 @@
 "use client";
 
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useId, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
-import { Spinner } from "@/components/ui/spinner";
-import { useToast } from "@/hooks/use-toast";
-
 import { z } from "zod";
-import { createSuggestedProp } from "@/lib/db_actions";
+
+import { Field, FormSheet, Refusal } from "@/components/form-sheet/form-sheet";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useToast } from "@/hooks/use-toast";
+import { createSuggestedProp } from "@/lib/db_actions";
+
+const CLAIM_MAX = 500;
+const NOTES_MAX = 500;
+
 const formSchema = z.object({
   propText: z
     .string()
-    .min(8)
-    .max(500, "Prop text must be between 8 and 500 characters"),
+    .min(8, "Say a little more — at least 8 characters")
+    .max(CLAIM_MAX, `Keep the claim under ${CLAIM_MAX} characters`),
   notes: z
     .string()
-    .max(500, "Notes must be less than 500 characters")
+    .max(NOTES_MAX, `Keep the notes under ${NOTES_MAX} characters`)
     .optional(),
 });
 
+type Values = z.infer<typeof formSchema>;
+
 export function SuggestPropForm() {
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const { toast } = useToast();
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      propText: "",
-      notes: "",
-    },
-  });
   const { user } = useCurrentUser();
+  const claimId = useId();
+  const notesId = useId();
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!user) {
-      return;
-    }
-    setLoading(true);
+  const form = useForm<Values>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { propText: "", notes: "" },
+  });
+
+  const claim = form.watch("propText") ?? "";
+  const notes = form.watch("notes") ?? "";
+
+  async function onSubmit(values: Values) {
+    if (!user) return;
+    setSaving(true);
     setError("");
     try {
-      // Combine prop text and notes for now (until we add a separate notes field to the DB)
-      const combinedText = values.notes
+      // The suggestions table has one text column, so the notes ride along
+      // inside it until it grows one of its own.
+      const text = values.notes
         ? `${values.propText}\n\nNotes: ${values.notes}`
         : values.propText;
-
-      const prop = { prop: combinedText, suggester_user_id: user.id };
-      const result = await createSuggestedProp({ prop });
+      const result = await createSuggestedProp({
+        prop: { prop: text, suggester_user_id: user.id },
+      });
       if (result.success) {
         form.reset({ propText: "", notes: "" });
         toast({
-          title: "Proposition submitted",
-          description: "Your proposition has been submitted for review.",
+          title: "Suggestion sent",
+          description: "An admin will look at it before it goes in a season.",
         });
       } else {
-        toast({
-          title: "Submission Error",
-          description: result.error,
-          variant: "destructive",
-        });
         setError(result.error);
       }
-    } catch (error) {
-      if (error instanceof Error) {
-        toast({
-          title: "Submission Error",
-          description: error.message,
-          variant: "destructive",
-        });
-        setError(error.message);
-      } else {
-        toast({
-          title: "Submission Error",
-          description: "An error occurred.",
-          variant: "destructive",
-        });
-        setError("An error occurred.");
-      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   }
 
   return (
-    <Card className="mx-auto w-full max-w-2xl">
-      <CardHeader>
-        <CardTitle className="text-xl font-semibold tracking-tight">
-          Suggest a Proposition
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Submit a new proposition for consideration in forecasting competitions
-        </p>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="propText"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2 text-sm font-medium">
-                    Prop Text
-                    <span className="text-xs font-normal text-muted-foreground">
-                      (Markdown supported)
-                    </span>
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      placeholder="Enter the proposition text here. Be clear and specific about what you're asking people to forecast. Markdown formatting (links, bold, italic) is supported."
-                      className="min-h-[120px] resize-none"
-                      rows={5}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+    <FormSheet
+      title="Suggest a prop"
+      kicker="New suggestion"
+      back={{ href: "/", label: "Home" }}
+      lede="Propose something for a future season. An admin reviews every suggestion before it goes in."
+    >
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <Field
+          label="The claim"
+          htmlFor={claimId}
+          hint="A statement that will turn out true or false. Markdown works."
+          count={[claim.length, CLAIM_MAX]}
+          error={form.formState.errors.propText?.message}
+        >
+          <textarea
+            id={claimId}
+            rows={3}
+            placeholder="Bitcoin closes the year above $150,000."
+            {...form.register("propText")}
+          />
+        </Field>
 
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2 text-sm font-medium">
-                    Additional Notes (Optional)
-                    <span className="text-xs font-normal text-muted-foreground">
-                      (Markdown supported)
-                    </span>
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      placeholder="Add any additional context, clarification, or background information that might be helpful for reviewers. Markdown formatting (links, bold, italic) is supported."
-                      className="min-h-[80px] resize-none"
-                      rows={3}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <Field
+          label="Notes"
+          htmlFor={notesId}
+          optional
+          hint="How it should be settled, and anything a reader would need to judge it."
+          count={[notes.length, NOTES_MAX]}
+          error={form.formState.errors.notes?.message}
+        >
+          <textarea
+            id={notesId}
+            rows={3}
+            placeholder="Settled on the closing price reported by Coinbase at 00:00 UTC on 1 January."
+            {...form.register("notes")}
+          />
+        </Field>
 
-            <div className="flex flex-col gap-3 pt-4 sm:flex-row">
-              {loading ? (
-                <Button type="submit" disabled className="h-11 flex-1 font-medium">
-                  <Spinner className="mr-2 h-4 w-4" />
-                  Submitting...
-                </Button>
-              ) : (
-                <Button type="submit" className="h-11 flex-1 font-medium">
-                  Submit Proposition
-                </Button>
-              )}
-            </div>
+        {error && <Refusal message={error} />}
 
-            {error && (
-              <Alert variant="destructive" className="mt-4">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Submission Error</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+        <div className="submitrow">
+          <button type="submit" className="submit" disabled={saving}>
+            {saving ? "Sending…" : "Send suggestion"}
+            <span className="arrow" aria-hidden="true">
+              →
+            </span>
+          </button>
+        </div>
+      </form>
+    </FormSheet>
   );
 }

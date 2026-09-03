@@ -1,6 +1,12 @@
-import PageHeading from "@/components/page-heading";
-import { Container } from "@/components/ui/container";
+import { StopSheet } from "@/components/stop-sheet/stop-sheet";
 
+/**
+ * A page that could not be built: a failed query, a missing record, a bad id.
+ *
+ * `title` is what went wrong in the caller's own words — usually the message a
+ * server action returned — so it stays the headline rather than being buried
+ * under a generic one.
+ */
 export default function ErrorPage({
   title,
   children,
@@ -9,13 +15,8 @@ export default function ErrorPage({
   children?: React.ReactNode;
 }) {
   return (
-    <main className="flex min-h-[60vh] items-center py-12 lg:py-16">
-      <Container className="max-w-xl">
-        <PageHeading title={title} />
-        <div className="flex flex-col items-start gap-3 text-sm text-muted-foreground">
-          {children}
-        </div>
-      </Container>
-    </main>
+    <StopSheet code="Error" title={title}>
+      {children}
+    </StopSheet>
   );
 }

@@ -39,7 +39,7 @@ export default async function MiniLeaderboard({
 
   return (
     <Link
-      href={`/competitions/${competitionId}?tab=leaderboard`}
+      href={`/competitions/${competitionId}/standings`}
       className={cn(
         "group block rounded-lg border bg-card p-2 transition-colors hover:border-foreground/20",
         focusRing,

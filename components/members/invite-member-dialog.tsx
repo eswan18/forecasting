@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,8 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Field } from "@/components/form-sheet/form-sheet";
 import { Spinner } from "@/components/ui/spinner";
 import {
   Command,
@@ -131,23 +130,25 @@ export function InviteMemberDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">User</Label>
+          <div className="hxf">
+            <Field label="Who" labelId="invite-user">
               <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={popoverOpen}
-                    className="w-full justify-between font-normal"
+                  <button
+                    type="button"
+                    className="picker"
+                    aria-labelledby="invite-user"
                     disabled={addMemberAction.isLoading}
                   >
-                    {selectedUser
-                      ? formatUserLabel(selectedUser)
-                      : "Select a user..."}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
+                    {selectedUser ? (
+                      formatUserLabel(selectedUser)
+                    ) : (
+                      <span className="none">Nobody chosen yet</span>
+                    )}
+                    <span className="car" aria-hidden="true">
+                      ▾
+                    </span>
+                  </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                   <Command>
@@ -171,9 +172,7 @@ export function InviteMemberDialog({
                                 value={formatUserLabel(user)}
                                 onSelect={() => {
                                   setSelectedUserId(
-                                    user.id === selectedUserId
-                                      ? null
-                                      : user.id,
+                                    user.id === selectedUserId ? null : user.id,
                                   );
                                   setPopoverOpen(false);
                                 }}
@@ -196,73 +195,73 @@ export function InviteMemberDialog({
                   </Command>
                 </PopoverContent>
               </Popover>
-            </div>
+            </Field>
 
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">Role</Label>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
+            <Field label="Role" labelId="invite-role">
+              <div
+                className="choose"
+                role="radiogroup"
+                aria-labelledby="invite-role"
+              >
+                <label htmlFor="forecaster">
                   <input
                     type="radio"
                     id="forecaster"
                     name="role"
                     value="forecaster"
                     checked={role === "forecaster"}
-                    onChange={(e) =>
-                      setRole(e.target.value as CompetitionRole)
-                    }
-                    className="h-4 w-4"
+                    onChange={(e) => setRole(e.target.value as CompetitionRole)}
                     disabled={addMemberAction.isLoading}
                   />
-                  <Label htmlFor="forecaster" className="text-sm cursor-pointer">
-                    Forecaster
-                    <span className="text-muted-foreground font-normal ml-1">
-                      — Can view and make predictions
+                  <span>
+                    <span className="who">Forecaster</span>
+                    <span className="what">
+                      {" "}
+                      — can forecast, and read the field
                     </span>
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
+                  </span>
+                </label>
+                <label htmlFor="admin">
                   <input
                     type="radio"
                     id="admin"
                     name="role"
                     value="admin"
                     checked={role === "admin"}
-                    onChange={(e) =>
-                      setRole(e.target.value as CompetitionRole)
-                    }
-                    className="h-4 w-4"
+                    onChange={(e) => setRole(e.target.value as CompetitionRole)}
                     disabled={addMemberAction.isLoading}
                   />
-                  <Label htmlFor="admin" className="text-sm cursor-pointer">
-                    Admin
-                    <span className="text-muted-foreground font-normal ml-1">
-                      — Can manage props and members
+                  <span>
+                    <span className="who">Admin</span>
+                    <span className="what">
+                      {" "}
+                      — all of that, plus props and the roster
                     </span>
-                  </Label>
-                </div>
+                  </span>
+                </label>
               </div>
-            </div>
+            </Field>
           </div>
 
-          <DialogFooter>
-            <Button
+          <DialogFooter className="hxf">
+            <button
               type="button"
-              variant="outline"
+              className="quit"
               onClick={handleClose}
               disabled={addMemberAction.isLoading}
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
               type="submit"
+              className="submit"
               disabled={addMemberAction.isLoading || selectedUserId === null}
             >
-              {addMemberAction.isLoading && (
-                <Spinner className="mr-2 h-4 w-4" />
-              )}
-              Add Member
-            </Button>
+              {addMemberAction.isLoading ? "Adding…" : "Add member"}
+              <span className="arrow" aria-hidden="true">
+                →
+              </span>
+            </button>
           </DialogFooter>
         </form>
       </DialogContent>

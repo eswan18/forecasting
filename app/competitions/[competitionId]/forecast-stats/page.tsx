@@ -1,112 +1,42 @@
-import { Suspense } from "react";
-import { getUserFromCookies } from "@/lib/get-user";
-import {
-  BoldTakesCard,
-  CertaintyCard,
-  PropConsensusCard,
-  SkeletonCard,
-} from "./cards";
+import { getForecasts } from "@/lib/db_actions";
+import { isBinaryForecast } from "@/lib/binary-forecast";
 import ErrorPage from "@/components/pages/error-page";
-import { getCompetitionById } from "@/lib/db_actions";
-import { InaccessiblePage } from "@/components/inaccessible-page";
-import { Container } from "@/components/ui/container";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { getCompetitionStatus } from "@/lib/competition-status";
+import { buildForecastStats } from "@/components/forecast-stats/build-stats";
+import { ForecastStats } from "@/components/forecast-stats/forecast-stats";
+import { TAB_IDS, type Tab } from "@/components/forecast-stats/types";
+import { competitionAccess } from "../access";
+import { AccessDenied } from "../access-denied";
 
 export default async function Page({
   params,
+  searchParams,
 }: {
   params: Promise<{ competitionId: string }>;
+  searchParams: Promise<{ view?: string }>;
 }) {
-  const { competitionId: competitionIdString } = await params;
-  const competitionId = parseInt(competitionIdString, 10);
-  const user = (await getUserFromCookies())!;
-  const competitionResult = await getCompetitionById(competitionId);
-  if (!competitionResult.success) {
-    return <ErrorPage title={competitionResult.error} />;
-  }
-  const competition = competitionResult.data;
-  const competitionStatus = getCompetitionStatus(
-    competition.forecasts_open_date,
-    competition.forecasts_close_date,
-    competition.end_date,
-  );
-  const pageIsVisible = user.is_admin || competitionStatus !== "upcoming";
-  if (!pageIsVisible) {
-    return (
-      <InaccessiblePage
-        title="Competition Not Available"
-        message="This competition is not currently visible to users."
-      />
-    );
+  const { competitionId: idString } = await params;
+  const { view } = await searchParams;
+  const tab: Tab = TAB_IDS.includes(view as Tab) ? (view as Tab) : "divisive";
+  const access = await competitionAccess(idString);
+  if (!access.ok) return <AccessDenied access={access} />;
+
+  const { competition, user } = access;
+  const forecastsResult = await getForecasts({ competitionId: competition.id });
+  if (!forecastsResult.success) {
+    return <ErrorPage title={forecastsResult.error} />;
   }
 
   return (
-    <main className="py-10 lg:py-14">
-      <Container>
-        <header className="mb-8">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/competitions">
-                  Competitions
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink href={`/competitions/${competition.id}`}>
-                  {competition.name}
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-          <div className="mt-4">
-            <div className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              Forecast Stats
-            </div>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
-              {competition.name}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Where the crowd agrees, diverges, and commits.
-            </p>
-          </div>
-        </header>
-
-        {/* Stats Cards */}
-        <div className="flex flex-row flex-wrap items-start justify-center gap-4">
-          <Suspense
-            fallback={
-              <SkeletonCard
-                title="Consensus Forecasts"
-                className="w-full h-72 sm:h-128"
-              />
-            }
-          >
-            <PropConsensusCard competitionId={competitionId} />
-          </Suspense>
-          <Suspense
-            fallback={
-              <SkeletonCard title="Average Certainty" className="w-80 h-96" />
-            }
-          >
-            <CertaintyCard competitionId={competitionId} />
-          </Suspense>
-          <Suspense
-            fallback={
-              <SkeletonCard title="Boldest Takes" className="w-80 h-96" />
-            }
-          >
-            <BoldTakesCard competitionId={competitionId} />
-          </Suspense>
-        </div>
-      </Container>
-    </main>
+    <ForecastStats
+      tab={tab}
+      data={buildForecastStats({
+        // Choice props have no single probability to place on the axis, so
+        // every reading here is over binary forecasts only.
+        forecasts: forecastsResult.data.filter(isBinaryForecast),
+        competitionId: competition.id,
+        competitionName: competition.name,
+        currentUserId: user.id,
+      })}
+    />
   );
 }

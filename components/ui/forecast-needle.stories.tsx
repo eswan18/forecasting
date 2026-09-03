@@ -15,7 +15,8 @@ const meta = {
     },
     baseline: {
       control: { type: "range", min: 0, max: 1, step: 0.01 },
-      description: "Optional baseline, e.g. community average (0–1), drawn muted",
+      description:
+        "Optional baseline, e.g. community average (0–1), drawn muted",
     },
     forecastLabel: {
       control: "text",

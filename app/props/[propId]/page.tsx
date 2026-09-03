@@ -1,16 +1,16 @@
+import { Suspense } from "react";
+
+import ErrorPage from "@/components/pages/error-page";
+import {
+  buildField,
+  toPropWithUserForecast,
+} from "@/components/prop-sheet/build";
+import { PropSheet } from "@/components/prop-sheet/prop-sheet";
+import { LoadingSheet } from "@/components/stop-sheet/loading-sheet";
 import { getForecasts, getPropById } from "@/lib/db_actions";
-import { isBinaryForecast } from "@/lib/binary-forecast";
 import { getCurrentUserRole } from "@/lib/db_actions/competition-members";
 import { getUserFromCookies } from "@/lib/get-user";
-import { isChoiceKind } from "@/lib/prop-kind";
-import { Suspense } from "react";
-import ErrorPage from "@/components/pages/error-page";
-import { Spinner } from "@/components/ui/spinner";
-import PropPageHeader from "./prop-page-header";
-import PropOptionsTable from "./prop-options-table";
-import PropStatsRow from "./prop-stats-row";
-import ForecastDistributionChart from "./forecast-distribution-chart";
-import ForecastsList from "./forecasts-list";
+import { getPropStatusFromProp } from "@/lib/prop-status";
 
 export default function PropPage({
   params,
@@ -18,13 +18,7 @@ export default function PropPage({
   params: Promise<{ propId: string }>;
 }) {
   return (
-    <Suspense
-      fallback={
-        <div className="flex justify-center items-center h-64">
-          <Spinner className="w-24 h-24 text-muted-foreground" />
-        </div>
-      }
-    >
+    <Suspense fallback={<LoadingSheet rows={4} label="Loading prop" />}>
       <PropPageContent params={params} />
     </Suspense>
   );
@@ -37,105 +31,55 @@ async function PropPageContent({
 }) {
   const { propId: propIdString } = await params;
   const propId = parseInt(propIdString, 10);
-
   if (isNaN(propId)) {
     return <ErrorPage title={`Invalid prop ID '${propIdString}'`} />;
   }
 
   const user = (await getUserFromCookies())!;
 
-  // Get the prop details
   const propResult = await getPropById(propId);
-  if (!propResult.success) {
-    return <ErrorPage title={propResult.error} />;
-  }
-  const prop = propResult.data;
-  if (!prop) {
-    return <ErrorPage title="Prop not found" />;
-  }
+  if (!propResult.success) return <ErrorPage title={propResult.error} />;
+  const propRow = propResult.data;
+  if (!propRow) return <ErrorPage title="Prop not found" />;
 
-  // Get all forecasts for this prop
   const forecastsResult = await getForecasts({ propId });
   if (!forecastsResult.success) {
     return <ErrorPage title={forecastsResult.error} />;
   }
   const forecasts = forecastsResult.data;
-  // The stats, chart and list are binary-only for now; see docs/superpowers/specs/2026-09-01-choice-props-design.md §4.4
-  const binaryForecasts = forecasts.filter(isBinaryForecast);
 
-  // Find user's forecast
-  const userForecast = forecasts.find((f) => f.user_id === user.id);
-
-  // Determine if the user is an admin of this prop's competition (if any)
+  // Editing a prop is a competition-admin power as well as a system-admin one,
+  // so the prop's competition decides it when it has one.
   let isCompetitionAdmin = false;
-  if (prop.competition_id !== null) {
-    const roleResult = await getCurrentUserRole(prop.competition_id);
-    if (roleResult.success && roleResult.data === "admin") {
-      isCompetitionAdmin = true;
-    }
+  if (propRow.competition_id !== null) {
+    const roleResult = await getCurrentUserRole(propRow.competition_id);
+    isCompetitionAdmin = roleResult.success && roleResult.data === "admin";
   }
-  const canEdit =
-    user.is_admin || isCompetitionAdmin || prop.prop_user_id === user.id;
 
-  // Calculate stats
-  const forecastValues = binaryForecasts.map((f) => f.forecast);
-  const average =
-    forecastValues.length > 0
-      ? forecastValues.reduce((a, b) => a + b, 0) / forecastValues.length
-      : null;
-  const min = forecastValues.length > 0 ? Math.min(...forecastValues) : null;
-  const max = forecastValues.length > 0 ? Math.max(...forecastValues) : null;
-
+  const prop = toPropWithUserForecast(propRow, forecasts, user.id);
   return (
-    <main className="min-h-screen bg-background px-6 py-8">
-      <div className="mx-auto max-w-3xl">
-        {/* Header */}
-        <PropPageHeader
-          prop={prop}
-          canResolve={user.is_admin || prop.prop_user_id === user.id}
-          canEdit={canEdit}
-        />
-
-        {isChoiceKind(prop.prop_kind) ? (
-          <>
-            {/* The stats row, distribution chart and forecaster list are all
-                shapes of a single probability, so a choice prop gets its
-                per-option table instead; see the spec §4.4. */}
-            <PropOptionsTable
-              kind={prop.prop_kind}
-              options={prop.options}
-              resolved={prop.resolution_id !== null}
-            />
-            <p className="mt-3 text-sm text-muted-foreground">
-              {forecasts.length}{" "}
-              {forecasts.length === 1 ? "forecaster" : "forecasters"}
-            </p>
-          </>
-        ) : (
-          <>
-            {/* Stats Row */}
-            <PropStatsRow
-              userForecast={userForecast?.forecast ?? null}
-              average={average}
-              forecasterCount={forecasts.length}
-              min={min}
-              max={max}
-            />
-
-            {/* Distribution Chart */}
-            <div className="mb-6">
-              <ForecastDistributionChart
-                forecasts={binaryForecasts}
-                userForecast={userForecast?.forecast ?? null}
-                average={average}
-              />
-            </div>
-
-            {/* Forecasts List */}
-            <ForecastsList forecasts={binaryForecasts} currentUserId={user.id} />
-          </>
-        )}
-      </div>
-    </main>
+    <PropSheet
+      prop={prop}
+      field={buildField(forecasts, user.id)}
+      forecasterCount={new Set(forecasts.map((f) => f.user_id)).size}
+      currentUserId={user.id}
+      canForecast={getPropStatusFromProp(prop) === "open"}
+      canEdit={
+        user.is_admin || isCompetitionAdmin || prop.prop_user_id === user.id
+      }
+      canResolve={user.is_admin || prop.prop_user_id === user.id}
+      back={
+        prop.competition_id !== null && prop.competition_name
+          ? {
+              href: `/competitions/${prop.competition_id}`,
+              label: prop.competition_name,
+            }
+          : // A prop of your own came from your own list; anyone else's
+            // ownerless prop belongs to no list you could return to.
+            prop.prop_user_id === user.id
+            ? { href: "/props", label: "Your props" }
+            : undefined
+      }
+    />
   );
 }

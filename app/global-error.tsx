@@ -1,9 +1,16 @@
 "use client";
 
 import * as Sentry from "@sentry/nextjs";
-import NextError from "next/error";
 import { useEffect } from "react";
 
+import { StopSheet } from "@/components/stop-sheet/stop-sheet";
+
+/**
+ * The last boundary: this replaces the root layout, so it renders its own
+ * document and can assume nothing about the app's fonts or global stylesheet.
+ * `StopSheet` carries its own styles and falls back to literal colours and
+ * system font stacks for exactly this case.
+ */
 export default function GlobalError({
   error,
 }: {
@@ -14,13 +21,15 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html>
+    <html lang="en">
       <body>
-        {/* `NextError` is the default Next.js error page component. Its type
-        definition requires a `statusCode` prop. However, since the App Router
-        does not expose status codes for errors, we simply pass 0 to render a
-        generic error message. */}
-        <NextError statusCode={0} />
+        <StopSheet
+          code="Error"
+          title="The app failed to load"
+          message="Something went wrong before the page could be built. The failure has been reported."
+          detail={error.digest && `Reference ${error.digest}`}
+          actions={[{ label: "Return home", href: "/", primary: true }]}
+        />
       </body>
     </html>
   );

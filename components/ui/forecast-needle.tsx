@@ -4,8 +4,10 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-export interface ForecastNeedleProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "color"> {
+export interface ForecastNeedleProps extends Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  "color"
+> {
   /** The user's forecast in [0, 1]. Always drawn in the primary color. */
   forecast: number;
   /**
@@ -74,7 +76,10 @@ export function valueToPoint(
   radius: number,
 ): { x: number; y: number } {
   const radians = (valueToAngle(value) * Math.PI) / 180;
-  return { x: cx + radius * Math.cos(radians), y: cy - radius * Math.sin(radians) };
+  return {
+    x: cx + radius * Math.cos(radians),
+    y: cy - radius * Math.sin(radians),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -274,9 +279,7 @@ export function ForecastNeedle({
                 onMouseLeave={() =>
                   setActiveIndex((cur) => (cur === i ? null : cur))
                 }
-                onClick={() =>
-                  setActiveIndex((cur) => (cur === i ? null : i))
-                }
+                onClick={() => setActiveIndex((cur) => (cur === i ? null : i))}
               />
             </g>
           );

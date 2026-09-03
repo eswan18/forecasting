@@ -4,9 +4,7 @@ import { getCategories } from "@/lib/db_actions/categories";
 import { getUserFromCookies } from "@/lib/get-user";
 import ErrorPage from "@/components/pages/error-page";
 import { InaccessiblePage } from "@/components/inaccessible-page";
-import { NewPropForm } from "./new-prop-form";
-import PageHeading from "@/components/page-heading";
-import { Container } from "@/components/ui/container";
+import { NewPropForm } from "@/components/forms/new-prop-form";
 
 export default async function NewPropPage({
   params,
@@ -69,24 +67,14 @@ export default async function NewPropPage({
   const categories = categoriesResult.success ? categoriesResult.data : [];
 
   return (
-    <main className="py-10 lg:py-14">
-      <Container className="max-w-3xl">
-        <PageHeading
-          title="New Proposition"
-          breadcrumbs={{
-            Competitions: "/competitions",
-            [competition.name]: `/competitions/${competitionId}`,
-          }}
-          className="mb-6"
-        />
-
-        <NewPropForm
-          competitionId={competitionId}
-          competitionName={competition.name}
-          categories={categories}
-          userId={user.id}
-        />
-      </Container>
-    </main>
+    <NewPropForm
+      target={{
+        kind: "competition",
+        id: competitionId,
+        name: competition.name,
+      }}
+      categories={categories}
+      userId={user.id}
+    />
   );
 }

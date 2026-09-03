@@ -195,7 +195,7 @@
 
     --chart-1: oklch(63.09% 0.1013 183.49);
     --chart-2: oklch(67.72% 0.1571 35.19);
-    --chart-3: oklch(37.87% 0.0440 225.54);
+    --chart-3: oklch(37.87% 0.044 225.54);
     --chart-4: oklch(83.36% 0.1186 88.15);
     --chart-5: oklch(78.34% 0.1261 58.75);
     --chart-6: oklch(76.53% 0.1306 194.77);
@@ -205,7 +205,7 @@
     /* After 9, we start repeating colors */
     --chart-10: oklch(63.09% 0.1013 183.49);
     --chart-11: oklch(67.72% 0.1571 35.19);
-    --chart-12: oklch(37.87% 0.0440 225.54);
+    --chart-12: oklch(37.87% 0.044 225.54);
     --chart-13: oklch(83.36% 0.1186 88.15);
     --chart-14: oklch(78.34% 0.1261 58.75);
     --chart-15: oklch(76.53% 0.1306 194.77);
@@ -262,7 +262,7 @@
     --sidebar-ring: oklch(0.551 0.027 264.364);
     --chart-1: oklch(52.92% 0.1931 262.13);
     --chart-2: oklch(61.23% 0.2093 6.39);
-    --chart-3: oklch(72.32% 0.1500 60.63);
+    --chart-3: oklch(72.32% 0.15 60.63);
     --chart-4: oklch(61.92% 0.2037 312.73);
     --chart-5: oklch(69.83% 0.1337 165.46);
     --chart-6: oklch(100% 0 0);
@@ -271,7 +271,7 @@
     /* After 8, we start repeating colors */
     --chart-9: oklch(52.92% 0.1931 262.13);
     --chart-10: oklch(61.23% 0.2093 6.39);
-    --chart-11: oklch(72.32% 0.1500 60.63);
+    --chart-11: oklch(72.32% 0.15 60.63);
     --chart-12: oklch(61.92% 0.2037 312.73);
     --chart-13: oklch(69.83% 0.1337 165.46);
     --chart-14: oklch(100% 0 0);
@@ -321,84 +321,104 @@
    the chrome. Scoped tightly so the escape hatch stays contained. */
 
 .riso-nav {
-    --muted: color-mix(in oklab, var(--riso-ink) 70%, transparent);
+  --muted: color-mix(in oklab, var(--riso-ink) 70%, transparent);
 
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    width: 100%;
-    background: var(--riso-paper);
-    color: var(--riso-ink);
-    border-bottom: 3px solid var(--riso-ink);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+  background: var(--riso-paper);
+  color: var(--riso-ink);
+  border-bottom: 3px solid var(--riso-ink);
 }
 
 /* the tooth carries across the chrome, so it reads as the same sheet */
 .riso-nav::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image:
-      radial-gradient(var(--riso-ink) 0.7px, transparent 0.9px),
-      radial-gradient(var(--riso-ink) 0.7px, transparent 0.9px);
-    background-size: 8.5px 8.5px;
-    background-position: 0 0, 4.25px 4.25px;
-    opacity: 0.05;
-    pointer-events: none;
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(var(--riso-ink) 0.7px, transparent 0.9px),
+    radial-gradient(var(--riso-ink) 0.7px, transparent 0.9px);
+  background-size: 8.5px 8.5px;
+  background-position:
+    0 0,
+    4.25px 4.25px;
+  opacity: 0.05;
+  pointer-events: none;
 }
-.riso-nav > * { position: relative; z-index: 1; }
+.riso-nav > * {
+  position: relative;
+  z-index: 1;
+}
 
 .riso-kicker {
-    font-family: var(--font-roboto-mono), ui-monospace, monospace;
-    font-size: 0.75rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: color-mix(in oklab, var(--riso-ink) 62%, transparent);
-    background: none;
-    border: 0;
-    border-radius: 0;
-    padding: 0.5rem 0.75rem;
-    line-height: 1.2;
-    transition: color 140ms ease;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--riso-ink) 62%, transparent);
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 0.5rem 0.75rem;
+  line-height: 1.2;
+  transition: color 140ms ease;
 }
 .riso-kicker:hover,
 .riso-kicker[data-state="open"] {
-    color: var(--riso-red-text);
-    background: none;
+  color: var(--riso-red-text);
+  background: none;
 }
 .riso-kicker:focus-visible {
-    outline: 2px solid var(--riso-red-text);
-    outline-offset: 2px;
+  outline: 2px solid var(--riso-red-text);
+  outline-offset: 2px;
 }
 
 /* nothing on a printed sheet has a rounded corner */
 .riso-nav button,
 .riso-nav a,
 .riso-nav [role="button"] {
-    border-radius: 0;
+  border-radius: 0;
 }
 
+/* the utility controls take a hairline, not a plate: the 2px plate is the
+   loudest device in the system and belongs to the primary action alone. */
 .riso-icon-btn {
-    border: 2px solid var(--riso-ink);
-    background: var(--riso-paper);
-    color: var(--riso-ink);
-    height: 2.25rem;
-    width: 2.25rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0;
+  border: 1px solid color-mix(in oklab, var(--riso-ink) 22%, transparent);
+  background: var(--riso-paper);
+  color: var(--riso-ink);
+  height: 2.25rem;
+  width: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
 }
 .riso-icon-btn:hover {
-    background: var(--riso-ink);
-    color: var(--riso-paper);
+  background: var(--riso-ink);
+  color: var(--riso-paper);
+}
+
+/* A photograph already has its own hard edges, so plating it reads as a stamp.
+   Seat it on the stock and let hover bring the rule up instead of flooding it. */
+.riso-icon-btn.is-avatar {
+  background: none;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 9999px;
+}
+.riso-icon-btn.is-avatar:hover {
+  background: none;
+  border-color: var(--riso-ink);
 }
 
 /* dropdowns and the mobile drawer print on the same stock */
 .riso-surface {
-    background: var(--riso-paper);
-    color: var(--riso-ink);
-    border-color: color-mix(in oklab, var(--riso-ink) 22%, transparent);
-    border-radius: 0;
+  background: var(--riso-paper);
+  color: var(--riso-ink);
+  border-color: color-mix(in oklab, var(--riso-ink) 22%, transparent);
+  border-radius: 0;
 }
 
 /* The press button: the black plate carries the outline and the label, the red
@@ -428,9 +448,17 @@
   transform: translate(6px, 6px);
   transition: transform 140ms ease;
 }
-.riso-btn:hover { background: var(--riso-ink); color: var(--riso-paper); }
-.riso-btn:hover::before { transform: none; }
-.riso-btn:focus-visible { outline: 2px solid var(--riso-ink); outline-offset: 4px; }
+.riso-btn:hover {
+  background: var(--riso-ink);
+  color: var(--riso-paper);
+}
+.riso-btn:hover::before {
+  transform: none;
+}
+.riso-btn:focus-visible {
+  outline: 2px solid var(--riso-ink);
+  outline-offset: 4px;
+}
 
 /* the masthead outranks the links beside it: full ink against their 62% */
 .riso-wordmark {
@@ -470,4 +498,613 @@
 .riso-menu-item:focus-visible {
   background: var(--riso-ink);
   color: var(--riso-paper);
+}
+
+/* ---------------------------------------------------------------------------
+   Dialogs, and the form vocabulary they share with the sheets.
+
+   Both live here rather than in a component's injected <style> for the same
+   reason: Radix portals dialog content to document.body, so a rule scoped
+   under a page's own class can never reach it. The riso tokens are already on
+   :root, so a portalled panel can read them — it was only ever the selectors
+   that were out of reach.
+
+   Deliberately unlayered, like `.riso-nav` above: Tailwind's utilities live in
+   @layer utilities and would otherwise win, leaving the rounded corners and
+   drop shadow this design does not have.
+--------------------------------------------------------------------------- */
+
+.riso-scrim {
+  background: color-mix(in oklab, var(--riso-ink) 55%, transparent);
+}
+
+.riso-dialog {
+  background: var(--riso-paper);
+  color: var(--riso-ink);
+  border: 3px solid var(--riso-ink);
+  border-radius: 0;
+  box-shadow: none;
+  padding: 1.75rem;
+}
+.riso-dialog .riso-dialog-title {
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: var(--riso-red-text);
+  padding-bottom: 0.875rem;
+  border-bottom: 2px solid var(--riso-ink);
+}
+.riso-dialog .riso-dialog-desc {
+  color: color-mix(in oklab, var(--riso-ink) 70%, transparent);
+  font-size: 0.9375rem;
+}
+/* the close control is a mark, not a chip */
+.riso-dialog .riso-dialog-close {
+  border-radius: 0;
+  opacity: 1;
+  color: color-mix(in oklab, var(--riso-ink) 38%, transparent);
+}
+.riso-dialog .riso-dialog-close:hover {
+  color: var(--riso-red-text);
+}
+.riso-dialog .riso-dialog-close:focus-visible {
+  outline: 2px solid var(--riso-red);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+/* ---- the form vocabulary ----------------------------------------------- */
+/* `.hxf` is self-sufficient: it re-declares the sheet's local aliases from the
+   root tokens, so the same rules work on a page and inside a portalled dialog.
+   Every control sits on a rule rather than in a box; the one filled block is
+   the submit. */
+.hxf {
+  --paper: var(--riso-paper);
+  --ink: var(--riso-ink);
+  --red: var(--riso-red);
+  --red-text: var(--riso-red-text);
+  --rule: color-mix(in oklab, var(--riso-ink) 22%, transparent);
+  --ink-muted: color-mix(in oklab, var(--riso-ink) 70%, transparent);
+  --ink-faint: color-mix(in oklab, var(--riso-ink) 38%, transparent);
+}
+.hxf.form {
+  max-width: 34rem;
+}
+
+.hxf .field {
+  padding-top: 2rem;
+}
+.hxf .field > label,
+.hxf .field > .lbl {
+  display: block;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  padding-bottom: 0.5rem;
+}
+.hxf .field .opt {
+  color: var(--ink-faint);
+}
+
+.hxf .field input[type="text"],
+.hxf .field input[type="email"],
+.hxf .field textarea {
+  display: block;
+  width: 100%;
+  font-family: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  border-radius: 0;
+  padding: 0 0 0.5rem;
+  outline: none;
+  resize: vertical;
+}
+.hxf .field textarea {
+  min-height: 4.5rem;
+}
+.hxf .field input:focus,
+.hxf .field textarea:focus {
+  border-bottom-color: var(--ink);
+}
+.hxf .field input::placeholder,
+.hxf .field textarea::placeholder {
+  color: var(--ink-faint);
+}
+.hxf .field.bad input,
+.hxf .field.bad textarea,
+.hxf .field.bad .pick {
+  border-bottom-color: var(--red);
+}
+
+.hxf .field .pick {
+  display: block;
+  width: 100%;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  border-radius: 0;
+  padding: 0 0 0.5rem;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+}
+.hxf .field .pick:focus {
+  border-bottom-color: var(--ink);
+}
+
+.hxf .field .under {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-top: 0.5rem;
+}
+.hxf .field .hint {
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+}
+.hxf .field .count {
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+.hxf .field .count.over {
+  color: var(--red-text);
+}
+.hxf .field .bad-msg {
+  padding-top: 0.5rem;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--red-text);
+}
+
+.hxf .pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 2rem;
+}
+.hxf .pair .field {
+  padding-top: 2rem;
+}
+
+.hxf .submitrow {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding-top: 2.5rem;
+}
+.hxf .submit {
+  flex: 1 1 auto;
+  padding: 1.0625rem 1.25rem;
+  background: var(--ink);
+  color: var(--paper);
+  border: 0;
+  border-radius: 0;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+.hxf .submit:hover:not(:disabled) {
+  background: var(--red);
+}
+.hxf .submit:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 3px;
+}
+.hxf .submit:disabled {
+  background: var(--ink-faint);
+  cursor: default;
+}
+.hxf .submit .arrow {
+  float: right;
+  /* in a dialog footer the plate shrinks to its content, so a floated arrow
+     has nothing to float across and lands against the last letter */
+  margin-left: 2rem;
+}
+.hxf .quit {
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid color-mix(in oklab, var(--ink) 40%, transparent);
+  border-radius: 0;
+  padding: 0 0 0.25rem;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.hxf .quit:hover {
+  color: var(--red-text);
+  border-bottom-color: var(--red-text);
+}
+/* the destructive twin of .submit, for a confirmation a reader cannot undo */
+.hxf .submit.danger {
+  background: var(--red);
+}
+.hxf .submit.danger:hover:not(:disabled) {
+  background: var(--ink);
+}
+
+.hxf .failed {
+  margin-top: 2rem;
+  border-left: 3px solid var(--red);
+  padding: 0.125rem 0 0.125rem 1rem;
+}
+.hxf .failed .lbl {
+  display: block;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--red-text);
+}
+.hxf .failed p {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: var(--ink-muted);
+}
+
+/* Shared editors that also appear inside dialogs keep their own markup; here
+   they borrow the sheet's palette rather than being forked for it. */
+.hxf .borrowed .border,
+.hxf .borrowed [class*="border-input"] {
+  border-color: var(--rule);
+}
+.hxf .borrowed .text-foreground {
+  color: var(--ink);
+}
+.hxf .borrowed .text-muted-foreground {
+  color: var(--ink-muted);
+}
+
+@media (max-width: 46rem) {
+  .hxf .pair {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+/* A dialog footer lays its controls out in a row and sits under the fields
+   rather than at the foot of a page, so the plate is sized for a row and the
+   footer carries the air the form vocabulary would otherwise give it. */
+.riso-dialog-footer {
+  padding-top: 1.75rem;
+  gap: 1.5rem;
+  align-items: center;
+}
+.riso-dialog .submit {
+  flex: 0 0 auto;
+  padding: 0.8125rem 1.125rem;
+  font-size: 0.75rem;
+}
+.riso-dialog .submit .arrow {
+  margin-left: 1.5rem;
+}
+
+/* Without this the UA's blue ring shows on the control an alert dialog
+   autofocuses, which is the one colour this design does not have. */
+.hxf .quit:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 3px;
+}
+
+/* A dialog footer stretches its items, which gives the text-on-a-rule cancel
+   the height of the plate beside it and a focus ring to match. */
+.riso-dialog .quit {
+  align-self: center;
+}
+
+/* ---------------------------------------------------------------------------
+   The chrome that is always on: toasts, the mobile drawer, and the banners
+   above the navbar. Same reason these live here as the dialogs — Radix
+   portals every one of them out of the page, so nothing scoped to a sheet can
+   reach them. Unlayered, so Tailwind's utilities do not win.
+--------------------------------------------------------------------------- */
+
+/* ---- toasts ------------------------------------------------------------- */
+/* A receipt, not a card: paper, a hard frame, and the same mono-caps head the
+   sheets use. It confirms a save, so it prints in ink; a failure prints in the
+   second ink and says so. */
+.riso-toast {
+  background: var(--riso-paper);
+  color: var(--riso-ink);
+  border: 2px solid var(--riso-ink);
+  border-radius: 0;
+  box-shadow: none;
+}
+.riso-toast.destructive {
+  border-color: var(--riso-red);
+  background: var(--riso-paper);
+  color: var(--riso-ink);
+}
+.riso-toast-title {
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: var(--riso-ink);
+}
+.riso-toast.destructive .riso-toast-title {
+  color: var(--riso-red-text);
+}
+.riso-toast-desc {
+  font-size: 0.875rem;
+  opacity: 1;
+  color: color-mix(in oklab, var(--riso-ink) 70%, transparent);
+}
+.riso-toast-close {
+  border-radius: 0;
+  color: color-mix(in oklab, var(--riso-ink) 38%, transparent);
+}
+.riso-toast-close:hover {
+  color: var(--riso-red-text);
+}
+
+/* ---- the mobile nav drawer ---------------------------------------------- */
+/* The navbar is paper closed by a 3px rule; the drawer it opens is the same
+   stock, ruled on the edge it enters from. */
+.riso-drawer {
+  background: var(--riso-paper);
+  color: var(--riso-ink);
+  border-radius: 0;
+  box-shadow: none;
+  border-left: 3px solid var(--riso-ink);
+}
+.riso-drawer-close {
+  border-radius: 0;
+  opacity: 1;
+  color: color-mix(in oklab, var(--riso-ink) 38%, transparent);
+}
+.riso-drawer-close:hover {
+  color: var(--riso-red-text);
+}
+.riso-drawer-close:focus-visible {
+  outline: 2px solid var(--riso-red);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+/* ---- the banners above the navbar --------------------------------------- */
+/* A solid plate of ink with paper text, set in the same mono caps as every
+   other label. The second ink is kept for the two states where mistaking your
+   context does damage — you are not in production, or you are acting as
+   someone else — so the peripheral "this is not normal" signal survives on two
+   inks instead of five hues. */
+.riso-banner {
+  background: var(--riso-ink);
+  color: var(--riso-paper);
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.riso-banner.alarm {
+  background: var(--riso-red);
+}
+.riso-banner a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* A control on a banner: paper on the plate, ruled rather than boxed, so it
+   does not become a second surface floating on the first. */
+.riso-banner-act {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  border-radius: 0;
+  padding: 0 0 0.125rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.riso-banner-act:hover:not(:disabled) {
+  opacity: 0.72;
+}
+.riso-banner-act:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.riso-banner-act:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+/* ---------------------------------------------------------------------------
+   The rest of the portalled surfaces: dropdown menus, select and popover
+   panels, the member picker's command list, and tooltips. Radix puts every one
+   of them in document.body, so — like the dialogs — they are styled from here
+   rather than from a call site or a sheet.
+
+   `.riso-menu` above already draws a panel this way for the navbar; these
+   reuse it so there is one definition of what a floating panel looks like.
+--------------------------------------------------------------------------- */
+
+/* Radix highlights a menu item with data-highlighted, not :hover, when the
+   keyboard is driving — the existing rule only covered the pointer. */
+.riso-menu-item[data-highlighted],
+.riso-menu-item[data-state="open"] {
+  background: var(--riso-ink);
+  color: var(--riso-paper);
+}
+/* a destructive item keeps its meaning: the second ink, and it floods red */
+.riso-menu-item.danger {
+  color: var(--riso-red-text);
+}
+.riso-menu-item.danger:hover,
+.riso-menu-item.danger[data-highlighted] {
+  background: var(--riso-red);
+  color: var(--riso-paper);
+}
+
+/* the field a select or a picker opens from */
+.riso-field {
+  background: none;
+  border: 0;
+  border-bottom: 1px solid color-mix(in oklab, var(--riso-ink) 22%, transparent);
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--riso-ink);
+}
+.riso-field:focus,
+.riso-field:focus-visible {
+  border-bottom-color: var(--riso-ink);
+  outline: none;
+  box-shadow: none;
+}
+
+/* A tooltip is a printed aside, not an indigo chip. */
+.riso-tip {
+  background: var(--riso-ink);
+  color: var(--riso-paper);
+  border-radius: 0;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* A choice between two named things, in a dialog. The mark is a square that
+   fills with ink, not a blue disc, and the whole row is the label so the
+   target is the sentence rather than the 16px dot. */
+.hxf .choose {
+  display: grid;
+  gap: 0.5rem;
+}
+.hxf .choose label {
+  display: grid;
+  grid-template-columns: 0.75rem minmax(0, 1fr);
+  gap: 0 0.75rem;
+  align-items: baseline;
+  cursor: pointer;
+  font-size: 0.9375rem;
+}
+.hxf .choose input {
+  appearance: none;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin: 0;
+  border: 1px solid var(--ink-muted);
+  border-radius: 0;
+  background: none;
+  align-self: center;
+  cursor: pointer;
+}
+.hxf .choose input:checked {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.hxf .choose input:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+.hxf .choose .what {
+  color: var(--ink-muted);
+}
+.hxf .choose label:has(input:checked) .who {
+  font-weight: 700;
+}
+
+/* the control a picker opens from: a rule, like every other field */
+.hxf .picker {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-family: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1rem;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  border-radius: 0;
+  padding: 0 0 0.5rem;
+  cursor: pointer;
+  text-align: left;
+}
+.hxf .picker:hover:not(:disabled) {
+  border-bottom-color: var(--ink);
+}
+.hxf .picker:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 3px;
+}
+.hxf .picker:disabled {
+  cursor: default;
+  color: var(--ink-faint);
+}
+.hxf .picker .none {
+  color: var(--ink-faint);
+}
+.hxf .picker .car {
+  color: var(--ink-faint);
+  font-size: 0.75rem;
+}
+
+/* A filter control: the sheet's mono caps on a rule, sized to its own content.
+   A native select cannot do this — its intrinsic width is measured from the
+   option text without the uppercasing and letter-spacing the trigger applies,
+   so the label it actually paints is wider than the box reserved for it and
+   the longest option is clipped. */
+.riso-pick {
+  width: auto;
+  height: auto;
+  gap: 0.75rem;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--riso-ink);
+  padding-bottom: 0.25rem;
+}
+.riso-pick [class*="line-clamp"] {
+  overflow: visible;
+}
+.riso-pick svg {
+  opacity: 0.38;
+}
+
+/* The panel a filter opens: mono, so the choices read as the label will.
+   The size has to be set on the rows, not on the panel — each row carries its
+   own font-size utility, and a declaration on the element always beats a value
+   inherited from its container. */
+.riso-pick-list {
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  text-transform: uppercase;
+}
+.riso-pick-list .riso-menu-item {
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  padding-top: 0.4375rem;
+  padding-bottom: 0.4375rem;
 }
