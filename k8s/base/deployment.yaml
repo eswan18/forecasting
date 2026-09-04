@@ -26,7 +26,13 @@ spec:
           effect: NoSchedule
       containers:
         - name: forecasting
-          image: us-central1-docker.pkg.dev/ethans-services/containers/forecasting:latest
+          # Pinned to a real tag, not :latest. ArgoCD's kustomize image
+          # override normally replaces this, but the override is keyed on
+          # this image's NAME -- so anything that breaks the match falls
+          # back to whatever is written here. It used to say :latest, which
+          # CI stopped publishing in #165, so the fallback was a tag that
+          # did not exist and the failure mode was an unpullable prod.
+          image: us-central1-docker.pkg.dev/ethans-services/containers/haruspex:f66c410
           ports:
             - containerPort: 3000
           readinessProbe:

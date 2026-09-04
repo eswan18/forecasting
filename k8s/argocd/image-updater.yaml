@@ -11,7 +11,7 @@ spec:
     - namePattern: forecasting-staging
       images:
         - alias: forecasting
-          imageName: us-central1-docker.pkg.dev/ethans-services/containers/forecasting
+          imageName: us-central1-docker.pkg.dev/ethans-services/containers/haruspex
           commonUpdateSettings:
             updateStrategy: newest-build
             allowTags: "regexp:^[a-f0-9]{7,}$"
