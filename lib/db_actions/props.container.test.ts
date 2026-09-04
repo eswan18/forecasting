@@ -18,10 +18,6 @@ vi.mock("@/lib/get-user", () => ({
   getUserFromCookies: vi.fn(),
 }));
 
-vi.mock("@/lib/pubsub/client", () => ({
-  publishEvent: vi.fn().mockResolvedValue("msg-mock"),
-}));
-
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
