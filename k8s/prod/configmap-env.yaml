@@ -7,5 +7,5 @@ data:
   APP_BASE_URL: "https://haruspex.fyi"
   IDP_BASE_URL: "http://identity.identity-prod.svc.cluster.local"
   IDP_PUBLIC_URL: "https://identity.ethanswan.com"
-  PUBSUB_TOPIC: "forecasting-events-prod"
+  PUBSUB_TOPIC: "haruspex-events-prod"
   SENTRY_DSN: "https://42fb7fde7d5842831f2324ed33c7f50f@o4509062063587328.ingest.us.sentry.io/4509062066012160"
