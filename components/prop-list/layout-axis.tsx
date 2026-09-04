@@ -289,15 +289,18 @@ export function LayoutAxis({
             {resolved ? "Resolved" : "Awaiting result"}{" "}
             <span className="aside num">· {props.length} props</span>
           </span>
+          {/* Back on the left, onward on the right, so the two arrows point
+              away from each other. The other order put them nose to nose,
+              converging on nothing. */}
           <span className="asides">
-            {sibling && (
-              <Link className="aside" href={sibling.href}>
-                {sibling.label} <span className="num">· {sibling.count}</span> →
-              </Link>
-            )}
             {backHref && (
               <Link className="aside" href={backHref}>
                 ← Overview
+              </Link>
+            )}
+            {sibling && (
+              <Link className="aside" href={sibling.href}>
+                {sibling.label} <span className="num">· {sibling.count}</span> →
               </Link>
             )}
           </span>
