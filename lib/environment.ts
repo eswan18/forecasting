@@ -50,9 +50,3 @@ export function getCurrentEnvironment(): string {
   return process.env.ENV || "local";
 }
 
-/**
- * Check if we're in a specific environment
- */
-export function isEnvironment(env: "local" | "dev" | "prod"): boolean {
-  return getCurrentEnvironment() === env;
-}

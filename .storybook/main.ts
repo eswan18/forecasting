@@ -29,11 +29,19 @@ const config: StorybookConfig = {
         "./mocks/db_actions-props.ts",
         import.meta.url,
       ).pathname,
+      "@/lib/db_actions/competition-members": new URL(
+        "./mocks/db_actions-competition-members.ts",
+        import.meta.url,
+      ).pathname,
       "@/lib/db_actions": new URL("./mocks/db_actions.ts", import.meta.url)
         .pathname,
       // next/link's app-router internals trip a circular-import TDZ under Vite
       // dev; render a plain anchor instead.
       "next/link": new URL("./mocks/next-link.tsx", import.meta.url).pathname,
+      // the app router's hooks throw outside a mounted router, which takes
+      // down any story for a component that refreshes after a save
+      "next/navigation": new URL("./mocks/next-navigation.ts", import.meta.url)
+        .pathname,
       ...config.resolve.alias,
       "@": new URL("../", import.meta.url).pathname,
     };

@@ -1,5 +1,5 @@
 import { getCurrentEnvironment } from "@/lib/environment";
-import { StatusIndicator, StatusIndicatorVariant } from "./status-indicator";
+import { StatusIndicator } from "./status-indicator";
 
 export function EnvironmentIndicator() {
   const env = getCurrentEnvironment();
@@ -9,19 +9,11 @@ export function EnvironmentIndicator() {
     return null;
   }
 
-  const getVariant = (env: string): StatusIndicatorVariant => {
-    switch (env) {
-      case "local":
-        return "info";
-      case "dev":
-        return "warning";
-      default:
-        return "accent";
-    }
-  };
-
+  // This only renders outside production, so every environment it can show is
+  // one you could mistake for production. They all get the second ink; the
+  // word tells you which.
   return (
-    <StatusIndicator variant={getVariant(env)}>
+    <StatusIndicator variant="warning">
       {env.toUpperCase()} ENVIRONMENT
     </StatusIndicator>
   );

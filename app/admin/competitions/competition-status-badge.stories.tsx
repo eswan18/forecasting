@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { CompetitionStatusBadge } from "./competition-status-badge";
+
+import { sheetCss } from "@/components/prop-list/sheet";
 import type { CompetitionStatus } from "@/lib/competition-status";
+
+import { CompetitionStatusBadge, statusCss } from "./competition-status-badge";
 
 const STATUSES: CompetitionStatus[] = [
   "upcoming",
@@ -26,6 +29,17 @@ const meta = {
   args: {
     status: "forecasts-open",
   },
+  // The marker takes its ink from the sheet it is printed on.
+  decorators: [
+    (Story) => (
+      <div className="hxp">
+        <style dangerouslySetInnerHTML={{ __html: sheetCss + statusCss }} />
+        <div className="col" style={{ paddingTop: "1.5rem" }}>
+          <Story />
+        </div>
+      </div>
+    ),
+  ],
 } satisfies Meta<typeof CompetitionStatusBadge>;
 
 export default meta;
@@ -33,11 +47,12 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
-// Every lifecycle status side by side — used on both the admin competitions
-// table and the public /competitions list.
+// Every lifecycle status side by side, as the admin competitions table sets
+// them. Two statuses share the `open` stamp — a private competition takes
+// forecasts too — so `private` is the one that also prints its own marker.
 export const AllStatuses: Story = {
   render: () => (
-    <div className="flex flex-wrap items-center gap-2">
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>
       {STATUSES.map((status) => (
         <CompetitionStatusBadge key={status} status={status} />
       ))}

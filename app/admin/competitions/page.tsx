@@ -1,8 +1,20 @@
 import Link from "next/link";
+
+import { sheetCss } from "@/components/prop-list/sheet";
 import { getCompetitions, getProps } from "@/lib/db_actions";
+
 import CompetitionRow from "./competition-row";
+import { statusCss } from "./competition-status-badge";
+import { rowCss } from "./row-css";
 import CreateCompetitionButton from "./create-competition-button";
-import { Container } from "@/components/ui/container";
+
+/**
+ * The admin table, built the way the public list of seasons is built: one grid
+ * for the whole page with `display: contents` rows, so every date and every
+ * count sits under the one above it however long the list gets. What this one
+ * adds is the management the public list has no business showing — the counts,
+ * and a menu per row.
+ */
 
 export default async function Page() {
   const competitionsResult = await getCompetitions();
@@ -51,34 +63,40 @@ export default async function Page() {
   );
 
   return (
-    <main className="py-10 lg:py-14">
-      <Container>
-        <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="min-w-0">
-            <Link
-              href="/admin"
-              className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Admin
-            </Link>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
-              Competitions
-            </h1>
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              Create competitions and review their props and resolutions.
-            </p>
-          </div>
-          <CreateCompetitionButton className="shrink-0" />
+    <div className="hxp">
+      <style
+        dangerouslySetInnerHTML={{ __html: sheetCss + statusCss + rowCss }}
+      />
+      <div className="col">
+        <header className="masthead">
+          <h1>Competitions</h1>
         </header>
 
-        {/* Competitions table */}
-        <section className="overflow-hidden rounded-lg border bg-card">
-          <div className="border-b px-4 py-3 sm:px-5">
-            <span className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              All Competitions ({competitions.length})
-            </span>
-          </div>
-          <div className="divide-y">
+        <h2 className="kicker">
+          <span>
+            All competitions
+            <span className="aside num"> · {competitions.length}</span>
+          </span>
+          <span className="tools">
+            <Link className="aside" href="/admin">
+              ← Admin
+            </Link>
+            <CreateCompetitionButton />
+          </span>
+        </h2>
+
+        {competitions.length === 0 ? (
+          <p className="lede">No competitions yet.</p>
+        ) : (
+          <div className="comps">
+            <div className="comphead">
+              <span>Competition</span>
+              <span>Forecasts due</span>
+              <span>Ends</span>
+              <span className="n">Props</span>
+              <span className="n">Resolved</span>
+              <span />
+            </div>
             {competitions.map((competition) => (
               <CompetitionRow
                 key={competition.id}
@@ -89,14 +107,9 @@ export default async function Page() {
                 }
               />
             ))}
-            {competitions.length === 0 && (
-              <p className="px-5 py-10 text-center text-sm text-muted-foreground">
-                No competitions yet.
-              </p>
-            )}
           </div>
-        </section>
-      </Container>
-    </main>
+        )}
+      </div>
+    </div>
   );
 }

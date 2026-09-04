@@ -41,43 +41,6 @@ export async function getUserByIdpUserId(
 }
 
 /**
- * Update a user's IDP user ID after migration.
- */
-export async function setUserIdpUserId(
-  userId: number,
-  idpUserId: string,
-): Promise<boolean> {
-  const startTime = Date.now();
-
-  try {
-    await db
-      .updateTable("users")
-      .set({ idp_user_id: idpUserId })
-      .where("id", "=", userId)
-      .execute();
-
-    const duration = Date.now() - startTime;
-    logger.info("Updated user IDP user ID", {
-      operation: "setUserIdpUserId",
-      userId,
-      idpUserId,
-      duration,
-    });
-
-    return true;
-  } catch (err) {
-    const duration = Date.now() - startTime;
-    logger.error("Failed to update user IDP user ID", err as Error, {
-      operation: "setUserIdpUserId",
-      userId,
-      idpUserId,
-      duration,
-    });
-    return false;
-  }
-}
-
-/**
  * Create a new user from IDP registration.
  * Used when a user logs in via IDP for the first time (no existing user).
  */

@@ -1,33 +1,94 @@
 "use client";
 
-import { Switch } from "@/components/ui/switch";
+import { useState } from "react";
+
+/**
+ * The sheet's switch.
+ *
+ * Design note. This was two mono words on one continuous line, with the line
+ * under the live word inked to 2px and the dead half left as a 1px hairline.
+ * It was too quiet to read: at a glance neither word looked chosen, and on a
+ * feature with no default row at all — where neither IS chosen — there was
+ * nothing to tell the two situations apart.
+ *
+ * So it is the same segmented bar the prop lists filter with: connected cells,
+ * the live one a plate of ink. One filled cell means the default is set and
+ * says which way; no filled cell means there is no default row yet, and the
+ * "Not set" caption beside it says so in words. Both cells stay live in that
+ * state, and pressing either creates the row with that value — a single
+ * toggling button could express neither the absence nor the creation.
+ */
+export const toggleCss = `
+/* The bar itself is .riso-seg, from globals. These are the two things a
+   setting needs that a filter does not. */
+.riso-seg.flip button { min-width: 3.25rem; justify-content: center; }
+/* In flight: the reading is the one you asked for, printed in the softer ink
+   until the server confirms it. */
+.riso-seg.flip.busy button[aria-pressed="true"] {
+  background: color-mix(in oklab, var(--riso-ink) 70%, transparent);
+}
+.riso-seg.flip button:disabled { cursor: default; }
+`;
 
 export function FeatureToggle({
-  name,
-  checked,
-  onCheckedChange,
+  label,
+  value,
+  onSet,
+  busy = false,
 }: {
-  name?: string;
-  checked: boolean;
-  onCheckedChange?: (checked: boolean) => void;
+  /** Names what is being switched, for assistive tech: a feature, a person. */
+  label: string;
+  /** `null` when no flag row exists yet — neither state is live. */
+  value: boolean | null;
+  /** Omit for a read-only reading of the flag. */
+  onSet?: (enabled: boolean) => void;
+  /** True while a save is in flight, so `value` is what was asked for. */
+  busy?: boolean;
 }) {
+  const states: boolean[] = [false, true];
   return (
-    <div className="flex flex-col items-center gap-1.5">
-      {name && (
-        <span className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-          {name}
-        </span>
-      )}
-      <div className="flex flex-row items-center gap-2">
-        <Switch
-          checked={checked}
-          onCheckedChange={onCheckedChange}
-          disabled={onCheckedChange === undefined}
-        />
-        <span className="font-mono text-xs tabular-nums text-muted-foreground">
-          {checked ? "On" : "Off"}
-        </span>
-      </div>
-    </div>
+    <span className={busy ? "riso-seg flip busy" : "riso-seg flip"}>
+      {states.map((state) => (
+        <button
+          key={String(state)}
+          type="button"
+          aria-pressed={value === state}
+          aria-label={`${label} ${state ? "on" : "off"}`}
+          disabled={onSet === undefined || busy}
+          onClick={() => {
+            if (value !== state) onSet?.(state);
+          }}
+        >
+          {state ? "On" : "Off"}
+        </button>
+      ))}
+    </span>
   );
+}
+
+/**
+ * What the control should read while a save is in flight.
+ *
+ * The page is drawn from the server's copy of the flags, so a press would
+ * otherwise keep showing the old value for the length of the round trip and
+ * the refresh behind it — which reads as "nothing happened". This holds the
+ * asked-for value in front of the server's until the two agree, and puts it
+ * back if the save is refused.
+ */
+export function useFlagSave(actual: boolean | null) {
+  const [wanted, setWanted] = useState<boolean | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  if (wanted !== null && wanted === actual) setWanted(null);
+
+  /** Runs `save`, holding the control at `next` until the server agrees. */
+  const set = async (next: boolean, save: () => Promise<boolean>) => {
+    setWanted(next);
+    setSaving(true);
+    const saved = await save();
+    setSaving(false);
+    if (!saved) setWanted(null);
+  };
+
+  return { value: wanted ?? actual, busy: saving, set };
 }

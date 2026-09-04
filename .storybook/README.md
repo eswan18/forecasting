@@ -32,22 +32,13 @@ For the best Storybook experience, focus on creating stories for:
 - Layout components
 - Pure presentational components
 
-### 2. Handling Server Components
+### 2. Server components are not storied
 
-If you need to create stories for components that use server features:
-
-```tsx
-// Use the ServerComponentWrapper for async components
-import { ServerComponentWrapper } from "@/.storybook/ServerComponentWrapper";
-
-export const MyStory = {
-  render: () => (
-    <ServerComponentWrapper>
-      <MyServerComponent />
-    </ServerComponentWrapper>
-  ),
-};
-```
+There was a `ServerComponentWrapper` for rendering async components in a story.
+It was removed along with its example story: in practice every story here is a
+presentational leaf that takes plain props, and the routes that fetch data are
+thin enough not to be worth the wrapper. If you need a story for something that
+fetches, split the fetching from the rendering and story the renderer.
 
 ### 3. Mocking Server Data
 

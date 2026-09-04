@@ -5,17 +5,19 @@ import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  // resolvedTheme, not theme: theme is "system" until the user picks one,
+  // which showed the sun icon on a dark page and toggled to dark from dark.
+  const { resolvedTheme, setTheme } = useTheme();
 
   return (
     <Button
       variant="outline"
       size="icon"
-      className="h-9 w-9"
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      className="riso-icon-btn"
+      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
       suppressHydrationWarning
     >
-      {theme === "dark" ? (
+      {resolvedTheme === "dark" ? (
         <Moon className="h-4 w-4" />
       ) : (
         <Sun className="h-4 w-4" />

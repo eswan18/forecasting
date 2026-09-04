@@ -64,12 +64,14 @@ describe("proxy: protected routes with no token", () => {
     expect(mockRefreshAccessToken).not.toHaveBeenCalled();
   });
 
-  it("does not add a redirect query param when coming from the home page", async () => {
+  it("serves the home page to visitors instead of redirecting", async () => {
+    // "/" is the signed-out landing page, so an anonymous visitor is let
+    // through rather than bounced to /login.
     const { proxy } = await import("./proxy");
     const res = await proxy(makeRequest("/"));
-    const url = new URL(res.headers.get("location") ?? "");
-    expect(url.pathname).toBe("/login");
-    expect(url.searchParams.get("redirect")).toBeNull();
+    expect(res.status).toBe(200);
+    expect(res.headers.get("location")).toBeNull();
+    expect(mockRefreshAccessToken).not.toHaveBeenCalled();
   });
 
   it("preserves the original path in the redirect query string", async () => {

@@ -92,6 +92,20 @@ describe("getPropStatusFromProp", () => {
     );
   });
 
+  it("should use the prop's own date when it belongs to no competition", () => {
+    // A personal prop: every competition_* field is null, so its own deadline
+    // is the only one there is.
+    const prop = {
+      prop_forecasts_due_date: new Date("2024-06-10T12:00:00Z"), // past
+      competition_forecasts_close_date: null,
+      competition_is_private: null,
+      resolution: null,
+    };
+    expect(getPropStatusFromProp(prop, { currentDate: now })).toBe(
+      "unresolved",
+    );
+  });
+
   it("should handle missing dates gracefully", () => {
     const prop = {
       resolution: null,
@@ -132,7 +146,9 @@ describe("choice props", () => {
   });
 
   it("a boolean resolution still wins", () => {
-    expect(getPropStatus(null, true, { isResolved: true })).toBe("resolved-yes");
+    expect(getPropStatus(null, true, { isResolved: true })).toBe(
+      "resolved-yes",
+    );
   });
 
   it("getPropStatusFromProp reads resolution_id", () => {

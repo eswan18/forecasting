@@ -18,7 +18,7 @@ function MobileLinkItem({ href, label, icon }: NavLink) {
       <Link href={href}>
         <Button
           variant="ghost"
-          className="w-full justify-start h-10 text-sm pl-6"
+          className="riso-menu-item w-full justify-start h-10 text-sm pl-6"
         >
           <span className="mr-3">{icon}</span>
           {label}
@@ -37,7 +37,7 @@ export function MobileDropdownItem({
     <div className="space-y-1">
       <Button
         variant="ghost"
-        className="w-full justify-between h-12 text-base"
+        className="riso-kicker w-full justify-between h-12"
         onClick={onToggle}
       >
         {label}
@@ -52,7 +52,7 @@ export function MobileDropdownItem({
           {sections
             ? sections.map((section) => (
                 <div key={section.heading} className="space-y-1">
-                  <div className="px-6 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  <div className="riso-menu-heading px-6 py-1">
                     {section.heading}
                   </div>
                   {section.links.map((link) => (

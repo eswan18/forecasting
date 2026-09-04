@@ -22,7 +22,9 @@ function validPrivate(overrides = {}) {
   };
 }
 
-function getFieldErrors(result: { error?: { issues: { path: PropertyKey[]; message: string }[] } }) {
+function getFieldErrors(result: {
+  error?: { issues: { path: PropertyKey[]; message: string }[] };
+}) {
   const map: Record<string, string[]> = {};
   for (const issue of result.error?.issues ?? []) {
     const key = issue.path.join(".");
@@ -35,14 +37,18 @@ function getFieldErrors(result: { error?: { issues: { path: PropertyKey[]; messa
 describe("competitionFormSchema", () => {
   describe("name validation", () => {
     it("rejects names shorter than 8 characters", () => {
-      const result = competitionFormSchema.safeParse(validPublic({ name: "Short" }));
+      const result = competitionFormSchema.safeParse(
+        validPublic({ name: "Short" }),
+      );
       expect(result.success).toBe(false);
       const errors = getFieldErrors(result);
       expect(errors["name"]).toBeDefined();
     });
 
     it("accepts names with exactly 8 characters", () => {
-      const result = competitionFormSchema.safeParse(validPublic({ name: "12345678" }));
+      const result = competitionFormSchema.safeParse(
+        validPublic({ name: "12345678" }),
+      );
       expect(result.success).toBe(true);
     });
 

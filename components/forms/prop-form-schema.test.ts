@@ -13,7 +13,9 @@ const schema = z
 
 describe("prop form schema", () => {
   it("accepts binary with no options", () => {
-    expect(schema.safeParse({ kind: "binary", options: [] }).success).toBe(true);
+    expect(schema.safeParse({ kind: "binary", options: [] }).success).toBe(
+      true,
+    );
   });
 
   it("rejects binary with options", () => {

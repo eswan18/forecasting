@@ -2,7 +2,6 @@ export * from "./categories";
 export * from "./competitions";
 export * from "./competition-members";
 export * from "./competition-scores";
-export * from "./competition-stats";
 export * from "./forecasts";
 export * from "./feature_flags";
 export * from "./prop-options";

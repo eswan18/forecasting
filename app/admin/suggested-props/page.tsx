@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import PageHeading from "@/components/page-heading";
-import { getSuggestedProps, deleteSuggestedProp } from "@/lib/db_actions";
-import { Container } from "@/components/ui/container";
-import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+import { MarkdownRenderer } from "@/components/markdown";
+import { sheetCss } from "@/components/prop-list/sheet";
 import {
   Dialog,
   DialogContent,
@@ -14,15 +13,83 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { User, Trash } from "lucide-react";
-import { VSuggestedProp } from "@/types/db_types";
 import {
   useServerAction,
   useServerActionNoParams,
 } from "@/hooks/use-server-action";
-import { MarkdownRenderer } from "@/components/markdown";
+import { deleteSuggestedProp, getSuggestedProps } from "@/lib/db_actions";
+import type { VSuggestedProp } from "@/types/db_types";
 
-// Helper function to parse prop text and notes
+const ownCss = `
+/* One suggestion per block, separated by a hairline. Not a table: a claim is
+   a sentence of unpredictable length, and the only column worth aligning
+   would be the byline. */
+.hxp .sug { padding: 1.5rem 0 1.25rem; border-bottom: 1px solid var(--rule); }
+.hxp .sug .claim { font-size: 1rem; max-width: 44rem; }
+
+/* The notes arrive glued to the claim, so they are set apart the way an aside
+   is: indented off a rule, quieter, and labelled with the same word the
+   suggestion form put over the box they were typed into. */
+.hxp .sug .notes {
+  margin-top: 1rem;
+  border-left: 1px solid var(--rule);
+  padding-left: 1rem;
+  max-width: 34rem;
+}
+.hxp .sug .notes .lbl {
+  display: block;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  padding-bottom: 0.375rem;
+}
+.hxp .sug .notes .body { color: var(--ink-muted); font-size: 0.875rem; }
+
+.hxp .sug .foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-top: 1rem;
+}
+.hxp .sug .by {
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.hxp .sug .by .who {
+  text-transform: none;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+
+.hxp .act {
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid color-mix(in oklab, var(--ink) 40%, transparent);
+  padding: 0 0 0.25rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.hxp .act:hover:not(:disabled) { color: var(--red-text); border-bottom-color: var(--red-text); }
+.hxp .act:disabled { color: var(--ink-faint); border-bottom-color: transparent; cursor: default; }
+
+.hxp .failed { color: var(--red-text); padding-top: 1.5rem; }
+`;
+
+/**
+ * The suggestions table has one text column, so the form at /props/suggest
+ * appends the notes to the claim. Split them apart again for reading.
+ */
 function parsePropText(propText: string) {
   const notesMatch = propText.match(/\n\nNotes: ([\s\S]+)$/);
   if (notesMatch) {
@@ -31,16 +98,12 @@ function parsePropText(propText: string) {
       notes: notesMatch[1].trim(),
     };
   }
-  return {
-    mainText: propText.trim(),
-    notes: null,
-  };
+  return { mainText: propText.trim(), notes: null };
 }
 
 export default function SuggestedProps() {
   const [suggestedProps, setSuggestedProps] = useState<VSuggestedProp[]>([]);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [propToDelete, setPropToDelete] = useState<number | null>(null);
+  const [propToDelete, setPropToDelete] = useState<VSuggestedProp | null>(null);
 
   const getSuggestedPropsAction = useServerActionNoParams(getSuggestedProps, {
     showToast: false,
@@ -50,13 +113,12 @@ export default function SuggestedProps() {
   });
 
   const deleteSuggestedPropAction = useServerAction(deleteSuggestedProp, {
-    successMessage: "Suggested prop deleted!",
+    successMessage: "Suggestion deleted",
     onSuccess: () => {
       if (propToDelete) {
         setSuggestedProps((prev) =>
-          prev.filter((prop) => prop.id !== propToDelete),
+          prev.filter((prop) => prop.id !== propToDelete.id),
         );
-        setDeleteDialogOpen(false);
         setPropToDelete(null);
       }
     },
@@ -69,126 +131,121 @@ export default function SuggestedProps() {
   }, []);
 
   const loading = getSuggestedPropsAction.isLoading;
+  const loadError = getSuggestedPropsAction.error;
   const isLoadingDelete = deleteSuggestedPropAction.isLoading;
 
-  const handleDeleteProp = async () => {
-    if (!propToDelete) return;
-    await deleteSuggestedPropAction.execute({ id: propToDelete });
-  };
-
-  const openDeleteDialog = (propId: number) => {
-    setPropToDelete(propId);
-    setDeleteDialogOpen(true);
-  };
-
   return (
-    <main className="py-10 lg:py-14">
-      <Container className="max-w-3xl">
-        <PageHeading
-          title="Suggested Props"
-          subtitle="Review propositions submitted by forecasters."
-          breadcrumbs={{
-            Admin: "/admin",
-          }}
-        />
+    <div className="hxp">
+      <style dangerouslySetInnerHTML={{ __html: sheetCss + ownCss }} />
+      <div className="col">
+        <header className="masthead">
+          <h1>Suggested props</h1>
+        </header>
 
-        {loading ? (
-          <div className="rounded-lg border bg-card p-12 text-center">
-            <Spinner className="mx-auto h-7 w-7 text-muted-foreground" />
-            <p className="mt-3 text-sm text-muted-foreground">
-              Loading suggested props…
-            </p>
-          </div>
+        <h2 className="kicker">
+          <span>
+            In review
+            {!loading && !loadError && (
+              <span className="aside num"> · {suggestedProps.length}</span>
+            )}
+          </span>
+          <Link className="aside" href="/admin">
+            ← Admin
+          </Link>
+        </h2>
+
+        <p className="lede">
+          Propositions forecasters have sent in. Delete one once it has gone
+          into a season, or when it is not going to.
+        </p>
+
+        {loadError ? (
+          <p className="failed">{loadError}</p>
+        ) : loading ? (
+          <p className="lede">Loading suggestions…</p>
         ) : suggestedProps.length === 0 ? (
-          <div className="rounded-lg border bg-card p-12 text-center">
-            <p className="text-sm font-medium text-foreground">
-              No suggested props
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              No propositions have been suggested yet.
-            </p>
-          </div>
+          <p className="lede">Nobody has suggested a prop yet.</p>
         ) : (
-          <div className="space-y-4">
-            {suggestedProps.map((prop) => {
-              const { mainText, notes } = parsePropText(prop.prop_text);
-
-              return (
-                <div
-                  key={prop.id}
-                  className="rounded-lg border bg-card p-5 transition-colors hover:border-foreground/20"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0 flex-1">
-                      <div className="text-base font-medium leading-relaxed text-foreground">
-                        <MarkdownRenderer>{mainText}</MarkdownRenderer>
-                      </div>
-                      <div className="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground">
-                        <User className="h-3.5 w-3.5" />
-                        <span>{prop.user_name}</span>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
-                      onClick={() => openDeleteDialog(prop.id)}
-                    >
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  {notes && (
-                    <div className="mt-4 border-t pt-4">
-                      <div className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-                        Notes
-                      </div>
-                      <div className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                        <MarkdownRenderer>{notes}</MarkdownRenderer>
-                      </div>
-                    </div>
-                  )}
+          suggestedProps.map((prop) => {
+            const { mainText, notes } = parsePropText(prop.prop_text);
+            return (
+              <article className="sug" key={prop.id}>
+                <div className="claim">
+                  <MarkdownRenderer className="md">{mainText}</MarkdownRenderer>
                 </div>
-              );
-            })}
-          </div>
-        )}
 
-        {/* Delete Confirmation Dialog */}
-        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Delete Suggested Prop</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete this suggested prop? This action
-                cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setDeleteDialogOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleDeleteProp}
-                disabled={isLoadingDelete}
-              >
-                {isLoadingDelete ? (
-                  <>
-                    <Spinner className="mr-2 h-4 w-4" />
-                    Deleting...
-                  </>
-                ) : (
-                  "Delete"
+                {notes && (
+                  <div className="notes">
+                    <span className="lbl">Notes</span>
+                    <div className="body">
+                      <MarkdownRenderer className="md">
+                        {notes}
+                      </MarkdownRenderer>
+                    </div>
+                  </div>
                 )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </Container>
-    </main>
+
+                <div className="foot">
+                  <span className="by">
+                    Suggested by <span className="who">{prop.user_name}</span>
+                  </span>
+                  <button
+                    type="button"
+                    className="act"
+                    onClick={() => setPropToDelete(prop)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </article>
+            );
+          })
+        )}
+      </div>
+
+      {/* Dialogs stay the app's own: they are shared furniture, and this sheet
+          does not fork them. */}
+      <Dialog
+        open={propToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setPropToDelete(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete suggested prop</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this suggested prop? This action
+              cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="hxf">
+            <button
+              type="button"
+              className="quit"
+              onClick={() => setPropToDelete(null)}
+              disabled={isLoadingDelete}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="submit danger"
+              onClick={() => {
+                if (propToDelete) {
+                  deleteSuggestedPropAction.execute({ id: propToDelete.id });
+                }
+              }}
+              disabled={isLoadingDelete}
+            >
+              {isLoadingDelete ? "Deleting…" : "Delete"}
+              <span className="arrow" aria-hidden="true">
+                →
+              </span>
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

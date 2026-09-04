@@ -1,37 +1,53 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
-import { FeatureToggle } from "./feature-toggle";
+
+import { sheetCss } from "@/components/prop-list/sheet";
+
+import { FeatureToggle, toggleCss } from "./feature-toggle";
+
+/** The sheet's own stock, so the control is seen on the paper it prints on. */
+function Sheet({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="hxp">
+      <style dangerouslySetInnerHTML={{ __html: sheetCss + toggleCss }} />
+      <div className="col" style={{ paddingTop: "3rem" }}>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 const meta = {
   title: "Admin/FeatureToggle",
   component: FeatureToggle,
-  parameters: {
-    layout: "centered",
-  },
+  parameters: { layout: "fullscreen" },
   tags: ["autodocs"],
+  decorators: [
+    (Story) => (
+      <Sheet>
+        <Story />
+      </Sheet>
+    ),
+  ],
   args: {
-    name: "Default",
-    checked: true,
-    onCheckedChange: fn(),
+    label: "Default",
+    value: true,
+    onSet: fn(),
   },
 } satisfies Meta<typeof FeatureToggle>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const On: Story = {
-  args: { checked: true },
-};
+export const On: Story = { args: { value: true } };
 
-export const Off: Story = {
-  args: { checked: false },
-};
+export const Off: Story = { args: { value: false } };
 
-/** Without an `onCheckedChange` handler the switch renders read-only. */
-export const ReadOnly: Story = {
-  args: { name: "Default", checked: true, onCheckedChange: undefined },
-};
+/** No flag row exists yet: neither state is live, and either press creates it. */
+export const NotSet: Story = { args: { value: null } };
 
-export const Unlabeled: Story = {
-  args: { name: undefined, checked: false },
-};
+/** A save is in flight; the control shows what was asked for, lighter. */
+export const Busy: Story = { args: { value: false, busy: true } };
+
+/** Without an `onSet` handler the control reads the value and takes no press. */
+export const ReadOnly: Story = { args: { value: true, onSet: undefined } };

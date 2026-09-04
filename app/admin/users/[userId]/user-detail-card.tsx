@@ -1,7 +1,10 @@
 "use client";
 
-import { VUser } from "@/types/db_types";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+import { sheetCss } from "@/components/prop-list/sheet";
 import {
   Dialog,
   DialogContent,
@@ -9,61 +12,166 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Copy, User, UserCheck, UserX } from "lucide-react";
-import { setUserActive } from "@/lib/db_actions/users";
 import { getBrowserTimezone } from "@/hooks/getBrowserTimezone";
-import { formatDate, formatDateTime } from "@/lib/time-utils";
-import { startImpersonation } from "@/lib/auth/impersonation";
-import { handleServerActionResult } from "@/lib/server-action-helpers";
 import { toast } from "@/hooks/use-toast";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { UserRoleBadge, UserStatusBadge } from "../user-badges";
+import { startImpersonation } from "@/lib/auth/impersonation";
+import { setUserActive } from "@/lib/db_actions/users";
+import { handleServerActionResult } from "@/lib/server-action-helpers";
+import { formatDate, formatDateTime } from "@/lib/time-utils";
+import { VUser } from "@/types/db_types";
 
-interface UserDetailCardProps {
-  user: VUser;
+import { UserAccessMark, UserRoleMark, userMarksCss } from "../user-badges";
+
+/**
+ * One account, set as a record rather than a card.
+ *
+ * The avatar the old panel led with is gone, for the reason the members roster
+ * dropped its own: it was the only filled surface on the page, it degraded to
+ * a grey disc with an initial for anyone the IdP has no picture for, and it
+ * told an admin nothing the name above it did not. The photo is still here —
+ * as the field it actually is, a URL you can open.
+ *
+ * Module-level constant, no interpolation: this is a stylesheet, not content.
+ */
+const ownCss = `
+.hxp .masthead .meta { align-items: baseline; }
+.hxp .masthead .meta .mark + .mark { margin-left: 0; }
+.hxp .masthead .meta .back {
+  margin-left: auto;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.hxp .masthead .meta .back:hover { color: var(--red-text); }
+
+/* One grid for the whole record, so every value starts at the same x whichever
+   section it is read in. */
+.hxp .record {
+  display: grid;
+  grid-template-columns: 10rem minmax(0, 1fr);
+  gap: 0;
+  align-items: stretch;
+}
+.hxp .record > * { display: contents; }
+.hxp .line > * {
+  padding: 0.75rem 0;
+  line-height: 1.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+.hxp .line .k {
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.hxp .line .v {
+  min-width: 0;
+  padding-left: 1.5rem;
+  overflow-wrap: anywhere;
+}
+.hxp .line .v.code {
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+.hxp .line .v a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--rule); }
+.hxp .line .v a:hover { color: var(--red-text); border-bottom-color: var(--red-text); }
+
+/* A word, not a glyph: the sheets have no icons, and "copy" is shorter to
+   understand than a pair of overlapping rectangles. */
+.hxp .copy {
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  background: none;
+  border: 0;
+  padding: 0 0 0 0.875rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.hxp .copy:hover { color: var(--red-text); }
+
+.hxp .acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.75rem;
+  padding-top: 2rem;
+}
+.hxp .act {
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  border-bottom: 2px solid var(--ink);
+  padding: 0 0 0.25rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.hxp .act:hover:not(:disabled) {
+  color: var(--red-text);
+  border-bottom-color: var(--red-text);
+}
+/* Closing an account is the one destructive thing on the page, so it is the
+   one thing set in the second ink from the start. */
+.hxp .act.danger { color: var(--red-text); border-bottom-color: var(--red); }
+.hxp .act:disabled {
+  color: var(--ink-faint);
+  border-bottom-color: var(--ink-faint);
+  cursor: default;
 }
 
-/** A label/value row inside the details panel. Label is a mono kicker. */
-function DetailRow({
+@media (max-width: 46rem) {
+  .hxp .record { grid-template-columns: minmax(0, 1fr); }
+  /* the label names the line above the value rather than the column beside it */
+  .hxp .line .k { border-bottom: 0; padding: 0.75rem 0 0; line-height: 1.25rem; }
+  .hxp .line .v { padding-left: 0; padding-top: 0.125rem; }
+}
+`;
+
+/** One line of the record: a mono label, then what it holds. */
+function Line({
   label,
+  code = false,
   children,
 }: {
   label: string;
+  /** True for a machine value — an id, a date — which is set in mono. */
+  code?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-5">
-      <span className="shrink-0 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-        {label}
-      </span>
-      <div className="flex min-w-0 items-center justify-end gap-2 text-sm">
-        {children}
-      </div>
+    <div className="line">
+      <span className="k">{label}</span>
+      <span className={code ? "v code" : "v"}>{children}</span>
     </div>
   );
 }
 
-function CopyButton({ value, label }: { value: string; label: string }) {
+function Copy({ value, label }: { value: string; label: string }) {
   return (
-    <Button
-      size="sm"
-      variant="ghost"
-      className="h-6 w-6 shrink-0 p-0 text-muted-foreground"
+    <button
+      type="button"
+      className="copy"
       onClick={() => {
         navigator.clipboard.writeText(value);
         toast({ title: "Copied", description: `${label} copied to clipboard` });
       }}
     >
-      <Copy className="h-3 w-3" />
-    </Button>
+      Copy
+    </button>
   );
 }
 
-export default function UserDetailCard({ user }: UserDetailCardProps) {
+const NONE = <span className="none">—</span>;
+
+export default function UserDetailCard({ user }: { user: VUser }) {
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [isImpersonateDialogOpen, setIsImpersonateDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -131,200 +239,181 @@ export default function UserDetailCard({ user }: UserDetailCardProps) {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Identity header */}
-      <div className="flex items-center gap-4 rounded-lg border bg-card p-5">
-        {user.picture_url ? (
-          <Image
-            src={user.picture_url}
-            alt={`${user.name}'s avatar`}
-            width={64}
-            height={64}
-            className="h-16 w-16 rounded-full border border-border object-cover"
-          />
-        ) : (
-          <div className="flex h-16 w-16 items-center justify-center rounded-full border border-border bg-muted text-xl font-medium text-foreground">
-            {user.name?.charAt(0).toUpperCase()}
+    <div className="hxp">
+      <style
+        dangerouslySetInnerHTML={{ __html: sheetCss + userMarksCss + ownCss }}
+      />
+      <div className="col">
+        <header className="masthead">
+          <h1>{user.name}</h1>
+          <div className="meta">
+            <span className="mono ink2">Account</span>
+            <UserRoleMark isAdmin={user.is_admin} />
+            <UserAccessMark active={isActive} />
+            <Link className="mono muted back" href="/admin/users">
+              ← Users
+            </Link>
           </div>
-        )}
-        <div className="min-w-0 flex-1">
-          <h2 className="truncate text-lg font-semibold tracking-tight">
-            {user.name}
-          </h2>
-          {user.email && (
-            <p className="truncate text-sm text-muted-foreground">
-              {user.email}
-            </p>
-          )}
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <UserRoleBadge isAdmin={user.is_admin} />
-            <UserStatusBadge active={isActive} />
-          </div>
-        </div>
-      </div>
+        </header>
 
-      {/* Account details */}
-      <div className="overflow-hidden rounded-lg border bg-card">
-        <div className="border-b px-4 py-3 sm:px-5">
-          <span className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            Account Details
-          </span>
-        </div>
-        <div className="divide-y">
-          <DetailRow label="Username">
+        <h2 className="kicker">
+          <span>Identity</span>
+        </h2>
+        <div className="record">
+          <Line label="Email">{user.email || NONE}</Line>
+          <Line label="Username">
             {user.username ? (
               <>
-                <span className="truncate">{user.username}</span>
-                <CopyButton value={user.username} label="Username" />
+                {user.username}
+                <Copy value={user.username} label="Username" />
               </>
             ) : (
-              <span className="text-muted-foreground">None</span>
+              NONE
             )}
-          </DetailRow>
-
-          <DetailRow label="Email">
-            <span className="truncate">{user.email || "None"}</span>
-          </DetailRow>
-
-          <DetailRow label="Photo">
+          </Line>
+          <Line label="Photo">
             {user.picture_url ? (
               <a
                 href={user.picture_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="truncate text-primary hover:underline"
               >
                 {user.picture_url}
               </a>
             ) : (
-              <span className="text-muted-foreground">None</span>
+              NONE
             )}
-          </DetailRow>
+          </Line>
+        </div>
 
-          <DetailRow label="Created">
-            <span className="font-mono tabular-nums">
-              {formatDate(new Date(user.created_at), timezone)}
-            </span>
-          </DetailRow>
-
-          <DetailRow label="Updated">
-            <span className="font-mono tabular-nums">
-              {formatDate(new Date(user.updated_at), timezone)}
-            </span>
-          </DetailRow>
-
+        <h2 className="kicker">
+          <span>Record</span>
+        </h2>
+        <div className="record">
+          <Line label="Created" code>
+            {formatDate(new Date(user.created_at), timezone)}
+          </Line>
+          <Line label="Updated" code>
+            {formatDate(new Date(user.updated_at), timezone)}
+          </Line>
           {!isActive && user.deactivated_at && (
-            <DetailRow label="Deactivated">
-              <span className="font-mono tabular-nums">
-                {formatDateTime(new Date(user.deactivated_at), timezone)}
-              </span>
-            </DetailRow>
+            <Line label="Deactivated" code>
+              {formatDateTime(new Date(user.deactivated_at), timezone)}
+            </Line>
           )}
-
-          <DetailRow label="User ID">
-            <span className="font-mono tabular-nums">{user.id}</span>
-            <CopyButton value={user.id.toString()} label="User ID" />
-          </DetailRow>
-
-          <DetailRow label="IDP User ID">
+          <Line label="User ID" code>
+            {user.id}
+            <Copy value={user.id.toString()} label="User ID" />
+          </Line>
+          <Line label="IDP user ID" code>
             {user.idp_user_id ? (
               <>
-                <span className="truncate font-mono">{user.idp_user_id}</span>
-                <CopyButton value={user.idp_user_id} label="IDP User ID" />
+                {user.idp_user_id}
+                <Copy value={user.idp_user_id} label="IDP User ID" />
               </>
             ) : (
-              <span className="text-muted-foreground">None</span>
+              NONE
             )}
-          </DetailRow>
+          </Line>
+        </div>
+
+        <h2 className="kicker">
+          <span>Actions</span>
+        </h2>
+        <div className="acts">
+          {canImpersonate && (
+            <button
+              type="button"
+              className="act"
+              disabled={isLoading}
+              onClick={() => setIsImpersonateDialogOpen(true)}
+            >
+              Impersonate
+            </button>
+          )}
+          <button
+            type="button"
+            className={isActive ? "act danger" : "act"}
+            disabled={isLoading}
+            onClick={() => setIsStatusDialogOpen(true)}
+          >
+            {isActive ? "Deactivate account" : "Activate account"}
+          </button>
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex flex-wrap items-center gap-3">
-        {canImpersonate && (
-          <Dialog
-            open={isImpersonateDialogOpen}
-            onOpenChange={setIsImpersonateDialogOpen}
-          >
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" disabled={isLoading}>
-                <User className="mr-2 h-4 w-4" />
-                Impersonate
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Impersonate User?</DialogTitle>
-                <DialogDescription>
-                  You will view the app as {user.name}. Your admin session
-                  remains active - click &quot;Stop Impersonating&quot; in the
-                  banner to return to your own view.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsImpersonateDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button onClick={handleImpersonate} disabled={isLoading}>
-                  {isLoading ? "Starting..." : "Impersonate"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        )}
-
-        <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
-          <DialogTrigger asChild>
-            <Button
-              variant={isActive ? "destructive" : "outline"}
-              size="sm"
+      <Dialog
+        open={isImpersonateDialogOpen}
+        onOpenChange={setIsImpersonateDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Impersonate User?</DialogTitle>
+            <DialogDescription>
+              You will view the app as {user.name}. Your admin session remains
+              active - click &quot;Stop Impersonating&quot; in the banner to
+              return to your own view.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="hxf">
+            <button
+              type="button"
+              className="quit"
+              onClick={() => setIsImpersonateDialogOpen(false)}
               disabled={isLoading}
             >
-              {isActive ? (
-                <>
-                  <UserX className="mr-2 h-4 w-4" />
-                  Deactivate
-                </>
-              ) : (
-                <>
-                  <UserCheck className="mr-2 h-4 w-4" />
-                  Activate
-                </>
-              )}
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {isActive ? "Deactivate User?" : "Activate User?"}
-              </DialogTitle>
-              <DialogDescription>
-                {isActive
-                  ? `Are you sure you want to deactivate ${user.name}? They will no longer be able to access the system.`
-                  : `Are you sure you want to activate ${user.name}? They will regain access to the system.`}
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setIsStatusDialogOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button onClick={handleStatusChange} disabled={isLoading}>
-                {isLoading
-                  ? "Updating..."
-                  : isActive
-                    ? "Deactivate"
-                    : "Activate"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="submit"
+              onClick={handleImpersonate}
+              disabled={isLoading}
+            >
+              {isLoading ? "Starting…" : "Impersonate"}
+              <span className="arrow" aria-hidden="true">
+                →
+              </span>
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {isActive ? "Deactivate User?" : "Activate User?"}
+            </DialogTitle>
+            <DialogDescription>
+              {isActive
+                ? `Are you sure you want to deactivate ${user.name}? They will no longer be able to access the system.`
+                : `Are you sure you want to activate ${user.name}? They will regain access to the system.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="hxf">
+            <button
+              type="button"
+              className="quit"
+              onClick={() => setIsStatusDialogOpen(false)}
+              disabled={isLoading}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className={isActive ? "submit danger" : "submit"}
+              onClick={handleStatusChange}
+              disabled={isLoading}
+            >
+              {isLoading ? "Updating…" : isActive ? "Deactivate" : "Activate"}
+              <span className="arrow" aria-hidden="true">
+                →
+              </span>
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

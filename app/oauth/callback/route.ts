@@ -29,7 +29,10 @@ export async function GET(request: NextRequest) {
       errorDescription,
     });
     return NextResponse.redirect(
-      new URL(`/login?error=${encodeURIComponent(errorDescription || error)}`, baseUrl),
+      new URL(
+        `/login?error=${encodeURIComponent(errorDescription || error)}`,
+        baseUrl,
+      ),
     );
   }
 

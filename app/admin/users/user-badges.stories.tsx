@@ -1,49 +1,65 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { UserRoleBadge, UserStatusBadge } from "./user-badges";
+
+import { sheetCss } from "@/components/prop-list/sheet";
+
+import { UserAccessMark, UserRoleMark, userMarksCss } from "./user-badges";
+
+/** The stock the marks are printed on, so they are seen in their own ink. */
+function Sheet({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="hxp">
+      <style dangerouslySetInnerHTML={{ __html: sheetCss + userMarksCss }} />
+      <div className="col" style={{ paddingTop: "2.5rem" }}>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 const meta = {
-  title: "Admin/UserBadges",
-  component: UserRoleBadge,
-  parameters: {
-    layout: "centered",
-  },
+  title: "Admin/UserMarks",
+  component: UserRoleMark,
+  parameters: { layout: "fullscreen" },
   tags: ["autodocs"],
-  args: {
-    isAdmin: true,
-  },
-} satisfies Meta<typeof UserRoleBadge>;
+  args: { isAdmin: true },
+  decorators: [
+    (Story) => (
+      <Sheet>
+        <Story />
+      </Sheet>
+    ),
+  ],
+} satisfies Meta<typeof UserRoleMark>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** The role pill: indigo Admin vs. neutral User. */
+/** An admin prints; a plain account prints nothing at all. */
 export const Role: Story = {
   render: () => (
-    <div className="flex flex-wrap items-center gap-2">
-      <UserRoleBadge isAdmin />
-      <UserRoleBadge isAdmin={false} />
-    </div>
+    <>
+      <UserRoleMark isAdmin />
+      <UserRoleMark isAdmin={false} />
+    </>
   ),
 };
 
-/** The account-status pill: success-tinted Active vs. neutral Inactive. */
-export const Status: Story = {
+/** A closed account prints; a live one prints nothing at all. */
+export const Access: Story = {
   render: () => (
-    <div className="flex flex-wrap items-center gap-2">
-      <UserStatusBadge active />
-      <UserStatusBadge active={false} />
-    </div>
+    <>
+      <UserAccessMark active={false} />
+      <UserAccessMark active />
+    </>
   ),
 };
 
-/** Every admin user badge side by side. */
-export const AllBadges: Story = {
+/** Both marks on one account: an admin whose login has been closed. */
+export const Both: Story = {
   render: () => (
-    <div className="flex flex-wrap items-center gap-2">
-      <UserRoleBadge isAdmin />
-      <UserRoleBadge isAdmin={false} />
-      <UserStatusBadge active />
-      <UserStatusBadge active={false} />
-    </div>
+    <>
+      <UserRoleMark isAdmin />
+      <UserAccessMark active={false} />
+    </>
   ),
 };

@@ -48,7 +48,6 @@ export const ERROR_CODES = {
   UNKNOWN_ERROR: "UNKNOWN_ERROR",
 } as const;
 
-export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
 
 /**
  * Wraps an async function to catch errors and return a consistent result

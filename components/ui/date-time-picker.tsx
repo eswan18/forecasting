@@ -2,16 +2,12 @@
 
 import { formatInTimeZone } from "date-fns-tz";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { CalendarIcon, Clock } from "lucide-react";
 
 interface DateTimePickerProps {
   value: Date | undefined;
@@ -24,7 +20,7 @@ export function DateTimePicker({
   value,
   onChange,
   timeZone = "UTC",
-  placeholder = "Pick a date and time",
+  placeholder = "No date set",
 }: DateTimePickerProps) {
   const [open, setOpen] = useState(false);
 
@@ -80,51 +76,46 @@ export function DateTimePicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn(
-            "w-full justify-start text-left font-normal",
-            !value && "text-muted-foreground",
-          )}
-        >
-          <CalendarIcon className="mr-2 h-4 w-4" />
+        <button type="button" className="picker">
           {value ? (
-            formatInTimeZone(value, timeZone, "PPP 'at' HH:mm") + " UTC"
+            formatInTimeZone(value, timeZone, "d MMM yyyy 'at' HH:mm") + " UTC"
           ) : (
-            <span>{placeholder}</span>
+            <span className="none">{placeholder}</span>
           )}
-        </Button>
+          <span className="car" aria-hidden="true">
+            ▾
+          </span>
+        </button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
+          className="riso-cal"
+          classNames={{ today: "riso-today" }}
           mode="single"
           selected={value}
           onSelect={handleDateSelect}
           autoFocus
           timeZone={timeZone}
         />
-        <div className="border-t p-3">
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Time (UTC):</span>
-            <Input
-              type="number"
-              min="0"
-              max="23"
-              value={hours}
-              onChange={(e) => handleTimeChange("hours", e.target.value)}
-              className="w-16 text-center"
-            />
-            <span className="text-muted-foreground">:</span>
-            <Input
-              type="number"
-              min="0"
-              max="59"
-              value={minutes}
-              onChange={(e) => handleTimeChange("minutes", e.target.value)}
-              className="w-16 text-center"
-            />
-          </div>
+        <div className="riso-clock">
+          <span>Time · UTC</span>
+          <input
+            type="number"
+            min="0"
+            max="23"
+            value={hours}
+            aria-label="Hour, UTC"
+            onChange={(e) => handleTimeChange("hours", e.target.value)}
+          />
+          <span aria-hidden="true">:</span>
+          <input
+            type="number"
+            min="0"
+            max="59"
+            value={minutes}
+            aria-label="Minute, UTC"
+            onChange={(e) => handleTimeChange("minutes", e.target.value)}
+          />
         </div>
       </PopoverContent>
     </Popover>

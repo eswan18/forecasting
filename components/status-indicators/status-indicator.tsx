@@ -2,11 +2,7 @@ import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
 
 export type StatusIndicatorVariant =
-  | "info"
-  | "warning"
-  | "danger"
-  | "accent"
-  | "success";
+  "info" | "warning" | "danger" | "accent" | "success";
 
 interface StatusIndicatorProps {
   children: ReactNode;
@@ -14,17 +10,21 @@ interface StatusIndicatorProps {
   className?: string;
 }
 
+/*
+ * Five hues became two inks. A banner is a plate of ink with paper text, and
+ * the second ink is spent only where mistaking your context does damage: you
+ * are not in production, or you are acting as someone else. Everything else —
+ * "you are on an admin page" — is merely true, and prints in ink.
+ *
+ * The variant names are kept so callers need not change; what they map to is
+ * now a weight, not a colour.
+ */
 const variantStyles: Record<StatusIndicatorVariant, string> = {
-  // Environment-identity banners: deliberately distinct hues so local/dev are
-  // instantly recognizable. No semantic token maps to these, so they stay as
-  // explicit colors.
-  info: "bg-blue-500 text-white",
-  warning: "bg-amber-500 text-black",
-  // Brand / mode banner (admin, staging): indigo, on-palette with `--primary`.
-  accent: "bg-primary text-primary-foreground",
-  // Status banners use the shared semantic tokens.
-  danger: "bg-destructive text-destructive-foreground",
-  success: "bg-success text-success-foreground",
+  info: "riso-banner",
+  warning: "riso-banner alarm",
+  accent: "riso-banner",
+  danger: "riso-banner alarm",
+  success: "riso-banner",
 };
 
 /**
@@ -41,7 +41,7 @@ export function StatusIndicator({
       className={cn(
         "w-full py-1.5 text-center text-sm font-medium",
         variantStyles[variant],
-        className
+        className,
       )}
     >
       {children}

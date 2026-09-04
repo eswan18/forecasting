@@ -12,7 +12,9 @@ export function LocalDate({ date, includeTime = false }: LocalDateProps) {
   const timezone = getBrowserTimezone();
   return (
     <span suppressHydrationWarning>
-      {includeTime ? formatDateTime(date, timezone) : formatDate(date, timezone)}
+      {includeTime
+        ? formatDateTime(date, timezone)
+        : formatDate(date, timezone)}
     </span>
   );
 }

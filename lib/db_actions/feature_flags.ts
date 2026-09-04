@@ -161,7 +161,7 @@ export async function createFeatureFlag({
       duration,
     });
 
-    revalidatePath("/feature-flags");
+    revalidatePath("/admin/feature-flags");
     return success(id);
   } catch (err) {
     const duration = Date.now() - startTime;
@@ -217,7 +217,7 @@ export async function updateFeatureFlag({
       duration,
     });
 
-    revalidatePath("/feature-flags");
+    revalidatePath("/admin/feature-flags");
     return success(undefined);
   } catch (err) {
     const duration = Date.now() - startTime;

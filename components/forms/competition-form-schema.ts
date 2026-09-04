@@ -9,12 +9,8 @@ export const competitionFormSchema = z
     end_date: z.date().optional(),
   })
   .superRefine((values, ctx) => {
-    const {
-      is_private,
-      forecasts_open_date,
-      forecasts_close_date,
-      end_date,
-    } = values;
+    const { is_private, forecasts_open_date, forecasts_close_date, end_date } =
+      values;
 
     // Private competitions don't require dates (deadlines are per-prop)
     if (is_private) {

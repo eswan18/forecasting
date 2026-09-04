@@ -1,28 +1,52 @@
 "use client";
 
-import { Competition } from "@/types/db_types";
+import { useState } from "react";
 import Link from "next/link";
-import { Edit, ExternalLink } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+
+import { Refusal } from "@/components/form-sheet/form-sheet";
+import { CreateEditCompetitionForm } from "@/components/forms/create-edit-competition-form";
+import { LocalDate } from "@/components/local-date";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { CreateEditCompetitionForm } from "@/components/forms/create-edit-competition-form";
-import { useState } from "react";
-import { formatDate, formatDateTime } from "@/lib/time-utils";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { getBrowserTimezone } from "@/hooks/getBrowserTimezone";
-import { CompetitionStatusBadge } from "./competition-status-badge";
+import { useServerAction } from "@/hooks/use-server-action";
 import { getCompetitionStatusFromObject } from "@/lib/competition-status";
+import { deleteCompetition } from "@/lib/db_actions";
+import { formatDateTime } from "@/lib/time-utils";
+import { Competition } from "@/types/db_types";
 
+import { CompetitionStatusBadge } from "./competition-status-badge";
+
+/**
+ * One competition in the admin table.
+ *
+ * The row hands its cells straight to the page's grid (`display: contents`), so
+ * the columns belong to the page and not to each row; the CSS for all of it
+ * lives beside that grid in `page.tsx`. The two icon buttons this replaced —
+ * one to open the competition, one to edit it — are the row menu's items, and
+ * the name goes where the public list's names go, to the overview.
+ */
 export default function CompetitionRow({
   competition,
   nProps,
@@ -33,127 +57,154 @@ export default function CompetitionRow({
   nResolvedProps: number;
 }) {
   const [open, setOpen] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const timezone = getBrowserTimezone();
+  const router = useRouter();
+
+  // A competition with props cannot be deleted — the server refuses, because
+  // the props and every forecast against them would go with it — so the
+  // confirmation says so instead of offering a button that will fail.
+  const deletable = nProps === 0;
+
+  const remove = useServerAction(deleteCompetition, {
+    successMessage: "Competition deleted",
+    onSuccess: () => {
+      setConfirmingDelete(false);
+      router.refresh();
+    },
+  });
 
   const status = getCompetitionStatusFromObject(competition);
 
+  // The dates to the minute, which the columns round to the day. This was a
+  // tooltip on the one date the row printed; as a title it covers all three
+  // and survives on a touch screen's long press.
+  const schedule =
+    [
+      competition.forecasts_open_date &&
+        `Forecasts open: ${formatDateTime(competition.forecasts_open_date, timezone)}`,
+      competition.forecasts_close_date &&
+        `Forecasts close: ${formatDateTime(competition.forecasts_close_date, timezone)}`,
+      competition.end_date &&
+        `Ends: ${formatDateTime(competition.end_date, timezone)}`,
+    ]
+      .filter(Boolean)
+      .join("\n") || "Private competition with per-prop deadlines";
+
   return (
-    <div className="flex items-center justify-between p-4 transition-colors hover:bg-muted/40">
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-semibold truncate">
-              <Link
-                href={`/competitions/${competition.id}/forecasts`}
-                className="hover:text-primary transition-colors"
+    <>
+      <div className="comp">
+        <span className="name">
+          <Link href={`/competitions/${competition.id}`}>
+            {competition.name}
+          </Link>
+          <CompetitionStatusBadge status={status} />
+        </span>
+        {/* suppressHydrationWarning: the title is written in the browser's
+            timezone, so the server's UTC markup legitimately differs. */}
+        <span className="cell due" title={schedule} suppressHydrationWarning>
+          {competition.forecasts_close_date ? (
+            <LocalDate date={competition.forecasts_close_date} />
+          ) : competition.is_private ? (
+            "Per-prop"
+          ) : (
+            <span className="none">—</span>
+          )}
+        </span>
+        <span className="cell ends" title={schedule} suppressHydrationWarning>
+          {competition.end_date ? (
+            <LocalDate date={competition.end_date} />
+          ) : (
+            <span className="none">—</span>
+          )}
+        </span>
+        <span className="cell n num">{nProps}</span>
+        <span className="cell n num">{nResolvedProps}</span>
+        <span className="menucell">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="act"
+                aria-label={`Manage ${competition.name}`}
               >
-                {competition.name}
-              </Link>
-            </h3>
-            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-              <Link href={`/competitions/${competition.id}`}>
-                <ExternalLink className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-          <div className="flex items-center gap-1 ml-auto">
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Edit className="h-4 w-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogTitle>Edit Competition</DialogTitle>
-                <CreateEditCompetitionForm
-                  initialCompetition={competition}
-                  onSubmit={() => setOpen(false)}
-                />
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-          <div className="flex items-center gap-2">
-            <CompetitionStatusBadge status={status} />
-          </div>
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="cursor-help">
-                    {status === "upcoming" &&
-                      competition.forecasts_open_date && (
-                        <>
-                          Forecasts open{" "}
-                          {formatDate(competition.forecasts_open_date, timezone)}
-                        </>
-                      )}
-                    {status === "forecasts-open" &&
-                      competition.forecasts_close_date && (
-                        <>
-                          Forecasts close{" "}
-                          {formatDate(competition.forecasts_close_date, timezone)}
-                        </>
-                      )}
-                    {status === "forecasts-closed" &&
-                      competition.end_date && (
-                        <>Ends {formatDate(competition.end_date, timezone)}</>
-                      )}
-                    {status === "ended" && competition.end_date && (
-                      <>Ended {formatDate(competition.end_date, timezone)}</>
-                    )}
-                    {status === "private" && (
-                      <>Uses per-prop deadlines</>
-                    )}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {status === "private" ? (
-                    <p>Private competition with per-prop deadlines</p>
-                  ) : (
-                    <div className="space-y-1">
-                      {competition.forecasts_open_date && (
-                        <p>
-                          Forecasts Open:{" "}
-                          {formatDateTime(competition.forecasts_open_date, timezone)}
-                        </p>
-                      )}
-                      {competition.forecasts_close_date && (
-                        <p>
-                          Forecasts Close:{" "}
-                          {formatDateTime(competition.forecasts_close_date, timezone)}
-                        </p>
-                      )}
-                      {competition.end_date && (
-                        <p>Ends: {formatDateTime(competition.end_date, timezone)}</p>
-                      )}
-                    </div>
-                  )}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </div>
+                ⋯
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setOpen(true)}>
+                Edit competition
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                {/* /competitions/{id}/forecasts was deleted in 17135e5 and this
+                  link has 404'd ever since; forecast-stats is where a
+                  competition's forecasts are actually read now. */}
+                <Link href={`/competitions/${competition.id}/forecast-stats`}>
+                  Forecast stats
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="danger"
+                onClick={() => setConfirmingDelete(true)}
+              >
+                Delete competition
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </span>
       </div>
-      <div className="ml-4 flex items-center gap-5">
-        <div className="text-right">
-          <div className="font-mono text-2xl font-semibold tabular-nums">
-            {nProps}
-          </div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-            total props
-          </div>
-        </div>
-        <div className="text-right">
-          <div className="font-mono text-2xl font-semibold tabular-nums">
-            {nResolvedProps}
-          </div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-            resolved
-          </div>
-        </div>
-      </div>
-    </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit competition</DialogTitle>
+          </DialogHeader>
+          <CreateEditCompetitionForm
+            initialCompetition={competition}
+            onSubmit={() => setOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog
+        open={confirmingDelete}
+        onOpenChange={(next) => !remove.isLoading && setConfirmingDelete(next)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {competition.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deletable
+                ? "It holds no props, so nothing else goes with it except its membership list. This cannot be undone."
+                : `It still holds ${nProps} ${
+                    nProps === 1 ? "prop" : "props"
+                  }. Delete or move ${
+                    nProps === 1 ? "it" : "them"
+                  } first — deleting the competition would take every forecast and score with it.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {remove.error && <Refusal message={remove.error} />}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={remove.isLoading}>
+              {deletable ? "Cancel" : "Close"}
+            </AlertDialogCancel>
+            {deletable && (
+              <AlertDialogAction
+                className="danger"
+                disabled={remove.isLoading}
+                onClick={(e) => {
+                  // Radix closes the dialog on action by default; the request
+                  // has to finish first so a refusal has somewhere to show.
+                  e.preventDefault();
+                  remove.execute({ id: competition.id });
+                }}
+              >
+                {remove.isLoading ? "Deleting…" : "Hard delete"}
+              </AlertDialogAction>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

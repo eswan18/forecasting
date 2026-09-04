@@ -188,7 +188,6 @@ export async function createForecast({
       });
 
       revalidatePath("/competitions");
-      revalidatePath("/standalone/forecasts");
     }
 
     return result;
@@ -289,7 +288,6 @@ export async function updateForecast({
       });
 
       revalidatePath("/competitions");
-      revalidatePath("/standalone/forecasts");
     }
 
     return result;
@@ -428,7 +426,6 @@ export async function saveChoiceForecast({
       });
 
       revalidatePath("/competitions");
-      revalidatePath("/standalone/forecasts");
     }
 
     return result;
@@ -525,10 +522,7 @@ export async function getPropsWithUserForecasts({
       // Subquery to calculate community average per prop
       const communityAvgSubquery = trx
         .selectFrom("forecasts")
-        .select([
-          "prop_id",
-          sql<number>`AVG(forecast)`.as("avg_forecast"),
-        ])
+        .select(["prop_id", sql<number>`AVG(forecast)`.as("avg_forecast")])
         .groupBy("prop_id")
         .as("community_stats");
 
@@ -549,7 +543,12 @@ export async function getPropsWithUserForecasts({
 
       // Handle standalone props (competitionId = null)
       if (competitionId === null) {
-        query = query.where("v_props.competition_id", "is", null);
+        // Scoped to the asker's own props, not left to RLS: the props policy
+        // also admits ownerless props, and an admin bypasses it entirely, so
+        // without this an admin's personal list would hold everyone's.
+        query = query
+          .where("v_props.competition_id", "is", null)
+          .where("v_props.prop_user_id", "=", userId);
       } else {
         query = query.where("v_props.competition_id", "=", competitionId);
       }
@@ -650,43 +649,3 @@ export async function getRecentlyResolvedForecasts({
   }
 }
 
-export async function deleteForecast({
-  id,
-}: {
-  id: number;
-}): Promise<ServerActionResult<void>> {
-  const currentUser = await getUserFromCookies();
-  logger.debug("Deleting forecast", {
-    forecastId: id,
-    currentUserId: currentUser?.id,
-  });
-
-  const startTime = Date.now();
-  try {
-    await withRLS(currentUser?.id, async (trx) => {
-      await trx.deleteFrom("forecasts").where("id", "=", id).execute();
-    });
-
-    const duration = Date.now() - startTime;
-    logger.debug("Forecast deleted successfully", {
-      operation: "deleteForecast",
-      table: "forecasts",
-      forecastId: id,
-      currentUserId: currentUser?.id,
-      duration,
-    });
-
-    revalidatePath("/competitions");
-    revalidatePath("/standalone/forecasts");
-    return success(undefined);
-  } catch (err) {
-    const duration = Date.now() - startTime;
-    logger.error("Failed to delete forecast", err as Error, {
-      operation: "deleteForecast",
-      table: "forecasts",
-      forecastId: id,
-      duration,
-    });
-    return error("Failed to delete forecast", ERROR_CODES.DATABASE_ERROR);
-  }
-}
