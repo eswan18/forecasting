@@ -15,6 +15,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -121,6 +122,13 @@ export function UserActionsCell({ user }: { user: VUser }) {
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          {/* The menu opens at the right edge of the column, a good way from
+              the name it acts on, and both its items are verbs with no subject.
+              It says whose account it is before it offers to deactivate it. */}
+          <DropdownMenuLabel className="riso-menu-heading">
+            {user.name}
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator className="riso-menu-sep" />
           {canImpersonate && (
             <>
               <DropdownMenuItem onClick={() => setImpersonateOpen(true)}>
