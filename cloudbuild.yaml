@@ -4,7 +4,7 @@ options:
 substitutions:
   _SENTRY_ORG: 'haruspex'
   _SENTRY_PROJECT: 'haruspex-app'
-  _IMAGE: 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting'
+  _IMAGE: 'us-central1-docker.pkg.dev/ethans-services/containers/haruspex'
 
 availableSecrets:
   secretManager:
