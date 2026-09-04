@@ -12,6 +12,7 @@ This is a Next.js forecasting application inspired by Philip Tetlock's Good Judg
 
 - `ENV=local npm run dev` - Start development server with local environment
 - `ENV=dev npm run dev` - Start development server with dev environment
+- `ENV=staging npm run dev` - Start development server against staging
 - `ENV=prod npm run dev` - Start development server with production environment
 - `npm run build` - Build production application
 - `npm run lint` - Run ESLint
@@ -102,7 +103,12 @@ The app supports multiple environments with automatic configuration loading:
 
 - **Local**: `ENV=local npm run dev` - Uses `.env.local` (blue banner)
 - **Development**: `ENV=dev npm run dev` - Uses `.env.dev` (yellow banner)
+- **Staging**: `ENV=staging npm run dev` - Uses `.env.staging` (yellow banner)
 - **Production**: `ENV=prod npm run dev` - Uses `.env.prod` (no banner)
+
+The env files are all gitignored, so a fresh checkout has none of them; which
+ones you have locally is up to you. `lib/environment.ts` maps the name to the
+file and is the one place to add another.
 
 Environment variables are loaded at startup via `instrumentation.ts` and the appropriate `.env` file is automatically selected. A colored banner at the top of the page indicates which environment is currently running.
 

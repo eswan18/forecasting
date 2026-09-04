@@ -33,11 +33,22 @@ const config: StorybookConfig = {
         "./mocks/db_actions-competition-members.ts",
         import.meta.url,
       ).pathname,
+      "@/lib/db_actions/users": new URL(
+        "./mocks/db_actions-users.ts",
+        import.meta.url,
+      ).pathname,
+      "@/lib/auth/impersonation": new URL(
+        "./mocks/auth-impersonation.ts",
+        import.meta.url,
+      ).pathname,
       "@/lib/db_actions": new URL("./mocks/db_actions.ts", import.meta.url)
         .pathname,
       // next/link's app-router internals trip a circular-import TDZ under Vite
       // dev; render a plain anchor instead.
       "next/link": new URL("./mocks/next-link.tsx", import.meta.url).pathname,
+      // next/image routes every src through /_next/image, which only the Next
+      // server answers; render a plain img so photos load in a story.
+      "next/image": new URL("./mocks/next-image.tsx", import.meta.url).pathname,
       // the app router's hooks throw outside a mounted router, which takes
       // down any story for a component that refreshes after a save
       "next/navigation": new URL("./mocks/next-navigation.ts", import.meta.url)
