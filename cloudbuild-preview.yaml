@@ -2,7 +2,7 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 substitutions:
-  _IMAGE: 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting'
+  _IMAGE: 'us-central1-docker.pkg.dev/ethans-services/containers/haruspex'
 
 steps:
   # Manual-invocation only (bifrost runs this trigger); nothing fires on push.
