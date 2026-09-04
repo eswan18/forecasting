@@ -123,19 +123,30 @@ export function UserActionsCell({ user }: { user: VUser }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           {/* The menu opens at the right edge of the column, a good way from
-              the name it acts on, and both its items are verbs with no subject.
-              It says whose account it is before it offers to deactivate it. */}
+              the name it acts on, and every item is a verb with no subject. It
+              says whose account it is before it offers to deactivate it. */}
           <DropdownMenuLabel className="riso-menu-heading">
             {user.name}
           </DropdownMenuLabel>
           <DropdownMenuSeparator className="riso-menu-sep" />
+          {/* Writing to someone is not undoing anything, so it sits with
+              Impersonate rather than beside the deactivation. It leaves for a
+              page of its own: a subject and a message are more than a menu
+              should try to hold. */}
+          {user.email && (
+            <DropdownMenuItem
+              onClick={() => router.push(`/admin/users/${user.id}/email`)}
+            >
+              Send email…
+            </DropdownMenuItem>
+          )}
           {canImpersonate && (
-            <>
-              <DropdownMenuItem onClick={() => setImpersonateOpen(true)}>
-                Impersonate
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="riso-menu-sep" />
-            </>
+            <DropdownMenuItem onClick={() => setImpersonateOpen(true)}>
+              Impersonate
+            </DropdownMenuItem>
+          )}
+          {(user.email || canImpersonate) && (
+            <DropdownMenuSeparator className="riso-menu-sep" />
           )}
           <DropdownMenuItem
             className={isActive ? "danger" : undefined}
