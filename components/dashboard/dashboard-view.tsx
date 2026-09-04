@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { SeasonFilter } from "./season-filter";
+
 import {
   CompetitionStamp,
   type SeasonState,
@@ -118,6 +120,15 @@ body:has(.hxd) { background: var(--riso-paper); }
 
 
 .hxd h2.kicker.first { margin-top: 2rem; }
+/* The filter sits above both sections, since it governs both. Right-aligned so
+   it lands where the eye leaves the navbar, and the first section head loses
+   its own top margin because this row already supplies the air. */
+.hxd .board-top {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 2rem;
+}
+.hxd .board-top + h2.kicker.first { margin-top: 1rem; }
 
 .hxd h2.kicker {
   font-family: var(--font-roboto-mono), ui-monospace, monospace;
@@ -437,9 +448,15 @@ function Half({
 export function DashboardView({
   standings,
   resolved,
+  showAll = false,
+  hiddenCount = 0,
 }: {
   standings: Standing[];
   resolved: ResolvedItem[];
+  /** Whether finished seasons are listed; the bar's state. */
+  showAll?: boolean;
+  /** How many finished seasons the Active view is leaving out. */
+  hiddenCount?: number;
 }) {
   const publicComps = standings.filter((s) => !s.isPrivate);
   const privateComps = standings.filter((s) => s.isPrivate);
@@ -449,8 +466,18 @@ export function DashboardView({
       <style dangerouslySetInnerHTML={{ __html: css }} />
 
       <div className="col">
+        {(standings.length > 0 || hiddenCount > 0) && (
+          <div className="board-top">
+            <SeasonFilter showAll={showAll} />
+          </div>
+        )}
+
         {standings.length === 0 && (
-          <p className="empty">You&apos;re not in a competition yet.</p>
+          <p className="empty">
+            {hiddenCount > 0
+              ? "Every season you are in has finished."
+              : "You're not in a competition yet."}
+          </p>
         )}
 
         {publicComps.length > 0 && (

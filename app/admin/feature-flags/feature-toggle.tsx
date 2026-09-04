@@ -5,66 +5,29 @@ import { useState } from "react";
 /**
  * The sheet's switch.
  *
- * Design note. A pill switch is the wrong object here: it would be the one
- * rounded, filled, animated thing on a page built entirely from square rules,
- * and it says nothing about which way is on until you have learned it. So the
- * control is made of the sheet's own material — two mono words sitting on one
- * continuous line, with the half of that line under the live state inked to
- * 2px and the dead half left as a 1px hairline. The same two weights that open
- * a section and separate a row also say which state a feature is in, and the
- * state is named in words rather than implied by a position.
+ * Design note. This was two mono words on one continuous line, with the line
+ * under the live word inked to 2px and the dead half left as a 1px hairline.
+ * It was too quiet to read: at a glance neither word looked chosen, and on a
+ * feature with no default row at all — where neither IS chosen — there was
+ * nothing to tell the two situations apart.
  *
- * Both halves are real buttons carrying aria-pressed, which buys the third
- * state this page genuinely has: a feature with no default row at all is drawn
- * with neither word inked, and clicking either one creates the row with that
- * value. A single toggling button could not express "no value yet", and could
- * not create one in a single, obvious press.
- *
- * The active half's border grows upward rather than downward (its padding is
- * shortened by the same pixel), so the rule stays one unbroken line across the
- * control instead of stepping down under the live word.
+ * So it is the same segmented bar the prop lists filter with: connected cells,
+ * the live one a plate of ink. One filled cell means the default is set and
+ * says which way; no filled cell means there is no default row yet, and the
+ * "Not set" caption beside it says so in words. Both cells stay live in that
+ * state, and pressing either creates the row with that value — a single
+ * toggling button could express neither the absence nor the creation.
  */
 export const toggleCss = `
-.hxp .flip {
-  display: inline-grid;
-  grid-template-columns: 2.75rem 2.75rem;
-  gap: 0;
+/* The bar itself is .riso-seg, from globals. These are the two things a
+   setting needs that a filter does not. */
+.riso-seg.flip button { min-width: 3.25rem; justify-content: center; }
+/* In flight: the reading is the one you asked for, printed in the softer ink
+   until the server confirms it. */
+.riso-seg.flip.busy button[aria-pressed="true"] {
+  background: color-mix(in oklab, var(--riso-ink) 70%, transparent);
 }
-.hxp .flip .cell {
-  font-family: var(--font-roboto-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-  background: none;
-  border: 0;
-  border-bottom: 1px solid var(--rule);
-  padding: 0 0 calc(0.3125rem + 1px);
-  text-align: center;
-  cursor: pointer;
-}
-.hxp .flip .cell[aria-pressed="true"] {
-  color: var(--ink);
-  font-weight: 700;
-  border-bottom-width: 2px;
-  border-bottom-color: var(--ink);
-  padding-bottom: 0.3125rem;
-}
-.hxp .flip .cell:hover:not(:disabled):not([aria-pressed="true"]) {
-  color: var(--ink-muted);
-  border-bottom-color: color-mix(in oklab, var(--ink) 40%, transparent);
-}
-.hxp .flip .cell:focus-visible {
-  outline: 2px solid var(--red);
-  outline-offset: 3px;
-}
-.hxp .flip .cell:disabled { cursor: default; }
-/* In flight: the reading is the one you asked for, printed lighter until the
-   server confirms it. */
-.hxp .flip.busy .cell[aria-pressed="true"] {
-  color: var(--ink-muted);
-  border-bottom-color: var(--ink-muted);
-}
+.riso-seg.flip button:disabled { cursor: default; }
 `;
 
 export function FeatureToggle({
@@ -84,12 +47,11 @@ export function FeatureToggle({
 }) {
   const states: boolean[] = [false, true];
   return (
-    <span className={busy ? "flip busy" : "flip"}>
+    <span className={busy ? "riso-seg flip busy" : "riso-seg flip"}>
       {states.map((state) => (
         <button
           key={String(state)}
           type="button"
-          className="cell"
           aria-pressed={value === state}
           aria-label={`${label} ${state ? "on" : "off"}`}
           disabled={onSet === undefined || busy}

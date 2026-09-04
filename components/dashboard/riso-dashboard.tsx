@@ -12,6 +12,7 @@ import {
   type SeasonPhase,
   type Standing,
 } from "./dashboard-view";
+import { visibleSeasons } from "./visible-seasons";
 
 /**
  * Five statuses collapse to the three the dashboard distinguishes. Note that
@@ -70,7 +71,14 @@ async function loadStandings(userId: number): Promise<Standing[]> {
   return standings.filter((s): s is Standing => s !== null);
 }
 
-export async function RisoDashboard({ user }: { user: VUser }) {
+export async function RisoDashboard({
+  user,
+  showAll = false,
+}: {
+  user: VUser;
+  /** From `?show=all`: list finished seasons as well as the ones in play. */
+  showAll?: boolean;
+}) {
   const [standings, resolvedResult] = await Promise.all([
     loadStandings(user.id),
     getRecentlyResolvedForecasts({ userId: user.id, limit: 4 }),
@@ -87,5 +95,14 @@ export async function RisoDashboard({ user }: { user: VUser }) {
       }))
     : [];
 
-  return <DashboardView standings={standings} resolved={resolved} />;
+  const shown = visibleSeasons(standings, showAll);
+
+  return (
+    <DashboardView
+      standings={shown}
+      resolved={resolved}
+      showAll={showAll}
+      hiddenCount={standings.length - shown.length}
+    />
+  );
 }

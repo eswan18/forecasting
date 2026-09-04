@@ -13,8 +13,23 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** The default view: only seasons still in play, with the finished ones held
+ *  back behind the bar. */
 export const Default: Story = {
-  args: { standings: standingsFixture, resolved: resolvedFixture },
+  args: {
+    standings: standingsFixture.filter((s) => s.phase !== "final"),
+    resolved: resolvedFixture,
+    hiddenCount: standingsFixture.filter((s) => s.phase === "final").length,
+  },
+};
+
+/** Everything, finished seasons included. */
+export const ShowingAll: Story = {
+  args: {
+    standings: standingsFixture,
+    resolved: resolvedFixture,
+    showAll: true,
+  },
 };
 
 /** Seasons still in play carry the big number; finished ones collapse to a row. */

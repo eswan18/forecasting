@@ -507,7 +507,7 @@ export function OpenProps({
               </SelectContent>
             </Select>
           )}
-          <span className="seg">
+          <span className="riso-seg">
             {CHOICES[tabs].map((c) => (
               <button
                 key={c.id}

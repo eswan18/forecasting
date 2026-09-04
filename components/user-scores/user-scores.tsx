@@ -65,9 +65,9 @@ const ownCss = `
   color: var(--ink-muted);
   font-variant-numeric: tabular-nums;
 }
-/* The bar is the shared .seg from the prop sheet; all this adds is pushing it
-   to the far end of the lede, opposite the figure. */
-.hxp .lede .seg { margin-left: auto; align-self: center; }
+/* The bar is the shared .riso-seg; all this adds is pushing it to the far end
+   of the lede, opposite the figure. */
+.hxp .lede .riso-seg { margin-left: auto; align-self: center; }
 
 /* a category is a section of the sheet, and carries its own subtotal */
 .hxp h3.cat {
@@ -206,7 +206,7 @@ export function UserScores({
                 <span className="top-ink">{score}</span>
               </span>
               <span className="of">Brier · lower is better</span>
-              <span className="seg">
+              <span className="riso-seg">
                 <button
                   type="button"
                   aria-pressed={byCategory}

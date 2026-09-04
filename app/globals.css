@@ -967,6 +967,53 @@
   color: var(--riso-ink);
 }
 
+/* ---- the segmented bar --------------------------------------------------- */
+/* A choice between a few named subsets, printed as one bar of cells sharing
+   their rules rather than as words with an underline under the live one. The
+   chosen cell is a plate of ink, the same way the season stamp inks the state
+   it is in, so which one is live is legible at a glance and from across the
+   page.
+
+   In globals rather than in a sheet because four surfaces now use it, on three
+   different sheets: the prop lists, the score breakdown, the feature flags, and
+   the dashboard. */
+.riso-seg {
+  display: inline-flex;
+  border: 1px solid var(--riso-ink);
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.riso-seg button {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: color-mix(in oklab, var(--riso-ink) 70%, transparent);
+  background: none;
+  border: 0;
+  /* one rule between neighbours, drawn by the cell on its right */
+  border-left: 1px solid var(--riso-ink);
+  padding: 0.5rem 0.6875rem 0.4375rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.riso-seg button:first-child {
+  border-left: 0;
+}
+.riso-seg button:hover {
+  color: var(--riso-ink);
+}
+.riso-seg button[aria-pressed="true"] {
+  background: var(--riso-ink);
+  color: var(--riso-paper);
+}
+.riso-seg button:focus-visible {
+  outline: 2px solid var(--riso-red-text);
+  outline-offset: 1px;
+}
+
 /* ---- the season stamp ---------------------------------------------------- */
 /* Where a competition is in its life, printed rather than said. The two states
    that settle something are inked — red while it is taking forecasts, ink once
