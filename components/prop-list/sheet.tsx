@@ -74,6 +74,37 @@ body:has(.hxp) { background: var(--riso-paper); }
   justify-content: space-between;
   gap: 1rem;
 }
+/* The section head doubles as the chooser between the two settled lists, so it
+   has to say it is pressable while still being the head. A rule under it and a
+   caret after it, both in the head's own second ink; the rule thickens when the
+   menu is open, the way the section rule below it means "this is the live
+   one". */
+.hxp h2.kicker .bucket {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0 0 0.125rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4em;
+  border-bottom: 1px solid color-mix(in oklab, var(--red-text) 40%, transparent);
+}
+.hxp h2.kicker .bucket:hover,
+.hxp h2.kicker .bucket[data-state="open"] {
+  border-bottom-color: var(--red-text);
+  border-bottom-width: 2px;
+  padding-bottom: calc(0.125rem - 1px);
+}
+.hxp h2.kicker .bucket:focus-visible {
+  outline: 2px solid var(--red-text);
+  outline-offset: 3px;
+}
+.hxp h2.kicker .bucket .car { font-size: 0.8em; }
+
 .hxp h2.kicker .asides {
   display: flex;
   align-items: baseline;

@@ -1,3 +1,4 @@
+import { BucketPicker, type Bucket } from "./bucket-picker";
 import { Penalty, sheetCss } from "./sheet";
 import Link from "next/link";
 import { KIND_LABEL, linesOf, penaltyOf, pct, type PropView } from "./types";
@@ -242,7 +243,7 @@ export function LayoutAxis({
   resolved,
   competitionName,
   backHref,
-  sibling,
+  buckets,
   competitionId,
 }: {
   props: PropView[];
@@ -252,13 +253,10 @@ export function LayoutAxis({
   competitionName?: string;
   backHref?: string;
   /**
-   * The other settled list, when it has anything in it.
-   *
-   * Only `awaiting` and `resolved` are siblings. `open` is not: a competition
-   * with a shared deadline has everything open before it and nothing open
-   * after, so a link between them would always point at an empty page.
+   * Turns the section head into the chooser between the two settled lists.
+   * Omitted where there is no competition to cross within.
    */
-  sibling?: { href: string; label: string; count: number };
+  buckets?: { current: Bucket; counts: Record<Bucket, number> };
   /** Where a claim goes when clicked. Omit and the claims are plain text. */
   competitionId?: number;
 }) {
@@ -286,24 +284,24 @@ export function LayoutAxis({
 
         <h2 className="kicker">
           <span>
-            {resolved ? "Resolved" : "Awaiting result"}{" "}
+            {buckets && competitionId !== undefined ? (
+              <BucketPicker
+                competitionId={competitionId}
+                current={buckets.current}
+                counts={buckets.counts}
+              />
+            ) : resolved ? (
+              "Resolved"
+            ) : (
+              "Awaiting result"
+            )}{" "}
             <span className="aside num">· {props.length} props</span>
           </span>
-          {/* Back on the left, onward on the right, so the two arrows point
-              away from each other. The other order put them nose to nose,
-              converging on nothing. */}
-          <span className="asides">
-            {backHref && (
-              <Link className="aside" href={backHref}>
-                ← Overview
-              </Link>
-            )}
-            {sibling && (
-              <Link className="aside" href={sibling.href}>
-                {sibling.label} <span className="num">· {sibling.count}</span> →
-              </Link>
-            )}
-          </span>
+          {backHref && (
+            <Link className="aside" href={backHref}>
+              ← Overview
+            </Link>
+          )}
         </h2>
 
         <div className="legend">

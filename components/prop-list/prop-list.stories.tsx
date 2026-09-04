@@ -20,10 +20,9 @@ export const AwaitingResult: Story = {
     resolved: false,
     competitionName: "2026 Open",
     backHref: "/competitions/6",
-    sibling: {
-      href: "/competitions/6/props/resolved",
-      label: "Resolved",
-      count: 26,
+    buckets: {
+      current: "awaiting" as const,
+      counts: { awaiting: 5, resolved: 26 },
     },
     competitionId: 6,
   },
@@ -36,25 +35,28 @@ export const Resolved: Story = {
     resolved: true,
     competitionName: "2026 Open",
     backHref: "/competitions/6",
-    sibling: {
-      href: "/competitions/6/props/awaiting",
-      label: "Awaiting result",
-      count: 6,
+    buckets: {
+      current: "resolved" as const,
+      counts: { awaiting: 6, resolved: 7 },
     },
     competitionId: 6,
   },
 };
 
 /**
- * Nothing has resolved yet, so there is no crossing link — a competition with
- * an empty sibling gets no way over to an empty page.
+ * Nothing has resolved yet. Both halves are still offered — the count says the
+ * other one is empty before you go there — and the head is still the chooser.
  */
-export const NoSibling: Story = {
+export const NothingResolvedYet: Story = {
   args: {
     props: unresolvedFixture,
     resolved: false,
     competitionName: "2026 Open",
     backHref: "/competitions/6",
+    buckets: {
+      current: "awaiting" as const,
+      counts: { awaiting: 5, resolved: 0 },
+    },
     competitionId: 6,
   },
 };

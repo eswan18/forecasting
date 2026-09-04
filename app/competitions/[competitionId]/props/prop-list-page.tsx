@@ -36,9 +36,6 @@ export async function PropListPage({
 
   const showingResolved = bucket === "resolved";
   const source = showingResolved ? resolved : awaiting;
-  // Both buckets are already in hand, so the crossing link can carry the other
-  // list's size — and be left off entirely when there is nothing over there.
-  const other = showingResolved ? awaiting : resolved;
 
   return (
     <LayoutAxis
@@ -46,17 +43,12 @@ export async function PropListPage({
       resolved={showingResolved}
       competitionName={competition.name}
       backHref={`/competitions/${competition.id}`}
-      sibling={
-        other.length > 0
-          ? {
-              href: `/competitions/${competition.id}/props/${
-                showingResolved ? "awaiting" : "resolved"
-              }`,
-              label: showingResolved ? "Awaiting result" : "Resolved",
-              count: other.length,
-            }
-          : undefined
-      }
+      // Both buckets are already in hand, so the chooser can print each one's
+      // size and an empty destination is visible before it is chosen.
+      buckets={{
+        current: bucket,
+        counts: { awaiting: awaiting.length, resolved: resolved.length },
+      }}
       competitionId={competition.id}
     />
   );

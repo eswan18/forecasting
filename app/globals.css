@@ -1348,6 +1348,17 @@
   font-family: var(--font-roboto-mono), ui-monospace, monospace;
   text-transform: uppercase;
 }
+/* An option that carries a count sets it apart at the end of the row, in the
+   tabular mono every other figure here uses. */
+.riso-pick-list .riso-menu-item .n {
+  margin-left: auto;
+  padding-left: 1.5rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.6;
+}
+.riso-pick-list .riso-menu-item[aria-current="true"] {
+  font-weight: 700;
+}
 .riso-pick-list .riso-menu-item {
   font-size: 0.6875rem;
   letter-spacing: 0.1em;
