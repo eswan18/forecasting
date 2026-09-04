@@ -38,8 +38,16 @@ export default withSentryConfig(nextConfig, {
   org: process.env.SENTRY_ORG || "",
   project: process.env.SENTRY_PROJECT || "",
 
-  // Only print logs for uploading source maps in CI
-  silent: !process.env.CI,
+  // Be loud about source-map upload in CI, quiet locally.
+  //
+  // This used to key on CI, which is never set inside the Docker build --
+  // buildx does not inherit the host environment and nothing passed it in. So
+  // silent was always true and upload failures produced no output at all: a
+  // wrong org/project slug gave a green build, a healthy deploy, and stack
+  // traces that silently stopped symbolicating. SENTRY_VERBOSE is passed as a
+  // build arg from cloudbuild.yaml and read by nothing else, so turning it on
+  // cannot change how npm or next build behave.
+  silent: !process.env.SENTRY_VERBOSE,
 
   // For all available options, see:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
