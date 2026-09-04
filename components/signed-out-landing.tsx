@@ -1,4 +1,5 @@
 import { Archivo, Roboto_Mono } from "next/font/google";
+import { Haruspecs } from "@/components/brand/haruspecs";
 import { LandingThemeToggle } from "@/components/landing-theme-toggle";
 
 /**
@@ -243,6 +244,11 @@ body:has(.hx3) nav { display: none; }
 }
 
 /* ---- the big number, printed twice ---- */
+.hx3 .top .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 .hx3 .hero { padding: 5rem 0 0; position: relative; }
 .hx3 .hero > * { position: relative; z-index: 1; }
 
@@ -676,7 +682,10 @@ export function SignedOutLanding() {
 
       <div className="col">
         <header className="top">
-          <span className="mono">Haruspex</span>
+          <span className="mono brand">
+            <Haruspecs width={46} />
+            Haruspex
+          </span>
           <a className="btn small" href="/oauth/login">
             Sign in
           </a>

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { Haruspecs } from "@/components/brand/haruspecs";
+
 const sheetCss = `
 .hxl {
   --paper: var(--riso-paper);
@@ -65,6 +67,13 @@ body:has(.hxl) > div:has(.hxl) { display: flex; flex: 1; }
   padding: 1.75rem 1.75rem 2rem;
 }
 
+/* The mark sits above the one word this page says, at the width of about two
+   of its letters, so it reads as a masthead rather than an illustration. */
+.hxl .mark {
+  display: block;
+  margin: 0 auto 1.25rem;
+  color: var(--ink);
+}
 .hxl h1 {
   font-family: var(--font-roboto-mono), ui-monospace, monospace;
   font-size: 0.75rem;
@@ -161,6 +170,7 @@ export function LoginSheet({
     <div className="hxl">
       <style dangerouslySetInnerHTML={{ __html: sheetCss }} />
       <div className="box">
+        <Haruspecs className="mark" width={104} title="Haruspex" />
         <h1>Sign in</h1>
 
         {initialError && (
