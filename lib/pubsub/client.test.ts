@@ -36,7 +36,42 @@ describe("publishEvent", () => {
 
     expect(messageId).toBe("msg-123");
     expect(mockTopic).toHaveBeenCalledWith("test-topic");
-    expect(mockPublishMessage).toHaveBeenCalledWith({ json: event });
+    expect(mockPublishMessage).toHaveBeenCalledWith({
+      json: { ...event, correlation_id: expect.any(String) },
+    });
+  });
+
+  it("mints a correlation id when the caller did not supply one", async () => {
+    const { publishEvent } = await import("./client");
+
+    await publishEvent({
+      event_type: "test.notification",
+      source: "forecasting",
+      timestamp: "2026-04-07T00:00:00Z",
+      data: {},
+    });
+
+    const published = mockPublishMessage.mock.calls[0]![0].json;
+    // A uuid, not an empty string or the literal "undefined".
+    expect(published.correlation_id).toMatch(
+      /^[0-9a-f-]{36}$/,
+    );
+  });
+
+  it("keeps a correlation id the caller supplied", async () => {
+    const { publishEvent } = await import("./client");
+
+    await publishEvent({
+      event_type: "admin.manual_email",
+      source: "forecasting",
+      timestamp: "2026-04-07T00:00:00Z",
+      correlation_id: "caller-supplied",
+      data: {},
+    });
+
+    expect(mockPublishMessage.mock.calls[0]![0].json.correlation_id).toBe(
+      "caller-supplied",
+    );
   });
 
   it("returns the message ID from Pub/Sub", async () => {

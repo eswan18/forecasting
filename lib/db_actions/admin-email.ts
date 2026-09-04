@@ -1,5 +1,7 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
+
 import { db } from "@/lib/database";
 import { getUserFromCookies } from "@/lib/get-user";
 import { logger } from "@/lib/logger";
@@ -104,10 +106,15 @@ export async function sendManualEmail({
       );
     }
 
+    // Minted here rather than left to publishEvent so it can go in our own
+    // log line too: that is what joins this record to comms' record of the
+    // Resend message.
+    const correlationId = randomUUID();
     await publishEvent({
       event_type: "admin.manual_email",
       source: "forecasting",
       timestamp: new Date().toISOString(),
+      correlation_id: correlationId,
       notify: [{ email: recipient.email, name: recipient.name }],
       data: { subject: trimmedSubject, body: trimmedBody },
     });
@@ -115,6 +122,7 @@ export async function sendManualEmail({
     // Deliberately no subject or body in the log line: this is someone's
     // correspondence, and who-emailed-whom is the part worth keeping.
     logger.info("Manual email queued", {
+      correlationId,
       senderId: currentUser.id,
       targetUserId: userId,
       subjectLength: trimmedSubject.length,
