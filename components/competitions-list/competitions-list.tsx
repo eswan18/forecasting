@@ -1,6 +1,10 @@
 import { Fragment } from "react";
 import Link from "next/link";
 
+import {
+  CompetitionStamp,
+  type SeasonState,
+} from "@/components/competition-stamp/competition-stamp";
 import { LocalDate } from "@/components/local-date";
 import { sheetCss } from "@/components/prop-list/sheet";
 import type { CompetitionStatus } from "@/lib/competition-status";
@@ -36,18 +40,21 @@ const ownCss = `
 .hxp .seasonhead > span + span,
 .hxp .season .cell { padding-left: 1.5rem; }
 
-/* The phase is a marker between runs of rows, not a section of its own: set in
-   ink where the section heads are red, and separated by air rather than by
-   another rule. */
-.hxp .phase > span {
+/* The phase is a marker between runs of rows, not a section of its own: the
+   stamp carries it, separated by air rather than by another rule. */
+.hxp .phase > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 2rem 0 0.625rem;
+}
+.hxp .phase > span .n {
   font-family: var(--font-roboto-mono), ui-monospace, monospace;
   font-size: 0.6875rem;
   letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink);
-  padding: 2rem 0 0.625rem;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
 }
-.hxp .phase > span .n { color: var(--ink-faint); }
 
 .hxp .season > * {
   padding: 0.75rem 0;
@@ -100,12 +107,12 @@ const ownCss = `
 `;
 
 /** The order a reader wants them in: what is live, what is being scored, what is done. */
-const GROUPS: { status: CompetitionStatus[]; label: string }[] = [
-  { status: ["forecasts-open", "private"], label: "Open" },
-  { status: ["forecasts-closed"], label: "Scoring" },
-  { status: ["ended"], label: "Final" },
+const GROUPS: { status: CompetitionStatus[]; state: SeasonState }[] = [
+  { status: ["forecasts-open", "private"], state: "open" },
+  { status: ["forecasts-closed"], state: "scoring" },
+  { status: ["ended"], state: "final" },
   // Admins only: nobody else is shown a season that has not opened.
-  { status: ["upcoming"], label: "Upcoming" },
+  { status: ["upcoming"], state: "upcoming" },
 ];
 
 export interface SeasonRow {
@@ -148,7 +155,7 @@ export function CompetitionsList({
   now?: Date;
 }) {
   const groups = GROUPS.map((group) => ({
-    label: group.label,
+    state: group.state,
     rows: seasons.filter((s) => group.status.includes(s.status)),
   })).filter((group) => group.rows.length > 0);
 
@@ -177,11 +184,11 @@ export function CompetitionsList({
               <span>Ends</span>
             </div>
             {groups.map((group) => (
-              <Fragment key={group.label}>
+              <Fragment key={group.state}>
                 <div className="phase">
                   <span>
-                    {group.label}
-                    <span className="n"> · {group.rows.length}</span>
+                    <CompetitionStamp state={group.state} />
+                    <span className="n">{group.rows.length}</span>
                   </span>
                   <span />
                   <span />

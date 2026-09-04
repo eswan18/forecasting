@@ -48,61 +48,6 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-chart-6: var(--chart-6);
-  --color-chart-7: var(--chart-7);
-  --color-chart-8: var(--chart-8);
-  --color-chart-9: var(--chart-9);
-  --color-chart-10: var(--chart-10);
-  --color-chart-11: var(--chart-11);
-  --color-chart-12: var(--chart-12);
-  --color-chart-13: var(--chart-13);
-  --color-chart-14: var(--chart-14);
-  --color-chart-15: var(--chart-15);
-  --color-chart-16: var(--chart-16);
-  --color-chart-17: var(--chart-17);
-  --color-chart-18: var(--chart-18);
-
-  --animate-accordion-down: accordion-down 0.2s ease-out;
-  --animate-accordion-up: accordion-up 0.2s ease-out;
-  --animate-fade-in-up: fade-in-up 0.5s ease-out both;
-
-  @keyframes accordion-down {
-    from {
-      height: 0;
-    }
-
-    to {
-      height: var(--radix-accordion-content-height);
-    }
-  }
-
-  @keyframes accordion-up {
-    from {
-      height: var(--radix-accordion-content-height);
-    }
-
-    to {
-      height: 0;
-    }
-  }
-
-  @keyframes fade-in-up {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
 }
 
 /*
@@ -120,26 +65,6 @@
   ::backdrop,
   ::file-selector-button {
     border-color: var(--color-gray-200, currentColor);
-  }
-}
-
-@utility text-balance {
-  text-wrap: balance;
-}
-
-@layer utilities {
-  :root {
-    --foreground-rgb: 0, 0, 0;
-    --background-start-rgb: 214, 219, 220;
-    --background-end-rgb: 255, 255, 255;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --foreground-rgb: 255, 255, 255;
-      --background-start-rgb: 0, 0, 0;
-      --background-end-rgb: 0, 0, 0;
-    }
   }
 }
 
@@ -183,35 +108,6 @@
     --success-muted-foreground: oklch(44% 0.11 152);
 
     --ring: oklch(48.5% 0.176 277);
-
-    --sidebar: oklch(0.985 0.002 247.839);
-    --sidebar-foreground: oklch(0.13 0.028 261.692);
-    --sidebar-primary: oklch(0.21 0.034 264.665);
-    --sidebar-primary-foreground: oklch(0.985 0.002 247.839);
-    --sidebar-accent: oklch(0.967 0.003 264.542);
-    --sidebar-accent-foreground: oklch(0.21 0.034 264.665);
-    --sidebar-border: oklch(0.928 0.006 264.531);
-    --sidebar-ring: oklch(0.707 0.022 261.325);
-
-    --chart-1: oklch(63.09% 0.1013 183.49);
-    --chart-2: oklch(67.72% 0.1571 35.19);
-    --chart-3: oklch(37.87% 0.044 225.54);
-    --chart-4: oklch(83.36% 0.1186 88.15);
-    --chart-5: oklch(78.34% 0.1261 58.75);
-    --chart-6: oklch(76.53% 0.1306 194.77);
-    --chart-7: oklch(43.46% 0.1737 13.84);
-    --chart-8: oklch(59.46% 0.1793 146.46);
-    --chart-9: oklch(47.92% 0.2202 328.36);
-    /* After 9, we start repeating colors */
-    --chart-10: oklch(63.09% 0.1013 183.49);
-    --chart-11: oklch(67.72% 0.1571 35.19);
-    --chart-12: oklch(37.87% 0.044 225.54);
-    --chart-13: oklch(83.36% 0.1186 88.15);
-    --chart-14: oklch(78.34% 0.1261 58.75);
-    --chart-15: oklch(76.53% 0.1306 194.77);
-    --chart-16: oklch(43.46% 0.1737 13.84);
-    --chart-17: oklch(59.46% 0.1793 146.46);
-    --chart-18: oklch(47.92% 0.2202 328.36);
   }
 
   .dark {
@@ -252,14 +148,6 @@
     --border: oklch(1 0 0 / 11%);
     --input: oklch(1 0 0 / 14%);
     --ring: oklch(66% 0.155 274);
-    --sidebar: oklch(0.21 0.034 264.665);
-    --sidebar-foreground: oklch(0.985 0.002 247.839);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0.002 247.839);
-    --sidebar-accent: oklch(0.278 0.033 256.848);
-    --sidebar-accent-foreground: oklch(0.985 0.002 247.839);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.551 0.027 264.364);
     --chart-1: oklch(52.92% 0.1931 262.13);
     --chart-2: oklch(61.23% 0.2093 6.39);
     --chart-3: oklch(72.32% 0.15 60.63);
@@ -399,6 +287,12 @@
   background: var(--riso-ink);
   color: var(--riso-paper);
 }
+/* A menu trigger keeps focus after its menu closes, and the UA ring is blue —
+   the one colour this design does not have. */
+.riso-icon-btn:focus-visible {
+  outline: 2px solid var(--riso-red-text);
+  outline-offset: 1px;
+}
 
 /* A photograph already has its own hard edges, so plating it reads as a stamp.
    Seat it on the stock and let hover bring the rule up instead of flooding it. */
@@ -498,6 +392,51 @@
 .riso-menu-item:focus-visible {
   background: var(--riso-ink);
   color: var(--riso-paper);
+}
+/* The stock separator is `bg-muted`, a near-white neutral that vanishes on
+   riso paper; a menu divides the way every other surface here does. */
+.riso-menu-sep {
+  background: color-mix(in oklab, var(--riso-ink) 22%, transparent);
+}
+
+/* The searchable list inside a menu — the member picker. `cmdk` marks its
+   highlighted row `data-selected`, not `:hover`, so the item inherits
+   `.riso-menu-item` and only the selected state needs saying here. */
+.riso-cmd-top {
+  border-bottom: 1px solid color-mix(in oklab, var(--riso-ink) 22%, transparent);
+}
+.riso-cmd-input {
+  color: var(--riso-ink);
+}
+.riso-cmd-input::placeholder {
+  color: color-mix(in oklab, var(--riso-ink) 45%, transparent);
+}
+.riso-cmd-group {
+  color: var(--riso-ink);
+}
+.riso-cmd-group [cmdk-group-heading] {
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--riso-red-text);
+}
+.riso-menu-item[data-selected="true"] {
+  background: var(--riso-ink);
+  color: var(--riso-paper);
+}
+.riso-cmd-empty {
+  color: var(--riso-red-text);
+}
+
+/* Two leftovers in the chrome: a secondary line inside a riso panel, and the
+   placeholder square that holds the avatar's space while the user resolves.
+   Both were neutral shadcn tokens sitting on riso paper. */
+.riso-quiet {
+  color: color-mix(in oklab, var(--riso-ink) 62%, transparent);
+}
+.riso-wait {
+  background: color-mix(in oklab, var(--riso-ink) 12%, transparent);
 }
 
 /* ---------------------------------------------------------------------------
@@ -801,6 +740,12 @@
   padding: 0.8125rem 1.125rem;
   font-size: 0.75rem;
 }
+/* A form that fills a whole dialog carries its own submit row rather than a
+   dialog footer; inside one it takes the footer's air and sits to the right. */
+.riso-dialog .submitrow {
+  padding-top: 1.75rem;
+  justify-content: flex-end;
+}
 .riso-dialog .submit .arrow {
   margin-left: 1.5rem;
 }
@@ -887,6 +832,185 @@
   outline: 2px solid var(--riso-red);
   outline-offset: 2px;
   box-shadow: none;
+}
+
+/* ---- the calendar inside a date field's popover -------------------------- */
+/* The panel around it is already `.riso-menu`; this is the grid itself. A month
+   is a table of numerals, so it is set like every other table on the sheet:
+   mono, tabular, square cells, no rounding. The chosen day is a plate of ink;
+   today is named in red and nothing else, so "today" and "chosen" never look
+   alike.
+
+   Unlayered, and every rule here is beating a Tailwind utility baked into
+   components/ui/calendar.tsx — `data-selected-single` in particular is set on
+   the day button itself and cannot be reached through `classNames`. */
+.riso-cal {
+  background: none;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  --cell-size: 2.125rem;
+}
+.riso-cal button {
+  border-radius: 0;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+/* month and year, and the arrows either side of them */
+.riso-cal [data-slot="calendar"] .rdp-caption_label,
+.riso-cal .rdp-caption_label {
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--riso-ink);
+}
+.riso-cal .rdp-button_previous,
+.riso-cal .rdp-button_next {
+  color: var(--riso-ink);
+  border: 1px solid color-mix(in oklab, var(--riso-ink) 22%, transparent);
+  background: none;
+}
+.riso-cal .rdp-button_previous:hover,
+.riso-cal .rdp-button_next:hover {
+  background: var(--riso-ink);
+  color: var(--riso-paper);
+}
+.riso-cal .rdp-weekday {
+  font-size: 0.5625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: color-mix(in oklab, var(--riso-ink) 45%, transparent);
+}
+.riso-cal .rdp-day button:hover {
+  background: color-mix(in oklab, var(--riso-ink) 10%, transparent);
+  color: var(--riso-ink);
+}
+.riso-cal [data-selected-single="true"] {
+  background: var(--riso-ink);
+  color: var(--riso-paper);
+}
+.riso-cal [data-selected-single="true"]:hover {
+  background: var(--riso-ink);
+  color: var(--riso-paper);
+}
+/* today is named, not filled — a fill here would compete with the choice */
+.riso-cal .riso-today button:not([data-selected-single="true"]) {
+  color: var(--riso-red-text);
+  font-weight: 700;
+}
+/* The day button rings itself in `--ring` when the calendar autofocuses it,
+   which is the indigo this design does not have. Drop the ring and mark the
+   focused day the way every other control here is marked. */
+.riso-cal .rdp-day button {
+  box-shadow: none;
+  border-color: transparent;
+}
+.riso-cal [data-focused="true"] button,
+.riso-cal .rdp-day button:focus-visible {
+  outline: 2px solid var(--riso-red-text);
+  outline-offset: -2px;
+  box-shadow: none;
+}
+.riso-cal .rdp-outside button,
+.riso-cal .rdp-disabled button {
+  color: color-mix(in oklab, var(--riso-ink) 35%, transparent);
+}
+
+/* the time row under the calendar, on the date-and-time field */
+.riso-clock {
+  border-top: 1px solid color-mix(in oklab, var(--riso-ink) 22%, transparent);
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--riso-ink) 70%, transparent);
+}
+.riso-clock input {
+  width: 3rem;
+  text-align: center;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--riso-ink);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid color-mix(in oklab, var(--riso-ink) 22%, transparent);
+  border-radius: 0;
+  padding: 0 0 0.25rem;
+  outline: none;
+  /* the spinners fight the mono grid and the field is two digits wide */
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.riso-clock input::-webkit-outer-spin-button,
+.riso-clock input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+.riso-clock input:focus {
+  border-bottom-color: var(--riso-ink);
+}
+
+/* ---- links inside rendered markdown -------------------------------------- */
+/* A prop's text and notes are markdown, so a link can appear anywhere a prop
+   appears — on four different sheets and inside dialogs. Coloured once here, in
+   the second ink, rather than by each sheet overriding the renderer. */
+.riso-md-link {
+  color: var(--riso-red-text);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.riso-md-link:hover {
+  color: var(--riso-ink);
+}
+
+/* ---- the season stamp ---------------------------------------------------- */
+/* Where a competition is in its life, printed rather than said. The two states
+   that settle something are inked — red while it is taking forecasts, ink once
+   the result is history — and the two in between are outlines: the plate is
+   set, the impression not yet pulled.
+
+   Both fills knock their text out in `--riso-paper`, which is the stock and so
+   inverts with the edition: the ink plate is light-on-dark in the light
+   edition and dark-on-light in the dark one, exactly as a print would be. The
+   red fill is `--riso-red-text`, not `--riso-red` — the flat ink knocks out at
+   4.3:1, under the bar for text this size, while the per-edition red clears
+   5.1:1 in both.
+
+   Lives here rather than in a sheet's injected CSS because the stamp appears
+   on four sheets; see components/competition-stamp/. */
+.riso-stamp {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  padding: 0.375rem 0.5rem 0.3125rem;
+  border: 1.5px solid currentColor;
+}
+.riso-stamp.open {
+  color: var(--riso-paper);
+  background: var(--riso-red-text);
+  border-color: var(--riso-red-text);
+}
+.riso-stamp.final {
+  color: var(--riso-paper);
+  background: var(--riso-ink);
+  border-color: var(--riso-ink);
+}
+.riso-stamp.scoring {
+  color: var(--riso-ink);
+}
+/* Not yet inked at all: the season has not opened. */
+.riso-stamp.upcoming {
+  color: color-mix(in oklab, var(--riso-ink) 50%, transparent);
 }
 
 /* ---- the banners above the navbar --------------------------------------- */
@@ -982,15 +1106,90 @@
   box-shadow: none;
 }
 
-/* A tooltip is a printed aside, not an indigo chip. */
-.riso-tip {
-  background: var(--riso-ink);
-  color: var(--riso-paper);
-  border-radius: 0;
+/* Option labels under edit: a numeral in the margin, then the label on its own
+   rule. The numbers are the reader's order, not an input, so they stay faint
+   and out of the tab order. */
+.hxf .field .opts {
+  display: grid;
+  gap: 0.875rem;
+}
+.hxf .field .opts .row {
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  align-items: baseline;
+}
+.hxf .field .opts .n {
   font-family: var(--font-roboto-mono), ui-monospace, monospace;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
+}
+/* An editable list adds a third column for the control that removes a row, and
+   a foot carrying the way to add one and how many are left. */
+.hxf .field .opts:has(.drop) .row {
+  grid-template-columns: 2rem minmax(0, 1fr) 1.75rem;
+}
+.hxf .field .opts .drop {
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--ink-faint);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  align-self: center;
+}
+.hxf .field .opts .drop:hover:not(:disabled) {
+  color: var(--red-text);
+}
+.hxf .field .opts .drop:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.hxf .field .opts .drop:focus-visible {
+  outline: 2px solid var(--red-text);
+  outline-offset: 1px;
+}
+.hxf .field .opts .foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 0.25rem;
+}
+.hxf .field .opts .add,
+.hxf .field .opts .count {
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+.hxf .field .opts .add {
+  color: var(--ink);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid color-mix(in oklab, var(--ink) 40%, transparent);
+  padding: 0 0 0.25rem;
+  cursor: pointer;
+}
+.hxf .field .opts .add:hover:not(:disabled) {
+  color: var(--red-text);
+  border-bottom-color: var(--red-text);
+}
+.hxf .field .opts .add:disabled {
+  color: var(--ink-faint);
+  border-bottom-color: transparent;
+  cursor: default;
+}
+.hxf .field .opts .add:focus-visible {
+  outline: 2px solid var(--red-text);
+  outline-offset: 2px;
+}
+.hxf .field .opts .count {
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
 }
 
 /* A choice between two named things, in a dialog. The mark is a square that

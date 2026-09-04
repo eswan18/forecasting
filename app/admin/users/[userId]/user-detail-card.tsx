@@ -13,7 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { getBrowserTimezone } from "@/hooks/getBrowserTimezone";
 import { toast } from "@/hooks/use-toast";
 import { startImpersonation } from "@/lib/auth/impersonation";
@@ -356,16 +355,26 @@ export default function UserDetailCard({ user }: { user: VUser }) {
               return to your own view.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
+          <DialogFooter className="hxf">
+            <button
+              type="button"
+              className="quit"
               onClick={() => setIsImpersonateDialogOpen(false)}
+              disabled={isLoading}
             >
               Cancel
-            </Button>
-            <Button onClick={handleImpersonate} disabled={isLoading}>
-              {isLoading ? "Starting..." : "Impersonate"}
-            </Button>
+            </button>
+            <button
+              type="button"
+              className="submit"
+              onClick={handleImpersonate}
+              disabled={isLoading}
+            >
+              {isLoading ? "Starting…" : "Impersonate"}
+              <span className="arrow" aria-hidden="true">
+                →
+              </span>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -382,16 +391,26 @@ export default function UserDetailCard({ user }: { user: VUser }) {
                 : `Are you sure you want to activate ${user.name}? They will regain access to the system.`}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
+          <DialogFooter className="hxf">
+            <button
+              type="button"
+              className="quit"
               onClick={() => setIsStatusDialogOpen(false)}
+              disabled={isLoading}
             >
               Cancel
-            </Button>
-            <Button onClick={handleStatusChange} disabled={isLoading}>
-              {isLoading ? "Updating..." : isActive ? "Deactivate" : "Activate"}
-            </Button>
+            </button>
+            <button
+              type="button"
+              className={isActive ? "submit danger" : "submit"}
+              onClick={handleStatusChange}
+              disabled={isLoading}
+            >
+              {isLoading ? "Updating…" : isActive ? "Deactivate" : "Activate"}
+              <span className="arrow" aria-hidden="true">
+                →
+              </span>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

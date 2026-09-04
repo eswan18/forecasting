@@ -2,7 +2,10 @@ import type { BinaryForecast } from "@/lib/binary-forecast";
 
 const PROPS = [
   { id: 1, text: "A European country wins the 2026 FIFA Men's World Cup." },
-  { id: 2, text: "Keir Starmer is the prime minister of the UK at the end of 2026." },
+  {
+    id: 2,
+    text: "Keir Starmer is the prime minister of the UK at the end of 2026.",
+  },
   { id: 3, text: "Bitcoin closes the year above $150,000." },
   { id: 4, text: "A US government shutdown before April." },
   { id: 5, text: "The S&P 500 closes the year higher than it began." },

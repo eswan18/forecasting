@@ -48,7 +48,8 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
 
 // Every lifecycle status side by side, as the admin competitions table sets
-// them: only the competition still taking forecasts prints in ink.
+// them. Two statuses share the `open` stamp — a private competition takes
+// forecasts too — so `private` is the one that also prints its own marker.
 export const AllStatuses: Story = {
   render: () => (
     <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>

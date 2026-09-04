@@ -28,7 +28,7 @@ const ADMIN_SECTIONS: AdminSection[] = [
     description: "Review propositions submitted by forecasters.",
   },
   {
-    href: "/admin/forecast-progress/6",
+    href: "/admin/forecast-progress",
     title: "Forecast Progress",
     description: "See how far along each forecaster is in a competition.",
   },

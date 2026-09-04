@@ -1,10 +1,9 @@
 import Link from "next/link";
 
 import { InaccessiblePage } from "@/components/inaccessible-page";
-import ErrorPage from "@/components/pages/error-page";
 import { sheetCss } from "@/components/prop-list/sheet";
 import {
-  getCompetitionById,
+  getCompetitions,
   getForecasts,
   getUnforecastedProps,
   getUsers,
@@ -13,6 +12,7 @@ import { logger } from "@/lib/logger";
 import { handleServerActionResult } from "@/lib/server-action-helpers";
 import { VUser } from "@/types/db_types";
 
+import { COMPETITION_PARAM, CompetitionPicker } from "./competition-picker";
 import { ErrorToast } from "./error-toast";
 import { ForecastProgressMeter, meterCss } from "./forecast-progress-meter";
 
@@ -43,6 +43,15 @@ const ownCss = `
 }
 .hxp .tally .of .val { color: var(--ink); }
 .hxp .failed { color: var(--red-text); padding-top: 1.25rem; }
+
+/* The season picker: one control on a row of its own, left where the sheet's
+   other choosers sit. The filter controls are styled in globals as .riso-pick. */
+.hxp .pickrow {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding-top: 1.5rem;
+}
 
 /* One grid for the whole board, so the marks line up down the page and not
    merely across each row. */
@@ -118,26 +127,51 @@ const ownCss = `
 }
 `;
 
+/**
+ * How far every forecaster has got, for one season at a time.
+ *
+ * The season is chosen on the page rather than named in the path. It used to be
+ * a route parameter, which meant the three links to this page each carried a
+ * hardcoded competition id and the page could only ever report on that one
+ * season until somebody edited the links.
+ */
 export default async function ForecastProgressPage({
-  params,
+  searchParams,
 }: {
-  params: Promise<{ competitionId: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { competitionId: competitionIdString } = await params;
-  const competitionId = parseInt(competitionIdString, 10);
-  if (isNaN(competitionId)) {
-    return <ErrorPage title="Invalid competition ID" />;
-  }
-  const competitionResult = await getCompetitionById(competitionId);
-  if (!competitionResult.success) {
+  const params = await searchParams;
+  const competitionsResult = await getCompetitions();
+  if (!competitionsResult.success) {
     return (
       <InaccessiblePage
-        title="Competition not found"
-        message={competitionResult.error}
+        title="Competitions unavailable"
+        message={competitionsResult.error}
       />
     );
   }
-  const competition = competitionResult.data;
+  const competitions = competitionsResult.data;
+  if (competitions.length === 0) {
+    return (
+      <InaccessiblePage
+        title="No competitions"
+        message="There is nothing to report progress on yet."
+      />
+    );
+  }
+
+  // `getCompetitions` orders by name descending, so the first row is the
+  // latest season — the one an admin chasing forecasts almost always wants.
+  // An unknown or missing id falls back to it rather than erroring.
+  const asked = Number(
+    Array.isArray(params[COMPETITION_PARAM])
+      ? params[COMPETITION_PARAM][0]
+      : params[COMPETITION_PARAM],
+  );
+  const competition =
+    competitions.find((c) => c.id === asked) ?? competitions[0];
+  const competitionId = competition.id;
+
   const usersResult = await getUsers();
   const users = handleServerActionResult(usersResult);
 
@@ -250,16 +284,14 @@ export default async function ForecastProgressPage({
         <ErrorToast hasErrors={hasErrors} />
 
         <header className="masthead">
-          <h1>
-            <Link href={`/competitions/${competitionId}`}>
-              {competition.name}
-            </Link>
-          </h1>
+          <h1>Forecast progress</h1>
         </header>
 
         <h2 className="kicker">
           <span>
-            Forecast progress
+            <Link href={`/competitions/${competitionId}`}>
+              {competition.name}
+            </Link>
             <span className="aside num">
               {" "}
               · {totalUsers} forecaster{totalUsers === 1 ? "" : "s"} ·{" "}
@@ -270,6 +302,16 @@ export default async function ForecastProgressPage({
             ← Admin
           </Link>
         </h2>
+
+        <div className="pickrow">
+          <CompetitionPicker
+            competitions={competitions.map((c) => ({
+              id: c.id,
+              name: c.name,
+            }))}
+            selectedId={competitionId}
+          />
+        </div>
 
         {totalUsers === 0 ? (
           <p className="lede">There are no forecasters to report on.</p>

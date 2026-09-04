@@ -46,7 +46,14 @@ const forecastScores: UserForecastScore[] = [
     0.25,
     false,
   ),
-  binary(11, "A US government shutdown before April.", 1, "US politics", 0.3, false),
+  binary(
+    11,
+    "A US government shutdown before April.",
+    1,
+    "US politics",
+    0.3,
+    false,
+  ),
   {
     forecastId: 150,
     propId: 15,

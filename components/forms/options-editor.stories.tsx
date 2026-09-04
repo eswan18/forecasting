@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
+import { Field } from "@/components/form-sheet/form-sheet";
 
 import { OptionsEditor } from "./options-editor";
 
@@ -32,10 +33,14 @@ const meta = {
     layout: "padded",
   },
   tags: ["autodocs"],
+  // The editor is only ever rendered inside a form's Field, which is where its
+  // styling comes from; a bare div would show it unstyled.
   decorators: [
     (Story) => (
-      <div className="max-w-md">
-        <Story />
+      <div className="hxf" style={{ maxWidth: "28rem", padding: "1.5rem" }}>
+        <Field label="Options" labelId="opts-story">
+          <Story />
+        </Field>
       </div>
     ),
   ],

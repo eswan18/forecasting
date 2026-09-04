@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { PropEditDialog } from "@/components/dialogs/prop-edit-dialog";
 import { entryTotalPercent } from "@/components/forecast-card/choice-entry";
@@ -28,11 +28,20 @@ import {
 import { useServerAction } from "@/hooks/use-server-action";
 import { createForecast, updateForecast } from "@/lib/db_actions";
 import { isChoiceKind } from "@/lib/prop-kind";
+import {
+  CHOICES,
+  DEFAULT_CHOICE,
+  TAB_PARAM,
+  matches,
+  resolveChoice,
+  type Choice,
+  type Tabs,
+} from "./tabs";
 import { getPropStatusFromProp } from "@/lib/prop-status";
 import type { PropWithUserForecast } from "@/types/db_types";
 
 const ownCss = `
-/* The filter row: a search rule and two switches, no boxes. */
+/* The filter row: a search rule, then the two choosers to its right. */
 .hxp .filters {
   display: flex;
   flex-wrap: wrap;
@@ -54,32 +63,6 @@ const ownCss = `
 .hxp .filters .find:focus { border-bottom-color: var(--ink); }
 .hxp .filters .find::placeholder { color: var(--ink-faint); }
 
-.hxp .switch {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 1rem;
-  font-family: var(--font-roboto-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.hxp .switch button {
-  font: inherit;
-  letter-spacing: inherit;
-  text-transform: inherit;
-  color: var(--ink-faint);
-  background: none;
-  border: 0;
-  border-bottom: 1px solid transparent;
-  padding: 0 0 0.25rem;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.hxp .switch button:hover { color: var(--ink-muted); }
-.hxp .switch button[aria-pressed="true"] {
-  color: var(--ink);
-  border-bottom-color: var(--ink);
-}
 /* the category filter is styled in globals.css as .riso-pick */
 
 /* One prop per block: the claim, then the rule it is set on. */
@@ -182,8 +165,6 @@ const ownCss = `
 }
 `;
 
-type Status = "todo" | "done" | "all";
-
 /** What a settled prop says about itself in the row's tag line. */
 const STATUS_WORD: Record<string, string> = {
   unresolved: "Awaiting result",
@@ -192,12 +173,6 @@ const STATUS_WORD: Record<string, string> = {
   resolved: "Resolved",
   open: "",
 };
-
-const STATUSES: { id: Status; label: string }[] = [
-  { id: "todo", label: "To do" },
-  { id: "done", label: "Done" },
-  { id: "all", label: "All" },
-];
 
 /** One prop, set in place. */
 function EntryRow({
@@ -399,6 +374,7 @@ export function OpenProps({
   props,
   title,
   kicker = "Open props",
+  tabs = "forecast",
   backHref,
   newHref,
   currentUserId,
@@ -409,6 +385,8 @@ export function OpenProps({
   /** The masthead: a competition's name, or whose props these are. */
   title: string;
   kicker?: string;
+  /** Which cut the filter bar offers; see `Tabs`. */
+  tabs?: Tabs;
   /** Omit on a list that belongs to no competition — there is nowhere back to. */
   backHref?: string;
   /** Where to write another prop, for the readers allowed to. */
@@ -420,7 +398,26 @@ export function OpenProps({
 }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
-  const [status, setStatus] = useState<Status>("todo");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const choice = resolveChoice(tabs, searchParams.get(TAB_PARAM));
+
+  function choose(next: Choice) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (next === DEFAULT_CHOICE[tabs]) {
+      params.delete(TAB_PARAM);
+    } else {
+      params.set(TAB_PARAM, next);
+    }
+    const query = params.toString();
+    // `replace`, not `push`: this is which slice of one page you are looking
+    // at, and a history entry per click would bury the page you arrived from.
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
+  }
 
   const categories = useMemo(
     () =>
@@ -443,15 +440,9 @@ export function OpenProps({
         (p.prop_notes ?? "").toLowerCase().includes(q);
       const matchesCategory =
         category === "all" || p.category_name === category;
-      // `user_forecast_id`, not `user_forecast`: the latter is null for a
-      // choice prop even once every option has been answered.
-      const matchesStatus =
-        status === "all" ||
-        (status === "done" && p.user_forecast_id !== null) ||
-        (status === "todo" && p.user_forecast_id === null);
-      return matchesQuery && matchesCategory && matchesStatus;
+      return matchesQuery && matchesCategory && matches(choice, p);
     });
-  }, [props, query, category, status]);
+  }, [props, query, category, choice]);
 
   const done = props.filter((p) => p.user_forecast_id !== null).length;
   const left = props.length - done;
@@ -516,15 +507,15 @@ export function OpenProps({
               </SelectContent>
             </Select>
           )}
-          <span className="switch">
-            {STATUSES.map((s) => (
+          <span className="seg">
+            {CHOICES[tabs].map((c) => (
               <button
-                key={s.id}
+                key={c.id}
                 type="button"
-                aria-pressed={status === s.id}
-                onClick={() => setStatus(s.id)}
+                aria-pressed={choice === c.id}
+                onClick={() => choose(c.id)}
               >
-                {s.label}
+                {c.label}
               </button>
             ))}
           </span>

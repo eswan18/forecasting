@@ -12,8 +12,7 @@ import {
 
 /**
  * The one thing this page does besides list: a mono-caps line in the section
- * head, in ink because it is the page's only action. The dialog behind it stays
- * as it is — every editor in the app still opens in a shadcn dialog.
+ * head, in ink because it is the page's only action.
  */
 export default function CreateCompetitionButton() {
   const [open, setOpen] = useState(false);

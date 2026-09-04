@@ -155,7 +155,7 @@ export function InviteMemberDialog({
                     <CommandInput placeholder="Search by name or username..." />
                     <CommandList>
                       {eligibleUsersError ? (
-                        <div className="py-6 text-center text-sm text-destructive">
+                        <div className="riso-cmd-empty py-6 text-center text-sm">
                           {eligibleUsersError}
                         </div>
                       ) : isLoadingUsers ? (

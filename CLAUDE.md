@@ -83,7 +83,11 @@ This codebase follows a structured server action pattern that returns results in
 - **Forecasts**: User predictions with probability scores
 - **Scoring**: Brier score calculation for forecast accuracy
 - **Admin Panel**: User management, competition creation, feature flags
-- **Personal Props**: Users can create private propositions
+- **Personal Props**: props a reader writes for themselves — no competition, no
+  scoring, no audience. At `/props` and `/props/new`, both gated on the
+  `personal-props` feature flag, which also decides whether the navbar shows
+  the way in. A personal prop's deadline lives on the prop itself, so
+  `getPropStatusFromProp` falls back to it when there is no competition.
 
 ### Local Development Setup
 
@@ -119,27 +123,78 @@ All dates render in the **browser's** timezone. `getBrowserTimezone()` (`hooks/g
 
 ### Design Language
 
-The app is being incrementally remodeled toward a **soft-minimal / Linear-like** look — flat, modern, vaguely techy (deliberately *not* like a publication). The redone forecast cards (`components/forecast-card/`, the `ForecastNeedle` gauge) are the reference for the target feel; propagate that language outward one surface at a time.
+The app is set in a **risograph print language**: paper and ink rather than cards
+and shadows, hairline rules, square corners, uppercase-mono "kicker" labels, and
+figures in tabular mono. Every route has been converted; treat what is there as
+the reference and extend it rather than starting a new vocabulary.
 
-**Foundations** (extend these, don't fork them):
+**Foundations**
 
-- **Fonts**: Geist Sans (`--font-sans`) + Geist Mono (`--font-mono`), wired in `app/layout.tsx`.
-- **Tokens**: all colors are CSS variables in `app/globals.css` (`@theme` + `:root`/`.dark`). Off-white page (`--background`), true-white cards (`--card`), hairline borders (`--border`, ~9% black), calm indigo `--primary`, semantic `--success*` / `--destructive-muted*` pairs. Use tokens — never hardcoded Tailwind colors (`bg-green-100`, `text-red-600`, …).
-- **Primitives**: `components/ui/container.tsx` (shared max-width + gutters; keeps navbar and content on one left edge) and `components/ui/section-header.tsx` (left-aligned heading with an optional uppercase-mono "kicker" label).
+- **Fonts**: Archivo (`--font-archivo`) for text, Roboto Mono
+  (`--font-roboto-mono`) for labels and figures, both wired in `app/layout.tsx`.
+  Geist is still declared there and is what `font-sans` resolves to on the few
+  surfaces that have no sheet of their own.
+- **Tokens**: four inks on `:root` and `.dark` in `app/globals.css` —
+  `--riso-paper` (the stock), `--riso-ink`, `--riso-red`, and `--riso-red-text`
+  (the per-edition legible red; use it for text and for anything text is knocked
+  out of). `--riso-red` does not change between editions. The older shadcn
+  tokens (`--primary`, `--muted`, …) still exist for the handful of vendored
+  primitives that read them; they are not the design.
+- **Sheets**: each surface scopes its CSS under a short class and injects it with
+  `<style dangerouslySetInnerHTML>`: `.hxp` (prop lists, admin tables — the
+  shared one, `components/prop-list/sheet.tsx`), `.hxc` (competition overview),
+  `.hxd` (dashboard), `.hxs` (standings), `.hxl` (login), `.hxf` (the form
+  vocabulary), `.hxload` / `.hxstop` (loading and refusal). A sheet re-declares
+  local aliases (`--paper`, `--ink`, `--rule`, `--ink-muted`, …) from the riso
+  tokens.
+- **Shared marks**, in `app/globals.css` and deliberately unlayered: `.riso-nav`,
+  `.riso-dialog*`, `.riso-menu*`, `.riso-stamp` (a season's state),
+  `.riso-cal` / `.riso-clock` (the date pickers), `.riso-banner`, `.riso-toast`,
+  `.riso-pick`, `.riso-md-link`, `.seg` (a segmented filter bar), and the whole
+  `.hxf` form vocabulary (`.field`, `.choose`, `.picker`, `.submit`, `.quit`).
 
-**Patterns / rules**:
+**Rules**
 
-- **Flat surfaces**: depth comes from hairline borders, not shadows. No always-on `shadow-*` on cards; hover may shift `border-color`, not add a drop shadow.
-- **Numerics are mono + tabular**: scores, counts, ranks, percentages → `font-mono tabular-nums`. Reads as "instrument", keeps columns aligned.
-- **Kicker labels**: small section/panel labels are uppercase mono — `font-mono text-[10px]/[11px] uppercase tracking-[0.12em]/[0.14em] text-muted-foreground`.
-- **Left-aligned, no icon-led headings**: prefer a left title + subtitle (or a `SectionHeader` kicker) over centered, big-icon "publication" headers.
-- **Semantic color only**: status (open/resolved/…) uses `success`/`destructive` tokens. Exception: genuine *data encodings* (e.g. the probability heatmap in `upcoming-deadlines`) may keep a graded scale — that's information, not decoration.
-- **Indigo accent sparingly**: `primary` is an accent (active states, links), not a fill for large areas.
+- **Flat**: depth is a hairline, never a shadow, and nothing is rounded.
+- **Two rule weights, two meanings**: 2px ink opens a section, a 1px hairline
+  separates two items.
+- **Numerics are mono + tabular**: scores, counts, ranks, percentages.
+- **Kickers**: section and field labels are uppercase mono, ~0.625–0.6875rem at
+  0.12–0.16em tracking.
+- **Red is the second ink**, and it is spoken for: "this is you", "this failed",
+  "this is still live". Don't spend it on decoration.
+- **No raw Tailwind palette colours** (`bg-green-100`, `text-red-600`) anywhere.
 
-**Storybook**: when restyling a notable component, add a story beside it (`*.stories.tsx`, `title: "<Group>/…"`, `@storybook/react-vite`, `tags: ["autodocs"]`). Story presentational leaf components (plain props); skip router-coupled orchestrators that need `next/navigation`. Storybook aliases `@/lib/db_actions*` to mocks, so keep leaf-component db imports `import type` (erased at build). Verify with `npm run build-storybook`.
+**Three traps, all of which have cost time**
 
-**Progress**: done — home dashboard (`app/page.tsx` + `components/landing/*`), the competition overview (`components/competition-dashboard/*`), the `/competitions` list page, the full leaderboard (`components/scores/leaderboard.tsx`), and the members table (`components/members/members-table.tsx`). The Open/Closed/Resolved prop tabs already render the restyled `ForecastCard`s (+ a clean filter bar), so they need no separate pass. Remaining, one surface at a time: the per-user score-breakdown tables (`.../scores/user/[userId]/*`), the forecast-stats cards (`.../forecast-stats/cards/*`), the single-prop view (`app/props/[propId]/*`), login, the admin pages, the navbar wordmark, then polish.
+- **A backtick inside an injected CSS string terminates it** — including in a CSS
+  comment. Write `.seg`, never the backticked form, inside a `*Css` literal.
+- **Radix portals dialogs, menus, popovers and toasts to `document.body`**, so a
+  rule scoped under a page class can never reach them. Anything inside a portal
+  is styled by a `.riso-*` class in globals.
+- **A sheet must inject every `*Css` it imports.** Forgetting silently yields an
+  unstyled control rather than an error.
+
+**Storybook**: when restyling a notable component, add a story beside it
+(`*.stories.tsx`, `title: "<Group>/…"`, `@storybook/react-vite`,
+`tags: ["autodocs"]`). Story presentational leaf components (plain props); skip
+router-coupled orchestrators. Storybook aliases `@/lib/db_actions*` and
+`next/navigation` to mocks in `.storybook/mocks/`, so keep leaf-component db
+imports `import type` (erased at build). A component that is only styled inside
+a parent (the options editor inside a `Field`, a row inside its table's grid)
+needs that parent in its decorator or the story shows it unstyled. Verify with
+`npm run build-storybook`.
 
 ### Error Monitoring
 
 - Sentry integration for error tracking and performance monitoring
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

@@ -40,10 +40,8 @@ const config: StorybookConfig = {
       "next/link": new URL("./mocks/next-link.tsx", import.meta.url).pathname,
       // the app router's hooks throw outside a mounted router, which takes
       // down any story for a component that refreshes after a save
-      "next/navigation": new URL(
-        "./mocks/next-navigation.ts",
-        import.meta.url,
-      ).pathname,
+      "next/navigation": new URL("./mocks/next-navigation.ts", import.meta.url)
+        .pathname,
       ...config.resolve.alias,
       "@": new URL("../", import.meta.url).pathname,
     };

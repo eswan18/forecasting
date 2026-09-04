@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { OpenProp, Standing } from "./types";
+import type { Standing } from "./types";
 
 /**
  * The print grammar shared by all three competition layouts, scoped to `.hxc`.
@@ -375,27 +375,6 @@ export function DueLabel({
     <span className={days <= 7 ? "due soon" : "due"}>
       {days === 1 ? "1 day" : `${days} days`}
     </span>
-  );
-}
-
-export function OwedProp({
-  prop,
-  competitionId,
-  now,
-}: {
-  prop: OpenProp;
-  competitionId: number;
-  now: Date;
-}) {
-  return (
-    <div className="owed">
-      <span className="text">
-        <Link href={`/competitions/${competitionId}/props/${prop.propId}`}>
-          {prop.propText}
-        </Link>
-      </span>
-      <DueLabel deadline={prop.deadline} now={now} />
-    </div>
   );
 }
 

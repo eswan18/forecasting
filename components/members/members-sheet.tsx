@@ -82,6 +82,11 @@ export const membersCss = `
 }
 .hxp .roster .menu:hover:not(:disabled) { color: var(--red-text); }
 .hxp .roster .menu:disabled { cursor: default; opacity: 0.5; }
+/* the trigger keeps focus when its menu closes; the UA ring is blue */
+.hxp .roster .menu:focus-visible {
+  outline: 2px solid var(--red-text);
+  outline-offset: 1px;
+}
 
 /* The roster's own column head, kept with the roster so any surface that
    renders the rows gets the header that names them. */

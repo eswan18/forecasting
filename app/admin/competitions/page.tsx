@@ -5,6 +5,7 @@ import { getCompetitions, getProps } from "@/lib/db_actions";
 
 import CompetitionRow from "./competition-row";
 import { statusCss } from "./competition-status-badge";
+import { rowCss } from "./row-css";
 import CreateCompetitionButton from "./create-competition-button";
 
 /**
@@ -14,107 +15,6 @@ import CreateCompetitionButton from "./create-competition-button";
  * adds is the management the public list has no business showing — the counts,
  * and a menu per row.
  */
-const ownCss = `
-.hxp .comps {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 8.5rem 8.5rem 4.5rem 6rem 2.5rem;
-  /* No column gap, and cells that stretch: each cell draws its own share of the
-     row's hairline, so a gap would break that rule into six pieces. The air
-     between columns is padding inside them instead. */
-  gap: 0;
-  align-items: stretch;
-}
-.hxp .comps > * { display: contents; }
-
-.hxp .comphead > span {
-  font-family: var(--font-roboto-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
-  padding: 1.25rem 0 0.5rem;
-  border-bottom: 1px solid var(--rule);
-}
-.hxp .comphead > span + span,
-.hxp .comp .cell { padding-left: 1.5rem; }
-.hxp .comphead > span.n,
-.hxp .comp .cell.n { text-align: right; }
-
-.hxp .comp > * {
-  padding: 0.75rem 0;
-  /* one line box for every cell, so the name, the dates and the counts beside
-     it sit on one baseline despite the difference in size */
-  line-height: 1.5rem;
-  border-bottom: 1px solid var(--rule);
-}
-.hxp .comp .name { font-size: 0.9375rem; }
-.hxp .comp .name a { color: inherit; text-decoration: none; }
-.hxp .comp:hover .name a {
-  color: var(--red-text);
-  border-bottom: 1px solid var(--red-text);
-}
-.hxp .comp .name .st { margin-left: 0.75rem; }
-.hxp .comp .cell {
-  font-family: var(--font-roboto-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink-muted);
-}
-/* The counts are figures to be read against each other, not labels. */
-.hxp .comp .cell.n { font-size: 0.8125rem; letter-spacing: 0; color: var(--ink); }
-.hxp .comp .cell .none { color: var(--ink-faint); }
-
-.hxp .comp .act {
-  font-family: var(--font-roboto-mono), ui-monospace, monospace;
-  font-size: 1rem;
-  color: var(--ink-faint);
-  background: none;
-  border: 0;
-  border-bottom: 1px solid var(--rule);
-  cursor: pointer;
-  text-align: right;
-}
-.hxp .comp .act:hover,
-.hxp .comp .act[data-state="open"] { color: var(--red-text); }
-
-/* The page's one action, set in the section head beside the way back. */
-.hxp h2.kicker .tools {
-  display: flex;
-  align-items: baseline;
-  gap: 1.5rem;
-}
-.hxp h2.kicker .make {
-  font-family: var(--font-roboto-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  font-weight: 700;
-  color: var(--ink);
-  background: none;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.hxp h2.kicker .make:hover { color: var(--red-text); }
-.hxp h2.kicker .make:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
-
-@media (max-width: 46rem) {
-  .hxp .comps { grid-template-columns: minmax(0, 1fr) 3.5rem 5rem 2.5rem; }
-  /* the competition names the row; its dates and counts sit on the line below */
-  .hxp .comp .name {
-    grid-column: 1 / -1;
-    border-bottom: 0;
-    padding-bottom: 0.125rem;
-  }
-  .hxp .comp .due { padding-left: 0; }
-  .hxp .comp .ends { display: none; }
-  .hxp .comphead > span:first-child { grid-column: 1 / -1; }
-  .hxp .comphead > span:not(:first-child) { display: none; }
-}
-`;
 
 export default async function Page() {
   const competitionsResult = await getCompetitions();
@@ -165,7 +65,7 @@ export default async function Page() {
   return (
     <div className="hxp">
       <style
-        dangerouslySetInnerHTML={{ __html: sheetCss + statusCss + ownCss }}
+        dangerouslySetInnerHTML={{ __html: sheetCss + statusCss + rowCss }}
       />
       <div className="col">
         <header className="masthead">

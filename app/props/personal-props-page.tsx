@@ -26,6 +26,9 @@ export function PersonalPropsPage({
       props={props}
       title="Your props"
       kicker="Personal props"
+      // This list holds every prop you ever wrote, so the useful cut is where
+      // each one is in its life rather than whether you have forecasted it.
+      tabs="stage"
       newHref="/props/new"
       currentUserId={currentUserId}
       isAdmin

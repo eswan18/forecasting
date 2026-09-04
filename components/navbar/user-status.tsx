@@ -56,7 +56,7 @@ export function UserStatus() {
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">{user.name}</p>
-                <p className="text-xs leading-none text-muted-foreground">
+                <p className="riso-quiet text-xs leading-none">
                   {user.is_admin ? "Administrator" : "User"}
                 </p>
               </div>
@@ -76,10 +76,7 @@ export function UserStatus() {
       ) : isLoading ? (
         // Round, avatar-sized placeholder so it morphs into the avatar without
         // a shape/size shift once the user resolves.
-        <div
-          role="status"
-          className="h-9 w-9 animate-pulse bg-muted"
-        >
+        <div role="status" className="riso-wait h-9 w-9 animate-pulse">
           <span className="sr-only">Loading…</span>
         </div>
       ) : (

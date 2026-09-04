@@ -68,7 +68,7 @@ export const midSeason: CompetitionViewData = {
   name: "2026 Open",
   isPrivate: false,
   phase: "live",
-  statusLabel: "Open",
+  state: "open" as const,
   fieldSize: 14,
   counts: { toForecast: 6, open: 11, unresolved: 4, resolved: 17, total: 32 },
   you: { rank: 5, score: 0.24, incomplete: false },
@@ -89,7 +89,7 @@ export const preSeason: CompetitionViewData = {
 export const scoringSeason: CompetitionViewData = {
   ...midSeason,
   phase: "scoring",
-  statusLabel: "Scoring",
+  state: "scoring" as const,
   counts: { toForecast: 0, open: 0, unresolved: 6, resolved: 26, total: 32 },
   owed: [],
 };
@@ -99,7 +99,7 @@ export const finalSeason: CompetitionViewData = {
   ...midSeason,
   name: "2025 Open",
   phase: "final",
-  statusLabel: "Final",
+  state: "final" as const,
   counts: { toForecast: 0, open: 0, unresolved: 0, resolved: 32, total: 32 },
   owed: [],
 };

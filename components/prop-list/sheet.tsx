@@ -87,6 +87,44 @@ body:has(.hxp) { background: var(--riso-paper); }
 .hxp h2.kicker a.aside { text-decoration: none; white-space: nowrap; }
 .hxp h2.kicker a.aside:hover { color: var(--red-text); }
 
+/* A choice between a few named subsets, printed as one bar of cells sharing
+   their rules rather than as words with an underline under the live one. The
+   chosen cell is a plate of ink, the same way the season stamp inks the state
+   it is in, so which one is live is legible at a glance and from across the
+   page. */
+.hxp .seg {
+  display: inline-flex;
+  border: 1px solid var(--ink);
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.hxp .seg button {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: var(--ink-muted);
+  background: none;
+  border: 0;
+  /* one rule between neighbours, drawn by the cell on its right */
+  border-left: 1px solid var(--ink);
+  padding: 0.5rem 0.6875rem 0.4375rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.hxp .seg button:first-child { border-left: 0; }
+.hxp .seg button:hover { color: var(--ink); }
+.hxp .seg button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+.hxp .seg button:focus-visible {
+  outline: 2px solid var(--red-text);
+  outline-offset: 1px;
+}
+
 /* The masthead, set the way the competition overview sets its own, so the two
    sheets read as pages of one document rather than two designs. */
 .hxp .masthead { padding: 2.5rem 0 0; }
@@ -155,7 +193,3 @@ export function Penalty({ value }: { value: number | null }) {
   return <span className="pen">{value.toFixed(3)}</span>;
 }
 
-export function Outcome({ value }: { value: boolean | null }) {
-  if (value === null) return <span className="mono muted">pending</span>;
-  return <span className={value ? "yes" : "no"}>{value ? "Yes" : "No"}</span>;
-}

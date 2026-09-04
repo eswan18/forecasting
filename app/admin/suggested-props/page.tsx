@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 
 import { MarkdownRenderer } from "@/components/markdown";
 import { sheetCss } from "@/components/prop-list/sheet";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Spinner } from "@/components/ui/spinner";
 import {
   useServerAction,
   useServerActionNoParams,
@@ -28,11 +26,6 @@ const ownCss = `
    would be the byline. */
 .hxp .sug { padding: 1.5rem 0 1.25rem; border-bottom: 1px solid var(--rule); }
 .hxp .sug .claim { font-size: 1rem; max-width: 44rem; }
-.hxp .md a {
-  color: var(--red-text);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
 
 /* The notes arrive glued to the claim, so they are set apart the way an aside
    is: indented off a rule, quieter, and labelled with the same word the
@@ -226,12 +219,18 @@ export default function SuggestedProps() {
               cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setPropToDelete(null)}>
+          <DialogFooter className="hxf">
+            <button
+              type="button"
+              className="quit"
+              onClick={() => setPropToDelete(null)}
+              disabled={isLoadingDelete}
+            >
               Cancel
-            </Button>
-            <Button
-              variant="destructive"
+            </button>
+            <button
+              type="button"
+              className="submit danger"
               onClick={() => {
                 if (propToDelete) {
                   deleteSuggestedPropAction.execute({ id: propToDelete.id });
@@ -239,15 +238,11 @@ export default function SuggestedProps() {
               }}
               disabled={isLoadingDelete}
             >
-              {isLoadingDelete ? (
-                <>
-                  <Spinner className="mr-2 h-4 w-4" />
-                  Deleting...
-                </>
-              ) : (
-                "Delete"
-              )}
-            </Button>
+              {isLoadingDelete ? "Deleting…" : "Delete"}
+              <span className="arrow" aria-hidden="true">
+                →
+              </span>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

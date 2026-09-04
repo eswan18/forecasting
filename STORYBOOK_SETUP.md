@@ -17,17 +17,11 @@ I've successfully set up Storybook 10.0.8 for your Next.js project with support 
    - Added Next.js app directory support
    - Imported global styles
 
-3. **Server Component Support**
-   - Created `ServerComponentWrapper` for handling async components
-   - Added utilities for mocking async data in stories
+3. **Module mocks** (`/.storybook/mocks/`)
+   - `@/lib/db_actions*` and `next/navigation` are aliased to inert stand-ins
+     in `main.ts`, so a story never reaches the database or the router
 
-4. **Example Stories Created**
-   - `Button.stories.tsx` - Comprehensive button component examples
-   - `Card.stories.tsx` - Various card layouts and use cases
-   - `Input.stories.tsx` - Form input variations and states
-   - `ServerComponentExample.stories.tsx` - Patterns for handling server components
-
-5. **Documentation**
+4. **Documentation**
    - Created comprehensive README in `.storybook/README.md`
    - Includes best practices and troubleshooting guide
 
@@ -39,7 +33,6 @@ Storybook 10 provides improved support for React Server Components. This means:
 
 - ✅ **Client components work perfectly** - Any component with `"use client"` directive
 - ✅ **Basic RSC rendering** - The framework can handle some server component scenarios
-- ⚠️ **Async components need special handling** - Use the `ServerComponentWrapper`
 - ❌ **Server actions don't work** - `"use server"` functions need to be mocked
 - ❌ **Direct database calls won't work** - Need to mock data fetching
 
@@ -51,14 +44,12 @@ Storybook 10 provides improved support for React Server Components. This means:
 
 2. **Mock Server Data**
    - Pass data as props instead of fetching in the component
-   - Use the patterns shown in `ServerComponentExample.stories.tsx`
+   - Co-locate a `*.fixtures.ts` beside the component and share it between the
+     story and any unit test
 
-3. **Use the Wrapper for Async Components**
-   ```tsx
-   <ServerComponentWrapper>
-     <YourAsyncComponent />
-   </ServerComponentWrapper>
-   ```
+3. **Don't story a component that fetches**
+   - Split it: a server route that fetches, a presentational component that
+     takes props. Story the second one.
 
 ## Running Storybook
 

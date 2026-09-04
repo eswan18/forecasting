@@ -154,6 +154,11 @@ const ownCss = `
 }
 .hxp .acct .menu:hover:not(:disabled) { color: var(--red-text); }
 .hxp .acct .menu:disabled { cursor: default; opacity: 0.5; }
+/* the trigger keeps focus when its menu closes; the UA ring is blue */
+.hxp .acct .menu:focus-visible {
+  outline: 2px solid var(--red-text);
+  outline-offset: 1px;
+}
 
 @media (max-width: 46rem) {
   /* The two mark columns fold into the account they describe, so the name and

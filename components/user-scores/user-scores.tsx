@@ -1,10 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Penalty, sheetCss } from "@/components/prop-list/sheet";
 import { axisCss } from "@/components/prop-list/layout-axis";
-import { KIND_LABEL, linesOf, pct, type PropView } from "@/components/prop-list/types";
+import {
+  KIND_LABEL,
+  linesOf,
+  pct,
+  type PropView,
+} from "@/components/prop-list/types";
 
 /**
  * Only what this sheet adds to the shared prop grammar: the plated overall
@@ -60,33 +65,9 @@ const ownCss = `
   color: var(--ink-muted);
   font-variant-numeric: tabular-nums;
 }
-/* the grouping switch: two words, the live one in ink */
-.hxp .grouping {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.875rem;
-  font-family: var(--font-roboto-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.hxp .grouping button {
-  font: inherit;
-  letter-spacing: inherit;
-  text-transform: inherit;
-  background: none;
-  border: 0;
-  border-bottom: 1px solid transparent;
-  padding: 0 0 0.25rem;
-  cursor: pointer;
-  color: var(--ink-muted);
-}
-.hxp .grouping button:hover { color: var(--red-text); }
-.hxp .grouping button[aria-pressed="true"] {
-  color: var(--ink);
-  border-bottom-color: var(--ink);
-}
+/* The bar is the shared .seg from the prop sheet; all this adds is pushing it
+   to the far end of the lede, opposite the figure. */
+.hxp .lede .seg { margin-left: auto; align-self: center; }
 
 /* a category is a section of the sheet, and carries its own subtotal */
 .hxp h3.cat {
@@ -148,6 +129,9 @@ export interface UserScoresProps {
  * category view says which subject is costing you, the flat one says which
  * individual calls did.
  */
+/** Where the arrangement is kept; see the note on the reader below. */
+const GROUP_PARAM = "by";
+
 export function UserScores({
   competitionId,
   competitionName,
@@ -158,14 +142,37 @@ export function UserScores({
   sections,
   flat,
 }: UserScoresProps) {
-  const [byCategory, setByCategory] = useState(true);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // In the query string rather than in state, so a breakdown is a link. The
+  // default — grouped by category — is the absence of the parameter, and any
+  // value but "all" reads as the default, so a stale link degrades gracefully.
+  const byCategory = searchParams.get(GROUP_PARAM) !== "all";
+
+  function group(next: boolean) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (next) {
+      params.delete(GROUP_PARAM);
+    } else {
+      params.set(GROUP_PARAM, "all");
+    }
+    const query = params.toString();
+    // `replace`: this is how one page is arranged, not somewhere new.
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
+  }
   const score = overallScore.toFixed(3);
   const standingsHref = `/competitions/${competitionId}/standings`;
   const shown = byCategory ? sections : [flat];
 
   return (
     <div className="hxp">
-      <style dangerouslySetInnerHTML={{ __html: sheetCss + axisCss + ownCss }} />
+      <style
+        dangerouslySetInnerHTML={{ __html: sheetCss + axisCss + ownCss }}
+      />
       <div className="col">
         <header className="masthead">
           <h1>
@@ -199,18 +206,18 @@ export function UserScores({
                 <span className="top-ink">{score}</span>
               </span>
               <span className="of">Brier · lower is better</span>
-              <span className="grouping">
+              <span className="seg">
                 <button
                   type="button"
                   aria-pressed={byCategory}
-                  onClick={() => setByCategory(true)}
+                  onClick={() => group(true)}
                 >
                   By category
                 </button>
                 <button
                   type="button"
                   aria-pressed={!byCategory}
-                  onClick={() => setByCategory(false)}
+                  onClick={() => group(false)}
                 >
                   All
                 </button>

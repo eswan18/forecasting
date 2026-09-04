@@ -348,3 +348,86 @@ export async function createCompetition({
     return error("Failed to create competition", ERROR_CODES.DATABASE_ERROR);
   }
 }
+
+/**
+ * Delete a competition, but only while it holds no props.
+ *
+ * `props.competition_id` carries no ON DELETE rule, so the database refuses to
+ * drop a competition that still has props — and rightly: the props, every
+ * forecast against them and every score derived from them would go too. The
+ * count is checked here so an admin gets a sentence rather than a constraint
+ * violation. Members go quietly, since `competition_members` cascades and a
+ * membership means nothing without the competition it is in.
+ */
+export async function deleteCompetition({
+  id,
+}: {
+  id: number;
+}): Promise<ServerActionResult<void>> {
+  const currentUser = await getUserFromCookies();
+  logger.debug("Deleting competition", {
+    competitionId: id,
+    currentUserId: currentUser?.id,
+  });
+
+  const startTime = Date.now();
+  try {
+    if (!currentUser?.is_admin) {
+      logger.warn("Unauthorized attempt to delete competition", {
+        competitionId: id,
+        currentUserId: currentUser?.id,
+      });
+      return error(
+        "Only admins can delete competitions",
+        ERROR_CODES.UNAUTHORIZED,
+      );
+    }
+
+    const propCount = await withRLS(currentUser.id, async (trx) => {
+      const row = await trx
+        .selectFrom("props")
+        .select((eb) => eb.fn.countAll<string>().as("n"))
+        .where("competition_id", "=", id)
+        .executeTakeFirst();
+      return Number(row?.n ?? 0);
+    });
+
+    if (propCount > 0) {
+      logger.warn("Refused to delete a competition that still has props", {
+        competitionId: id,
+        propCount,
+      });
+      return error(
+        `This competition still has ${propCount} ${
+          propCount === 1 ? "prop" : "props"
+        }. Delete or move them first.`,
+        ERROR_CODES.VALIDATION_ERROR,
+      );
+    }
+
+    await withRLS(currentUser.id, async (trx) => {
+      await trx.deleteFrom("competitions").where("id", "=", id).execute();
+    });
+
+    const duration = Date.now() - startTime;
+    logger.info("Competition deleted successfully", {
+      operation: "deleteCompetition",
+      table: "competitions",
+      competitionId: id,
+      duration,
+    });
+
+    revalidatePath("/competitions");
+    revalidatePath("/admin/competitions");
+    return success(undefined);
+  } catch (err) {
+    const duration = Date.now() - startTime;
+    logger.error("Failed to delete competition", err as Error, {
+      operation: "deleteCompetition",
+      table: "competitions",
+      competitionId: id,
+      duration,
+    });
+    return error("Failed to delete competition", ERROR_CODES.DATABASE_ERROR);
+  }
+}

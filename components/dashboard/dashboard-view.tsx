@@ -1,4 +1,9 @@
 import Link from "next/link";
+
+import {
+  CompetitionStamp,
+  type SeasonState,
+} from "@/components/competition-stamp/competition-stamp";
 /**
  * The signed-in dashboard, in the landing page's print language. Presentation
  * only — see riso-dashboard.tsx for the data it is fed.
@@ -24,10 +29,11 @@ import Link from "next/link";
  */
 export type SeasonPhase = "live" | "scoring" | "final";
 
-const PHASE_LABEL: Record<SeasonPhase, string> = {
-  live: "Open",
-  scoring: "Scoring",
-  final: "Final",
+/** A dashboard phase is the lifecycle minus `upcoming`, which never features. */
+const STAMP_OF: Record<SeasonPhase, SeasonState> = {
+  live: "open",
+  scoring: "scoring",
+  final: "final",
 };
 
 export interface Standing {
@@ -227,8 +233,8 @@ body:has(.hxd) { background: var(--riso-paper); }
    marker in the same place the blocks carry theirs. */
 .hxd .compact .tag {
   flex: none;
-  width: 4.5rem;
-  text-align: right;
+  display: flex;
+  justify-content: flex-end;
 }
 
 /* ---- the two quiet columns at the foot ---- */
@@ -331,7 +337,7 @@ function FeaturedSeason({
         <h3 className="name">
           <Link href={href}>{standing.name}</Link>
         </h3>
-        <span className="mono ink2">{PHASE_LABEL[standing.phase]}</span>
+        <CompetitionStamp state={STAMP_OF[standing.phase]} />
       </div>
 
       <div className="rank-row">
@@ -378,12 +384,8 @@ function CompactSeason({ standing }: { standing: Standing }) {
           <span>not scored</span>
         )}
       </span>
-      <span
-        className={
-          standing.phase === "final" ? "mono muted tag" : "mono ink2 tag"
-        }
-      >
-        {PHASE_LABEL[standing.phase]}
+      <span className="tag">
+        <CompetitionStamp state={STAMP_OF[standing.phase]} />
       </span>
     </div>
   );

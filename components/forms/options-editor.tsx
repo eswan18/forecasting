@@ -1,9 +1,5 @@
 "use client";
 
-import { Plus, X } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { MAX_OPTIONS, MAX_OPTION_LENGTH, MIN_OPTIONS } from "@/lib/prop-kind";
 
 interface OptionsEditorProps {
@@ -43,63 +39,56 @@ export function OptionsEditor({
   }
 
   return (
-    <div className="space-y-2" role="group" aria-labelledby={ariaLabelledBy}>
-      <div className="space-y-2">
-        {value.map((option, index) => (
-          <div key={index} className="flex items-center gap-2">
-            <span className="w-5 shrink-0 font-mono text-[10px] font-medium uppercase tracking-[0.12em] tabular-nums text-muted-foreground">
-              {String(index + 1).padStart(2, "0")}
-            </span>
-            <Input
-              value={option}
-              onChange={(e) => setOption(index, e.target.value)}
-              disabled={disabled}
-              maxLength={MAX_OPTION_LENGTH}
-              placeholder={`Option ${index + 1}`}
-              aria-label={`Option ${index + 1}`}
-              className="shadow-none"
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground"
-              disabled={!canRemove}
-              onClick={() => removeOption(index)}
-              title={
-                canRemove
-                  ? `Remove option ${index + 1}`
-                  : `At least ${MIN_OPTIONS} options are required`
-              }
-              aria-label={`Remove option ${index + 1}`}
-            >
-              <X />
-            </Button>
-          </div>
-        ))}
-      </div>
+    <div className="opts" role="group" aria-labelledby={ariaLabelledBy}>
+      {value.map((option, index) => (
+        <div className="row" key={index}>
+          <span className="n" aria-hidden="true">
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <input
+            type="text"
+            value={option}
+            onChange={(e) => setOption(index, e.target.value)}
+            disabled={disabled}
+            maxLength={MAX_OPTION_LENGTH}
+            placeholder={`Option ${index + 1}`}
+            aria-label={`Option ${index + 1}`}
+          />
+          <button
+            type="button"
+            className="drop"
+            disabled={!canRemove}
+            onClick={() => removeOption(index)}
+            title={
+              canRemove
+                ? `Remove option ${index + 1}`
+                : `At least ${MIN_OPTIONS} options are required`
+            }
+            aria-label={`Remove option ${index + 1}`}
+          >
+            ×
+          </button>
+        </div>
+      ))}
 
-      <div className="flex items-center justify-between gap-2">
-        <Button
+      <div className="foot">
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
-          className="text-muted-foreground hover:text-foreground"
+          className="add"
           disabled={!canAdd}
           onClick={() => onChange([...value, ""])}
         >
-          <Plus />
-          Add option
-        </Button>
-        <span className="font-mono text-xs tabular-nums text-muted-foreground">
-          {value.length} / {MAX_OPTIONS}
+          + Add option
+        </button>
+        <span className="count">
+          {value.length}/{MAX_OPTIONS}
         </span>
       </div>
 
       {errors.length > 0 && (
-        <div className="space-y-1" role="alert">
+        <div role="alert">
           {errors.map((error, index) => (
-            <p key={index} className="text-xs text-destructive">
+            <p className="bad-msg" key={index}>
               {error}
             </p>
           ))}

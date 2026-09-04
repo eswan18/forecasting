@@ -18,7 +18,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { startImpersonation } from "@/lib/auth/impersonation";
 import { setUserActive } from "@/lib/db_actions/users";
@@ -127,7 +126,7 @@ export function UserActionsCell({ user }: { user: VUser }) {
               <DropdownMenuItem onClick={() => setImpersonateOpen(true)}>
                 Impersonate
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="riso-menu-sep" />
             </>
           )}
           <DropdownMenuItem
@@ -149,21 +148,26 @@ export function UserActionsCell({ user }: { user: VUser }) {
               return to your own view.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button
-              variant="outline"
+          <DialogFooter className="hxf">
+            <button
+              type="button"
+              className="quit"
               onClick={() => setImpersonateOpen(false)}
-              className="w-full sm:w-auto"
+              disabled={isLoading}
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
+              type="button"
+              className="submit"
               onClick={handleImpersonate}
               disabled={isLoading}
-              className="w-full sm:w-auto"
             >
-              {isLoading ? "Starting..." : "Impersonate"}
-            </Button>
+              {isLoading ? "Starting…" : "Impersonate"}
+              <span className="arrow" aria-hidden="true">
+                →
+              </span>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -180,21 +184,28 @@ export function UserActionsCell({ user }: { user: VUser }) {
                 : `Are you sure you want to activate ${user.name}? They will regain access to the system.`}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button
-              variant="outline"
+          <DialogFooter className="hxf">
+            <button
+              type="button"
+              className="quit"
               onClick={() => setStatusOpen(false)}
-              className="w-full sm:w-auto"
+              disabled={isLoading}
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            {/* Deactivating takes someone's access away, so it is the second
+                ink, like every other undoing on these sheets. */}
+            <button
+              type="button"
+              className={isActive ? "submit danger" : "submit"}
               onClick={handleStatusChange}
               disabled={isLoading}
-              className="w-full sm:w-auto"
             >
-              {isLoading ? "Updating..." : isActive ? "Deactivate" : "Activate"}
-            </Button>
+              {isLoading ? "Updating…" : isActive ? "Deactivate" : "Activate"}
+              <span className="arrow" aria-hidden="true">
+                →
+              </span>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

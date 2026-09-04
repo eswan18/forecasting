@@ -214,19 +214,17 @@ export function NewPropForm({
             labelId={optionsLabelId}
             hint="Forecasters see these in the order listed here."
           >
-            <div className="borrowed">
-              <OptionsEditor
-                value={form.watch("options").map((o) => o.text)}
-                onChange={(labels) =>
-                  form.setValue(
-                    "options",
-                    labels.map((t) => ({ text: t })),
-                  )
-                }
-                errors={optionErrors}
-                ariaLabelledBy={optionsLabelId}
-              />
-            </div>
+            <OptionsEditor
+              value={form.watch("options").map((o) => o.text)}
+              onChange={(labels) =>
+                form.setValue(
+                  "options",
+                  labels.map((t) => ({ text: t })),
+                )
+              }
+              errors={optionErrors}
+              ariaLabelledBy={optionsLabelId}
+            />
           </Field>
         )}
 

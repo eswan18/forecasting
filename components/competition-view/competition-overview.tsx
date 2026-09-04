@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CompetitionStamp } from "@/components/competition-stamp/competition-stamp";
 import type { CompetitionViewData } from "./types";
 import {
   BigRank,
@@ -123,9 +124,7 @@ export function CompetitionOverview({
       <style dangerouslySetInnerHTML={{ __html: sheetCss + variantCss }} />
       <div className="col">
         <header className="masthead">
-          {data.phase !== "live" && (
-            <span className="mono muted">{data.statusLabel}</span>
-          )}
+          <CompetitionStamp state={data.state} />
           <h1>{data.name}</h1>
           <div className="meta mono">
             <span>{data.isPrivate ? "Private" : "Public"}</span>

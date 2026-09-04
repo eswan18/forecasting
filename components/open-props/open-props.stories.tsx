@@ -139,16 +139,54 @@ export const AllDone: Story = {
 
 export const Empty: Story = { args: { ...shared, props: [] } };
 
+/** A prop of your own: no competition, so its own deadline is the only one. */
+const mine = {
+  ...base,
+  competition_id: null,
+  competition_name: null,
+  competition_is_private: null,
+  competition_forecasts_close_date: null,
+  competition_forecasts_open_date: null,
+  prop_user_id: 4,
+};
+
 /**
  * The same list standing on its own: a reader's personal props belong to no
  * competition, so there is no overview to go back to — only a way to write
  * another one.
+ *
+ * A personal list also holds props at every stage of their life, so its filter
+ * bar cuts by stage rather than by whether the reader has forecasted yet, and
+ * it opens on all of them.
  */
 export const Personal: Story = {
   args: {
-    props,
+    props: [
+      ...props,
+      {
+        ...mine,
+        prop_id: 90,
+        prop_text: "I ship the redesign before the end of the quarter.",
+        category_name: "Work",
+        prop_forecasts_due_date: day(-30),
+        user_forecast_id: 501,
+        user_forecast: 0.62,
+      },
+      {
+        ...mine,
+        prop_id: 91,
+        prop_text: "I read twelve books this year.",
+        category_name: "Life",
+        prop_forecasts_due_date: day(-90),
+        resolution_id: 44,
+        resolution: false,
+        user_forecast_id: 502,
+        user_forecast: 0.8,
+      },
+    ],
     title: "Your props",
     kicker: "Personal props",
+    tabs: "stage",
     newHref: "/props/new",
     currentUserId: 4,
     isAdmin: true,

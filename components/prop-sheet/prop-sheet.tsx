@@ -32,7 +32,6 @@ const ownCss = `
   line-height: 1.18;
   max-width: 44rem;
 }
-.hxp .md a { color: var(--red-text); text-decoration: underline; text-underline-offset: 0.2em; }
 
 /* The dateline: everything the claim is bound by, set as one mono line under
    the rule the way a masthead's dateline sits under its title. */

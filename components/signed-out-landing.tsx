@@ -33,10 +33,34 @@ const robotoMono = Roboto_Mono({
 
 /** How scoring works. The 100% rows bracket the rest. */
 const PENALTIES = [
-  { said: "100%", outcome: "Yes", math: "(1.00 − 1)²", cost: "0.000", tone: "good" },
-  { said: "50%", outcome: "Yes", math: "(0.50 − 1)²", cost: "0.250", tone: "flat" },
-  { said: "90%", outcome: "No", math: "(0.90 − 0)²", cost: "0.810", tone: "bad" },
-  { said: "100%", outcome: "No", math: "(1.00 − 0)²", cost: "1.000", tone: "bad" },
+  {
+    said: "100%",
+    outcome: "Yes",
+    math: "(1.00 − 1)²",
+    cost: "0.000",
+    tone: "good",
+  },
+  {
+    said: "50%",
+    outcome: "Yes",
+    math: "(0.50 − 1)²",
+    cost: "0.250",
+    tone: "flat",
+  },
+  {
+    said: "90%",
+    outcome: "No",
+    math: "(0.90 − 0)²",
+    cost: "0.810",
+    tone: "bad",
+  },
+  {
+    said: "100%",
+    outcome: "No",
+    math: "(1.00 − 0)²",
+    cost: "1.000",
+    tone: "bad",
+  },
 ];
 
 const css = `
@@ -604,14 +628,28 @@ function Gauge({
             const a = dialPoint(v, R + 14);
             const b = dialPoint(v, R + 46);
             return (
-              <line key={v} x1={a.x} y1={a.y} x2={b.x} y2={b.y} strokeWidth="6" />
+              <line
+                key={v}
+                x1={a.x}
+                y1={a.y}
+                x2={b.x}
+                y2={b.y}
+                strokeWidth="6"
+              />
             );
           })}
           {[0.125, 0.375, 0.625, 0.875].map((v) => {
             const a = dialPoint(v, R + 14);
             const b = dialPoint(v, R + 31);
             return (
-              <line key={v} x1={a.x} y1={a.y} x2={b.x} y2={b.y} strokeWidth="4" />
+              <line
+                key={v}
+                x1={a.x}
+                y1={a.y}
+                x2={b.x}
+                y2={b.y}
+                strokeWidth="4"
+              />
             );
           })}
         </g>
@@ -703,12 +741,9 @@ export function SignedOutLanding() {
           </p>
         </section>
 
-
         <section className="cta rise">
           <p className="ask">You called it?</p>
-          <p className="line">
-            Not unless you recorded it on Haruspex.
-          </p>
+          <p className="line">Not unless you recorded it on Haruspex.</p>
           <a className="btn" href="/oauth/login">
             Sign in to forecast
           </a>

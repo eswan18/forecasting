@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import type { PropOptionSummary, VProp } from "@/types/db_types";
 import {
   Dialog,
@@ -10,13 +10,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Field, Refusal } from "@/components/form-sheet/form-sheet";
 import { resolveProp, unresolveProp } from "@/lib/db_actions/props";
 import { isChoiceKind } from "@/lib/prop-kind";
 import { useRouter } from "next/navigation";
-import { Spinner } from "@/components/ui/spinner";
 import { useServerAction } from "@/hooks/use-server-action";
 
 interface ResolutionDialogProps {
@@ -65,6 +62,9 @@ export function ResolutionDialog({
   );
   const [notes, setNotes] = useState(prop.resolution_notes || "");
   const router = useRouter();
+  const resolutionId = useId();
+  const outcomesId = useId();
+  const notesId = useId();
 
   const unresolving = isChoice
     ? choiceMode === "unresolved"
@@ -91,6 +91,7 @@ export function ResolutionDialog({
 
   const isLoading =
     resolvePropAction.isLoading || unresolvePropAction.isLoading;
+  const refusal = resolvePropAction.error || unresolvePropAction.error;
 
   const toggleChecked = (optionId: number) => {
     setChecked((prev) => {
@@ -143,202 +144,176 @@ export function ResolutionDialog({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Resolve Proposition</DialogTitle>
-          <DialogDescription>
-            Set the resolution for: &ldquo;{prop.prop_text}&rdquo;
-          </DialogDescription>
-        </DialogHeader>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle>Resolve proposition</DialogTitle>
+            <DialogDescription>{prop.prop_text}</DialogDescription>
+          </DialogHeader>
 
-        <div className="grid gap-4 py-4">
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Resolution</Label>
-            {isChoice ? (
-              <div className="space-y-3">
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
+          <div className="hxf">
+            <Field label="Resolution" labelId={resolutionId}>
+              {isChoice ? (
+                <div
+                  className="choose"
+                  role="radiogroup"
+                  aria-labelledby={resolutionId}
+                >
+                  <label htmlFor={`${resolutionId}-r`}>
                     <input
                       type="radio"
-                      id="choice-resolved"
-                      name="choice-resolution"
-                      value="resolved"
+                      id={`${resolutionId}-r`}
+                      name={`${resolutionId}-mode`}
                       checked={choiceMode === "resolved"}
                       onChange={() => setChoiceMode("resolved")}
-                      className="h-4 w-4"
+                      disabled={isLoading}
                     />
-                    <Label
-                      htmlFor="choice-resolved"
-                      className="text-sm cursor-pointer"
-                    >
-                      Resolved
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
+                    <span className="who">Resolved</span>
+                  </label>
+                  <label htmlFor={`${resolutionId}-u`}>
                     <input
                       type="radio"
-                      id="choice-unresolved"
-                      name="choice-resolution"
-                      value="unresolved"
+                      id={`${resolutionId}-u`}
+                      name={`${resolutionId}-mode`}
                       checked={choiceMode === "unresolved"}
                       onChange={() => setChoiceMode("unresolved")}
-                      className="h-4 w-4"
+                      disabled={isLoading}
                     />
-                    <Label
-                      htmlFor="choice-unresolved"
-                      className="text-sm cursor-pointer"
-                    >
-                      Unresolved
-                    </Label>
-                  </div>
+                    <span className="who">Unresolved</span>
+                  </label>
                 </div>
-
-                {choiceMode === "resolved" && (
-                  <div className="space-y-2 border-t pt-3">
-                    <p className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-                      {singleWinner
-                        ? "Winning option"
-                        : "Options that happened"}
-                    </p>
-                    <div className="space-y-2">
-                      {options.map((option) => (
-                        <div
-                          key={option.option_id}
-                          className="flex items-center space-x-2"
-                        >
-                          <input
-                            type={singleWinner ? "radio" : "checkbox"}
-                            id={`option-${option.option_id}`}
-                            name={
-                              singleWinner
-                                ? "prop-outcome"
-                                : `prop-outcome-${option.option_id}`
-                            }
-                            checked={
-                              singleWinner
-                                ? winnerId === option.option_id
-                                : checked.has(option.option_id)
-                            }
-                            onChange={() =>
-                              singleWinner
-                                ? setWinnerId(option.option_id)
-                                : toggleChecked(option.option_id)
-                            }
-                            className="h-4 w-4"
-                          />
-                          <Label
-                            htmlFor={`option-${option.option_id}`}
-                            className="text-sm cursor-pointer"
-                          >
-                            {option.text}
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                    {singleWinner
-                      ? winnerId === null && (
-                          <p className="text-xs text-muted-foreground">
-                            Pick the option that happened.
-                          </p>
-                        )
-                      : checked.size === 0 && (
-                          <p className="text-xs text-muted-foreground">
-                            Nothing selected &mdash; resolves as none of these
-                            happened.
-                          </p>
-                        )}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="true"
-                    name="resolution"
-                    value="true"
-                    checked={resolution === "true"}
-                    onChange={(e) =>
-                      setResolution(e.target.value as ResolutionOption)
-                    }
-                    className="h-4 w-4"
-                  />
-                  <Label htmlFor="true" className="text-sm cursor-pointer">
-                    True
-                  </Label>
+              ) : (
+                <div
+                  className="choose"
+                  role="radiogroup"
+                  aria-labelledby={resolutionId}
+                >
+                  {(
+                    [
+                      ["true", "True"],
+                      ["false", "False"],
+                      ["unresolved", "Unresolved"],
+                    ] as [ResolutionOption, string][]
+                  ).map(([value, label]) => (
+                    <label key={value} htmlFor={`${resolutionId}-${value}`}>
+                      <input
+                        type="radio"
+                        id={`${resolutionId}-${value}`}
+                        name={`${resolutionId}-resolution`}
+                        value={value}
+                        checked={resolution === value}
+                        onChange={() => setResolution(value)}
+                        disabled={isLoading}
+                      />
+                      <span className="who">{label}</span>
+                    </label>
+                  ))}
                 </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="false"
-                    name="resolution"
-                    value="false"
-                    checked={resolution === "false"}
-                    onChange={(e) =>
-                      setResolution(e.target.value as ResolutionOption)
-                    }
-                    className="h-4 w-4"
-                  />
-                  <Label htmlFor="false" className="text-sm cursor-pointer">
-                    False
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="unresolved"
-                    name="resolution"
-                    value="unresolved"
-                    checked={resolution === "unresolved"}
-                    onChange={(e) =>
-                      setResolution(e.target.value as ResolutionOption)
-                    }
-                    className="h-4 w-4"
-                  />
-                  <Label
-                    htmlFor="unresolved"
-                    className="text-sm cursor-pointer"
-                  >
-                    Unresolved
-                  </Label>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="notes" className="text-sm font-medium">
-              Notes {!unresolving && "(optional)"}{" "}
-              {!unresolving && (
-                <span className="text-xs text-muted-foreground font-normal">
-                  (Markdown supported)
-                </span>
               )}
-            </Label>
-            <Textarea
-              id="notes"
-              placeholder={
-                unresolving
-                  ? "Notes will be removed when unresolved"
-                  : "Add notes about this resolution... Markdown formatting (links, bold, italic) is supported."
-              }
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              disabled={unresolving}
-              className="min-h-[80px]"
-            />
-          </div>
-        </div>
+            </Field>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={handleClose} disabled={isLoading}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} disabled={isLoading || missingWinner}>
-            {isLoading && <Spinner className="mr-2 h-4 w-4" />}
-            Update
-          </Button>
-        </DialogFooter>
+            {isChoice && choiceMode === "resolved" && (
+              <Field
+                label={
+                  singleWinner ? "Winning option" : "Options that happened"
+                }
+                labelId={outcomesId}
+                hint={
+                  singleWinner
+                    ? winnerId === null
+                      ? "Pick the option that happened."
+                      : undefined
+                    : checked.size === 0
+                      ? "Nothing selected — resolves as none of these happened."
+                      : undefined
+                }
+              >
+                <div
+                  className="choose"
+                  // `any_of` takes any number of options, so its group is not a
+                  // radiogroup however alike the two look.
+                  role={singleWinner ? "radiogroup" : "group"}
+                  aria-labelledby={outcomesId}
+                >
+                  {options.map((option) => (
+                    <label
+                      key={option.option_id}
+                      htmlFor={`${outcomesId}-${option.option_id}`}
+                    >
+                      <input
+                        type={singleWinner ? "radio" : "checkbox"}
+                        id={`${outcomesId}-${option.option_id}`}
+                        name={
+                          singleWinner
+                            ? `${outcomesId}-outcome`
+                            : `${outcomesId}-outcome-${option.option_id}`
+                        }
+                        checked={
+                          singleWinner
+                            ? winnerId === option.option_id
+                            : checked.has(option.option_id)
+                        }
+                        onChange={() =>
+                          singleWinner
+                            ? setWinnerId(option.option_id)
+                            : toggleChecked(option.option_id)
+                        }
+                        disabled={isLoading}
+                      />
+                      <span className="who">{option.text}</span>
+                    </label>
+                  ))}
+                </div>
+              </Field>
+            )}
+
+            <Field
+              label="Notes"
+              htmlFor={notesId}
+              optional={!unresolving}
+              hint={
+                unresolving
+                  ? "Removed when the prop is unresolved."
+                  : "How it was settled. Markdown works."
+              }
+            >
+              <textarea
+                id={notesId}
+                rows={3}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                disabled={unresolving || isLoading}
+              />
+            </Field>
+
+            {refusal && <Refusal message={refusal} />}
+          </div>
+
+          <DialogFooter className="hxf">
+            <button
+              type="button"
+              className="quit"
+              onClick={handleClose}
+              disabled={isLoading}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="submit"
+              disabled={isLoading || missingWinner}
+            >
+              {isLoading ? "Saving…" : unresolving ? "Unresolve" : "Resolve"}
+              <span className="arrow" aria-hidden="true">
+                →
+              </span>
+            </button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

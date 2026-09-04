@@ -1,6 +1,7 @@
+import type { SeasonState } from "@/components/competition-stamp/competition-stamp";
 import type { SeasonPhase } from "@/components/dashboard/dashboard-view";
 
-export type { SeasonPhase };
+export type { SeasonPhase, SeasonState };
 
 /** One line of the standings. */
 export interface Standing {
@@ -43,12 +44,12 @@ export interface CompetitionViewData {
   /** Drives what the layout leads with. */
   phase: SeasonPhase;
   /**
-   * What the masthead tag says. Kept separate from `phase` because the five
+   * What the masthead stamps. Kept separate from `phase` because the five
    * statuses don't collapse cleanly for display: an `upcoming` competition is
    * pre-live, and calling it "Open" would be a lie. Only admins can see one,
-   * but the label still has to be true.
+   * but the stamp still has to be true.
    */
-  statusLabel: string;
+  state: SeasonState;
   /** Members for a private competition; scored forecasters for a public one. */
   fieldSize: number;
   counts: {

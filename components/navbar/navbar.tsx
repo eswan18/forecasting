@@ -140,8 +140,8 @@ export default function NavBar() {
       icon: <MessageCircle size={16} />,
     },
     {
-      href: "/admin/forecast-progress/6",
-      label: "2026 Forecast Progress",
+      href: "/admin/forecast-progress",
+      label: "Forecast Progress",
       icon: <BarChartHorizontal size={16} />,
     },
   ];

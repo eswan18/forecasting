@@ -1,3 +1,4 @@
+import { seasonStateOf } from "@/components/competition-stamp/competition-stamp";
 import {
   getCompetitionStatus,
   type CompetitionStatus,
@@ -19,14 +20,6 @@ const PHASE_OF: Record<CompetitionStatus, SeasonPhase> = {
   // Only admins can open an upcoming competition; nothing about it is live
   // yet, so it leads with its (empty) prop list rather than a scoreboard.
   upcoming: "live",
-};
-
-const STATUS_LABEL: Record<CompetitionStatus, string> = {
-  "forecasts-open": "Open",
-  private: "Open",
-  "forecasts-closed": "Scoring",
-  ended: "Final",
-  upcoming: "Upcoming",
 };
 
 /**
@@ -118,7 +111,7 @@ export function buildViewData({
     name: competition.name,
     isPrivate,
     phase: PHASE_OF[status],
-    statusLabel: STATUS_LABEL[status],
+    state: seasonStateOf(status),
     fieldSize,
     counts: {
       toForecast: owed.length,

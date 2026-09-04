@@ -1,7 +1,4 @@
-import type {
-  UserCategoryScore,
-  UserForecastScore,
-} from "@/lib/db_actions";
+import type { UserCategoryScore, UserForecastScore } from "@/lib/db_actions";
 import type { PropKind, PropView } from "@/components/prop-list/types";
 import type { ScoreSection } from "./user-scores";
 
@@ -66,7 +63,10 @@ export function buildSections({
       );
       return {
         key,
-        label: key === "uncategorised" ? "Uncategorised" : (labelOf.get(key) ?? "Uncategorised"),
+        label:
+          key === "uncategorised"
+            ? "Uncategorised"
+            : (labelOf.get(key) ?? "Uncategorised"),
         score: scoreOf.get(key) ?? null,
         props: sorted.map(toPropView),
         penalties: Object.fromEntries(

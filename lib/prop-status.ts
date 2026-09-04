@@ -87,11 +87,17 @@ export function getPropStatusFromProp(
   },
   options?: PropStatusOptions,
 ): PropStatus {
-  // For private competitions, use prop-level deadline
-  // For public competitions, use competition-level deadline
+  // For private competitions, use prop-level deadline.
+  // For public competitions, use competition-level deadline — falling back to
+  // the prop's own when there is no competition-level one, which is the case
+  // for a personal prop: it belongs to no competition, so every competition_*
+  // field is null and its own deadline is the only one there is. Without the
+  // fallback a personal prop reads "open" forever, however long past its date.
   const closeDate = prop.competition_is_private
     ? (prop.prop_forecasts_due_date ?? null)
-    : (prop.competition_forecasts_close_date ?? null);
+    : (prop.competition_forecasts_close_date ??
+      prop.prop_forecasts_due_date ??
+      null);
 
   return getPropStatus(closeDate, prop.resolution, {
     ...options,
