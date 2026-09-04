@@ -135,4 +135,13 @@ describe("sendManualEmail", () => {
 
     expect(result.success).toBe(false);
   });
+
+  it("sets a correlation id, which is what joins this log to comms' log", async () => {
+    vi.mocked(getUser.getUserFromCookies).mockResolvedValue(admin as never);
+
+    await sendManualEmail(valid);
+
+    const published = vi.mocked(pubsub.publishEvent).mock.calls[0]![0];
+    expect(published.correlation_id).toMatch(/^[0-9a-f-]{36}$/);
+  });
 });

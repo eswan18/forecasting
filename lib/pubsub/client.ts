@@ -1,4 +1,5 @@
 import "server-only";
+import { randomUUID } from "node:crypto";
 import { PubSub } from "@google-cloud/pubsub";
 
 function requiredEnv(name: string): string {
@@ -16,6 +17,12 @@ export interface BaseEvent {
   event_type: string;
   source: string;
   timestamp: string;
+  /**
+   * Ties this event to the action that caused it. comms logs it beside the
+   * Resend message id, so one admin click can be followed from here through
+   * to the sent email. Left unset, publishEvent mints one.
+   */
+  correlation_id?: string;
   notify?: NotifyTarget[];
   notify_link?: string;
   data: Record<string, unknown>;
@@ -32,9 +39,14 @@ function getClient(): PubSub {
 
 export async function publishEvent(event: BaseEvent): Promise<string> {
   const topic = getClient().topic(requiredEnv("PUBSUB_TOPIC"));
+  // Every event gets one whether or not the caller cared, so no publisher has
+  // to remember. A caller that wants to log the id itself passes its own.
+  const correlationId = event.correlation_id ?? randomUUID();
   const messageId = await topic.publishMessage({
-    json: event,
+    json: { ...event, correlation_id: correlationId },
   });
-  console.log(`Published event ${event.event_type} (message ${messageId})`);
+  console.log(
+    `Published event ${event.event_type} (message ${messageId}, correlation_id ${correlationId})`,
+  );
   return messageId;
 }
