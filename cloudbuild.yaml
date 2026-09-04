@@ -2,9 +2,9 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 substitutions:
-  _SENTRY_ORG: 'forecasting'
-  _SENTRY_PROJECT: 'forecasting-app'
-  _IMAGE: 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting'
+  _SENTRY_ORG: 'haruspex'
+  _SENTRY_PROJECT: 'haruspex-app'
+  _IMAGE: 'us-central1-docker.pkg.dev/ethans-services/containers/haruspex'
 
 availableSecrets:
   secretManager:
@@ -30,6 +30,7 @@ steps:
           --build-arg SENTRY_PROJECT=${_SENTRY_PROJECT} \
           --build-arg SENTRY_AUTH_TOKEN=$$SENTRY_AUTH_TOKEN \
           --build-arg SENTRY_RELEASE=${SHORT_SHA} \
+          --build-arg SENTRY_VERBOSE=1 \
           -t ${_IMAGE}:${SHORT_SHA} \
           --push \
           .
