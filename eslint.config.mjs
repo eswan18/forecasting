@@ -29,6 +29,10 @@ const eslintConfig = [
       "storybook-static/**",
       "migrations/**",
       "tests/helpers/000000000000_create-initial-schema.ts",
+      // Git worktrees: full second checkouts of this repo, node_modules and
+      // all. The ignores above are repo-relative, so without this every
+      // dependency inside a worktree gets linted as project source.
+      ".claude/worktrees/**",
     ],
   },
   {

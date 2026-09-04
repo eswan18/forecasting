@@ -22,6 +22,9 @@ export default defineConfig({
       "**/dist/**",
       "**/.next/**",
       "**/stories/**",
+      // Git worktrees live here and are full second checkouts of this repo,
+      // so every test file in them would be collected twice.
+      "**/.claude/worktrees/**",
     ],
     environment: "node",
     globals: true,

@@ -1,7 +1,7 @@
 # Forecasting App
 
 This is a web application for predicting the likelihood that certain events will happen in the coming year.
-Check it out at [forecasting.ethanswan.com](https://forecasting.ethanswan.com).
+Check it out at [haruspex.fyi](https://haruspex.fyi).
 
 The idea is inspired by Philip Tetlock's [Good Judgment Project](https://en.wikipedia.org/wiki/The_Good_Judgment_Project) and book _Superforecasting_.
 

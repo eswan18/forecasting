@@ -1,0 +1,35 @@
+# Staging on a custom domain, matching how footstrike serves staging.footstrike.run.
+#
+# Routed by the shared ingress-nginx controller, whose Service is a Tailscale
+# LoadBalancer (staging-ingress.<tailnet>.ts.net). staging.haruspex.fyi is a
+# grey-cloud (DNS-only) CNAME pointing at that name: it resolves publicly but
+# only tailnet members can route to it, so staging stays tailnet-only while
+# still presenting a browser-valid certificate.
+#
+# The cert-manager annotation drives ingress-shim, which creates the
+# Certificate from the tls block below — there is no Certificate resource to
+# write by hand. Issuance is DNS-01 via the haruspex.fyi-scoped Cloudflare
+# token; see the letsencrypt-dns01 ClusterIssuer in infra/__main__.py.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: forecasting-staging-haruspex
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-dns01
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: staging.haruspex.fyi
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: forecasting
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - staging.haruspex.fyi
+      secretName: staging-haruspex-fyi-tls

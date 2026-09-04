@@ -14,6 +14,7 @@ const IDP_PUBLIC_URL = requiredEnv("IDP_PUBLIC_URL");
 const IDP_CLIENT_ID = process.env.IDP_CLIENT_ID || "";
 const IDP_CLIENT_SECRET = process.env.IDP_CLIENT_SECRET || "";
 
+// Types
 export interface TokenResponse {
   access_token: string;
   token_type: string;
