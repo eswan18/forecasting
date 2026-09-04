@@ -8,27 +8,45 @@ import * as path from "path";
  * Usage:
  * - ENV=local npm run dev (loads .env.local)
  * - ENV=dev npm run dev (loads .env.dev)
+ * - ENV=staging npm run dev (loads .env.staging)
  * - ENV=prod npm run dev (loads .env.prod)
  *
  * If ENV is not set, defaults to 'local'
  */
-export function loadEnvironment(): void {
-  const env = process.env.ENV || "local";
 
-  // Map environment names to .env file names
-  const envMap: Record<string, string> = {
-    local: ".env.local",
-    dev: ".env.dev",
-    prod: ".env.prod",
-  };
+/**
+ * Every environment the app can be pointed at, and the file each reads.
+ *
+ * Declared rather than inlined so the check and the error message cannot drift
+ * apart: the message lists these keys, so an environment added here is offered
+ * to anyone who mistypes one.
+ */
+const ENV_FILES: Record<string, string> = {
+  local: ".env.local",
+  dev: ".env.dev",
+  staging: ".env.staging",
+  prod: ".env.prod",
+};
 
-  const envFile = envMap[env];
+/**
+ * The dotenv file an environment name reads, or a throw naming the ones that
+ * would have worked.
+ */
+export function envFileFor(env: string): string {
+  const envFile = ENV_FILES[env];
 
   if (!envFile) {
     throw new Error(
-      `Invalid ENV value: ${env}. Must be one of: local, dev, prod`,
+      `Invalid ENV value: ${env}. Must be one of: ${Object.keys(ENV_FILES).join(", ")}`,
     );
   }
+
+  return envFile;
+}
+
+export function loadEnvironment(): void {
+  const env = process.env.ENV || "local";
+  const envFile = envFileFor(env);
 
   // Load the appropriate .env file
   const result = dotenv.config({
@@ -49,4 +67,3 @@ export function loadEnvironment(): void {
 export function getCurrentEnvironment(): string {
   return process.env.ENV || "local";
 }
-
