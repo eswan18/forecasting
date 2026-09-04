@@ -3,9 +3,6 @@ kind: Application
 metadata:
   name: forecasting-staging
   namespace: argocd
-  annotations:
-    argocd-image-updater.argoproj.io/image-list: forecasting=us-central1-docker.pkg.dev/ethans-services/containers/forecasting
-    argocd-image-updater.argoproj.io/forecasting.update-strategy: newest-build
 spec:
   project: default
   source:
