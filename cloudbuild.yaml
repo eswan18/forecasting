@@ -2,8 +2,8 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 substitutions:
-  _SENTRY_ORG: 'forecasting'
-  _SENTRY_PROJECT: 'forecasting-app'
+  _SENTRY_ORG: 'haruspex'
+  _SENTRY_PROJECT: 'haruspex-app'
   _IMAGE: 'us-central1-docker.pkg.dev/ethans-services/containers/forecasting'
 
 availableSecrets:
