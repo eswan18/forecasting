@@ -31,17 +31,32 @@ export async function PropListPage({
   if (!propsResult.success) return <ErrorPage title={propsResult.error} />;
 
   const isPrivate = competition.is_private;
-  const source =
-    bucket === "resolved"
-      ? resolvedProps(propsResult.data)
-      : awaitingResult(propsResult.data, isPrivate, new Date());
+  const resolved = resolvedProps(propsResult.data);
+  const awaiting = awaitingResult(propsResult.data, isPrivate, new Date());
+
+  const showingResolved = bucket === "resolved";
+  const source = showingResolved ? resolved : awaiting;
+  // Both buckets are already in hand, so the crossing link can carry the other
+  // list's size — and be left off entirely when there is nothing over there.
+  const other = showingResolved ? awaiting : resolved;
 
   return (
     <LayoutAxis
       props={buildPropViews({ props: source, isPrivate })}
-      resolved={bucket === "resolved"}
+      resolved={showingResolved}
       competitionName={competition.name}
       backHref={`/competitions/${competition.id}`}
+      sibling={
+        other.length > 0
+          ? {
+              href: `/competitions/${competition.id}/props/${
+                showingResolved ? "awaiting" : "resolved"
+              }`,
+              label: showingResolved ? "Awaiting result" : "Resolved",
+              count: other.length,
+            }
+          : undefined
+      }
       competitionId={competition.id}
     />
   );

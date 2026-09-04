@@ -242,6 +242,7 @@ export function LayoutAxis({
   resolved,
   competitionName,
   backHref,
+  sibling,
   competitionId,
 }: {
   props: PropView[];
@@ -250,6 +251,14 @@ export function LayoutAxis({
    *  way back rather than relying on chrome around it. */
   competitionName?: string;
   backHref?: string;
+  /**
+   * The other settled list, when it has anything in it.
+   *
+   * Only `awaiting` and `resolved` are siblings. `open` is not: a competition
+   * with a shared deadline has everything open before it and nothing open
+   * after, so a link between them would always point at an empty page.
+   */
+  sibling?: { href: string; label: string; count: number };
   /** Where a claim goes when clicked. Omit and the claims are plain text. */
   competitionId?: number;
 }) {
@@ -280,11 +289,18 @@ export function LayoutAxis({
             {resolved ? "Resolved" : "Awaiting result"}{" "}
             <span className="aside num">· {props.length} props</span>
           </span>
-          {backHref && (
-            <Link className="aside" href={backHref}>
-              ← Overview
-            </Link>
-          )}
+          <span className="asides">
+            {sibling && (
+              <Link className="aside" href={sibling.href}>
+                {sibling.label} <span className="num">· {sibling.count}</span> →
+              </Link>
+            )}
+            {backHref && (
+              <Link className="aside" href={backHref}>
+                ← Overview
+              </Link>
+            )}
+          </span>
         </h2>
 
         <div className="legend">

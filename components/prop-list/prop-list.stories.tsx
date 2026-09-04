@@ -20,6 +20,11 @@ export const AwaitingResult: Story = {
     resolved: false,
     competitionName: "2026 Open",
     backHref: "/competitions/6",
+    sibling: {
+      href: "/competitions/6/props/resolved",
+      label: "Resolved",
+      count: 26,
+    },
     competitionId: 6,
   },
 };
@@ -29,6 +34,25 @@ export const Resolved: Story = {
   args: {
     props: resolvedFixture,
     resolved: true,
+    competitionName: "2026 Open",
+    backHref: "/competitions/6",
+    sibling: {
+      href: "/competitions/6/props/awaiting",
+      label: "Awaiting result",
+      count: 6,
+    },
+    competitionId: 6,
+  },
+};
+
+/**
+ * Nothing has resolved yet, so there is no crossing link — a competition with
+ * an empty sibling gets no way over to an empty page.
+ */
+export const NoSibling: Story = {
+  args: {
+    props: unresolvedFixture,
+    resolved: false,
     competitionName: "2026 Open",
     backHref: "/competitions/6",
     competitionId: 6,
