@@ -579,7 +579,7 @@ export async function addCompetitionMemberById({
       if (competition?.is_private) {
         publishEvent({
           event_type: "competition.member_added",
-          source: "forecasting",
+          source: "haruspex",
           timestamp: new Date().toISOString(),
           notify: [{ email: userToAdd.email, name: userToAdd.name }],
           notify_link: `${process.env.APP_BASE_URL}/competitions/${competitionId}`,

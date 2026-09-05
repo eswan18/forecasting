@@ -46,8 +46,12 @@ describe("sendManualEmail", () => {
     expect(pubsub.publishEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         event_type: "admin.manual_email",
-        // The source is what comms keys the haruspex From address on.
-        source: "forecasting",
+        // The source is what comms keys the haruspex From address on, in its
+        // EMAIL_FROM_OVERRIDES configmap -- a cross-repo coupling with no
+        // shared type. Changing this value without adding the matching key
+        // there does not fail: comms falls back to the default EMAIL_FROM and
+        // the mail goes out from identity's address instead.
+        source: "haruspex",
         notify: [{ email: "alice@example.com", name: "Alice" }],
         data: { subject: "About your account", body: "Please read." },
       }),
