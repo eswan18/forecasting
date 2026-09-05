@@ -6,7 +6,6 @@ import { StatusIndicator } from "./status-indicator";
 export function AdminPanelIndicator() {
   const pathname = usePathname();
 
-  // Only show on admin routes
   if (!pathname.startsWith("/admin")) {
     return null;
   }

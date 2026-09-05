@@ -80,7 +80,6 @@ export async function GET(request: NextRequest) {
     // Fetch user info to get profile data including avatar
     const userInfo = await fetchUserInfo(tokens.access_token);
 
-    // Look up user by IDP user ID
     let user = await getUserByIdpUserId(claims.sub);
 
     // Construct name from userInfo (given_name + family_name)
@@ -166,7 +165,6 @@ export async function GET(request: NextRequest) {
       username: claims.username,
     });
 
-    // Redirect to the return URL
     return NextResponse.redirect(new URL(returnUrl, baseUrl));
   } catch (err) {
     logger.error("OAuth callback error", err as Error, {

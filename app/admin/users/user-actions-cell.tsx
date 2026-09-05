@@ -85,7 +85,7 @@ export function UserActionsCell({ user }: { user: VUser }) {
     try {
       const result = await setUserActive({
         userId: user.id,
-        active: !isActive, // Toggle the current status
+        active: !isActive,
       });
       const updatedUser = handleServerActionResult(result);
 

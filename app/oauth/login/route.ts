@@ -52,7 +52,6 @@ export async function GET(request: NextRequest) {
       path: "/",
     });
 
-    // Generate authorization URL
     const authUrl = getAuthorizationUrl(state, codeChallenge, redirectUri);
 
     logger.debug("Initiating OAuth login", {

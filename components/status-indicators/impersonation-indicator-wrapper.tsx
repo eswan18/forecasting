@@ -7,7 +7,6 @@ export async function ImpersonationIndicatorWrapper() {
     getUserFromCookies(),
   ]);
 
-  // Only show banner if an admin is impersonating
   if (!impersonatingAdmin || !currentUser) {
     return null;
   }
