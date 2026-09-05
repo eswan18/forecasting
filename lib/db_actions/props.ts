@@ -207,7 +207,6 @@ export async function resolveProp({
   resolution,
   outcomes,
   notes,
-  userId,
   overwrite = false,
 }: {
   propId: number;
@@ -216,7 +215,6 @@ export async function resolveProp({
   /** Required for choice props, forbidden for yes/no ones. */
   outcomes?: OptionOutcome[];
   notes?: string;
-  userId: number | null;
   overwrite?: boolean;
 }): Promise<ServerActionResult<void>> {
   const currentUser = await getUserFromCookies();
@@ -224,7 +222,6 @@ export async function resolveProp({
     propId,
     resolution,
     outcomeCount: outcomes?.length,
-    propUserId: userId,
     overwrite,
     currentUserId: currentUser?.id,
   });
@@ -319,7 +316,10 @@ export async function resolveProp({
         const record: NewResolution = {
           prop_id: propId,
           resolution: headerValue,
-          user_id: userId,
+          // Who resolved it comes from the session, never the request. This
+          // is a server action, so a caller-supplied author could name anyone,
+          // and the only caller never sent one.
+          user_id: currentUser?.id ?? null,
           notes,
         };
         const inserted = await trx

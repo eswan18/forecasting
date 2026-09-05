@@ -993,7 +993,6 @@ describe("Props Unit Tests", () => {
       const result = await resolveProp({
         propId: 1,
         resolution: true,
-        userId: 2,
       });
 
       expect(result.success).toBe(true);
@@ -1017,7 +1016,6 @@ describe("Props Unit Tests", () => {
       const result = await resolveProp({
         propId: 1,
         resolution: false,
-        userId: 2,
         overwrite: false,
       });
 
@@ -1040,7 +1038,6 @@ describe("Props Unit Tests", () => {
       const result = await resolveProp({
         propId: 1,
         resolution: false,
-        userId: 2,
         overwrite: true,
       });
 
@@ -1060,7 +1057,6 @@ describe("Props Unit Tests", () => {
       const result = await resolveProp({
         propId: 999,
         resolution: true,
-        userId: 2,
       });
 
       expect(result.success).toBe(false);
@@ -1078,7 +1074,6 @@ describe("Props Unit Tests", () => {
         propId: 1,
         resolution: true,
         outcomes: [{ optionId: 10, outcome: true }],
-        userId: 2,
       });
 
       expect(result.success).toBe(false);
@@ -1093,7 +1088,7 @@ describe("Props Unit Tests", () => {
       const { trx, recorded } = makeResolveTrx({ prop: binaryProp });
       runWith(trx);
 
-      const result = await resolveProp({ propId: 1, userId: 2 });
+      const result = await resolveProp({ propId: 1 });
 
       expect(result.success).toBe(false);
       if (!result.success) {
@@ -1112,7 +1107,6 @@ describe("Props Unit Tests", () => {
       const result = await resolveProp({
         propId: 1,
         resolution: true,
-        userId: 2,
       });
 
       expect(result.success).toBe(false);
@@ -1136,7 +1130,6 @@ describe("Props Unit Tests", () => {
           { optionId: 10, outcome: true },
           { optionId: 11, outcome: true },
         ],
-        userId: 2,
       });
 
       expect(result.success).toBe(false);
@@ -1159,7 +1152,6 @@ describe("Props Unit Tests", () => {
       const result = await resolveProp({
         propId: 1,
         outcomes: [{ optionId: 10, outcome: true }],
-        userId: 2,
       });
 
       expect(result.success).toBe(false);
@@ -1185,7 +1177,6 @@ describe("Props Unit Tests", () => {
           { optionId: 11, outcome: false },
         ],
         notes: "Neither happened",
-        userId: 2,
       });
 
       expect(result.success).toBe(true);
@@ -1217,7 +1208,6 @@ describe("Props Unit Tests", () => {
           { optionId: 11, outcome: true },
         ],
         notes: "Corrected",
-        userId: 2,
         overwrite: true,
       });
 
