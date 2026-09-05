@@ -112,7 +112,7 @@ export async function sendManualEmail({
     const correlationId = randomUUID();
     await publishEvent({
       event_type: "admin.manual_email",
-      source: "forecasting",
+      source: "haruspex",
       timestamp: new Date().toISOString(),
       correlation_id: correlationId,
       notify: [{ email: recipient.email, name: recipient.name }],
