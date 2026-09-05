@@ -1,5 +1,11 @@
 # Choice Props — Design
 
+> **Historical.** This document records a plan as it stood when it was written.
+> It is kept for the reasoning, not as a description of the codebase — files it
+> names may since have been renamed, moved or deleted. Do not read it as
+> current guidance, and do not edit it to match today: that would falsify the
+> record it exists to be.
+
 **Date:** 2026-09-01
 **Status:** approved (data model, backend, frontend scope agreed in conversation)
 

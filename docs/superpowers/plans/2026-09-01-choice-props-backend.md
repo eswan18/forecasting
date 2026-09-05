@@ -1,5 +1,11 @@
 # Choice Props — Stage One (Database + Backend) Implementation Plan
 
+> **Historical.** This document records a plan as it stood when it was written.
+> It is kept for the reasoning, not as a description of the codebase — files it
+> names may since have been renamed, moved or deleted. Do not read it as
+> current guidance, and do not edit it to match today: that would falsify the
+> record it exists to be.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make the database and server actions able to store, validate and score choice props (`one_of` / `any_of`) with per-option probabilities, while every existing binary prop keeps working unchanged and no new UI ships.
