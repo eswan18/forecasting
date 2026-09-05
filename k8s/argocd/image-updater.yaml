@@ -1,24 +1,5 @@
-apiVersion: argocd-image-updater.argoproj.io/v1alpha1
-kind: ImageUpdater
-metadata:
-  name: forecasting-staging
-  namespace: argocd
-spec:
-  namespace: argocd
-  writeBackConfig:
-    method: argocd
-  applicationRefs:
-    - namePattern: forecasting-staging
-      images:
-        - alias: forecasting
-          imageName: us-central1-docker.pkg.dev/ethans-services/containers/haruspex
-          commonUpdateSettings:
-            updateStrategy: newest-build
-            allowTags: "regexp:^[a-f0-9]{7,}$"
----
-# Rename phase 2. Staging auto-deploy for the new Application; the
-# forecasting-staging CR above keeps running until the old stack is torn down,
-# and the two do not conflict because each names its own Application.
+# Staging auto-deploy. Prod deliberately has no CR: promotion there is manual
+# via `bif promote`.
 apiVersion: argocd-image-updater.argoproj.io/v1alpha1
 kind: ImageUpdater
 metadata:
