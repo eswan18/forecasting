@@ -10,10 +10,17 @@
 # Certificate from the tls block below — there is no Certificate resource to
 # write by hand. Issuance is DNS-01 via the haruspex.fyi-scoped Cloudflare
 # token; see the letsencrypt-dns01 ClusterIssuer in infra/__main__.py.
+#
+# Arrived in the rename's cutover phase rather than with the rest of this
+# overlay: ingress-nginx has no defined behaviour when two Ingresses claim one
+# host, so this could not exist while forecasting-staging still held
+# staging.haruspex.fyi. Certificates are namespaced, so this does NOT inherit
+# the issued one next door -- cert-manager solves a fresh DNS-01 challenge here
+# and the host serves the controller's default certificate until it completes.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: forecasting-staging-haruspex
+  name: haruspex-staging-ingress
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-dns01
 spec:
@@ -26,7 +33,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: forecasting
+                name: haruspex
                 port:
                   number: 80
   tls:

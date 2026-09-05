@@ -7,6 +7,5 @@ resources:
   - service-account.yaml
   - configmap-env.yaml
   - secret-provider-class.yaml
-  - haruspex-ingress.yaml
 patches:
   - path: deployment-patch.yaml
