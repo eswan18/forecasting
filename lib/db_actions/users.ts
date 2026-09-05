@@ -29,10 +29,15 @@ export async function getUsers({ sort }: { sort?: Sort } = {}): Promise<
 
   const startTime = Date.now();
   try {
-    if (!currentUser) {
-      logger.warn("Unauthorized attempt to get users");
+    // v_users carries every user's email and idp_user_id -- the subject the
+    // IdP identifies them by across the whole fleet -- so this is admin-only.
+    // The `users` table has no RLS, so this check is the only thing standing
+    // between a logged-in caller and the entire directory; a server action is
+    // reachable without the /admin layout that gates the page.
+    if (!currentUser?.is_admin) {
+      logger.warn("Non-admin attempt to get users", { userId: currentUser?.id });
       return error(
-        "You must be logged in to view users",
+        "Only admins can view users",
         ERROR_CODES.UNAUTHORIZED,
       );
     }
@@ -73,10 +78,15 @@ export async function getUserById(
 
   const startTime = Date.now();
   try {
-    if (!currentUser) {
-      logger.warn("Unauthorized attempt to get user by ID", { userId: id });
+    // Admin-only for the same reason as getUsers above: the row includes
+    // email and idp_user_id, and there is no RLS on `users` to fall back on.
+    if (!currentUser?.is_admin) {
+      logger.warn("Non-admin attempt to get user by ID", {
+        userId: currentUser?.id,
+        targetUserId: id,
+      });
       return error(
-        "You must be logged in to view user details",
+        "Only admins can view user details",
         ERROR_CODES.UNAUTHORIZED,
       );
     }
