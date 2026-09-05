@@ -35,3 +35,58 @@ spec:
     automated:
       prune: true
       selfHeal: true
+---
+# The haruspex-* pair of the forecasting -> haruspex rename. These run
+# alongside the forecasting-* Applications, against the parallel manifest trees
+# in k8s/haruspex-{staging,prod}, until the Cloudflare cutover. The
+# forecasting-* Applications above are deleted afterwards -- and they must be
+# deleted BEFORE their namespaces, because `prune: true` means removing the
+# Application is what takes its workloads with it. Deleting a namespace first
+# strands its Application in a permanent ComparisonError instead.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: haruspex-staging
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/eswan18/haruspex
+    targetRevision: main
+    path: k8s/haruspex-staging
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: haruspex-staging
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: haruspex-prod
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/eswan18/haruspex
+    targetRevision: main
+    path: k8s/haruspex-prod
+    # Seeded with whatever forecasting-prod was serving when this was written.
+    # Prod carries no image-updater by design, so without an override here the
+    # new Deployment would resolve the base's :override-required tripwire and
+    # stall -- correct behaviour, but it would look like a broken rollout. This
+    # is the same field `bif promote` writes, so promotion keeps working
+    # normally afterwards and this value is only ever a starting point.
+    # Re-pin it to prod's current tag at cutover if prod has moved since.
+    kustomize:
+      images:
+        - us-central1-docker.pkg.dev/ethans-services/containers/haruspex=us-central1-docker.pkg.dev/ethans-services/containers/haruspex:6588852
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: haruspex-prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

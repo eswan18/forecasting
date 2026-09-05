@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: haruspex
+spec:
+  replicas: 2
+  template:
+    spec:
+      serviceAccountName: haruspex-prod-ksa
+      containers:
+        - name: haruspex
+          envFrom:
+            - configMapRef:
+                name: haruspex-config
+            - configMapRef:
+                name: haruspex-prod-env-config
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: haruspex-prod-secrets
+                  key: DATABASE_URL
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: haruspex-prod-secrets
+                  key: JWT_SECRET
+            - name: ARGON2_SALT
+              valueFrom:
+                secretKeyRef:
+                  name: haruspex-prod-secrets
+                  key: ARGON2_SALT
+            - name: IDP_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: haruspex-prod-secrets
+                  key: IDP_CLIENT_ID
+            - name: IDP_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: haruspex-prod-secrets
+                  key: IDP_CLIENT_SECRET
+      volumes:
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: haruspex-prod-secrets
