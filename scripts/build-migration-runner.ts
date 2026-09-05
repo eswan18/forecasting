@@ -148,7 +148,7 @@ export async function buildMigrationRunner(
   // from whatever package.json happens to sit above it in the image.
   await fs.writeFile(
     path.join(outDir, "package.json"),
-    `${JSON.stringify({ name: "forecast-app-migrate", private: true, type: "module" }, null, 2)}\n`,
+    `${JSON.stringify({ name: "haruspex-migrate", private: true, type: "module" }, null, 2)}\n`,
     "utf8",
   );
 
