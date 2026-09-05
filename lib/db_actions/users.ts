@@ -2,7 +2,7 @@
 
 import { OrderByExpression, OrderByModifiers } from "kysely";
 import { db } from "@/lib/database";
-import { VUser, NewUser, UserUpdate, Database } from "@/types/db_types";
+import { VUser, UserUpdate, Database } from "@/types/db_types";
 import { getUserFromCookies } from "@/lib/get-user";
 import {
   ServerActionResult,
@@ -187,62 +187,6 @@ export async function setUserActive({
       duration,
     });
     return error("Failed to update user status", ERROR_CODES.DATABASE_ERROR);
-  }
-}
-
-export async function createUser({
-  user,
-}: {
-  user: NewUser;
-}): Promise<ServerActionResult<number>> {
-  logger.debug("Creating user", {
-    email: user.email,
-    name: user.name,
-  });
-
-  const startTime = Date.now();
-  try {
-    const result = await db
-      .insertInto("users")
-      .values(user)
-      .returning("id")
-      .executeTakeFirst();
-
-    if (!result) {
-      logger.warn("Failed to create user - no result returned from database", {
-        operation: "createUser",
-        table: "users",
-        email: user.email,
-      });
-      return error("Failed to create user", ERROR_CODES.DATABASE_ERROR);
-    }
-
-    const duration = Date.now() - startTime;
-    logger.info("User created successfully", {
-      operation: "createUser",
-      table: "users",
-      userId: result.id,
-      email: user.email,
-      duration,
-    });
-
-    return success(result.id);
-  } catch (err) {
-    const duration = Date.now() - startTime;
-    logger.error("Failed to create user", err as Error, {
-      operation: "createUser",
-      table: "users",
-      email: user.email,
-      duration,
-    });
-
-    if (err instanceof Error && err.message.includes("duplicate")) {
-      return error(
-        "A user with this email already exists",
-        ERROR_CODES.VALIDATION_ERROR,
-      );
-    }
-    return error("Failed to create user", ERROR_CODES.DATABASE_ERROR);
   }
 }
 
