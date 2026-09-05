@@ -297,7 +297,7 @@ describe("Forecasts Unit Tests", () => {
         expect(result.error).toBe("Unauthorized");
         expect(result.code).toBe("UNAUTHORIZED");
       }
-      // Should not even call withRLS
+      // Should not even call withRLSAction
       expect(dbHelpers.withRLSAction).not.toHaveBeenCalled();
     });
 

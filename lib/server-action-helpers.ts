@@ -16,7 +16,6 @@ export function handleServerActionResult<T>(
     options || {};
 
   if (!result.success) {
-    // Handle unauthorized errors with redirect
     if (result.code === ERROR_CODES.UNAUTHORIZED) {
       redirect(unauthorizedRedirect);
     }
@@ -34,7 +33,10 @@ export function handleServerActionResult<T>(
 }
 
 /**
- * Helper to handle server action results with a custom error component
+ * Like `handleServerActionResult`, but returns `fallback` on error instead of
+ * throwing — for callers that can render something sensible without the data.
+ * Unauthorized still redirects: a signed-out reader gets the login page, not a
+ * page quietly rendered from a fallback.
  */
 export function handleServerActionResultWithFallback<T>(
   result: ServerActionResult<T>,

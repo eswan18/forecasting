@@ -162,10 +162,8 @@ export async function setUserActive({
       .where("id", "=", userId)
       .execute();
 
-    // Revalidate the relevant pages
     revalidatePath("/admin/users");
 
-    // Fetch the updated user data
     const updatedUserResult = await getUserById(userId);
     if (!updatedUserResult.success) {
       return updatedUserResult;

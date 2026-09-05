@@ -13,9 +13,10 @@ export type CompetitionStatus =
   | "private"; // Private competitions don't have competition-level dates
 
 /**
- * Get the status of a competition based on current date
- * Returns "upcoming", "forecasts-open", "forecasts-closed", or "ended"
- * For private competitions with null dates, returns "private"
+ * Where a competition sits relative to now.
+ *
+ * Null dates mean a private competition, whose deadlines live on each prop
+ * rather than the season — so it has no timeline of its own to place.
  */
 export function getCompetitionStatus(
   forecastsOpenDate: Date | null,
@@ -44,8 +45,7 @@ export function getCompetitionStatus(
 }
 
 /**
- * Get the status of a competition from a competition object
- * Returns "upcoming", "forecasts-open", "forecasts-closed", "ended", or "private"
+ * `getCompetitionStatus` for a competition-shaped object rather than loose dates.
  */
 export function getCompetitionStatusFromObject(
   competition: {
