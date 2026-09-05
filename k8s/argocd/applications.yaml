@@ -1,48 +1,15 @@
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: forecasting-staging
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: https://github.com/eswan18/haruspex
-    targetRevision: main
-    path: k8s/staging
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: forecasting-staging
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: forecasting-prod
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: https://github.com/eswan18/haruspex
-    targetRevision: main
-    path: k8s/prod
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: forecasting-prod
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
----
-# The haruspex-* pair of the forecasting -> haruspex rename. These run
-# alongside the forecasting-* Applications, against the parallel manifest trees
-# in k8s/haruspex-{staging,prod}, until the Cloudflare cutover. The
-# forecasting-* Applications above are deleted afterwards -- and they must be
-# deleted BEFORE their namespaces, because `prune: true` means removing the
-# Application is what takes its workloads with it. Deleting a namespace first
-# strands its Application in a permanent ComparisonError instead.
+# The two Applications for this service, following the forecasting -> haruspex
+# rename. The forecasting-* pair that ran beside these until the cutover is
+# gone, along with the k8s/base, k8s/staging and k8s/prod trees they pointed at.
+#
+# Correcting what an earlier revision of this comment claimed: `prune: true`
+# does NOT make deleting an Application take its workloads with it. It governs
+# pruning at sync time, for resources that leave git. Cascading deletion needs
+# the resources-finalizer.argocd.argoproj.io finalizer, which these do not
+# carry -- so deleting one of these Applications orphans its workloads and the
+# namespace delete is what actually removes them. Order still matters, for a
+# different reason: with selfHeal on, deleting a namespace out from under a
+# live Application just has ArgoCD recreate it.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
