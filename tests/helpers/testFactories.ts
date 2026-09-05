@@ -56,7 +56,6 @@ export class TestDataFactory {
       throw new Error("Failed to create user record");
     }
 
-    // Track the user ID
     this.getTracker().trackId("users", userResult.id);
 
     // Fetch created user to return a rich object
@@ -128,7 +127,6 @@ export class TestDataFactory {
       throw new Error("Failed to create prop");
     }
 
-    // Track the prop ID
     this.getTracker().trackId("props", result.id);
 
     return result;
@@ -157,7 +155,6 @@ export class TestDataFactory {
       throw new Error("Failed to create forecast");
     }
 
-    // Track the forecast ID
     this.getTracker().trackId("forecasts", result.id);
 
     return result;
@@ -212,7 +209,6 @@ export class TestDataFactory {
       throw new Error("Failed to create category");
     }
 
-    // Track the category ID
     this.getTracker().trackId("categories", result.id);
 
     return result;
@@ -244,7 +240,6 @@ export class TestDataFactory {
       throw new Error("Failed to create resolution");
     }
 
-    // Track the resolution ID
     this.getTracker().trackId("resolutions", result.id);
 
     return result;

@@ -80,7 +80,6 @@ export default function NavBar() {
 
   const links: (NavLink | NavLinkGroup)[] = [];
 
-  // Add competitions section if there are any competitions
   if (competitions.length > 0) {
     const privateComps = competitions.filter((c) => c.is_private);
     const publicComps = competitions.filter((c) => !c.is_private);

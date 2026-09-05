@@ -25,9 +25,6 @@ const sharedCookieOpts = {
   path: "/",
 };
 
-/**
- * Check if a pathname matches any of the public routes.
- */
 function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTES.some(
     (route) => pathname === route || pathname.startsWith(route + "/"),

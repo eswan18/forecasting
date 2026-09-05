@@ -62,7 +62,6 @@ export default async function NewPropPage({
     );
   }
 
-  // Fetch categories
   const categoriesResult = await getCategories();
   const categories = categoriesResult.success ? categoriesResult.data : [];
 

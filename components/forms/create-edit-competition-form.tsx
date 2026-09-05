@@ -81,8 +81,6 @@ export function CreateEditCompetitionForm({
     const competition = {
       name: values.name,
       is_private: values.is_private,
-      // For private competitions, dates should be null/undefined
-      // For public competitions, dates are required
       forecasts_open_date: values.is_private
         ? null
         : values.forecasts_open_date,
