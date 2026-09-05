@@ -121,7 +121,6 @@ export function ResolutionDialog({
             : checked.has(option.option_id),
         })),
         notes: notes.trim() || undefined,
-        userId: null, // Will be set by the server action
         overwrite: true,
       });
       return;
@@ -130,7 +129,6 @@ export function ResolutionDialog({
       propId: prop.prop_id,
       resolution: resolution === "true",
       notes: notes.trim() || undefined,
-      userId: null, // Will be set by the server action
       overwrite: true,
     });
   };

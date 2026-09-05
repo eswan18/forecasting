@@ -209,7 +209,6 @@ describe("resolveProp against the database", () => {
         propId: prop.id,
         resolution: true,
         notes: "x",
-        userId: null,
       });
 
       expect(result.success).toBe(true);
@@ -218,7 +217,9 @@ describe("resolveProp against the database", () => {
       const header = await storedHeader(prop.id);
       expect(header.resolution).toBe(true);
       expect(header.notes).toBe("x");
-      expect(header.user_id).toBeNull();
+      // The author comes from the session, not the caller: the dialog has
+      // never sent one, and a client-supplied author could name anyone.
+      expect(header.user_id).toBe(admin.id);
       // A binary resolution lives entirely in the header row.
       expect(await storedOutcomes(prop.id)).toEqual([]);
     },
@@ -235,7 +236,6 @@ describe("resolveProp against the database", () => {
         propId: prop.id,
         resolution: true,
         notes: "x",
-        userId: null,
       });
       expect(first.success).toBe(true);
       const before = await storedHeader(prop.id);
@@ -244,7 +244,6 @@ describe("resolveProp against the database", () => {
         propId: prop.id,
         resolution: false,
         overwrite: true,
-        userId: null,
       });
 
       expect(result.success).toBe(true);
@@ -277,7 +276,6 @@ describe("resolveProp against the database", () => {
           { optionId: options[2].id, outcome: false },
         ],
         notes: "Spurs took it",
-        userId: admin.id,
       });
 
       expect(result.success).toBe(true);
@@ -326,7 +324,6 @@ describe("resolveProp against the database", () => {
           { optionId: options[1].id, outcome: true },
         ],
         notes: "Corrected",
-        userId: admin.id,
         overwrite: true,
       });
 
@@ -371,7 +368,6 @@ describe("resolveProp against the database", () => {
           { optionId: options[0].id, outcome: false },
           { optionId: options[1].id, outcome: false },
         ],
-        userId: admin.id,
       });
 
       expect(result.success).toBe(true);
@@ -408,7 +404,6 @@ describe("resolveProp against the database", () => {
           { optionId: options[0].id, outcome: true },
           { optionId: options[1].id, outcome: true },
         ],
-        userId: admin.id,
       });
 
       expect(result.success).toBe(false);
