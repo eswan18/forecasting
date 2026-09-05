@@ -19,7 +19,6 @@ The testcontainers implementation provides:
 - `tests/setup.ts` - Global test setup and teardown
 - `tests/helpers/testDatabase.ts` - Container lifecycle management and database utilities
 - `tests/helpers/testFactories.ts` - Test data factories for creating realistic test data
-- `tests/auth/login.test.ts` - Tests for login and impersonation workflows
 
 ## Usage
 

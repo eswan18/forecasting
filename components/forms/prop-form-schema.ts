@@ -4,9 +4,9 @@ import { validateOptionLabels } from "@/lib/choice-forecast";
 import { PROP_KINDS, isChoiceKind, type PropKind } from "@/lib/prop-kind";
 
 /**
- * Pieces of the prop form shared by `CreateEditPropForm` and the
- * private-competition `NewPropForm`. Kept free of database imports so the
- * validation can be unit tested (see the CLAUDE.md testability rule).
+ * The prop form's validation, used by `new-prop-form.tsx`. Kept free of
+ * database imports so it can be unit tested (see the CLAUDE.md testability
+ * rule) — that separation is the whole reason this is its own file.
  */
 
 export const propKindSchema = z.enum(PROP_KINDS);

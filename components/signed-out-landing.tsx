@@ -561,9 +561,8 @@ body:has(.hx3) nav { display: none; }
 }
 `;
 
-// Gauge geometry, in viewBox units. The sweep and the value→rotation mapping
-// are the same ones `components/ui/forecast-needle.tsx` uses, so this reads as
-// a giant copy of the app's own instrument rather than a new invention.
+// Gauge geometry, in viewBox units. A 140° sweep with 0 at the upper left,
+// which is what makes the dial read as an instrument rather than a pie slice.
 const SWEEP = 140;
 const CX = 500;
 const CY = 620;

@@ -45,8 +45,7 @@ interface ChoiceForecastEntry {
  *
  * Local edits are re-seeded whenever `prop.options` changes identity — a
  * `router.refresh()` after a save hands down freshly fetched options, and the
- * editor should show what the server now holds, the same way the binary card's
- * `localForecast` restarts from `prop.user_forecast` on remount.
+ * editor should show what the server now holds rather than the stale draft.
  */
 export function useChoiceForecastEntry(
   prop: PropWithUserForecast,

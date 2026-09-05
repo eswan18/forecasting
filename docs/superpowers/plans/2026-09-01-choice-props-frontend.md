@@ -1,5 +1,11 @@
 # Choice Props — Stage Two (Frontend) Implementation Plan
 
+> **Historical.** This document records a plan as it stood when it was written.
+> It is kept for the reasoning, not as a description of the codebase — files it
+> names may since have been renamed, moved or deleted. Do not read it as
+> current guidance, and do not edit it to match today: that would falsify the
+> record it exists to be.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Let admins create and resolve choice props and let forecasters enter and read per-option forecasts on every surface, while the analytics graphics stay binary-only.
