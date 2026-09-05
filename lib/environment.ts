@@ -2,19 +2,6 @@ import * as dotenv from "dotenv";
 import * as path from "path";
 
 /**
- * Environment management utility that loads the appropriate .env file
- * based on the ENV environment variable.
- *
- * Usage:
- * - ENV=local npm run dev (loads .env.local)
- * - ENV=dev npm run dev (loads .env.dev)
- * - ENV=staging npm run dev (loads .env.staging)
- * - ENV=prod npm run dev (loads .env.prod)
- *
- * If ENV is not set, defaults to 'local'
- */
-
-/**
  * Every environment the app can be pointed at, and the file each reads.
  *
  * Declared rather than inlined so the check and the error message cannot drift
@@ -48,10 +35,9 @@ export function loadEnvironment(): void {
   const env = process.env.ENV || "local";
   const envFile = envFileFor(env);
 
-  // Load the appropriate .env file
   const result = dotenv.config({
     path: path.resolve(process.cwd(), envFile),
-    override: true, // Override existing environment variables
+    override: true,
   });
 
   if (result.error) {
@@ -61,9 +47,6 @@ export function loadEnvironment(): void {
   console.log(`🌍 Loaded environment: ${env} (${envFile})`);
 }
 
-/**
- * Get the current environment name
- */
 export function getCurrentEnvironment(): string {
   return process.env.ENV || "local";
 }
